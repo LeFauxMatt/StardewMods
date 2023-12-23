@@ -1,6 +1,5 @@
 namespace StardewMods.FuryCore.Framework;
 
-using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.FuryCore.Framework.Services;
 
@@ -23,7 +22,7 @@ public sealed class FuryCoreApi : IFuryCoreApi
     }
 
     /// <inheritdoc />
-    public ILogging GetLogger(IMonitor monitor) => new Logging(this.config, monitor);
+    public ILog GetLogger(IMonitor monitor) => new Log(this.config, monitor);
 
     /// <inheritdoc />
     public IThemeHelper GetThemeHelper() => this.themeHelper;

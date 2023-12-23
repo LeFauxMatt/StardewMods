@@ -13,10 +13,10 @@ internal sealed class AnimalsMenuHandler
     private static AnimalsMenuHandler instance;
 #nullable enable
 
+    private readonly ModConfig modConfig;
+    private readonly IInputHelper inputHelper;
     private readonly PerScreen<List<SObject>?> completeStock = new();
-    private readonly ModConfig config;
     private readonly PerScreen<int> currentPage = new();
-    private readonly IInputHelper input;
 
     private readonly PerScreen<ClickableTextureComponent> nextPage = new(
         () => new ClickableTextureComponent(new Rectangle(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom), Game1.mouseCursors, new Rectangle(365, 495, 12, 11), Game1.pixelZoom)
@@ -31,16 +31,16 @@ internal sealed class AnimalsMenuHandler
         });
 
     /// <summary>Initializes a new instance of the <see cref="AnimalsMenuHandler" /> class.</summary>
-    /// <param name="config">Dependency used for accessing config data.</param>
-    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
-    /// <param name="input">Dependency used for checking and changing input state.</param>
-    public AnimalsMenuHandler(ModConfig config, IModEvents events, Harmony harmony, IInputHelper input)
+    /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
+    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    public AnimalsMenuHandler(ModConfig modConfig, Harmony harmony, IInputHelper inputHelper, IModEvents modEvents)
     {
         // Init
         AnimalsMenuHandler.instance = this;
-        this.config = config;
-        this.input = input;
+        this.modConfig = modConfig;
+        this.inputHelper = inputHelper;
 
         // Patches
         harmony.Patch(
@@ -48,10 +48,10 @@ internal sealed class AnimalsMenuHandler
             new HarmonyMethod(typeof(AnimalsMenuHandler), nameof(AnimalsMenuHandler.PurchaseAnimalsMenu_constructor_prefix)));
 
         // Events
-        events.Display.MenuChanged += this.OnMenuChanged;
-        events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        events.Input.ButtonsChanged += this.OnButtonsChanged;
-        events.Input.ButtonPressed += this.OnButtonPressed;
+        modEvents.Display.MenuChanged += this.OnMenuChanged;
+        modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
+        modEvents.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     private static void PurchaseAnimalsMenu_constructor_prefix(ref List<SObject> stock)
@@ -59,16 +59,28 @@ internal sealed class AnimalsMenuHandler
         // Get actual stock
         AnimalsMenuHandler.instance.completeStock.Value ??= stock;
 
-        // Limit stock
-        stock = AnimalsMenuHandler
-            .instance.completeStock.Value.Skip(AnimalsMenuHandler.instance.currentPage.Value * AnimalsMenuHandler.instance.config.AnimalShopLimit)
-            .Take(AnimalsMenuHandler.instance.config.AnimalShopLimit)
+        // Filter stock
+        stock = [];
+        foreach (var obj in AnimalsMenuHandler.instance.completeStock.Value)
+        {
+            if (!Game1.farmAnimalData.TryGetValue(obj.Name, out var animalData) || !animalData.CustomFields.Any())
+            {
+                stock.Add(obj);
+                continue;
+            }
+
+            // Do custom stuff here
+        }
+
+        // Paginate stock
+        stock = stock.Skip(AnimalsMenuHandler.instance.currentPage.Value * AnimalsMenuHandler.instance.modConfig.AnimalShopLimit)
+            .Take(AnimalsMenuHandler.instance.modConfig.AnimalShopLimit)
             .ToList();
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (this.input.IsSuppressed(e.Button) || !this.TryGetStock(out var stock))
+        if (this.inputHelper.IsSuppressed(e.Button) || !this.TryGetStock(out var stock))
         {
             return;
         }
@@ -79,7 +91,7 @@ internal sealed class AnimalsMenuHandler
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        if (this.nextPage.Value.containsPoint(x, y) && (this.currentPage.Value + 1) * this.config.AnimalShopLimit < stock.Count)
+        if (this.nextPage.Value.containsPoint(x, y) && (this.currentPage.Value + 1) * this.modConfig.AnimalShopLimit < stock.Count)
         {
             this.SetPage(this.currentPage.Value + 1);
             return;
@@ -98,13 +110,13 @@ internal sealed class AnimalsMenuHandler
             return;
         }
 
-        if (this.config.ControlScheme.NextPage.JustPressed() && (this.currentPage.Value + 1) * this.config.AnimalShopLimit < stock.Count)
+        if (this.modConfig.ControlScheme.NextPage.JustPressed() && (this.currentPage.Value + 1) * this.modConfig.AnimalShopLimit < stock.Count)
         {
             this.SetPage(this.currentPage.Value + 1);
             return;
         }
 
-        if (this.config.ControlScheme.PreviousPage.JustPressed() && this.currentPage.Value > 0)
+        if (this.modConfig.ControlScheme.PreviousPage.JustPressed() && this.currentPage.Value > 0)
         {
             this.SetPage(this.currentPage.Value - 1);
         }
@@ -130,7 +142,7 @@ internal sealed class AnimalsMenuHandler
 
         for (var index = 0; index < menu.animalsToPurchase.Count; ++index)
         {
-            var i = index + (this.currentPage.Value * this.config.AnimalShopLimit);
+            var i = index + (this.currentPage.Value * this.modConfig.AnimalShopLimit);
             if (menu.animalsToPurchase[index].texture == Game1.mouseCursors)
             {
                 menu.animalsToPurchase[index].sourceRect.X = i % 3 * 16 * 2;
@@ -166,7 +178,7 @@ internal sealed class AnimalsMenuHandler
             return;
         }
 
-        if ((this.currentPage.Value + 1) * this.config.AnimalShopLimit < stock.Count)
+        if ((this.currentPage.Value + 1) * this.modConfig.AnimalShopLimit < stock.Count)
         {
             this.nextPage.Value.draw(e.SpriteBatch);
         }
@@ -190,7 +202,7 @@ internal sealed class AnimalsMenuHandler
 
     private bool TryGetStock([NotNullWhen(true)] out List<SObject>? stock)
     {
-        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu || this.completeStock.Value is null || this.completeStock.Value.Count > this.config.AnimalShopLimit)
+        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu || this.completeStock.Value is null || this.completeStock.Value.Count > this.modConfig.AnimalShopLimit)
         {
             stock = null;
             return false;

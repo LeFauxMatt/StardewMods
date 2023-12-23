@@ -26,7 +26,7 @@ internal sealed class ManagedStorages
     /// <param name="contentPatcher">Dependency for Content Patcher integration.</param>
     /// <param name="events">Dependency used for managing access to events.</param>
     /// <param name="gameContent">Dependency used for loading game assets.</param>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     public ManagedStorages(ContentPatcherIntegration contentPatcher, IModEvents events, IGameContentHelper gameContent, Logging logging)
     {
         // Init

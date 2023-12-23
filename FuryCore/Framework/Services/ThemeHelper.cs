@@ -3,7 +3,7 @@ namespace StardewMods.FuryCore.Framework.Services;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc />
 internal sealed class ThemeHelper : IThemeHelper

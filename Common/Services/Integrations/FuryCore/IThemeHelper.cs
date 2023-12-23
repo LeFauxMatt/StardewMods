@@ -1,4 +1,4 @@
-namespace StardewMods.Common.Interfaces;
+namespace StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Handles palette swaps for theme compatibility.</summary>
 public interface IThemeHelper

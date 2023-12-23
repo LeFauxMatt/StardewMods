@@ -2,7 +2,7 @@ namespace StardewMods.Common.Services;
 
 using System.Globalization;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Handles logging debug information to the console.</summary>
 internal sealed class Logging

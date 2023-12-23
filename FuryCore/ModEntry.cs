@@ -2,7 +2,7 @@ namespace StardewMods.FuryCore;
 
 using SimpleInjector;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.FuryCore.Framework.Services;
 
@@ -56,7 +56,7 @@ public sealed class ModEntry : Mod
         this.container.Register<GenericModConfigMenuIntegration>(Lifestyle.Transient);
 
         // Services
-        this.container.Register<ILogging, Logging>(Lifestyle.Singleton);
+        this.container.Register<ILog, Log>(Lifestyle.Singleton);
         this.container.Register<IThemeHelper, ThemeHelper>(Lifestyle.Singleton);
         this.container.Register<ApiFactory>(Lifestyle.Singleton);
 

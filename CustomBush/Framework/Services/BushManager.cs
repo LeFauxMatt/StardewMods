@@ -33,7 +33,7 @@ internal sealed class BushManager
     /// <param name="assets">Dependency used for managing assets.</param>
     /// <param name="gameContent">Dependency used for loading game assets.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     public BushManager(AssetHandler assets, IGameContentHelper gameContent, Harmony harmony, Logging logging)
     {
         BushManager.instance = this;

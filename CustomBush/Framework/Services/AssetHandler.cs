@@ -16,7 +16,7 @@ internal sealed class AssetHandler
     /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
     /// <param name="events">Dependency used for monitoring and logging.</param>
     /// <param name="gameContent">Dependency used for loading game assets.</param>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     public AssetHandler(IModEvents events, IGameContentHelper gameContent, Logging logging)
     {
         this.gameContent = gameContent;

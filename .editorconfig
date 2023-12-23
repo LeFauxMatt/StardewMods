@@ -15,29 +15,83 @@
 [*]
 charset = utf-8
 indent_style = space
-indent_size = 4
-insert_final_newline = true
-trim_trailing_whitespace = true
+indent_size = 4 # A property with the same name was updated with a value 2 in a section [{*.har,*.jsb2,*.jsb3,*.json,*.jsonc,*.postman_collection,*.postman_collection.json,*.postman_environment,*.postman_environment.json,.babelrc,.eslintrc,.prettierrc,.stylelintrc,bowerrc,jest.config}]
+insert_final_newline = truefalse
+trim_trailing_whitespace = truefalse
 
 # Microsoft .NET properties
+csharp_preferred_modifier_order = private, public, protected, internal, override, extern, new, virtual, sealed, abstract, static, readonly, unsafe, volatile, async, file, required:suggestion
 csharp_prefer_braces = true:none
+csharp_style_prefer_utf8_string_literals = true:suggestion
 csharp_style_var_elsewhere = true:suggestion
+csharp_style_var_for_built_in_types = true:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_using_directive_placement = inside_namespace:silent
+dotnet_naming_rule.private_constants_rule.import_to_resharper = as_predefined
+dotnet_naming_rule.private_constants_rule.severity = warning
+dotnet_naming_rule.private_constants_rule.style = upper_camel_case_style
+dotnet_naming_rule.private_constants_rule.symbols = private_constants_symbols
+dotnet_naming_rule.private_static_fields_rule.import_to_resharper = as_predefined
+dotnet_naming_rule.private_static_fields_rule.severity = warning
+dotnet_naming_rule.private_static_fields_rule.style = lower_camel_case_style
+dotnet_naming_rule.private_static_fields_rule.symbols = private_static_fields_symbols
+dotnet_naming_rule.private_static_readonly_rule.import_to_resharper = as_predefined
+dotnet_naming_rule.private_static_readonly_rule.severity = warning
+dotnet_naming_rule.private_static_readonly_rule.style = upper_camel_case_style
+dotnet_naming_rule.private_static_readonly_rule.symbols = private_static_readonly_symbols
+dotnet_naming_rule.unity_serialized_field_rule.import_to_resharper = True
+dotnet_naming_rule.unity_serialized_field_rule.resharper_description = Unity serialized field
+dotnet_naming_rule.unity_serialized_field_rule.resharper_guid = 5f0fdb63-c892-4d2c-9324-15c80b22a7ef
+dotnet_naming_rule.unity_serialized_field_rule.severity = warning
+dotnet_naming_rule.unity_serialized_field_rule.style = lower_camel_case_style
+dotnet_naming_rule.unity_serialized_field_rule.symbols = unity_serialized_field_symbols
+dotnet_naming_style.lower_camel_case_style.capitalization = camel_case
+dotnet_naming_style.upper_camel_case_style.capitalization = pascal_case
+dotnet_naming_symbols.private_constants_symbols.applicable_accessibilities = private
+dotnet_naming_symbols.private_constants_symbols.applicable_kinds = field
+dotnet_naming_symbols.private_constants_symbols.required_modifiers = const
+dotnet_naming_symbols.private_static_fields_symbols.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_fields_symbols.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields_symbols.required_modifiers = static
+dotnet_naming_symbols.private_static_readonly_symbols.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_readonly_symbols.applicable_kinds = field
+dotnet_naming_symbols.private_static_readonly_symbols.required_modifiers = static, readonly
+dotnet_naming_symbols.unity_serialized_field_symbols.applicable_accessibilities = *
+dotnet_naming_symbols.unity_serialized_field_symbols.applicable_kinds =
+dotnet_naming_symbols.unity_serialized_field_symbols.resharper_applicable_kinds = unity_serialised_field
+dotnet_naming_symbols.unity_serialized_field_symbols.resharper_required_modifiers = instance
+dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:none
+dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:none
+dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:none
+dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
+dotnet_style_predefined_type_for_member_access = true:suggestion
 dotnet_style_qualification_for_event = true:suggestion
 dotnet_style_qualification_for_field = true:suggestion
 dotnet_style_qualification_for_method = true:suggestion
 dotnet_style_qualification_for_property = true:suggestion
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
 
 # ReSharper properties
+resharper_align_multiline_binary_expressions_chain = false
+resharper_align_multiline_statement_conditions = false
+resharper_apply_auto_detected_rules = false
+resharper_arguments_skip_single = true
 resharper_blank_lines_after_control_transfer_statements = 1
 resharper_blank_lines_after_multiline_statements = 1
+resharper_blank_lines_around_block_case_section = 1
 resharper_blank_lines_around_single_line_auto_property = 1
 resharper_blank_lines_around_single_line_property = 1
+resharper_blank_lines_before_single_line_comment = 1
 resharper_braces_redundant = true
+resharper_can_use_global_alias = false
+resharper_constructor_or_destructor_body = expression_body
+resharper_cpp_max_line_length = 80
 resharper_csharp_blank_lines_around_single_line_invocable = 1
 resharper_csharp_empty_block_style = together_same_line
 resharper_csharp_keep_blank_lines_in_code = 1
 resharper_csharp_keep_blank_lines_in_declarations = 1
+resharper_csharp_stick_comment = false
+resharper_csharp_wrap_after_declaration_lpar = true
 resharper_csharp_wrap_after_invocation_lpar = true
 resharper_csharp_wrap_arguments_style = chop_if_long
 resharper_csharp_wrap_before_binary_opsign = true
@@ -45,19 +99,71 @@ resharper_csharp_wrap_before_first_type_parameter_constraint = true
 resharper_csharp_wrap_extends_list_style = chop_if_long
 resharper_csharp_wrap_multiple_declaration_style = chop_always
 resharper_csharp_wrap_parameters_style = chop_if_long
+resharper_default_value_when_type_not_evident = default_expression
+resharper_formatter_off_tag = @formatter:off
+resharper_formatter_on_tag = @formatter:on
+resharper_formatter_tags_enabled = true
+resharper_fsharp_max_line_length = 80
+resharper_html_max_line_length = 80
+resharper_indent_inside_namespace = false
+resharper_indent_preprocessor_region = no_indent
 resharper_keep_existing_arrangement = false
+resharper_local_function_body = expression_body
 resharper_max_enum_members_on_line = 1
 resharper_max_initializer_elements_on_line = 1
+resharper_method_or_operator_body = expression_body
+resharper_nested_ternary_style = expanded
+resharper_parentheses_same_type_operations = true
+resharper_place_accessorholder_attribute_on_same_line = false
 resharper_place_linq_into_on_new_line = false
 resharper_place_simple_embedded_statement_on_same_line = false
+resharper_place_simple_enum_on_single_line = true
+resharper_place_simple_method_on_single_line = true
+resharper_place_simple_switch_expression_on_single_line = true
+resharper_qualified_using_at_nested_scope = true
+resharper_resx_max_line_length = 80
+resharper_shaderlab_max_line_length = 80
+resharper_show_autodetect_configure_formatting_tip = false
+resharper_space_within_slice_pattern = false
 resharper_static_members_qualify_members = none, field, property, event, method
+resharper_T4_max_line_length = 80
+resharper_trailing_comma_in_multiline_lists = true
+resharper_use_indent_from_vs = false
 resharper_use_roslyn_logic_for_evident_types = true
+resharper_vb_max_line_length = 80
 resharper_wrap_array_initializer_style = chop_if_long
 resharper_wrap_before_extends_colon = true
+resharper_wrap_before_first_method_call = true
+resharper_wrap_before_linq_expression = true
+resharper_wrap_chained_binary_expressions = chop_if_long
+resharper_wrap_chained_binary_patterns = chop_if_long
+resharper_wrap_chained_method_calls = chop_if_long
+resharper_wrap_enum_declaration = chop_if_long
 resharper_wrap_list_pattern = chop_if_long
 resharper_wrap_property_pattern = chop_always
+resharper_wrap_switch_expression = chop_if_long
+resharper_xmldoc_attribute_indent = align_by_first_attribute
+resharper_xmldoc_attribute_style = on_single_line
+resharper_xmldoc_indent_child_elements = RemoveIndent
+resharper_xmldoc_indent_text = RemoveIndent
 resharper_xmldoc_keep_user_linebreaks = false
+resharper_xmldoc_pi_attribute_style = on_single_line
+resharper_xmldoc_wrap_around_elements = false
 resharper_xmldoc_wrap_tags_and_pi = false
+end_of_line = crlf
+resharper_xml_max_line_length = 80
+
+# ReSharper inspection severities
+resharper_arrange_redundant_parentheses_highlighting = hint
+resharper_arrange_type_member_modifiers_highlighting = hint
+resharper_arrange_type_modifiers_highlighting = hint
+resharper_built_in_type_reference_style_for_member_access_highlighting = hint
+resharper_built_in_type_reference_style_highlighting = hint
+resharper_suggest_var_or_type_built_in_types_highlighting = hint
+resharper_use_symbol_alias_highlighting = none
+resharper_web_config_module_not_resolved_highlighting = warning
+resharper_web_config_type_not_resolved_highlighting = warning
+resharper_web_config_wrong_module_highlighting = warning
 
 ##########################################
 # File Extension Settings
@@ -65,23 +171,23 @@ resharper_xmldoc_wrap_tags_and_pi = false
 
 # Visual Studio Solution Files
 [*.sln]
-indent_style = tab
+indent_style = tab # A property with the same name was updated with a value space in a section [*]; with a value space in a section [{*.har,*.jsb2,*.jsb3,*.json,*.jsonc,*.postman_collection,*.postman_collection.json,*.postman_environment,*.postman_environment.json,.babelrc,.eslintrc,.prettierrc,.stylelintrc,bowerrc,jest.config}]; with a value space in a section [*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,c++m,cc,ccm,cginc,compute,cp,cpp,cppm,cs,cshtml,cu,cuh,cxx,cxxm,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,mxx,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,uxml,vb,xaml,xamlx,xoml,xsd}]
 
 # Visual Studio XML Project Files
 [*.{csproj,vbproj,vcxproj.filters,proj,projitems,shproj}]
-indent_size = 2
+indent_size = 2 # A property with the same name was updated with a value 4 in a section [*]; with a value 4 in a section [*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,c++m,cc,ccm,cginc,compute,cp,cpp,cppm,cs,cshtml,cu,cuh,cxx,cxxm,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,mxx,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,uxml,vb,xaml,xamlx,xoml,xsd}]
 
 # XML Configuration Files
 [*.{xml,config,props,targets,nuspec,resx,ruleset,vsixmanifest,vsct}]
-indent_size = 2
+indent_size = 2 # A property with the same name was updated with a value 4 in a section [*]; with a value 4 in a section [*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,c++m,cc,ccm,cginc,compute,cp,cpp,cppm,cs,cshtml,cu,cuh,cxx,cxxm,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,mxx,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,uxml,vb,xaml,xamlx,xoml,xsd}]
 
 # JSON Files
 [*.{json,json5,webmanifest}]
-indent_size = 2
+indent_size = 2 # A property with the same name was updated with a value 4 in a section [*]; with a value 4 in a section [*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,c++m,cc,ccm,cginc,compute,cp,cpp,cppm,cs,cshtml,cu,cuh,cxx,cxxm,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,mxx,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,uxml,vb,xaml,xamlx,xoml,xsd}]
 
 # YAML Files
 [*.{yml,yaml}]
-indent_size = 2
+indent_size = 2 # A property with the same name was updated with a value 4 in a section [*]; with a value 4 in a section [*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,c++m,cc,ccm,cginc,compute,cp,cpp,cppm,cs,cshtml,cu,cuh,cxx,cxxm,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,mxx,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,uxml,vb,xaml,xamlx,xoml,xsd}]
 
 # Markdown Files
 [*.{md,mdx}]
@@ -89,7 +195,7 @@ trim_trailing_whitespace = false
 
 # Web Files
 [*.{htm,html,js,jsm,ts,tsx,cjs,cts,ctsx,mjs,mts,mtsx,css,sass,scss,less,pcss,svg,vue}]
-indent_size = 2
+indent_size = 2 # A property with the same name was updated with a value 4 in a section [*]; with a value 4 in a section [*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,c++m,cc,ccm,cginc,compute,cp,cpp,cppm,cs,cshtml,cu,cuh,cxx,cxxm,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,mxx,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,uxml,vb,xaml,xamlx,xoml,xsd}]
 
 # Batch Files
 [*.{cmd,bat}]
@@ -97,11 +203,11 @@ end_of_line = crlf
 
 # Bash Files
 [*.sh]
-end_of_line = lf
+end_of_line = lf # A property with the same name was updated with a value crlf in a section [*]
 
 # Makefiles
 [Makefile]
-indent_style = tab
+indent_style = tab # A property with the same name was updated with a value space in a section [*]; with a value space in a section [{*.har,*.jsb2,*.jsb3,*.json,*.jsonc,*.postman_collection,*.postman_collection.json,*.postman_environment,*.postman_environment.json,.babelrc,.eslintrc,.prettierrc,.stylelintrc,bowerrc,jest.config}]; with a value space in a section [*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,c++m,cc,ccm,cginc,compute,cp,cpp,cppm,cs,cshtml,cu,cuh,cxx,cxxm,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,mxx,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,uxml,vb,xaml,xamlx,xoml,xsd}]
 
 ##########################################
 # Default .NET Code Style Severities
@@ -121,22 +227,22 @@ dotnet_analyzer_diagnostic.severity = warning
 # https://docs.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/language-rules#net-style-rules
 [*.{cs,csx,cake,vb,vbx}]
 # "this." and "Me." qualifiers
-dotnet_style_qualification_for_field = true:warning # A property with the same name was updated with a value true:suggestion in a section [*]
-dotnet_style_qualification_for_property = true:warning # A property with the same name was updated with a value true:suggestion in a section [*]
-dotnet_style_qualification_for_method = true:warning # A property with the same name was updated with a value true:suggestion in a section [*]
-dotnet_style_qualification_for_event = true:warning # A property with the same name was updated with a value true:suggestion in a section [*]
+dotnet_style_qualification_for_field = true:warning # A property with the same name was updated with a value true:suggestion in a section [*] # A property with the same name was updated with a value true:suggestion in a section [*]
+dotnet_style_qualification_for_property = true:warning # A property with the same name was updated with a value true:suggestion in a section [*] # A property with the same name was updated with a value true:suggestion in a section [*]
+dotnet_style_qualification_for_method = true:warning # A property with the same name was updated with a value true:suggestion in a section [*] # A property with the same name was updated with a value true:suggestion in a section [*]
+dotnet_style_qualification_for_event = true:warning # A property with the same name was updated with a value true:suggestion in a section [*] # A property with the same name was updated with a value true:suggestion in a section [*]
 # Language keywords instead of framework type names for type references
-dotnet_style_predefined_type_for_locals_parameters_members = true:warning
-dotnet_style_predefined_type_for_member_access = true:warning
+dotnet_style_predefined_type_for_locals_parameters_members = true:warning # A property with the same name was updated with a value true:suggestion in a section [*]
+dotnet_style_predefined_type_for_member_access = true:warning # A property with the same name was updated with a value true:suggestion in a section [*]
 # Modifier preferences
-dotnet_style_require_accessibility_modifiers = always:warning
-csharp_preferred_modifier_order = public, private, protected, internal, static, extern, new, virtual, abstract, sealed, override, readonly, unsafe, volatile, async:warning
+dotnet_style_require_accessibility_modifiers = always:warning # A property with the same name was updated with a value for_non_interface_members:suggestion in a section [*]
+csharp_preferred_modifier_order = public, private, protected, internal, static, extern, new, virtual, abstract, sealed, override, readonly, unsafe, volatile, async:warning # A property with the same name was updated with a value private, public, protected, internal, override, extern, new, virtual, sealed, abstract, static, readonly, unsafe, volatile, async, file, required:suggestion in a section [*]
 visual_basic_preferred_modifier_order = Partial, Default, Private, Protected, Public, Friend, NotOverridable, Overridable, MustOverride, Overloads, Overrides, MustInherit, NotInheritable, Static, Shared, Shadows, ReadOnly, WriteOnly, Dim, Const, WithEvents, Widening, Narrowing, Custom, Async:warning
 dotnet_style_readonly_field = true:warning
 # Parentheses preferences
-dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:warning
-dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:warning
-dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:warning
+dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:warning # A property with the same name was updated with a value always_for_clarity:none in a section [*]
+dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:warning # A property with the same name was updated with a value always_for_clarity:none in a section [*]
+dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:warning # A property with the same name was updated with a value always_for_clarity:none in a section [*]
 dotnet_style_parentheses_in_other_operators = never_if_unnecessary:warning
 # Expression-level preferences
 dotnet_style_object_initializer = true:warning
@@ -168,9 +274,9 @@ csharp_style_prefer_null_check_over_type_check = true:warning
 # https://docs.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/language-rules#c-style-rules
 [*.{cs,csx,cake}]
 # 'var' preferences
-csharp_style_var_for_built_in_types = true:warning
-csharp_style_var_when_type_is_apparent = true:warning # A property with the same name was updated with a value true:suggestion in a section [*]
-csharp_style_var_elsewhere = true:warning # A property with the same name was updated with a value true:suggestion in a section [*]
+csharp_style_var_for_built_in_types = true:warning # A property with the same name was updated with a value true:suggestion in a section [*]
+csharp_style_var_when_type_is_apparent = true:warning # A property with the same name was updated with a value true:suggestion in a section [*] # A property with the same name was updated with a value true:suggestion in a section [*]
+csharp_style_var_elsewhere = true:warning # A property with the same name was updated with a value true:suggestion in a section [*] # A property with the same name was updated with a value true:suggestion in a section [*]
 # Expression-bodied members
 csharp_style_expression_bodied_methods = true:warning
 csharp_style_expression_bodied_constructors = true:warning
@@ -202,7 +308,7 @@ csharp_prefer_braces = true:warning # A property with the same name was updated 
 csharp_prefer_simple_using_statement = true:suggestion
 dotnet_diagnostic.ide0063.severity = suggestion
 # 'using' directive preferences
-csharp_using_directive_placement = inside_namespace:warning
+csharp_using_directive_placement = inside_namespace:warning # A property with the same name was updated with a value inside_namespace:silent in a section [*]
 # Modifier preferences
 csharp_prefer_static_local_function = true:warning
 
@@ -488,3 +594,12 @@ dotnet_naming_rule.parameters_rule.severity = warning
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 ##########################################
+
+[{*.har,*.jsb2,*.jsb3,*.json,*.jsonc,*.postman_collection,*.postman_collection.json,*.postman_environment,*.postman_environment.json,.babelrc,.eslintrc,.prettierrc,.stylelintrc,bowerrc,jest.config}]
+indent_style = space
+indent_size = 2
+
+[*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,c++m,cc,ccm,cginc,compute,cp,cpp,cppm,cs,cshtml,cu,cuh,cxx,cxxm,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,mxx,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,uxml,vb,xaml,xamlx,xoml,xsd}]
+indent_style = space
+indent_size = 4
+tab_width = 4

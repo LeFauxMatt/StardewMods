@@ -29,6 +29,6 @@ public sealed class ModEntry : Mod
     {
         var harmony = new Harmony(this.ModManifest.UniqueID);
         _ = new ConfigMenu(this.config, this.Helper, this.ModManifest);
-        _ = new AnimalsMenuHandler(this.config, this.Helper.Events, harmony, this.Helper.Input);
+        _ = new AnimalsMenuHandler(this.config, harmony, this.Helper.Input, this.Helper.Events);
     }
 }
