@@ -1,43 +1,47 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
-using System.Reflection;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
+using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Interfaces;
-using StardewValley.Menus;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
 
 /// <summary>Allows a chest to be opened while in the farmer's inventory.</summary>
 internal sealed class OpenHeldChest : BaseFeature
 {
-    private static readonly MethodBase ChestAddItem = AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.addItem));
-
-    private static readonly MethodBase InventoryMenuHighlightAllItems = AccessTools.DeclaredMethod(typeof(InventoryMenu), nameof(InventoryMenu.highlightAllItems));
-
-    private readonly ContainerFactory containers;
-
-    private readonly IModEvents events;
-
+    private readonly ContainerFactory containerFactory;
     private readonly Harmony harmony;
-    private readonly IInputHelper input;
+    private readonly IInputHelper inputHelper;
+    private readonly ItemGrabMenuManager itemGrabMenuManager;
+    private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="OpenHeldChest" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="events">Dependency used for managing access to events.</param>
+    /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
-    /// <param name="input">Dependency used for checking and changing input state.</param>
-    /// <param name="containers">Dependency used for accessing containers.</param>
-    public OpenHeldChest(ILogging logging, ModConfig modConfig, IModEvents events, Harmony harmony, IInputHelper input, ContainerFactory containers)
-        : base(logging, modConfig)
+    /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
+    /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
+    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    public OpenHeldChest(
+        ILog log,
+        ModConfig modConfig,
+        ContainerFactory containerFactory,
+        Harmony harmony,
+        IInputHelper inputHelper,
+        ItemGrabMenuManager itemGrabMenuManager,
+        IModEvents modEvents)
+        : base(log, modConfig)
     {
-        this.events = events;
+        this.containerFactory = containerFactory;
         this.harmony = harmony;
-        this.input = input;
-        this.containers = containers;
+        this.inputHelper = inputHelper;
+        this.itemGrabMenuManager = itemGrabMenuManager;
+        this.modEvents = modEvents;
     }
 
     /// <inheritdoc />
@@ -47,26 +51,29 @@ internal sealed class OpenHeldChest : BaseFeature
     protected override void Activate()
     {
         // Events
-        this.events.Input.ButtonPressed += this.OnButtonPressed;
+        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
+        this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
 
         // Patches
-        this.harmony.Patch(OpenHeldChest.ChestAddItem, new HarmonyMethod(typeof(OpenHeldChest), nameof(OpenHeldChest.Chest_addItem_prefix)));
-
-        this.harmony.Patch(OpenHeldChest.InventoryMenuHighlightAllItems, postfix: new HarmonyMethod(typeof(OpenHeldChest), nameof(OpenHeldChest.InventoryMenu_highlightAllItems_postfix)));
+        this.harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.addItem)),
+            new HarmonyMethod(typeof(OpenHeldChest), nameof(OpenHeldChest.Chest_addItem_prefix)));
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this.events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
+        this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
 
         // Patches
-        this.harmony.Unpatch(OpenHeldChest.ChestAddItem, AccessTools.Method(typeof(OpenHeldChest), nameof(OpenHeldChest.Chest_addItem_prefix)));
-
-        this.harmony.Unpatch(OpenHeldChest.InventoryMenuHighlightAllItems, AccessTools.Method(typeof(OpenHeldChest), nameof(OpenHeldChest.InventoryMenu_highlightAllItems_postfix)));
+        this.harmony.Unpatch(
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.addItem)),
+            AccessTools.Method(typeof(OpenHeldChest), nameof(OpenHeldChest.Chest_addItem_prefix)));
     }
 
+    // TODO: Recursive check
     /// <summary>Prevent adding chest into itself.</summary>
     [HarmonyPriority(Priority.High)]
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -82,25 +89,13 @@ internal sealed class OpenHeldChest : BaseFeature
         return false;
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void InventoryMenu_highlightAllItems_postfix(ref bool __result, Item i)
-    {
-        if (!__result || Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
-        {
-            return;
-        }
-
-        __result = itemGrabMenu.context != i;
-    }
-
     /// <summary>Open inventory for currently held chest.</summary>
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!Context.IsPlayerFree
             || !e.Button.IsActionButton()
             || Game1.player.CurrentItem is null
-            || !this.containers.TryGetOne(Game1.player.CurrentItem, out var storage)
+            || !this.containerFactory.TryGetOne(Game1.player.CurrentItem, out var storage)
             || storage.Options.OpenHeldChest != FeatureOption.Enabled
             || storage is not ChestContainer chestStorage)
         {
@@ -108,8 +103,28 @@ internal sealed class OpenHeldChest : BaseFeature
         }
 
         Game1.player.currentLocation.localSound("openChest");
-        var items = chestStorage.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
         chestStorage.Chest.ShowMenu();
-        this.input.Suppress(e.Button);
+        this.inputHelper.Suppress(e.Button);
+    }
+
+    private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
+    {
+        if (this.itemGrabMenuManager.Top.Container?.Options.OpenHeldChest != FeatureOption.Enabled)
+        {
+            return;
+        }
+
+        this.itemGrabMenuManager.Bottom.AddHighlightMethod(this.MatchesFilter);
+    }
+
+    private bool MatchesFilter(Item item)
+    {
+        if (this.itemGrabMenuManager.Top.Container is not IContainer<Chest> container
+            || !container.Source.TryGetTarget(out var chest))
+        {
+            return true;
+        }
+
+        return chest != item;
     }
 }

@@ -3,7 +3,7 @@ namespace StardewMods.BetterChests.Framework.Services;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Models;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Responsible for handling assets provided by this mod.</summary>
 internal sealed class AssetHandler : BaseService
@@ -23,12 +23,12 @@ internal sealed class AssetHandler : BaseService
     private readonly IDataHelper data;
 
     /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="events">Dependency used for managing access to events.</param>
     /// <param name="data">Dependency used for storing and retrieving data.</param>
     /// <param name="themeHelper">Dependency used for swapping palettes.</param>
-    public AssetHandler(ILogging logging, IModEvents events, IDataHelper data, IThemeHelper themeHelper)
-        : base(logging)
+    public AssetHandler(ILog log, IModEvents events, IDataHelper data, IThemeHelper themeHelper)
+        : base(log)
     {
         // Init
         this.data = data;
@@ -73,7 +73,14 @@ internal sealed class AssetHandler : BaseService
 
         tabData = new Dictionary<string, InventoryTabData>
         {
-            { "Clothing", new InventoryTabData("Clothing", AssetHandler.TabTexturePath, 2, ["category_clothing", "category_boots", "category_hat"]) },
+            {
+                "Clothing",
+                new InventoryTabData(
+                    "Clothing",
+                    AssetHandler.TabTexturePath,
+                    2,
+                    ["category_clothing", "category_boots", "category_hat"])
+            },
             {
                 "Cooking",
                 new InventoryTabData(
@@ -92,19 +99,57 @@ internal sealed class AssetHandler : BaseService
                         "category_egg",
                     ])
             },
-            { "Crops", new InventoryTabData("Crops", AssetHandler.TabTexturePath, 4, ["category_greens", "category_flowers", "category_fruits", "category_vegetable"]) },
-            { "Equipment", new InventoryTabData("Equipment", AssetHandler.TabTexturePath, 5, ["category_equipment", "category_ring", "category_tool", "category_weapon"]) },
-            { "Fishing", new InventoryTabData("Fishing", AssetHandler.TabTexturePath, 6, ["category_bait", "category_fish", "category_tackle", "category_sell_at_fish_shop"]) },
+            {
+                "Crops",
+                new InventoryTabData(
+                    "Crops",
+                    AssetHandler.TabTexturePath,
+                    4,
+                    ["category_greens", "category_flowers", "category_fruits", "category_vegetable"])
+            },
+            {
+                "Equipment",
+                new InventoryTabData(
+                    "Equipment",
+                    AssetHandler.TabTexturePath,
+                    5,
+                    ["category_equipment", "category_ring", "category_tool", "category_weapon"])
+            },
+            {
+                "Fishing",
+                new InventoryTabData(
+                    "Fishing",
+                    AssetHandler.TabTexturePath,
+                    6,
+                    ["category_bait", "category_fish", "category_tackle", "category_sell_at_fish_shop"])
+            },
             {
                 "Materials",
                 new InventoryTabData(
                     "Materials",
                     AssetHandler.TabTexturePath,
                     7,
-                    ["category_monster_loot", "category_metal_resources", "category_building_resources", "category_minerals", "category_crafting", "category_gem"])
+                    [
+                        "category_monster_loot",
+                        "category_metal_resources",
+                        "category_building_resources",
+                        "category_minerals",
+                        "category_crafting",
+                        "category_gem",
+                    ])
             },
-            { "Misc", new InventoryTabData("Misc", AssetHandler.TabTexturePath, 8, ["category_big_craftable", "category_furniture", "category_junk"]) },
-            { "Seeds", new InventoryTabData("Seeds", AssetHandler.TabTexturePath, 9, ["category_seeds", "category_fertilizer"]) },
+            {
+                "Misc",
+                new InventoryTabData(
+                    "Misc",
+                    AssetHandler.TabTexturePath,
+                    8,
+                    ["category_big_craftable", "category_furniture", "category_junk"])
+            },
+            {
+                "Seeds",
+                new InventoryTabData("Seeds", AssetHandler.TabTexturePath, 9, ["category_seeds", "category_fertilizer"])
+            },
         };
 
         this.data.WriteJsonFile("assets/tabs.json", tabData);

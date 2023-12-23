@@ -1,7 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using StardewMods.BetterChests.Framework.Interfaces;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IFeature" />
 internal abstract class BaseFeature : BaseService, IFeature
@@ -9,10 +9,10 @@ internal abstract class BaseFeature : BaseService, IFeature
     private bool isActivated;
 
     /// <summary>Initializes a new instance of the <see cref="BaseFeature" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    protected BaseFeature(ILogging logging, ModConfig modConfig)
-        : base(logging) =>
+    protected BaseFeature(ILog log, ModConfig modConfig)
+        : base(log) =>
         this.ModConfig = modConfig;
 
     /// <summary>Gets the dependency used for accessing config data.</summary>

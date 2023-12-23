@@ -136,14 +136,16 @@ internal sealed class ItemMatcher : IItemFilter
             _ => false,
         };
 
-    private bool IsMatch(ParsedTerm term, Item item) => (this.AllowPartial ? this.IsPartialMatch(term, item) : ItemMatcher.IsExactMatch(term, item)) != term.NotMatch;
+    private bool IsMatch(ParsedTerm term, Item item) =>
+        (this.AllowPartial ? this.IsPartialMatch(term, item) : ItemMatcher.IsExactMatch(term, item)) != term.NotMatch;
 
     private bool IsPartialMatch(ParsedTerm term, Item item)
     {
         // Partially matches name or display name
         if (!term.TagMatch)
         {
-            return item.Name.Contains(term.Value, StringComparison.OrdinalIgnoreCase) || item.DisplayName.Contains(term.Value, StringComparison.OrdinalIgnoreCase);
+            return item.Name.Contains(term.Value, StringComparison.OrdinalIgnoreCase)
+                || item.DisplayName.Contains(term.Value, StringComparison.OrdinalIgnoreCase);
         }
 
         // Partially matches context tag

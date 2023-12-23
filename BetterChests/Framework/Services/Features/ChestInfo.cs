@@ -6,7 +6,7 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
@@ -20,19 +20,23 @@ internal sealed class ChestInfo : BaseFeature
 
     private readonly ContainerFactory containerFactory;
     private readonly IInputHelper inputHelper;
-
     private readonly PerScreen<bool> isActive = new();
     private readonly IModEvents modEvents;
     private readonly PerScreen<bool> resetCache = new(() => true);
 
     /// <summary>Initializes a new instance of the <see cref="ChestInfo" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
-    public ChestInfo(ILogging logging, ModConfig modConfig, ContainerFactory containerFactory, IInputHelper inputHelper, IModEvents modEvents)
-        : base(logging, modConfig)
+    public ChestInfo(
+        ILog log,
+        ModConfig modConfig,
+        ContainerFactory containerFactory,
+        IInputHelper inputHelper,
+        IModEvents modEvents)
+        : base(log, modConfig)
     {
         this.containerFactory = containerFactory;
         this.inputHelper = inputHelper;
@@ -69,8 +73,9 @@ internal sealed class ChestInfo : BaseFeature
             return;
         }
 
-        this.isActive.Value = !this.isActive.Value;
         this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.ToggleInfo);
+        this.isActive.Value = !this.isActive.Value;
+        this.Log.Trace("{0}: Toggled chest info to {1}", this.Id, this.isActive.Value);
     }
 
     private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e) => this.resetCache.Value = true;
@@ -100,7 +105,9 @@ internal sealed class ChestInfo : BaseFeature
             x - IClickableMenu.borderWidth,
             y - (IClickableMenu.borderWidth / 2) - IClickableMenu.spaceToClearTopBorder,
             384,
-            (ChestInfo.LineHeight * this.cachedInfo.Value.Count) + IClickableMenu.spaceToClearTopBorder + (IClickableMenu.borderWidth * 2),
+            (ChestInfo.LineHeight * this.cachedInfo.Value.Count)
+            + IClickableMenu.spaceToClearTopBorder
+            + (IClickableMenu.borderWidth * 2),
             false,
             true);
 
@@ -108,12 +115,23 @@ internal sealed class ChestInfo : BaseFeature
         foreach (var info in this.cachedInfo.Value)
         {
             // Draw Name
-            Utility.drawTextWithShadow(e.SpriteBatch, info.Name, Game1.smallFont, new Vector2(x, y), Game1.textColor, 1f, 0.1f);
+            Utility.drawTextWithShadow(
+                e.SpriteBatch,
+                info.Name,
+                Game1.smallFont,
+                new Vector2(x, y),
+                Game1.textColor,
+                1f,
+                0.1f);
 
             // Draw Value
             if (info.TotalWidth <= 384 - IClickableMenu.borderWidth)
             {
-                e.SpriteBatch.DrawString(Game1.smallFont, info.Value, new Vector2(x + info.NameWidth, y), Game1.textColor);
+                e.SpriteBatch.DrawString(
+                    Game1.smallFont,
+                    info.Value,
+                    new Vector2(x + info.NameWidth, y),
+                    Game1.textColor);
 
                 y += ChestInfo.LineHeight;
                 continue;
@@ -149,7 +167,8 @@ internal sealed class ChestInfo : BaseFeature
         this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_Location(), container.Location.Name));
 
         // Add position
-        this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_Position(), $"{(int)container.TileLocation.X}, {(int)container.TileLocation.Y}"));
+        this.cachedInfo.Value.Add(
+            new Info(I18n.ChestInfo_Position(), $"{(int)container.TileLocation.X}, {(int)container.TileLocation.Y}"));
 
         // Add inventory
         if (container is ChildContainer
@@ -171,7 +190,8 @@ internal sealed class ChestInfo : BaseFeature
         this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_UniqueItems(), $"{uniqueItems:n0}"));
 
         // Total value
-        var totalValue = items.Select(item => (long)item.sellToStorePrice(Game1.player.UniqueMultiplayerID) * item.Stack).Sum();
+        var totalValue =
+            items.Select(item => (long)item.sellToStorePrice(Game1.player.UniqueMultiplayerID) * item.Stack).Sum();
 
         this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_TotalValue(), $"{totalValue:n0}"));
     }

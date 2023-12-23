@@ -10,7 +10,8 @@ internal sealed class CustomFieldsStorage : DictionaryStorage
     public CustomFieldsStorage(Dictionary<string, string> customFields) => this.customFields = customFields;
 
     /// <inheritdoc />
-    protected override bool TryGetValue(string key, [NotNullWhen(true)] out string? value) => this.customFields.TryGetValue(key, out value);
+    protected override bool TryGetValue(string key, [NotNullWhen(true)] out string? value) =>
+        this.customFields.TryGetValue(key, out value);
 
     /// <inheritdoc />
     protected override void SetValue(string key, string value)

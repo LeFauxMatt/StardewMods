@@ -1,25 +1,18 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
-using System.Reflection;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Helpers;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Locations;
 using StardewValley.Objects;
 
 /// <summary>Allows a placed chest full of items to be picked up by the farmer.</summary>
 internal sealed class CarryChest : BaseFeature
 {
-    private static readonly MethodBase ObjectDrawInMenu = AccessTools.DeclaredMethod(
-        typeof(SObject),
-        nameof(SObject.drawInMenu),
-        new[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool) });
-
 #nullable disable
     private static CarryChest instance;
 #nullable enable
@@ -32,7 +25,7 @@ internal sealed class CarryChest : BaseFeature
     private readonly StatusEffectManager statusEffectManager;
 
     /// <summary>Initializes a new instance of the <see cref="CarryChest" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
@@ -41,7 +34,7 @@ internal sealed class CarryChest : BaseFeature
     /// <param name="proxyChestManager">Dependency used for creating virtualized chests.</param>
     /// <param name="statusEffectManager">Dependency used for adding and removing custom buffs.</param>
     public CarryChest(
-        ILogging logging,
+        ILog log,
         ModConfig modConfig,
         ContainerFactory containerFactory,
         Harmony harmony,
@@ -49,7 +42,7 @@ internal sealed class CarryChest : BaseFeature
         IModEvents modEvents,
         ProxyChestManager proxyChestManager,
         StatusEffectManager statusEffectManager)
-        : base(logging, modConfig)
+        : base(log, modConfig)
     {
         CarryChest.instance = this;
         this.modEvents = modEvents;
@@ -71,7 +64,9 @@ internal sealed class CarryChest : BaseFeature
         this.modEvents.GameLoop.OneSecondUpdateTicked += this.OnOneSecondUpdateTicked;
 
         // Patches
-        this.harmony.Patch(AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.placementAction)), postfix: new HarmonyMethod(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
+        this.harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.placementAction)),
+            postfix: new HarmonyMethod(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
     }
 
     /// <inheritdoc />
@@ -82,16 +77,26 @@ internal sealed class CarryChest : BaseFeature
         this.modEvents.GameLoop.OneSecondUpdateTicked -= this.OnOneSecondUpdateTicked;
 
         // Patches
-        this.harmony.Unpatch(AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.placementAction)), AccessTools.DeclaredMethod(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
+        this.harmony.Unpatch(
+            AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.placementAction)),
+            AccessTools.DeclaredMethod(typeof(CarryChest), nameof(CarryChest.Object_placementAction_postfix)));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void Object_placementAction_postfix(SObject __instance, GameLocation location, int x, int y, ref bool __result)
+    private static void Object_placementAction_postfix(
+        SObject __instance,
+        GameLocation location,
+        int x,
+        int y,
+        ref bool __result)
     {
         if (!__result
             || !CarryChest.instance.proxyChestManager.TryGetProxy(__instance, out var chest)
-            || !location.Objects.TryGetValue(new Vector2((int)(x / (float)Game1.tileSize), (int)(y / (float)Game1.tileSize)), out var obj)
+            || !location.Objects.TryGetValue(
+                new Vector2((int)(x / (float)Game1.tileSize), (int)(y / (float)Game1.tileSize)),
+                out var obj)
             || obj is not Chest placedChest)
         {
             return;
@@ -131,7 +136,8 @@ internal sealed class CarryChest : BaseFeature
             || Game1.player.CurrentItem is Tool
             || !e.Button.IsUseToolButton()
             || this.inputHelper.IsSuppressed(e.Button)
-            || (Game1.player.currentLocation is MineShaft mineShaft && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase)))
+            || (Game1.player.currentLocation is MineShaft mineShaft
+                && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase)))
         {
             return;
         }
@@ -147,7 +153,8 @@ internal sealed class CarryChest : BaseFeature
         }
 
         // Check carrying limits
-        if (this.ModConfig.CarryChestLimit > 0 && Game1.player.Items.Count(this.proxyChestManager.IsProxy) >= this.ModConfig.CarryChestLimit)
+        if (this.ModConfig.CarryChestLimit > 0
+            && Game1.player.Items.Count(this.proxyChestManager.IsProxy) >= this.ModConfig.CarryChestLimit)
         {
             Game1.showRedMessage(I18n.Alert_CarryChestLimit_HitLimit());
             this.inputHelper.Suppress(e.Button);
@@ -168,6 +175,13 @@ internal sealed class CarryChest : BaseFeature
         }
 
         // Remove chest from world
+        this.Log.Trace(
+            "{0}: Grabbed chest from {1} at ({2}, {3})",
+            this.Id,
+            Game1.player.currentLocation.Name,
+            pos.X,
+            pos.Y);
+
         request.Confirm();
         Game1.currentLocation.Objects.Remove(pos);
         Game1.playSound("pickUpItem");

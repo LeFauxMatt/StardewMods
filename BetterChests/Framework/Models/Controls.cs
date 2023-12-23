@@ -12,7 +12,9 @@ internal sealed class Controls
     public KeybindList Configure { get; set; } = new(SButton.End);
 
     /// <summary>Gets or sets controls to find a chest.</summary>
-    public KeybindList FindChest { get; set; } = new(new Keybind(SButton.LeftControl, SButton.F), new Keybind(SButton.RightControl, SButton.F));
+    public KeybindList FindChest { get; set; } = new(
+        new Keybind(SButton.LeftControl, SButton.F),
+        new Keybind(SButton.RightControl, SButton.F));
 
     /// <summary>Gets or sets controls to lock an item slot.</summary>
     public KeybindList LockSlot { get; set; } = new(SButton.LeftAlt);
@@ -24,13 +26,16 @@ internal sealed class Controls
     public KeybindList OpenCrafting { get; set; } = new(SButton.K);
 
     /// <summary>Gets or sets controls to open the first found chest.</summary>
-    public KeybindList OpenFoundChest { get; set; } = new(new Keybind(SButton.LeftShift, SButton.Enter), new Keybind(SButton.RightShift, SButton.Enter));
+    public KeybindList OpenFoundChest { get; set; } = new(
+        new Keybind(SButton.LeftShift, SButton.Enter),
+        new Keybind(SButton.RightShift, SButton.Enter));
 
     /// <summary>Gets or sets controls to open the next found chest.</summary>
     public KeybindList OpenNextChest { get; set; } = new(new Keybind(SButton.LeftControl, SButton.Tab));
 
     /// <summary>Gets or sets controls to open the previous found chest.</summary>
-    public KeybindList OpenPreviousChest { get; set; } = new(new Keybind(SButton.LeftControl, SButton.LeftShift, SButton.Tab));
+    public KeybindList OpenPreviousChest { get; set; } =
+        new(new Keybind(SButton.LeftControl, SButton.LeftShift, SButton.Tab));
 
     /// <summary>Gets or sets controls to switch to previous tab.</summary>
     public KeybindList PreviousTab { get; set; } = new(SButton.DPadLeft);
@@ -48,11 +53,17 @@ internal sealed class Controls
     public KeybindList StashItems { get; set; } = new(SButton.Z);
 
     /// <summary>Gets or sets controls to toggle item collection on or off.</summary>
-    public KeybindList ToggleCollectItems { get; set; } = new(new Keybind(SButton.LeftControl, SButton.Space), new Keybind(SButton.RightControl, SButton.Space));
+    public KeybindList ToggleCollectItems { get; set; } = new(
+        new Keybind(SButton.LeftControl, SButton.Space),
+        new Keybind(SButton.RightControl, SButton.Space));
 
     /// <summary>Gets or sets controls to toggle chest info on or off.</summary>
-    public KeybindList ToggleInfo { get; set; } = new(new Keybind(SButton.LeftShift, SButton.OemQuestion), new Keybind(SButton.RightShift, SButton.OemQuestion));
+    public KeybindList ToggleInfo { get; set; } = new(
+        new Keybind(SButton.LeftShift, SButton.OemQuestion),
+        new Keybind(SButton.RightShift, SButton.OemQuestion));
 
     /// <summary>Gets or sets controls to toggle search bar on or off.</summary>
-    public KeybindList ToggleSearch { get; set; } = new(new Keybind(SButton.LeftControl, SButton.F), new Keybind(SButton.RightControl, SButton.F));
+    public KeybindList ToggleSearch { get; set; } = new(
+        new Keybind(SButton.LeftControl, SButton.F),
+        new Keybind(SButton.RightControl, SButton.F));
 }

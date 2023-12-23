@@ -18,7 +18,8 @@ internal sealed class FarmerContainer : BaseContainer<Farmer>
         this.Source = new WeakReference<Farmer>(farmer);
 
     /// <summary>Gets the farmer container of the storage.</summary>
-    public Farmer Farmer => this.Source.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(FarmerContainer));
+    public Farmer Farmer =>
+        this.Source.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(FarmerContainer));
 
     /// <inheritdoc />
     public override IInventory Items => this.Farmer.Items;

@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
 
 /// <summary>Craft using items from placed chests and chests in the farmer's inventory.</summary>
@@ -16,13 +16,20 @@ internal sealed class CraftFromChest : BaseFeature
     private readonly ToolbarIconsIntegration toolbarIconsIntegration;
 
     /// <summary>Initializes a new instance of the <see cref="CraftFromChest" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
-    public CraftFromChest(ILogging logging, ModConfig modConfig, ContainerFactory containerFactory, IInputHelper inputHelper, IModEvents modEvents, ToolbarIconsIntegration toolbarIconsIntegration)
-        : base(logging, modConfig)
+    /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
+    public CraftFromChest(
+        ILog log,
+        ModConfig modConfig,
+        ContainerFactory containerFactory,
+        IInputHelper inputHelper,
+        IModEvents modEvents,
+        ToolbarIconsIntegration toolbarIconsIntegration)
+        : base(log, modConfig)
     {
         this.containerFactory = containerFactory;
         this.inputHelper = inputHelper;
@@ -45,7 +52,11 @@ internal sealed class CraftFromChest : BaseFeature
             return;
         }
 
-        this.toolbarIconsIntegration.Api.AddToolbarIcon(this.Id, AssetHandler.IconTexturePath, new Rectangle(32, 0, 16, 16), I18n.Button_CraftFromChest_Name());
+        this.toolbarIconsIntegration.Api.AddToolbarIcon(
+            this.Id,
+            AssetHandler.IconTexturePath,
+            new Rectangle(32, 0, 16, 16),
+            I18n.Button_CraftFromChest_Name());
 
         this.toolbarIconsIntegration.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
     }
@@ -74,7 +85,7 @@ internal sealed class CraftFromChest : BaseFeature
         }
 
         this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.OpenCrafting);
-        Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
+        this.Log.Alert(I18n.Alert_CraftFromChest_NoEligible());
 
         // Open crafting page
     }
@@ -86,7 +97,7 @@ internal sealed class CraftFromChest : BaseFeature
             return;
         }
 
-        Game1.showRedMessage(I18n.Alert_CraftFromChest_NoEligible());
+        this.Log.Alert(I18n.Alert_CraftFromChest_NoEligible());
 
         // Open crafting page
     }

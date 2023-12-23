@@ -1,11 +1,10 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
-using System.Globalization;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Automatically organizes items between chests during sleep.</summary>
 internal sealed class AutoOrganize : BaseFeature
@@ -14,12 +13,12 @@ internal sealed class AutoOrganize : BaseFeature
     private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="AutoOrganize" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
-    public AutoOrganize(ILogging logging, ModConfig modConfig, IModEvents modEvents, ContainerFactory containerFactory)
-        : base(logging, modConfig)
+    public AutoOrganize(ILog log, ModConfig modConfig, IModEvents modEvents, ContainerFactory containerFactory)
+        : base(log, modConfig)
     {
         this.modEvents = modEvents;
         this.containerFactory = containerFactory;
@@ -68,34 +67,35 @@ internal sealed class AutoOrganize : BaseFeature
         }
     }
 
-    private void OrganizeFrom(IContainer containerFrom, List<IContainer> containersTo)
-    {
-        for (var index = containerFrom.Items.Count - 1; index >= 0; --index)
-        {
-            var item = containerFrom.Items[index];
-            if (item is null)
+    private void OrganizeFrom(IContainer containerFrom, List<IContainer> containersTo) =>
+        containerFrom.ForEachItem(
+            item =>
             {
-                return;
-            }
-
-            var stack = item.Stack;
-            foreach (var toStorage in containersTo)
-            {
-                if (!containerFrom.Transfer(item, toStorage, out var remaining))
+                var stack = item.Stack;
+                foreach (var toStorage in containersTo)
                 {
-                    continue;
+                    if (!containerFrom.Transfer(item, toStorage, out var remaining))
+                    {
+                        continue;
+                    }
+
+                    var amount = stack - (remaining?.Stack ?? 0);
+                    this.Log.Trace(
+                        "{0}: Organized {1} ({2}) from {3} to {4}",
+                        this.Id,
+                        item.Name,
+                        amount,
+                        containerFrom,
+                        toStorage);
+
+                    if (remaining is null)
+                    {
+                        return true;
+                    }
+
+                    stack = remaining.Stack;
                 }
 
-                var amount = stack - (remaining?.Stack ?? 0);
-                this.Logging.Trace("AutoOrganize: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}", item.Name, amount.ToString(CultureInfo.InvariantCulture), containerFrom, toStorage);
-
-                if (remaining is null)
-                {
-                    return;
-                }
-
-                stack = remaining.Stack;
-            }
-        }
-    }
+                return true;
+            });
 }

@@ -34,13 +34,22 @@ internal sealed class SearchBar : IClickableMenu
         this.searchArea = new ClickableComponent(Rectangle.Empty, string.Empty)
         {
             visible = true,
-            bounds = new Rectangle(this.searchField.X, this.searchField.Y, this.searchField.Width, this.searchField.Height),
+            bounds = new Rectangle(
+                this.searchField.X,
+                this.searchField.Y,
+                this.searchField.Width,
+                this.searchField.Height),
         };
 
-        this.searchIcon = new ClickableTextureComponent(Rectangle.Empty, Game1.mouseCursors, new Rectangle(80, 0, 13, 13), 2.5f)
-        {
-            bounds = new Rectangle(this.searchField.X + this.searchField.Width - 38, this.searchField.Y + 6, 32, 32),
-        };
+        this.searchIcon =
+            new ClickableTextureComponent(Rectangle.Empty, Game1.mouseCursors, new Rectangle(80, 0, 13, 13), 2.5f)
+            {
+                bounds = new Rectangle(
+                    this.searchField.X + this.searchField.Width - 38,
+                    this.searchField.Y + 6,
+                    32,
+                    32),
+            };
     }
 
     /// <summary>Gets the current search text.</summary>

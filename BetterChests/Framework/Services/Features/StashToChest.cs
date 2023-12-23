@@ -6,7 +6,7 @@ using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewValley.Locations;
 using StardewValley.Menus;
@@ -21,14 +21,20 @@ internal sealed class StashToChest : BaseFeature
     private readonly ToolbarIconsIntegration toolbarIconsIntegration;
 
     /// <summary>Initializes a new instance of the <see cref="StashToChest" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
-    public StashToChest(ILogging logging, ModConfig modConfig, ContainerFactory containerFactory, IInputHelper inputHelper, IModEvents modEvents, ToolbarIconsIntegration toolbarIconsIntegration)
-        : base(logging, modConfig)
+    public StashToChest(
+        ILog log,
+        ModConfig modConfig,
+        ContainerFactory containerFactory,
+        IInputHelper inputHelper,
+        IModEvents modEvents,
+        ToolbarIconsIntegration toolbarIconsIntegration)
+        : base(log, modConfig)
     {
         this.containerFactory = containerFactory;
         this.inputHelper = inputHelper;
@@ -52,7 +58,11 @@ internal sealed class StashToChest : BaseFeature
             return;
         }
 
-        this.toolbarIconsIntegration.Api.AddToolbarIcon(this.Id, AssetHandler.IconTexturePath, new Rectangle(16, 0, 16, 16), I18n.Button_StashToChest_Name());
+        this.toolbarIconsIntegration.Api.AddToolbarIcon(
+            this.Id,
+            AssetHandler.IconTexturePath,
+            new Rectangle(16, 0, 16, 16),
+            I18n.Button_StashToChest_Name());
 
         this.toolbarIconsIntegration.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
     }
@@ -144,7 +154,11 @@ internal sealed class StashToChest : BaseFeature
             return;
         }
 
-        var containerGroups = this.containerFactory.GetAll(Predicate).GroupBy(container => container.Options.StashToChestPriority).ToDictionary(group => group.Key, group => group.ToList());
+        var containerGroups =
+            this
+                .containerFactory.GetAll(Predicate)
+                .GroupBy(container => container.Options.StashToChestPriority)
+                .ToDictionary(group => group.Key, group => group.ToList());
 
         var topPriority = containerGroups.Keys.Max();
         var bottomPriority = containerGroups.Keys.Min();
@@ -170,7 +184,12 @@ internal sealed class StashToChest : BaseFeature
 
                         stashedAny = true;
                         var amount = stack - (remaining?.Stack ?? 0);
-                        this.Logging.Trace("StashToChest: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}", item.Name, amount.ToString(CultureInfo.InvariantCulture), farmerContainer, storage);
+                        this.Log.Trace(
+                            "StashToChest: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}",
+                            item.Name,
+                            amount.ToString(CultureInfo.InvariantCulture),
+                            farmerContainer,
+                            storage);
 
                         return true;
                     }
@@ -194,7 +213,10 @@ internal sealed class StashToChest : BaseFeature
             && !(container.Options.StashToChestDisableLocations.Contains("UndergroundMine")
                 && Game1.player.currentLocation is MineShaft mineShaft
                 && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
-            && container.Options.StashToChest.WithinRangeOfPlayer(container.Options.StashToChestDistance, container.Location, container.TileLocation);
+            && container.Options.StashToChest.WithinRangeOfPlayer(
+                container.Options.StashToChestDistance,
+                container.Location,
+                container.TileLocation);
     }
 
     private void StashIntoContainer(IContainer container)
@@ -214,7 +236,12 @@ internal sealed class StashToChest : BaseFeature
                 }
 
                 var amount = stack - (remaining?.Stack ?? 0);
-                this.Logging.Trace("StashToChest: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}", item.Name, amount.ToString(CultureInfo.InvariantCulture), farmerContainer, container);
+                this.Log.Trace(
+                    "StashToChest: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}",
+                    item.Name,
+                    amount.ToString(CultureInfo.InvariantCulture),
+                    farmerContainer,
+                    container);
 
                 return true;
             });

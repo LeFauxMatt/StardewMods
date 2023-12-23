@@ -91,7 +91,10 @@ internal class ChildStorage : IStorage
     /// <inheritdoc />
     public int CraftFromChestDistance
     {
-        get => this.child.CraftFromChestDistance == 0 ? this.parent.CraftFromChestDistance : this.child.CraftFromChestDistance;
+        get =>
+            this.child.CraftFromChestDistance == 0
+                ? this.parent.CraftFromChestDistance
+                : this.child.CraftFromChestDistance;
         set => this.child.CraftFromChestDistance = value;
     }
 
@@ -161,14 +164,20 @@ internal class ChildStorage : IStorage
     /// <inheritdoc />
     public GroupBy OrganizeChestGroupBy
     {
-        get => this.child.OrganizeChestGroupBy == GroupBy.Default ? this.parent.OrganizeChestGroupBy : this.child.OrganizeChestGroupBy;
+        get =>
+            this.child.OrganizeChestGroupBy == GroupBy.Default
+                ? this.parent.OrganizeChestGroupBy
+                : this.child.OrganizeChestGroupBy;
         set => this.child.OrganizeChestGroupBy = value;
     }
 
     /// <inheritdoc />
     public SortBy OrganizeChestSortBy
     {
-        get => this.child.OrganizeChestSortBy == SortBy.Default ? this.parent.OrganizeChestSortBy : this.child.OrganizeChestSortBy;
+        get =>
+            this.child.OrganizeChestSortBy == SortBy.Default
+                ? this.parent.OrganizeChestSortBy
+                : this.child.OrganizeChestSortBy;
         set => this.child.OrganizeChestSortBy = value;
     }
 
@@ -217,14 +226,16 @@ internal class ChildStorage : IStorage
     /// <inheritdoc />
     public int StashToChestDistance
     {
-        get => this.child.StashToChestDistance == 0 ? this.parent.StashToChestDistance : this.child.StashToChestDistance;
+        get =>
+            this.child.StashToChestDistance == 0 ? this.parent.StashToChestDistance : this.child.StashToChestDistance;
         set => this.child.StashToChestDistance = value;
     }
 
     /// <inheritdoc />
     public int StashToChestPriority
     {
-        get => this.child.StashToChestPriority == 0 ? this.parent.StashToChestPriority : this.child.StashToChestPriority;
+        get =>
+            this.child.StashToChestPriority == 0 ? this.parent.StashToChestPriority : this.child.StashToChestPriority;
         set => this.child.StashToChestPriority = value;
     }
 
@@ -266,13 +277,23 @@ internal class ChildStorage : IStorage
     {
         var childValue = selector(this.child);
         var parentValue = selector(this.parent);
-        return childValue switch { _ when parentValue == FeatureOption.Disabled => FeatureOption.Disabled, FeatureOption.Default => parentValue, _ => childValue };
+        return childValue switch
+        {
+            _ when parentValue == FeatureOption.Disabled => FeatureOption.Disabled,
+            FeatureOption.Default => parentValue,
+            _ => childValue,
+        };
     }
 
     private FeatureOptionRange GetFeatureOptionRange(Func<IStorage, FeatureOptionRange> selector)
     {
         var childValue = selector(this.child);
         var parentValue = selector(this.parent);
-        return childValue switch { _ when parentValue == FeatureOptionRange.Disabled => FeatureOptionRange.Disabled, FeatureOptionRange.Default => parentValue, _ => childValue };
+        return childValue switch
+        {
+            _ when parentValue == FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
+            FeatureOptionRange.Default => parentValue,
+            _ => childValue,
+        };
     }
 }

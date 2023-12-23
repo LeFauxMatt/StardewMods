@@ -1,7 +1,7 @@
 namespace StardewMods.BetterChests.Framework.Services;
 
 using StardewMods.BetterChests.Framework.Interfaces;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
 /// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IInventoryMenuManager" />
@@ -12,37 +12,38 @@ internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
     private readonly WeakReference<InventoryMenu?> source = new(null);
 
     /// <summary>Initializes a new instance of the <see cref="InventoryMenuManager" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
-    public InventoryMenuManager(ILogging logging)
-        : base(logging) { }
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    public InventoryMenuManager(ILog log)
+        : base(log) { }
 
     /// <summary>Gets or sets the method used to highlight an item in the inventory menu.</summary>
     public InventoryMenu.highlightThisItem OriginalHighlightMethod { get; set; } = InventoryMenu.highlightAllItems;
 
-    /// <summary>Gets or sets the instance of the inventory menu that is being managed.</summary>
-    public InventoryMenu? Source
+    /// <inheritdoc />
+    public InventoryMenu? Menu
     {
         get => this.source.TryGetTarget(out var target) ? target : null;
         set => this.source.SetTarget(value);
     }
 
     /// <inheritdoc />
-    public int Capacity => this.Source?.capacity switch { null => 36, > 70 => 70, _ => this.Source.capacity };
+    public IContainer? Container { get; set; }
 
     /// <inheritdoc />
-    public int Rows => this.Source?.rows ?? 3;
+    public int Capacity => this.Menu?.capacity switch { null => 36, > 70 => 70, _ => this.Menu.capacity };
+
+    /// <inheritdoc />
+    public int Rows => this.Menu?.rows ?? 3;
 
     /// <inheritdoc />
     public int Columns => this.Capacity / this.Rows;
 
     /// <inheritdoc />
-    public IContainer? Context { get; set; }
-
-    /// <inheritdoc />
     public int Scrolled { get; set; }
 
     /// <inheritdoc />
-    public void AddHighlightMethod(InventoryMenu.highlightThisItem highlightMethod) => this.highlightMethods.Add(highlightMethod);
+    public void AddHighlightMethod(InventoryMenu.highlightThisItem highlightMethod) =>
+        this.highlightMethods.Add(highlightMethod);
 
     /// <inheritdoc />
     public void AddOperation(Func<IEnumerable<Item>, IEnumerable<Item>> operation) => this.operations.Add(operation);
@@ -75,5 +76,7 @@ internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
     /// <summary>Highlights an item using the provided highlight methods.</summary>
     /// <param name="item">The item to highlight.</param>
     /// <returns>Returns true if the item is successfully highlighted, false otherwise.</returns>
-    public bool HighlightMethod(Item item) => this.OriginalHighlightMethod(item) && (!this.highlightMethods.Any() || this.highlightMethods.All(highlightMethod => highlightMethod(item)));
+    public bool HighlightMethod(Item item) =>
+        this.OriginalHighlightMethod(item)
+        && (!this.highlightMethods.Any() || this.highlightMethods.All(highlightMethod => highlightMethod(item)));
 }

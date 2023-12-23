@@ -7,7 +7,7 @@ using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Models.Storages;
 using StardewMods.BetterChests.Framework.Services.Features;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Mod config data for Better Chests.</summary>
 internal sealed class ModConfig : IConfigWithLogLevel
@@ -65,19 +65,29 @@ internal sealed class ModConfig : IConfigWithLogLevel
     {
         var sb = new StringBuilder();
         sb.AppendLine(" Main Config".PadLeft(50, '=')[^50..]);
-        sb.AppendLine(CultureInfo.InvariantCulture, $"CarryChestLimit: {this.CarryChestLimit.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine(
+            CultureInfo.InvariantCulture,
+            $"CarryChestLimit: {this.CarryChestLimit.ToString(CultureInfo.InvariantCulture)}");
 
-        sb.AppendLine(CultureInfo.InvariantCulture, $"CarryChestSlowAmount: {this.CarryChestSlowLimit.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine(
+            CultureInfo.InvariantCulture,
+            $"CarryChestSlowAmount: {this.CarryChestSlowLimit.ToString(CultureInfo.InvariantCulture)}");
 
         sb.AppendLine(CultureInfo.InvariantCulture, $"CraftFromWorkbench: {this.CraftFromWorkbench.ToStringFast()}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"CraftFromWorkbenchDistance: {this.CraftFromWorkbenchDistance.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine(
+            CultureInfo.InvariantCulture,
+            $"CraftFromWorkbenchDistance: {this.CraftFromWorkbenchDistance.ToString(CultureInfo.InvariantCulture)}");
 
         sb.AppendLine(CultureInfo.InvariantCulture, $"CustomColorPickerArea: {this.ColorPickerArea.ToStringFast()}");
 
-        sb.AppendLine(CultureInfo.InvariantCulture, $"SearchTagSymbol: {this.SearchTagSymbol.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine(
+            CultureInfo.InvariantCulture,
+            $"SearchTagSymbol: {this.SearchTagSymbol.ToString(CultureInfo.InvariantCulture)}");
 
         sb.AppendLine(CultureInfo.InvariantCulture, $"SlotLockColor: {this.SlotLockColor}");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"SlotLockHold: {this.SlotLockHold.ToString(CultureInfo.InvariantCulture)}");
+        sb.AppendLine(
+            CultureInfo.InvariantCulture,
+            $"SlotLockHold: {this.SlotLockHold.ToString(CultureInfo.InvariantCulture)}");
 
         sb.AppendLine(" Control Scheme".PadLeft(50, '=')[^50..]);
         sb.Append(this.Controls);

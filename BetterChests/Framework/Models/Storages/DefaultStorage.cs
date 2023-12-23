@@ -58,7 +58,10 @@ internal sealed class DefaultStorage : IStorage
     public FeatureOption InventoryTabs { get; set; } = FeatureOption.Enabled;
 
     /// <inheritdoc />
-    public HashSet<string> InventoryTabList { get; set; } = ["Clothing", "Cooking", "Crops", "Equipment", "Fishing", "Materials", "Misc", "Seeds"];
+    public HashSet<string> InventoryTabList { get; set; } =
+    [
+        "Clothing", "Cooking", "Crops", "Equipment", "Fishing", "Materials", "Misc", "Seeds",
+    ];
 
     /// <inheritdoc />
     public FeatureOption LabelChest { get; set; } = FeatureOption.Enabled;

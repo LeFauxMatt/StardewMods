@@ -22,13 +22,19 @@ internal sealed class BuildingContainer : ChestContainer
         this.building = new WeakReference<Building>(building);
 
     /// <summary>Gets the building container of the storage.</summary>
-    public Building Building => this.building.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(BuildingContainer));
+    public Building Building =>
+        this.building.TryGetTarget(out var target)
+            ? target
+            : throw new ObjectDisposedException(nameof(BuildingContainer));
 
     /// <inheritdoc />
     public override GameLocation Location => this.Building.GetParentLocation();
 
     /// <inheritdoc />
-    public override Vector2 TileLocation => new(this.Building.tileX.Value + (this.Building.tilesWide.Value / 2f), this.Building.tileY.Value + (this.Building.tilesHigh.Value / 2f));
+    public override Vector2 TileLocation =>
+        new(
+            this.Building.tileX.Value + (this.Building.tilesWide.Value / 2f),
+            this.Building.tileY.Value + (this.Building.tilesHigh.Value / 2f));
 
     /// <inheritdoc />
     public override ModDataDictionary ModData => this.Building.modData;

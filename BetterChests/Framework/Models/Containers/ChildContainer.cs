@@ -21,7 +21,8 @@ internal class ChildContainer : IContainer
     }
 
     /// <summary>Gets the top-most parent storage.</summary>
-    public IContainer Parent => this.parent switch { ChildContainer childStorage => childStorage.parent, _ => this.parent };
+    public IContainer Parent =>
+        this.parent switch { ChildContainer childStorage => childStorage.parent, _ => this.parent };
 
     /// <summary>Gets the bottom-most child storage.</summary>
     public IContainer Child => this.child switch { ChildContainer childStorage => childStorage.Child, _ => this.child };
@@ -46,6 +47,13 @@ internal class ChildContainer : IContainer
 
     /// <inheritdoc />
     public ModDataDictionary ModData => this.child.ModData;
+
+    /// <inheritdoc />
+    public void ForEachItem(Func<Item, bool> action) => this.child.ForEachItem(action);
+
+    /// <inheritdoc />
+    public bool Transfer(Item item, IContainer containerTo, out Item? remaining) =>
+        this.child.Transfer(item, containerTo, out remaining);
 
     /// <inheritdoc />
     public bool MatchesFilter(Item item) => this.child.MatchesFilter(item);

@@ -5,7 +5,7 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.BetterChests.Framework.Models;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
 
 /// <summary>Manages the global inventories and chest/item creation and retrieval operations.</summary>
@@ -22,26 +22,40 @@ internal sealed class ProxyChestManager : BaseService
     private readonly Dictionary<string, Chest> proxyChests = new();
 
     /// <summary>Initializes a new instance of the <see cref="ProxyChestManager" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
-    public ProxyChestManager(ILogging logging, Harmony harmony)
-        : base(logging)
+    public ProxyChestManager(ILog log, Harmony harmony)
+        : base(log)
     {
         // Init
         ProxyChestManager.instance = this;
 
         // Patches
-        harmony.Patch(AccessTools.DeclaredMethod(typeof(Item), nameof(Item.canBeDropped)), postfix: new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Item_canBeDropped_postfix)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Item), nameof(Item.canBeDropped)),
+            postfix: new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Item_canBeDropped_postfix)));
 
-        harmony.Patch(AccessTools.DeclaredMethod(typeof(Item), nameof(Item.canBeTrashed)), postfix: new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Item_canBeTrashed_postfix)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Item), nameof(Item.canBeTrashed)),
+            postfix: new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Item_canBeTrashed_postfix)));
 
-        harmony.Patch(AccessTools.DeclaredMethod(typeof(Item), nameof(Item.canStackWith)), postfix: new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Item_canStackWith_postfix)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Item), nameof(Item.canStackWith)),
+            postfix: new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Item_canStackWith_postfix)));
 
-        harmony.Patch(AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.drawInMenu)), postfix: new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Object_drawInMenu_postfix)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.drawInMenu)),
+            postfix: new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Object_drawInMenu_postfix)));
 
-        harmony.Patch(AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.drawWhenHeld)), new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Object_drawWhenHeld_prefix)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.drawWhenHeld)),
+            new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Object_drawWhenHeld_prefix)));
 
-        harmony.Patch(AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.maximumStackSize)), postfix: new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Object_maximumStackSize_postfix)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.maximumStackSize)),
+            postfix: new HarmonyMethod(
+                typeof(ProxyChestManager),
+                nameof(ProxyChestManager.Object_maximumStackSize_postfix)));
     }
 
     /// <summary>
@@ -56,7 +70,9 @@ internal sealed class ProxyChestManager : BaseService
     /// <returns>true if the creation of the request was successful; otherwise, false.</returns>
     public bool TryCreateRequest(Chest chest, [NotNullWhen(true)] out ProxyChestRequest? request)
     {
-        if (chest.GlobalInventoryId != null && (!Game1.player.team.globalInventories.ContainsKey(chest.GlobalInventoryId) || !chest.GlobalInventoryId.StartsWith(this.Prefix, StringComparison.OrdinalIgnoreCase)))
+        if (chest.GlobalInventoryId != null
+            && (!Game1.player.team.globalInventories.ContainsKey(chest.GlobalInventoryId)
+                || !chest.GlobalInventoryId.StartsWith(this.Prefix, StringComparison.OrdinalIgnoreCase)))
         {
             request = null;
             return false;
@@ -106,7 +122,10 @@ internal sealed class ProxyChestManager : BaseService
     /// <param name="salable">The item to check.</param>
     /// <returns>True if the item is a proxy; otherwise, false.</returns>
     public bool IsProxy(ISalable salable) =>
-        salable is Item item && item.modData.TryGetValue(this.Prefix + ProxyChestManager.GlobalInventoryIdKey, out var id) && Game1.player.team.globalInventories.ContainsKey(id) && this.proxyChests.ContainsKey(id);
+        salable is Item item
+        && item.modData.TryGetValue(this.Prefix + ProxyChestManager.GlobalInventoryIdKey, out var id)
+        && Game1.player.team.globalInventories.ContainsKey(id)
+        && this.proxyChests.ContainsKey(id);
 
     /// <summary>Tries to get the proxy chest from the specified source object.</summary>
     /// <param name="item">The item representing a proxy chest.</param>
@@ -114,7 +133,8 @@ internal sealed class ProxyChestManager : BaseService
     /// <returns>True if the proxy chest exists; otherwise, false.</returns>
     public bool TryGetProxy(Item item, [NotNullWhen(true)] out Chest? chest)
     {
-        if (!item.modData.TryGetValue(this.Prefix + ProxyChestManager.GlobalInventoryIdKey, out var id) || !Game1.player.team.globalInventories.ContainsKey(id))
+        if (!item.modData.TryGetValue(this.Prefix + ProxyChestManager.GlobalInventoryIdKey, out var id)
+            || !Game1.player.team.globalInventories.ContainsKey(id))
         {
             chest = null;
             return false;
@@ -126,7 +146,8 @@ internal sealed class ProxyChestManager : BaseService
         }
 
         var color = Color.Black;
-        if (item.modData.TryGetValue(this.Prefix + ProxyChestManager.ColorKey, out var colorString) && int.TryParse(colorString, out var colorValue))
+        if (item.modData.TryGetValue(this.Prefix + ProxyChestManager.ColorKey, out var colorString)
+            && int.TryParse(colorString, out var colorValue))
         {
             var r = (byte)(colorValue & 0xFF);
             var g = (byte)((colorValue >> 8) & 0xFF);
@@ -155,7 +176,9 @@ internal sealed class ProxyChestManager : BaseService
     /// <returns>True if the proxy chest was successfully restored, false otherwise.</returns>
     public bool TryRestoreProxy(Chest chest)
     {
-        if (chest.GlobalInventoryId == null || !Game1.player.team.globalInventories.ContainsKey(chest.GlobalInventoryId) || !chest.GlobalInventoryId.StartsWith(this.Prefix, StringComparison.OrdinalIgnoreCase))
+        if (chest.GlobalInventoryId == null
+            || !Game1.player.team.globalInventories.ContainsKey(chest.GlobalInventoryId)
+            || !chest.GlobalInventoryId.StartsWith(this.Prefix, StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
@@ -209,7 +232,12 @@ internal sealed class ProxyChestManager : BaseService
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void Object_drawInMenu_postfix(SObject __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, Color color)
+    private static void Object_drawInMenu_postfix(
+        SObject __instance,
+        SpriteBatch spriteBatch,
+        Vector2 location,
+        float scaleSize,
+        Color color)
     {
         if (!ProxyChestManager.instance.TryGetProxy(__instance, out var chest))
         {
@@ -223,7 +251,10 @@ internal sealed class ProxyChestManager : BaseService
             return;
         }
 
-        var position = location + new Vector2(Game1.tileSize - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - (3f * scaleSize), 2f * scaleSize);
+        var position = location
+            + new Vector2(
+                Game1.tileSize - Utility.getWidthOfTinyDigitString(items, 3f * scaleSize) - (3f * scaleSize),
+                2f * scaleSize);
 
         Utility.drawTinyDigits(items, spriteBatch, position, 3f * scaleSize, 1f, color);
     }
@@ -270,7 +301,8 @@ internal sealed class ProxyChestManager : BaseService
     private string GenerateGlobalInventoryId()
     {
         var globalInventoryId = this.Prefix + ProxyChestManager.RandomString();
-        while (Game1.player.team.globalInventories.ContainsKey(globalInventoryId) || Game1.player.team.globalInventoryMutexes.ContainsKey(globalInventoryId))
+        while (Game1.player.team.globalInventories.ContainsKey(globalInventoryId)
+            || Game1.player.team.globalInventoryMutexes.ContainsKey(globalInventoryId))
         {
             globalInventoryId = this.Prefix + ProxyChestManager.RandomString();
         }

@@ -12,10 +12,8 @@ internal sealed class Slider
     private static readonly Range<float> Unit = new(0, 1);
     private readonly Rectangle area;
     private readonly ClickableComponent[] bars;
-
-    private readonly Func<float> getMethod;
-
     private readonly int selected;
+    private readonly Func<float> getMethod;
     private readonly Action<float> setMethod;
     private readonly Func<float, Color>? shadeFunction;
     private readonly Color[]? shades;
@@ -28,7 +26,12 @@ internal sealed class Slider
     /// <param name="setMethod">The setter for the value which the slider controls.</param>
     /// <param name="area">The rectangular area in which the slider control will be displayed.</param>
     /// <param name="steps">The number of steps in the slider control.</param>
-    public Slider(Func<float, Color> shadeFunction, Func<float> getMethod, Action<float> setMethod, Rectangle area, int steps)
+    public Slider(
+        Func<float, Color> shadeFunction,
+        Func<float> getMethod,
+        Action<float> setMethod,
+        Rectangle area,
+        int steps)
         : this(getMethod, setMethod, area, steps)
     {
         this.shadeFunction = shadeFunction;
@@ -61,12 +64,15 @@ internal sealed class Slider
         var height = area.Height / steps;
         for (var step = 0; step < steps; ++step)
         {
-            this.bars[step] = new ClickableComponent(new Rectangle(area.Left, area.Top + (step * height), area.Width, height), string.Empty)
-            {
-                myID = step + 4343,
-                upNeighborID = step > 0 ? step + 4343 - 1 : -1,
-                downNeighborID = step < steps - 1 ? step + 4343 + 1 : -1,
-            };
+            this.bars[step] =
+                new ClickableComponent(
+                    new Rectangle(area.Left, area.Top + (step * height), area.Width, height),
+                    string.Empty)
+                {
+                    myID = step + 4343,
+                    upNeighborID = step > 0 ? step + 4343 - 1 : -1,
+                    downNeighborID = step < steps - 1 ? step + 4343 + 1 : -1,
+                };
         }
 
         // Initialize selected
@@ -129,7 +135,11 @@ internal sealed class Slider
         // Draw thumb
         spriteBatch.Draw(
             Game1.mouseCursors,
-            new Rectangle(this.bars[this.selected].bounds.Left - 8, this.bars[this.selected].bounds.Center.Y - 8, 20, 16),
+            new Rectangle(
+                this.bars[this.selected].bounds.Left - 8,
+                this.bars[this.selected].bounds.Center.Y - 8,
+                20,
+                16),
             new Rectangle(412, 495, 5, 4),
             Color.White,
             MathHelper.PiOver2,

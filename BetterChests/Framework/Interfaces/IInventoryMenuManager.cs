@@ -5,6 +5,12 @@ using StardewValley.Menus;
 /// <summary>Manages the inventory menu by adding, removing, and filtering item filters.</summary>
 internal interface IInventoryMenuManager
 {
+    /// <summary>Gets the instance of the inventory menu that is being managed.</summary>
+    public InventoryMenu? Menu { get; }
+
+    /// <summary>Gets the container associated with the inventory menu.</summary>
+    public IContainer? Container { get; }
+
     /// <summary>Gets the capacity of the inventory menu.</summary>
     public int Capacity { get; }
 
@@ -13,9 +19,6 @@ internal interface IInventoryMenuManager
 
     /// <summary>Gets the number of rows of the inventory menu.</summary>
     public int Rows { get; }
-
-    /// <summary>Gets the container associated with the inventory menu.</summary>
-    public IContainer? Context { get; }
 
     /// <summary>Gets or sets the number of rows that the inventory menu will be scrolled by.</summary>
     public int Scrolled { get; set; }

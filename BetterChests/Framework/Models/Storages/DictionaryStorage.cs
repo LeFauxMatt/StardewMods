@@ -282,7 +282,9 @@ internal abstract class DictionaryStorage : IStorage
         }
 
         // Save to cache
-        var newValue = FeatureOptionExtensions.TryParse(value, out var featureOption) ? featureOption : FeatureOption.Default;
+        var newValue = FeatureOptionExtensions.TryParse(value, out var featureOption)
+            ? featureOption
+            : FeatureOption.Default;
 
         this.cachedFeatureOption[key] = new CachedValue<FeatureOption>(value, newValue);
         return newValue;
@@ -303,7 +305,9 @@ internal abstract class DictionaryStorage : IStorage
         }
 
         // Save to cache
-        var newValue = FeatureOptionRangeExtensions.TryParse(value, out var featureOptionRange) ? featureOptionRange : FeatureOptionRange.Default;
+        var newValue = FeatureOptionRangeExtensions.TryParse(value, out var featureOptionRange)
+            ? featureOptionRange
+            : FeatureOptionRange.Default;
 
         this.cachedFeatureOptionRange[key] = new CachedValue<FeatureOptionRange>(value, newValue);
         return newValue;

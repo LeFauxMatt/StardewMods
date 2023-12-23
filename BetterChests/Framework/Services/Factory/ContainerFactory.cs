@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.Storages;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Buildings;
 using StardewValley.GameData.BigCraftables;
 using StardewValley.Objects;
@@ -19,12 +19,16 @@ internal sealed class ContainerFactory : BaseService
     private readonly Dictionary<string, IStorage> storageTypes = new();
 
     /// <summary>Initializes a new instance of the <see cref="ContainerFactory" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="config">Dependency used for accessing config data.</param>
     /// <param name="itemMatchers">Dependency used for getting an ItemMatcher.</param>
     /// <param name="proxyChestManager">Dependency used for creating virtualized chests.</param>
-    public ContainerFactory(ILogging logging, ModConfig config, ItemMatcherFactory itemMatchers, ProxyChestManager proxyChestManager)
-        : base(logging)
+    public ContainerFactory(
+        ILog log,
+        ModConfig config,
+        ItemMatcherFactory itemMatchers,
+        ProxyChestManager proxyChestManager)
+        : base(log)
     {
         this.config = config;
         this.itemMatchers = itemMatchers;
@@ -62,7 +66,9 @@ internal sealed class ContainerFactory : BaseService
     /// <param name="parentContainer">The container where the container items will be retrieved.</param>
     /// <param name="predicate">The predicate to filter the containers.</param>
     /// <returns>An enumerable collection of containers that match the predicate.</returns>
-    public IEnumerable<IContainer> GetAllFromContainer(IContainer parentContainer, Func<IContainer, bool>? predicate = default)
+    public IEnumerable<IContainer> GetAllFromContainer(
+        IContainer parentContainer,
+        Func<IContainer, bool>? predicate = default)
     {
         foreach (var item in parentContainer.Items)
         {
@@ -83,7 +89,9 @@ internal sealed class ContainerFactory : BaseService
     /// <param name="location">The game location where the container items will be retrieved.</param>
     /// <param name="predicate">The predicate to filter the containers.</param>
     /// <returns>An enumerable collection of containers that match the predicate.</returns>
-    public IEnumerable<IContainer> GetAllFromLocation(GameLocation location, Func<IContainer, bool>? predicate = default)
+    public IEnumerable<IContainer> GetAllFromLocation(
+        GameLocation location,
+        Func<IContainer, bool>? predicate = default)
     {
         // Search for containers from placed objects
         foreach (var obj in location.Objects.Values)
@@ -214,7 +222,9 @@ internal sealed class ContainerFactory : BaseService
         var itemMatcher = this.itemMatchers.GetDefault();
         container = item switch
         {
-            Chest => new ChestContainer(itemMatcher, storageType, chest), SObject obj => new ObjectContainer(itemMatcher, storageType, obj, chest), _ => new ChestContainer(itemMatcher, storageType, chest),
+            Chest => new ChestContainer(itemMatcher, storageType, chest),
+            SObject obj => new ObjectContainer(itemMatcher, storageType, obj, chest),
+            _ => new ChestContainer(itemMatcher, storageType, chest),
         };
 
         this.cachedContainers.AddOrUpdate(item, container);
@@ -237,7 +247,10 @@ internal sealed class ContainerFactory : BaseService
         return true;
     }
 
-    private IEnumerable<IContainer> GetAllFromPlayers(ISet<IContainer> foundContainers, Queue<IContainer> containerQueue, Func<IContainer, bool>? predicate = default)
+    private IEnumerable<IContainer> GetAllFromPlayers(
+        ISet<IContainer> foundContainers,
+        Queue<IContainer> containerQueue,
+        Func<IContainer, bool>? predicate = default)
     {
         foreach (var farmer in Game1.getAllFarmers())
         {
@@ -254,7 +267,10 @@ internal sealed class ContainerFactory : BaseService
         }
     }
 
-    private IEnumerable<IContainer> GetAllFromLocations(ISet<IContainer> foundContainers, Queue<IContainer> containerQueue, Func<IContainer, bool>? predicate = default)
+    private IEnumerable<IContainer> GetAllFromLocations(
+        ISet<IContainer> foundContainers,
+        Queue<IContainer> containerQueue,
+        Func<IContainer, bool>? predicate = default)
     {
         var foundLocations = new HashSet<GameLocation>();
         var locationQueue = new Queue<GameLocation>();
@@ -292,7 +308,10 @@ internal sealed class ContainerFactory : BaseService
         }
     }
 
-    private IEnumerable<IContainer> GetAllFromContainers(ISet<IContainer> foundContainers, Queue<IContainer> containerQueue, Func<IContainer, bool>? predicate = default)
+    private IEnumerable<IContainer> GetAllFromContainers(
+        ISet<IContainer> foundContainers,
+        Queue<IContainer> containerQueue,
+        Func<IContainer, bool>? predicate = default)
     {
         while (containerQueue.TryDequeue(out var container))
         {

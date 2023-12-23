@@ -501,4 +501,3 @@
 //         this.selection.Any() ? items.OrderBy(item => this.selection.MatchesFilter(item) ? 0 : 1) : items;
 // }
 
-

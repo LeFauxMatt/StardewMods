@@ -7,13 +7,16 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
 /// <summary>Locks items in inventory so they cannot be stashed.</summary>
 internal sealed class SlotLock : BaseFeature
 {
-    private static readonly MethodBase InventoryMenuDraw = AccessTools.Method(typeof(InventoryMenu), nameof(InventoryMenu.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) });
+    private static readonly MethodBase InventoryMenuDraw = AccessTools.Method(
+        typeof(InventoryMenu),
+        nameof(InventoryMenu.draw),
+        new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) });
 
 #nullable disable
     private static SlotLock instance;
@@ -24,13 +27,13 @@ internal sealed class SlotLock : BaseFeature
     private readonly IInputHelper input;
 
     /// <summary>Initializes a new instance of the <see cref="SlotLock" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="events">Dependency used for managing access to events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="input">Dependency used for checking and changing input state.</param>
-    public SlotLock(ILogging logging, ModConfig modConfig, IModEvents events, Harmony harmony, IInputHelper input)
-        : base(logging, modConfig)
+    public SlotLock(ILog log, ModConfig modConfig, IModEvents events, Harmony harmony, IInputHelper input)
+        : base(log, modConfig)
     {
         SlotLock.instance = this;
         this.events = events;
@@ -49,7 +52,9 @@ internal sealed class SlotLock : BaseFeature
         this.events.Input.ButtonsChanged += this.OnButtonsChanged;
 
         // Harmony
-        this.harmony.Patch(SlotLock.InventoryMenuDraw, transpiler: new HarmonyMethod(typeof(SlotLock), nameof(SlotLock.InventoryMenu_draw_transpiler)));
+        this.harmony.Patch(
+            SlotLock.InventoryMenuDraw,
+            transpiler: new HarmonyMethod(typeof(SlotLock), nameof(SlotLock.InventoryMenu_draw_transpiler)));
     }
 
     /// <inheritdoc />
@@ -60,7 +65,9 @@ internal sealed class SlotLock : BaseFeature
         this.events.Input.ButtonsChanged -= this.OnButtonsChanged;
 
         // Harmony
-        this.harmony.Unpatch(SlotLock.InventoryMenuDraw, AccessTools.Method(typeof(SlotLock), nameof(SlotLock.InventoryMenu_draw_transpiler)));
+        this.harmony.Unpatch(
+            SlotLock.InventoryMenuDraw,
+            AccessTools.Method(typeof(SlotLock), nameof(SlotLock.InventoryMenu_draw_transpiler)));
     }
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
@@ -81,11 +88,15 @@ internal sealed class SlotLock : BaseFeature
     }
 
     private static Color Tint(Color tint, InventoryMenu menu, int index) =>
-        menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot") == true ? Utility.StringToColor(SlotLock.instance.ModConfig.SlotLockColor) ?? tint : tint;
+        menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot") == true
+            ? Utility.StringToColor(SlotLock.instance.ModConfig.SlotLockColor) ?? tint
+            : tint;
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!this.ModConfig.SlotLockHold || e.Button is not SButton.MouseLeft || !this.ModConfig.Controls.LockSlot.IsDown())
+        if (!this.ModConfig.SlotLockHold
+            || e.Button is not SButton.MouseLeft
+            || !this.ModConfig.Controls.LockSlot.IsDown())
         {
             return;
         }

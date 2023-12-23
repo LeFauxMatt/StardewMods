@@ -8,8 +8,8 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.UI;
-using StardewMods.Common.Interfaces;
 using StardewMods.Common.Models;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
 // TODO: Color copy+paste
@@ -27,7 +27,6 @@ internal sealed class HslColorPicker : BaseFeature
     private readonly PerScreen<HslColor> hslColor = new(() => default(HslColor));
     private readonly PerScreen<Slider?> hue = new();
     private readonly IInputHelper inputHelper;
-
     private readonly PerScreen<bool> isActive = new();
     private readonly ItemGrabMenuManager itemGrabMenuManager;
     private readonly PerScreen<Slider?> lightness = new();
@@ -37,22 +36,29 @@ internal sealed class HslColorPicker : BaseFeature
     private readonly PerScreen<int> y = new();
 
     /// <summary>Initializes a new instance of the <see cref="HslColorPicker" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
-    public HslColorPicker(ILogging logging, ModConfig modConfig, IGameContentHelper gameContentHelper, Harmony harmony, IInputHelper inputHelper, ItemGrabMenuManager itemGrabMenuManager, IModEvents modEvents)
-        : base(logging, modConfig)
+    public HslColorPicker(
+        ILog log,
+        ModConfig modConfig,
+        IGameContentHelper gameContentHelper,
+        Harmony harmony,
+        IInputHelper inputHelper,
+        ItemGrabMenuManager itemGrabMenuManager,
+        IModEvents modEvents)
+        : base(log, modConfig)
     {
         HslColorPicker.instance = this;
         this.gameContentHelper = gameContentHelper;
-        this.modEvents = modEvents;
         this.harmony = harmony;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
+        this.modEvents = modEvents;
     }
 
     /// <inheritdoc />
@@ -73,19 +79,27 @@ internal sealed class HslColorPicker : BaseFeature
         this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
 
         // Patches
-        this.harmony.Patch(AccessTools.DeclaredMethod(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.draw)), new HarmonyMethod(typeof(HslColorPicker), nameof(HslColorPicker.DiscreteColorPicker_draw_prefix)));
+        this.harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.draw)),
+            new HarmonyMethod(typeof(HslColorPicker), nameof(HslColorPicker.DiscreteColorPicker_draw_prefix)));
 
         this.harmony.Patch(
             AccessTools.DeclaredMethod(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getColorFromSelection)),
-            postfix: new HarmonyMethod(typeof(HslColorPicker), nameof(HslColorPicker.DiscreteColorPicker_getColorFromSelection_postfix)));
+            postfix: new HarmonyMethod(
+                typeof(HslColorPicker),
+                nameof(HslColorPicker.DiscreteColorPicker_getColorFromSelection_postfix)));
 
         this.harmony.Patch(
             AccessTools.DeclaredMethod(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getSelectionFromColor)),
-            postfix: new HarmonyMethod(typeof(HslColorPicker), nameof(HslColorPicker.DiscreteColorPicker_getSelectionFromColor_postfix)));
+            postfix: new HarmonyMethod(
+                typeof(HslColorPicker),
+                nameof(HslColorPicker.DiscreteColorPicker_getSelectionFromColor_postfix)));
 
         this.harmony.Patch(
             AccessTools.DeclaredMethod(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.receiveLeftClick)),
-            new HarmonyMethod(typeof(HslColorPicker), nameof(HslColorPicker.DiscreteColorPicker_receiveLeftClick_prefix)));
+            new HarmonyMethod(
+                typeof(HslColorPicker),
+                nameof(HslColorPicker.DiscreteColorPicker_receiveLeftClick_prefix)));
     }
 
     /// <inheritdoc />
@@ -103,15 +117,21 @@ internal sealed class HslColorPicker : BaseFeature
 
         this.harmony.Unpatch(
             AccessTools.DeclaredMethod(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getColorFromSelection)),
-            AccessTools.DeclaredMethod(typeof(HslColorPicker), nameof(HslColorPicker.DiscreteColorPicker_getColorFromSelection_postfix)));
+            AccessTools.DeclaredMethod(
+                typeof(HslColorPicker),
+                nameof(HslColorPicker.DiscreteColorPicker_getColorFromSelection_postfix)));
 
         this.harmony.Unpatch(
             AccessTools.DeclaredMethod(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.getSelectionFromColor)),
-            AccessTools.DeclaredMethod(typeof(HslColorPicker), nameof(HslColorPicker.DiscreteColorPicker_getSelectionFromColor_postfix)));
+            AccessTools.DeclaredMethod(
+                typeof(HslColorPicker),
+                nameof(HslColorPicker.DiscreteColorPicker_getSelectionFromColor_postfix)));
 
         this.harmony.Unpatch(
             AccessTools.DeclaredMethod(typeof(DiscreteColorPicker), nameof(DiscreteColorPicker.receiveLeftClick)),
-            AccessTools.DeclaredMethod(typeof(HslColorPicker), nameof(HslColorPicker.DiscreteColorPicker_receiveLeftClick_prefix)));
+            AccessTools.DeclaredMethod(
+                typeof(HslColorPicker),
+                nameof(HslColorPicker.DiscreteColorPicker_receiveLeftClick_prefix)));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -175,7 +195,9 @@ internal sealed class HslColorPicker : BaseFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!this.isActive.Value || e.Button is not (SButton.MouseLeft or SButton.ControllerA) || this.itemGrabMenuManager.CurrentMenu?.colorPickerToggleButton is null)
+        if (!this.isActive.Value
+            || e.Button is not (SButton.MouseLeft or SButton.ControllerA)
+            || this.itemGrabMenuManager.CurrentMenu?.colorPickerToggleButton is null)
         {
             return;
         }
@@ -193,7 +215,8 @@ internal sealed class HslColorPicker : BaseFeature
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.CurrentMenu is null || e.Context?.Options.HslColorPicker != FeatureOption.Enabled)
+        if (this.itemGrabMenuManager.CurrentMenu is null
+            || this.itemGrabMenuManager.Top.Container?.Options.HslColorPicker != FeatureOption.Enabled)
         {
             this.isActive.Value = false;
             return;
@@ -208,18 +231,38 @@ internal sealed class HslColorPicker : BaseFeature
         this.itemGrabMenuManager.CurrentMenu.discreteColorPickerCC = null;
         this.x.Value = this.ModConfig.ColorPickerArea switch
         {
-            ColorPickerArea.Left => this.itemGrabMenuManager.CurrentMenu.xPositionOnScreen - (2 * Game1.tileSize) - (IClickableMenu.borderWidth / 2),
-            _ => this.itemGrabMenuManager.CurrentMenu.xPositionOnScreen + this.itemGrabMenuManager.CurrentMenu.width + 96 + (IClickableMenu.borderWidth / 0x2),
+            ColorPickerArea.Left => this.itemGrabMenuManager.CurrentMenu.xPositionOnScreen
+                - (2 * Game1.tileSize)
+                - (IClickableMenu.borderWidth / 2),
+            _ => this.itemGrabMenuManager.CurrentMenu.xPositionOnScreen
+                + this.itemGrabMenuManager.CurrentMenu.width
+                + 96
+                + (IClickableMenu.borderWidth / 0x2),
         };
 
         this.y.Value = this.itemGrabMenuManager.CurrentMenu.yPositionOnScreen - 56 + (IClickableMenu.borderWidth / 2);
         var hsl = this.CurrentColor;
 
-        this.hue.Value = new Slider(this.gameContentHelper.Load<Texture2D>(AssetHandler.HslTexturePath), () => hsl.H, value => hsl.H = value, new Rectangle(this.x.Value, this.y.Value + 36, 23, 522), 29);
+        this.hue.Value = new Slider(
+            this.gameContentHelper.Load<Texture2D>(AssetHandler.HslTexturePath),
+            () => hsl.H,
+            value => hsl.H = value,
+            new Rectangle(this.x.Value, this.y.Value + 36, 23, 522),
+            29);
 
-        this.lightness.Value = new Slider(value => new HslColor(hsl.H, hsl.S, value).ToRgbColor(), () => hsl.L, value => hsl.L = value, new Rectangle(this.x.Value + 32, this.y.Value + 36, 23, 256), 16);
+        this.lightness.Value = new Slider(
+            value => new HslColor(hsl.H, hsl.S, value).ToRgbColor(),
+            () => hsl.L,
+            value => hsl.L = value,
+            new Rectangle(this.x.Value + 32, this.y.Value + 36, 23, 256),
+            16);
 
-        this.saturation.Value = new Slider(value => new HslColor(hsl.H, value, Math.Max(0.1f, hsl.L)).ToRgbColor(), () => hsl.S, value => hsl.S = value, new Rectangle(this.x.Value + 32, this.y.Value + 300, 23, 256), 16);
+        this.saturation.Value = new Slider(
+            value => new HslColor(hsl.H, value, Math.Max(0.1f, hsl.L)).ToRgbColor(),
+            () => hsl.S,
+            value => hsl.S = value,
+            new Rectangle(this.x.Value + 32, this.y.Value + 300, 23, 256),
+            16);
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)

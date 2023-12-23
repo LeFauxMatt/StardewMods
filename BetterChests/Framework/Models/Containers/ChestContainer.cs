@@ -19,7 +19,8 @@ internal class ChestContainer : BaseContainer<Chest>
         this.Source = new WeakReference<Chest>(chest);
 
     /// <summary>Gets the chest container of the storage.</summary>
-    public Chest Chest => this.Source.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(ChestContainer));
+    public Chest Chest =>
+        this.Source.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(ChestContainer));
 
     /// <inheritdoc />
     public override IInventory Items => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);

@@ -22,21 +22,44 @@ internal sealed class DropDownList : IClickableMenu
         : base(x, y, 0, 0)
     {
         this.callback = callback;
-        this.localValues = values.ToDictionary(value => value, value => translation.Get($"tag.{value}").Default(value).ToString());
+        this.localValues = values.ToDictionary(
+            value => value,
+            value => translation.Get($"tag.{value}").Default(value).ToString());
 
-        var textBounds = this.localValues.Values.Select(value => Game1.smallFont.MeasureString(value).ToPoint()).ToList();
+        var textBounds =
+            this.localValues.Values.Select(value => Game1.smallFont.MeasureString(value).ToPoint()).ToList();
 
         var textHeight = textBounds.Max(textBound => textBound.Y);
         this.width = textBounds.Max(textBound => textBound.X) + 16;
         this.height = textBounds.Sum(textBound => textBound.Y) + 16;
         this.bounds = new Rectangle(x, y, this.width, this.height);
-        this.values = values.Select((value, index) => new ClickableComponent(new Rectangle(this.bounds.X + 8, this.bounds.Y + 8 + (textHeight * index), this.bounds.Width, textBounds[index].Y), value)).ToList();
+        this.values = values
+            .Select(
+                (value, index) => new ClickableComponent(
+                    new Rectangle(
+                        this.bounds.X + 8,
+                        this.bounds.Y + 8 + (textHeight * index),
+                        this.bounds.Width,
+                        textBounds[index].Y),
+                    value))
+            .ToList();
     }
 
     /// <inheritdoc />
     public override void draw(SpriteBatch b)
     {
-        IClickableMenu.drawTextureBox(b, Game1.mouseCursors, OptionsDropDown.dropDownBGSource, this.bounds.X, this.bounds.Y, this.bounds.Width, this.bounds.Height, Color.White, Game1.pixelZoom, false, 0.97f);
+        IClickableMenu.drawTextureBox(
+            b,
+            Game1.mouseCursors,
+            OptionsDropDown.dropDownBGSource,
+            this.bounds.X,
+            this.bounds.Y,
+            this.bounds.Width,
+            this.bounds.Height,
+            Color.White,
+            Game1.pixelZoom,
+            false,
+            0.97f);
 
         // Draw Values
         var (x, y) = Game1.getMousePosition(true);
@@ -44,10 +67,22 @@ internal sealed class DropDownList : IClickableMenu
         {
             if (value.bounds.Contains(x, y))
             {
-                b.Draw(Game1.staminaRect, new Rectangle(value.bounds.X, value.bounds.Y, this.bounds.Width - 16, value.bounds.Height), new Rectangle(0, 0, 1, 1), Color.Wheat, 0f, Vector2.Zero, SpriteEffects.None, 0.975f);
+                b.Draw(
+                    Game1.staminaRect,
+                    new Rectangle(value.bounds.X, value.bounds.Y, this.bounds.Width - 16, value.bounds.Height),
+                    new Rectangle(0, 0, 1, 1),
+                    Color.Wheat,
+                    0f,
+                    Vector2.Zero,
+                    SpriteEffects.None,
+                    0.975f);
             }
 
-            b.DrawString(Game1.smallFont, this.localValues[value.name], new Vector2(value.bounds.X, value.bounds.Y), Game1.textColor);
+            b.DrawString(
+                Game1.smallFont,
+                this.localValues[value.name],
+                new Vector2(value.bounds.X, value.bounds.Y),
+                Game1.textColor);
         }
     }
 

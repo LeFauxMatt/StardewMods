@@ -8,14 +8,13 @@ using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
 /// <summary>Adds tabs to the <see cref="ItemGrabMenu" /> to filter the displayed items.</summary>
 internal sealed class InventoryTabs : BaseFeature, IItemFilter
 {
     private readonly PerScreen<List<InventoryTab>> cachedTabs = new(() => []);
-    private readonly ContainerFactory containerFactory;
     private readonly PerScreen<int> currentIndex = new(() => -1);
     private readonly IInputHelper inputHelper;
     private readonly InventoryTabFactory inventoryTabFactory;
@@ -26,28 +25,25 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
     private readonly PerScreen<bool> resetCache = new(() => true);
 
     /// <summary>Initializes a new instance of the <see cref="InventoryTabs" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="inventoryTabFactory">Dependency used for managing inventory tabs.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public InventoryTabs(
-        ILogging logging,
+        ILog log,
         ModConfig modConfig,
-        ContainerFactory containerFactory,
         IInputHelper inputHelper,
         InventoryTabFactory inventoryTabFactory,
         ItemGrabMenuManager itemGrabMenuManager,
         IModEvents modEvents)
-        : base(logging, modConfig)
+        : base(log, modConfig)
     {
-        this.modEvents = modEvents;
         this.inputHelper = inputHelper;
-        this.containerFactory = containerFactory;
         this.inventoryTabFactory = inventoryTabFactory;
         this.itemGrabMenuManager = itemGrabMenuManager;
+        this.modEvents = modEvents;
     }
 
     /// <inheritdoc />
@@ -55,7 +51,11 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
 
     /// <inheritdoc />
     public bool MatchesFilter(Item item) =>
-        this.resetCache.Value || !this.cachedTabs.Value.Any() || this.currentIndex.Value < 0 || this.currentIndex.Value >= this.cachedTabs.Value.Count || this.cachedTabs.Value[this.newIndex.Value].MatchesFilter(item);
+        this.resetCache.Value
+        || !this.cachedTabs.Value.Any()
+        || this.currentIndex.Value < 0
+        || this.currentIndex.Value >= this.cachedTabs.Value.Count
+        || this.cachedTabs.Value[this.newIndex.Value].MatchesFilter(item);
 
     /// <inheritdoc />
     protected override void Activate()
@@ -91,7 +91,10 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!this.isActive.Value || this.resetCache.Value || !this.cachedTabs.Value.Any() || e.Button is not (SButton.MouseLeft or SButton.MouseRight or SButton.ControllerA))
+        if (!this.isActive.Value
+            || this.resetCache.Value
+            || !this.cachedTabs.Value.Any()
+            || e.Button is not (SButton.MouseLeft or SButton.MouseRight or SButton.ControllerA))
         {
             return;
         }
@@ -201,6 +204,10 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
             if (this.newIndex.Value != -1)
             {
                 this.cachedTabs.Value[this.newIndex.Value].Select();
+                this.Log.Trace(
+                    "{0}: Set tab to {1}",
+                    this.Id,
+                    this.cachedTabs.Value[this.newIndex.Value].Component.hoverText);
             }
 
             this.currentIndex.Value = this.newIndex.Value;
@@ -222,15 +229,15 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (e.Context?.Options.InventoryTabs != FeatureOption.Enabled)
+        if (this.itemGrabMenuManager.Top.Container?.Options.InventoryTabs != FeatureOption.Enabled)
         {
             this.isActive.Value = false;
             return;
         }
 
         this.isActive.Value = true;
-        this.itemGrabMenuManager.TopMenu.AddHighlightMethod(this.MatchesFilter);
-        this.itemGrabMenuManager.TopMenu.AddOperation(this.FilterByTab);
+        this.itemGrabMenuManager.Top.AddHighlightMethod(this.MatchesFilter);
+        this.itemGrabMenuManager.Top.AddOperation(this.FilterByTab);
         this.resetCache.Value = true;
     }
 
@@ -238,15 +245,15 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
     {
         this.cachedTabs.Value.Clear();
         if (this.itemGrabMenuManager.CurrentMenu is null
-            || this.itemGrabMenuManager.CurrentContainer is null
-            || this.itemGrabMenuManager.CurrentContainer.Options.InventoryTabs != FeatureOption.Enabled
-            || !this.itemGrabMenuManager.CurrentContainer.Options.InventoryTabList.Any())
+            || this.itemGrabMenuManager.Top.Container is null
+            || this.itemGrabMenuManager.Top.Container.Options.InventoryTabs != FeatureOption.Enabled
+            || !this.itemGrabMenuManager.Top.Container.Options.InventoryTabList.Any())
         {
             return;
         }
 
         // Load tabs
-        foreach (var name in this.itemGrabMenuManager.CurrentContainer.Options.InventoryTabList)
+        foreach (var name in this.itemGrabMenuManager.Top.Container.Options.InventoryTabList)
         {
             if (this.inventoryTabFactory.TryGetOne(name, out var tab))
             {
@@ -269,9 +276,19 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
 
     private void AlignToBottom(ItemGrabMenu itemGrabMenu)
     {
-        var yPosition = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen + (Game1.tileSize * itemGrabMenu.ItemsToGrabMenu.rows) + IClickableMenu.borderWidth;
-        var above = itemGrabMenu.ItemsToGrabMenu.inventory.TakeLast(itemGrabMenu.ItemsToGrabMenu.capacity / itemGrabMenu.ItemsToGrabMenu.rows).ToArray();
-        var below = itemGrabMenu.inventory.inventory.Take(itemGrabMenu.inventory.capacity / itemGrabMenu.inventory.rows).ToArray();
+        var yPosition = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen
+            + (Game1.tileSize * itemGrabMenu.ItemsToGrabMenu.rows)
+            + IClickableMenu.borderWidth;
+
+        var above = itemGrabMenu
+            .ItemsToGrabMenu.inventory
+            .TakeLast(itemGrabMenu.ItemsToGrabMenu.capacity / itemGrabMenu.ItemsToGrabMenu.rows)
+            .ToArray();
+
+        var below = itemGrabMenu
+            .inventory.inventory.Take(itemGrabMenu.inventory.capacity / itemGrabMenu.inventory.rows)
+            .ToArray();
+
         var components = this.cachedTabs.Value.Select(tab => tab.Component).ToImmutableArray();
         for (var i = 0; i < components.Length; ++i)
         {
@@ -296,15 +313,24 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
             }
 
             this.cachedTabs.Value[i].Deselect();
-            components[i].bounds.X = i > 0 ? components[i - 1].bounds.Right : itemGrabMenu.ItemsToGrabMenu.inventory[0].bounds.Left;
+            components[i].bounds.X =
+                i > 0 ? components[i - 1].bounds.Right : itemGrabMenu.ItemsToGrabMenu.inventory[0].bounds.Left;
+
             components[i].bounds.Y = yPosition;
         }
     }
 
     private void AlignToTop(ItemGrabMenu itemGrabMenu)
     {
-        var yPosition = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen - (IClickableMenu.borderWidth / 2) - Game1.tileSize + 4;
-        var below = itemGrabMenu.ItemsToGrabMenu.inventory.Take(itemGrabMenu.ItemsToGrabMenu.capacity / itemGrabMenu.ItemsToGrabMenu.rows).ToArray();
+        var yPosition = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen
+            - (IClickableMenu.borderWidth / 2)
+            - Game1.tileSize
+            + 4;
+
+        var below = itemGrabMenu
+            .ItemsToGrabMenu.inventory.Take(itemGrabMenu.ItemsToGrabMenu.capacity / itemGrabMenu.ItemsToGrabMenu.rows)
+            .ToArray();
+
         var components = this.cachedTabs.Value.Select(tab => tab.Component).ToImmutableArray();
         for (var i = 0; i < components.Length; ++i)
         {
@@ -323,7 +349,9 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
             }
 
             this.cachedTabs.Value[i].Deselect();
-            components[i].bounds.X = i > 0 ? components[i - 1].bounds.Right : itemGrabMenu.ItemsToGrabMenu.inventory[0].bounds.Left;
+            components[i].bounds.X =
+                i > 0 ? components[i - 1].bounds.Right : itemGrabMenu.ItemsToGrabMenu.inventory[0].bounds.Left;
+
             components[i].bounds.Y = yPosition;
         }
     }

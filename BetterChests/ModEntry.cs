@@ -8,7 +8,6 @@ using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Features;
 using StardewMods.BetterChests.Framework.Services.Transient;
-using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.Automate;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
@@ -82,7 +81,7 @@ public sealed class ModEntry : Mod
         this.container.Register(
             () =>
             {
-                var logging = this.container.GetInstance<ILogging>();
+                var logging = this.container.GetInstance<ILog>();
                 return new ItemMatcherFactory(logging, this.container.GetInstance<ItemMatcher>);
             },
             Lifestyle.Singleton);

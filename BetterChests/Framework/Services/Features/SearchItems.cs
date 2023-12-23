@@ -8,7 +8,7 @@ using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Transient;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
 // TODO: Refactor UI/SearchBar to support SearchItems and ChestFinder
@@ -31,7 +31,7 @@ internal sealed class SearchItems : BaseFeature
     private readonly PerScreen<int> timeOut = new();
 
     /// <summary>Initializes a new instance of the <see cref="SearchItems" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
@@ -39,25 +39,36 @@ internal sealed class SearchItems : BaseFeature
     /// <param name="itemMatcherFactory">Dependency used for getting an ItemMatcher.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public SearchItems(
-        ILogging logging,
+        ILog log,
         ModConfig modConfig,
         IGameContentHelper gameContentHelper,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         ItemMatcherFactory itemMatcherFactory,
         IModEvents modEvents)
-        : base(logging, modConfig)
+        : base(log, modConfig)
     {
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
         this.modEvents = modEvents;
 
-        this.itemMatcher = new PerScreen<ItemMatcher>(itemMatcherFactory.GetSearch);
-        this.searchArea = new PerScreen<ClickableComponent>(() => new ClickableComponent(Rectangle.Empty, string.Empty));
+        this.itemMatcher = new PerScreen<ItemMatcher>(itemMatcherFactory.GetOneForSearch);
+        this.searchArea =
+            new PerScreen<ClickableComponent>(() => new ClickableComponent(Rectangle.Empty, string.Empty));
 
-        this.searchField = new PerScreen<TextBox>(() => new TextBox(gameContentHelper.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor));
+        this.searchField = new PerScreen<TextBox>(
+            () => new TextBox(
+                gameContentHelper.Load<Texture2D>("LooseSprites\\textBox"),
+                null,
+                Game1.smallFont,
+                Game1.textColor));
 
-        this.searchIcon = new PerScreen<ClickableTextureComponent>(() => new ClickableTextureComponent(Rectangle.Empty, Game1.mouseCursors, new Rectangle(80, 0, 13, 13), 2.5f));
+        this.searchIcon = new PerScreen<ClickableTextureComponent>(
+            () => new ClickableTextureComponent(
+                Rectangle.Empty,
+                Game1.mouseCursors,
+                new Rectangle(80, 0, 13, 13),
+                2.5f));
     }
 
     /// <inheritdoc />
@@ -97,7 +108,9 @@ internal sealed class SearchItems : BaseFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!this.isActive.Value || this.itemGrabMenuManager.CurrentMenu is null || e.Button is not (SButton.MouseLeft or SButton.MouseRight or SButton.ControllerA))
+        if (!this.isActive.Value
+            || this.itemGrabMenuManager.CurrentMenu is null
+            || e.Button is not (SButton.MouseLeft or SButton.MouseRight or SButton.ControllerA))
         {
             return;
         }
@@ -133,7 +146,8 @@ internal sealed class SearchItems : BaseFeature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.CurrentContainer?.Options.SearchItems != FeatureOption.Enabled || !this.ModConfig.Controls.ToggleSearch.JustPressed())
+        if (this.itemGrabMenuManager.Top.Container?.Options.SearchItems != FeatureOption.Enabled
+            || !this.ModConfig.Controls.ToggleSearch.JustPressed())
         {
             return;
         }
@@ -162,7 +176,7 @@ internal sealed class SearchItems : BaseFeature
 
         if (this.timeOut.Value > 0 && --this.timeOut.Value == 0)
         {
-            this.Logging.Trace("SearchItems: {0}", this.cachedText.Value);
+            this.Log.Trace("SearchItems: {0}", this.cachedText.Value);
             this.itemMatcher.Value.SearchText = this.cachedText.Value;
         }
 
@@ -177,14 +191,14 @@ internal sealed class SearchItems : BaseFeature
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (e.Context?.Options.SearchItems != FeatureOption.Enabled)
+        if (this.itemGrabMenuManager.Top.Container?.Options.SearchItems != FeatureOption.Enabled)
         {
             this.isActive.Value = false;
             return;
         }
 
-        this.itemGrabMenuManager.TopMenu.AddHighlightMethod(this.itemMatcher.Value.MatchesFilter);
-        this.itemGrabMenuManager.TopMenu.AddOperation(this.FilterBySearch);
+        this.itemGrabMenuManager.Top.AddHighlightMethod(this.itemMatcher.Value.MatchesFilter);
+        this.itemGrabMenuManager.Top.AddOperation(this.FilterBySearch);
         this.isActive.Value = true;
     }
 }

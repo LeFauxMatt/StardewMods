@@ -7,7 +7,7 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
@@ -23,28 +23,42 @@ internal sealed class TransferItems : BaseFeature
     private readonly PerScreen<ClickableTextureComponent> upArrow;
 
     /// <summary>Initializes a new instance of the <see cref="TransferItems" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="events">Dependency used for managing access to events.</param>
     /// <param name="gameContent">Dependency used for loading game assets.</param>
     /// <param name="input">Dependency used for checking and changing input state.</param>
     /// <param name="containers">Dependency used for accessing containers.</param>
-    public TransferItems(ILogging logging, ModConfig modConfig, IModEvents events, IGameContentHelper gameContent, IInputHelper input, ContainerFactory containers)
-        : base(logging, modConfig)
+    public TransferItems(
+        ILog log,
+        ModConfig modConfig,
+        IModEvents events,
+        IGameContentHelper gameContent,
+        IInputHelper input,
+        ContainerFactory containers)
+        : base(log, modConfig)
     {
         this.events = events;
         this.input = input;
         this.containers = containers;
 
         this.downArrow = new PerScreen<ClickableTextureComponent>(
-            () => new ClickableTextureComponent(new Rectangle(0, 0, 7 * Game1.pixelZoom, Game1.tileSize), gameContent.Load<Texture2D>(TransferItems.IconPath), new Rectangle(84, 0, 7, 16), Game1.pixelZoom)
+            () => new ClickableTextureComponent(
+                new Rectangle(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
+                gameContent.Load<Texture2D>(TransferItems.IconPath),
+                new Rectangle(84, 0, 7, 16),
+                Game1.pixelZoom)
             {
                 hoverText = I18n.Button_TransferDown_Name(),
                 myID = 5318010,
             });
 
         this.upArrow = new PerScreen<ClickableTextureComponent>(
-            () => new ClickableTextureComponent(new Rectangle(0, 0, 7 * Game1.pixelZoom, Game1.tileSize), gameContent.Load<Texture2D>(TransferItems.IconPath), new Rectangle(100, 0, 7, 16), Game1.pixelZoom)
+            () => new ClickableTextureComponent(
+                new Rectangle(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
+                gameContent.Load<Texture2D>(TransferItems.IconPath),
+                new Rectangle(100, 0, 7, 16),
+                Game1.pixelZoom)
             {
                 hoverText = I18n.Button_TransferUp_Name(),
                 myID = 5318011,
@@ -97,7 +111,12 @@ internal sealed class TransferItems : BaseFeature
             if (container.Transfer(item, farmerContainer, out var remaining))
             {
                 var amount = stack - (remaining?.Stack ?? 0);
-                this.Logging.Trace("TransferItems: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}", item.Name, amount.ToString(CultureInfo.InvariantCulture), container, farmerContainer);
+                this.Log.Trace(
+                    "TransferItems: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}",
+                    item.Name,
+                    amount.ToString(CultureInfo.InvariantCulture),
+                    container,
+                    farmerContainer);
             }
         }
     }
@@ -127,7 +146,12 @@ internal sealed class TransferItems : BaseFeature
             if (farmerContainer.Transfer(item, container, out var remaining))
             {
                 var amount = stack - (remaining?.Stack ?? 0);
-                this.Logging.Trace("TransferItems: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}", item.Name, amount.ToString(CultureInfo.InvariantCulture), farmerContainer, container);
+                this.Log.Trace(
+                    "TransferItems: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}",
+                    item.Name,
+                    amount.ToString(CultureInfo.InvariantCulture),
+                    farmerContainer,
+                    container);
             }
         }
     }
@@ -164,18 +188,25 @@ internal sealed class TransferItems : BaseFeature
             return;
         }
 
-        if (itemGrabMenu.context is Chest chest && this.containers.TryGetOne(chest, out var container) && container.Options.TransferItems == FeatureOption.Enabled)
+        if (itemGrabMenu.context is Chest chest
+            && this.containers.TryGetOne(chest, out var container)
+            && container.Options.TransferItems == FeatureOption.Enabled)
         {
             this.upArrow.Value.visible = true;
             this.upArrow.Value.bounds.Y = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen - Game1.tileSize;
-            this.upArrow.Value.bounds.X = itemGrabMenu.ItemsToGrabMenu.xPositionOnScreen + itemGrabMenu.ItemsToGrabMenu.width - 24;
+            this.upArrow.Value.bounds.X = itemGrabMenu.ItemsToGrabMenu.xPositionOnScreen
+                + itemGrabMenu.ItemsToGrabMenu.width
+                - 24;
         }
 
-        if (this.containers.TryGetOne(Game1.player, out container) && container.Options.TransferItems == FeatureOption.Enabled)
+        if (this.containers.TryGetOne(Game1.player, out container)
+            && container.Options.TransferItems == FeatureOption.Enabled)
         {
             this.downArrow.Value.visible = true;
             this.downArrow.Value.bounds.Y = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen - Game1.tileSize;
-            this.downArrow.Value.bounds.X = itemGrabMenu.ItemsToGrabMenu.xPositionOnScreen + itemGrabMenu.ItemsToGrabMenu.width - 60;
+            this.downArrow.Value.bounds.X = itemGrabMenu.ItemsToGrabMenu.xPositionOnScreen
+                + itemGrabMenu.ItemsToGrabMenu.width
+                - 60;
         }
     }
 

@@ -8,7 +8,7 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewValley.Menus;
 
@@ -24,13 +24,12 @@ internal sealed class ConfigureChest : BaseFeature
     private readonly GenericModConfigMenuIntegration genericModConfigMenuIntegration;
     private readonly Harmony harmony;
     private readonly IInputHelper inputHelper;
-
     private readonly PerScreen<bool> isActive = new();
     private readonly ItemGrabMenuManager itemGrabMenuManager;
     private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigureChest" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
@@ -40,7 +39,7 @@ internal sealed class ConfigureChest : BaseFeature
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public ConfigureChest(
-        ILogging logging,
+        ILog log,
         ModConfig modConfig,
         ContainerFactory containerFactory,
         IGameContentHelper gameContentHelper,
@@ -49,7 +48,7 @@ internal sealed class ConfigureChest : BaseFeature
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         IModEvents modEvents)
-        : base(logging, modConfig)
+        : base(log, modConfig)
     {
         ConfigureChest.instance = this;
         this.containerFactory = containerFactory;
@@ -59,16 +58,22 @@ internal sealed class ConfigureChest : BaseFeature
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
         this.configButton = new PerScreen<ClickableTextureComponent>(
-            () => new ClickableTextureComponent(new Rectangle(0, 0, Game1.tileSize, Game1.tileSize), gameContentHelper.Load<Texture2D>(AssetHandler.IconTexturePath), new Rectangle(0, 0, 16, 16), Game1.pixelZoom)
+            () => new ClickableTextureComponent(
+                new Rectangle(0, 0, Game1.tileSize, Game1.tileSize),
+                gameContentHelper.Load<Texture2D>(AssetHandler.IconTexturePath),
+                new Rectangle(0, 0, 16, 16),
+                Game1.pixelZoom)
             {
-                name = "Configure",
+                name = this.Id,
                 hoverText = I18n.Button_Configure_Name(),
                 myID = 42069,
             });
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.ConfigureChest != FeatureOption.Disabled && this.genericModConfigMenuIntegration.IsLoaded;
+    public override bool ShouldBeActive =>
+        this.ModConfig.DefaultOptions.ConfigureChest != FeatureOption.Disabled
+        && this.genericModConfigMenuIntegration.IsLoaded;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -82,7 +87,9 @@ internal sealed class ConfigureChest : BaseFeature
         // Patches
         this.harmony.Patch(
             AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
-            postfix: new HarmonyMethod(typeof(ConfigureChest), nameof(ConfigureChest.ItemGrabMenu_RepositionSideButtons_postfix)));
+            postfix: new HarmonyMethod(
+                typeof(ConfigureChest),
+                nameof(ConfigureChest.ItemGrabMenu_RepositionSideButtons_postfix)));
     }
 
     /// <inheritdoc />
@@ -97,7 +104,9 @@ internal sealed class ConfigureChest : BaseFeature
         // Patches
         this.harmony.Unpatch(
             AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.RepositionSideButtons)),
-            AccessTools.DeclaredMethod(typeof(ConfigureChest), nameof(ConfigureChest.ItemGrabMenu_RepositionSideButtons_postfix)));
+            AccessTools.DeclaredMethod(
+                typeof(ConfigureChest),
+                nameof(ConfigureChest.ItemGrabMenu_RepositionSideButtons_postfix)));
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -116,9 +125,17 @@ internal sealed class ConfigureChest : BaseFeature
         }
 
         configButton.bounds.Y = 0;
-        var buttons = new[] { __instance.organizeButton, __instance.fillStacksButton, __instance.colorPickerToggleButton, __instance.specialButton, __instance.junimoNoteIcon }
-            .Where(component => component is not null)
-            .ToList();
+        var buttons =
+            new[]
+                {
+                    __instance.organizeButton,
+                    __instance.fillStacksButton,
+                    __instance.colorPickerToggleButton,
+                    __instance.specialButton,
+                    __instance.junimoNoteIcon,
+                }
+                .Where(component => component is not null)
+                .ToList();
 
         buttons.Add(configButton);
         var stepSize = Game1.tileSize + buttons.Count switch { >= 4 => 8, _ => 16 };
@@ -150,7 +167,9 @@ internal sealed class ConfigureChest : BaseFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!this.isActive.Value || e.Button is not (SButton.MouseLeft or SButton.ControllerA) || this.itemGrabMenuManager.CurrentMenu is null)
+        if (!this.isActive.Value
+            || e.Button is not (SButton.MouseLeft or SButton.ControllerA)
+            || this.itemGrabMenuManager.CurrentMenu is null)
         {
             return;
         }
@@ -189,7 +208,8 @@ internal sealed class ConfigureChest : BaseFeature
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.CurrentMenu is null || e.Context?.Options.ConfigureChest != FeatureOption.Enabled)
+        if (this.itemGrabMenuManager.CurrentMenu is null
+            || this.itemGrabMenuManager.Top.Container?.Options.ConfigureChest != FeatureOption.Enabled)
         {
             this.isActive.Value = false;
             return;
@@ -210,7 +230,9 @@ internal sealed class ConfigureChest : BaseFeature
         this.configButton.Value.tryHover(mouseX, mouseY);
         e.SpriteBatch.Draw(
             this.configButton.Value.texture,
-            new Vector2(this.configButton.Value.bounds.X + (8 * Game1.pixelZoom), this.configButton.Value.bounds.Y + (8 * Game1.pixelZoom)),
+            new Vector2(
+                this.configButton.Value.bounds.X + (8 * Game1.pixelZoom),
+                this.configButton.Value.bounds.Y + (8 * Game1.pixelZoom)),
             new Rectangle(64, 0, 16, 16),
             Color.White,
             0f,

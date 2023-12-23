@@ -22,11 +22,24 @@ internal sealed class InventoryTab : IItemFilter
     /// <param name="index">The index of the tab.</param>
     /// <param name="itemMatcher">The item matcher for filtering items in the inventory.</param>
     /// <param name="getArea">A getter for the inventory tab area.</param>
-    public InventoryTab(string name, string hoverText, Texture2D texture, int index, ItemMatcher itemMatcher, Func<InventoryTabArea> getArea)
+    public InventoryTab(
+        string name,
+        string hoverText,
+        Texture2D texture,
+        int index,
+        ItemMatcher itemMatcher,
+        Func<InventoryTabArea> getArea)
     {
         this.itemMatcher = itemMatcher;
         this.getArea = getArea;
-        this.Component = new ClickableTextureComponent(name, new Rectangle(0, 0, 16 * Game1.pixelZoom, 13 * Game1.pixelZoom), string.Empty, hoverText, texture, new Rectangle(16 * index, 4, 16, 12), Game1.pixelZoom);
+        this.Component = new ClickableTextureComponent(
+            name,
+            new Rectangle(0, 0, 16 * Game1.pixelZoom, 13 * Game1.pixelZoom),
+            string.Empty,
+            hoverText,
+            texture,
+            new Rectangle(16 * index, 4, 16, 12),
+            Game1.pixelZoom);
     }
 
     /// <summary>Gets the clickable component.</summary>
@@ -53,7 +66,10 @@ internal sealed class InventoryTab : IItemFilter
             0.86f);
 
         // Tab icon
-        this.Component.draw(spriteBatch, this.selected ? Color.White : Color.Gray, 0.86f + (this.Component.bounds.Y / 20000f));
+        this.Component.draw(
+            spriteBatch,
+            this.selected ? Color.White : Color.Gray,
+            0.86f + (this.Component.bounds.Y / 20000f));
     }
 
     /// <summary>Selects the current tab.</summary>

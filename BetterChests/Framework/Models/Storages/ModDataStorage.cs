@@ -12,7 +12,8 @@ internal sealed class ModDataStorage : DictionaryStorage
     public ModDataStorage(ModDataDictionary modData) => this.modData = modData;
 
     /// <inheritdoc />
-    protected override bool TryGetValue(string key, [NotNullWhen(true)] out string? value) => this.modData.TryGetValue(key, out value);
+    protected override bool TryGetValue(string key, [NotNullWhen(true)] out string? value) =>
+        this.modData.TryGetValue(key, out value);
 
     /// <inheritdoc />
     protected override void SetValue(string key, string value)

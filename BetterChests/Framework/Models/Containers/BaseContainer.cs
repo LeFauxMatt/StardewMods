@@ -8,15 +8,33 @@ using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewValley.Inventories;
 using StardewValley.Mods;
 
-/// <inheritdoc />
-internal abstract class BaseContainer<TSource> : IContainer<TSource>
+/// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IContainer{TSource}" />
+internal abstract class BaseContainer<TSource> : BaseContainer, IContainer<TSource>
     where TSource : class
 {
+    /// <summary>Initializes a new instance of the <see cref="BaseContainer{TSource}" /> class.</summary>
+    /// <param name="itemMatcher">The item matcher to use for filters.</param>
+    /// <param name="storageType">The type of storage object.</param>
+    protected BaseContainer(ItemMatcher itemMatcher, IStorage storageType)
+        : base(itemMatcher, storageType) { }
+
+    /// <inheritdoc />
+    public abstract bool IsAlive { get; }
+
+    /// <inheritdoc />
+    public abstract WeakReference<TSource> Source { get; }
+}
+
+/// <inheritdoc />
+internal abstract class BaseContainer : IContainer
+{
+    private const string LockedSlotKey = "furyx639.BetterChests/LockedSlot";
+
     private readonly ItemMatcher itemMatcher;
     private readonly Lazy<IStorage> options;
     private readonly IStorage storageType;
 
-    /// <summary>Initializes a new instance of the <see cref="BaseContainer{TSource}" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="BaseContainer" /> class.</summary>
     /// <param name="itemMatcher">The item matcher to use for filters.</param>
     /// <param name="storageType">The type of storage object.</param>
     protected BaseContainer(ItemMatcher itemMatcher, IStorage storageType)
@@ -48,10 +66,49 @@ internal abstract class BaseContainer<TSource> : IContainer<TSource>
     public abstract ModDataDictionary ModData { get; }
 
     /// <inheritdoc />
-    public abstract bool IsAlive { get; }
+    public void ForEachItem(Func<Item, bool> action)
+    {
+        for (var index = this.Items.Count - 1; index >= 0; --index)
+        {
+            if (this.Items[index] is null)
+            {
+                continue;
+            }
+
+            if (!action(this.Items[index]))
+            {
+                break;
+            }
+        }
+    }
 
     /// <inheritdoc />
-    public abstract WeakReference<TSource> Source { get; }
+    public bool Transfer(Item item, IContainer containerTo, out Item? remaining)
+    {
+        if (!this.Items.Contains(item))
+        {
+            remaining = null;
+            return false;
+        }
+
+        if (this.Options.SlotLock == FeatureOption.Enabled && item.modData.ContainsKey(BaseContainer.LockedSlotKey))
+        {
+            remaining = null;
+            return false;
+        }
+
+        if (!containerTo.TryAdd(item, out remaining))
+        {
+            return false;
+        }
+
+        if (remaining is null)
+        {
+            this.Items.Remove(item);
+        }
+
+        return true;
+    }
 
     /// <inheritdoc />
     public bool MatchesFilter(Item item)

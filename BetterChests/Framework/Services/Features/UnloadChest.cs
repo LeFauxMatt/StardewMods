@@ -5,7 +5,7 @@ using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Helpers;
-using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Unload a held chest's contents into another chest.</summary>
 internal sealed class UnloadChest : BaseFeature
@@ -15,13 +15,18 @@ internal sealed class UnloadChest : BaseFeature
     private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="UnloadChest" /> class.</summary>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
-    public UnloadChest(ILogging logging, ModConfig modConfig, ContainerFactory containerFactory, IInputHelper inputHelper, IModEvents modEvents)
-        : base(logging, modConfig)
+    public UnloadChest(
+        ILog log,
+        ModConfig modConfig,
+        ContainerFactory containerFactory,
+        IInputHelper inputHelper,
+        IModEvents modEvents)
+        : base(log, modConfig)
     {
         this.containerFactory = containerFactory;
         this.inputHelper = inputHelper;
@@ -74,7 +79,12 @@ internal sealed class UnloadChest : BaseFeature
             }
 
             var amount = stack - (remaining?.Stack ?? 0);
-            this.Logging.Trace("UnloadChest: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}", item.Name, amount.ToString(CultureInfo.InvariantCulture), fromStorage, toStorage);
+            this.Log.Trace(
+                "UnloadChest: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}",
+                item.Name,
+                amount.ToString(CultureInfo.InvariantCulture),
+                fromStorage,
+                toStorage);
         }
 
         this.inputHelper.Suppress(e.Button);
