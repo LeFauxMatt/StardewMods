@@ -16,7 +16,7 @@ using StardewValley.Menus;
 /// <summary>Search for which chests have the item you're looking for.</summary>
 internal sealed class ChestFinder : BaseFeature
 {
-    private readonly PerScreen<List<ChestContainer>> cachedContainers = new(() => []);
+    private readonly PerScreen<List<Pointer>> pointers = new(() => []);
     private readonly ContainerFactory containerFactory;
     private readonly PerScreen<int> currentIndex = new();
     private readonly IInputHelper inputHelper;
@@ -164,7 +164,7 @@ internal sealed class ChestFinder : BaseFeature
         }
 
         if (!this.isActive.Value
-            || !this.cachedContainers.Value.Any()
+            || !this.pointers.Value.Any()
             || !this.ModConfig.Controls.OpenFoundChest.JustPressed())
         {
             return;
@@ -207,97 +207,9 @@ internal sealed class ChestFinder : BaseFeature
         }
 
         // Check if there are any storages found
-        if (!this.cachedContainers.Value.Any())
+        foreach (var pointer in this.pointers.Value)
         {
-            this.searchOverlay.Value.draw(e.SpriteBatch);
-            return;
-        }
-
-        var bounds = Game1.graphics.GraphicsDevice.Viewport.Bounds;
-        var srcRect = new Rectangle(412, 495, 5, 4);
-        foreach (var container in this.cachedContainers.Value)
-        {
-            var pos = (container.TileLocation + new Vector2(0.5f, -0.75f)) * Game1.tileSize;
-            var onScreenPos = default(Vector2);
-            if (Utility.isOnScreen(pos, 64))
-            {
-                onScreenPos = Game1.GlobalToLocal(Game1.viewport, pos + new Vector2(0, 0));
-                onScreenPos = Utility.ModifyCoordinatesForUIScale(onScreenPos);
-                e.SpriteBatch.Draw(
-                    Game1.mouseCursors,
-                    onScreenPos,
-                    srcRect,
-                    Color.White,
-                    (float)Math.PI,
-                    new Vector2(2f, 2f),
-                    Game1.pixelZoom,
-                    SpriteEffects.None,
-                    1f);
-
-                continue;
-            }
-
-            var rotation = 0f;
-            if (pos.X > Game1.viewport.MaxCorner.X - 64)
-            {
-                onScreenPos.X = bounds.Right - 8f;
-                rotation = (float)Math.PI / 2f;
-            }
-            else if (pos.X < Game1.viewport.X)
-            {
-                onScreenPos.X = 8f;
-                rotation = -(float)Math.PI / 2f;
-            }
-            else
-            {
-                onScreenPos.X = pos.X - Game1.viewport.X;
-            }
-
-            if (pos.Y > Game1.viewport.MaxCorner.Y - 64)
-            {
-                onScreenPos.Y = bounds.Bottom - 8f;
-                rotation = (float)Math.PI;
-            }
-            else if (pos.Y < Game1.viewport.Y)
-            {
-                onScreenPos.Y = 8f;
-            }
-            else
-            {
-                onScreenPos.Y = pos.Y - Game1.viewport.Y;
-            }
-
-            if ((int)onScreenPos.X == 8 && (int)onScreenPos.Y == 8)
-            {
-                rotation += (float)Math.PI / 4f;
-            }
-            else if ((int)onScreenPos.X == 8 && (int)onScreenPos.Y == bounds.Bottom - 8)
-            {
-                rotation += (float)Math.PI / 4f;
-            }
-            else if ((int)onScreenPos.X == bounds.Right - 8 && (int)onScreenPos.Y == 8)
-            {
-                rotation -= (float)Math.PI / 4f;
-            }
-            else if ((int)onScreenPos.X == bounds.Right - 8 && (int)onScreenPos.Y == bounds.Bottom - 8)
-            {
-                rotation -= (float)Math.PI / 4f;
-            }
-
-            onScreenPos = Utility.makeSafe(
-                onScreenPos,
-                new Vector2((float)srcRect.Width * Game1.pixelZoom, (float)srcRect.Height * Game1.pixelZoom));
-
-            e.SpriteBatch.Draw(
-                Game1.mouseCursors,
-                onScreenPos,
-                srcRect,
-                Color.White,
-                rotation,
-                new Vector2(2f, 2f),
-                Game1.pixelZoom,
-                SpriteEffects.None,
-                1f);
+            pointer.Draw(e.SpriteBatch);
         }
 
         this.searchOverlay.Value.draw(e.SpriteBatch);
@@ -333,7 +245,7 @@ internal sealed class ChestFinder : BaseFeature
     private void CloseSearchBar()
     {
         this.isActive.Value = false;
-        this.cachedContainers.Value.Clear();
+        this.pointers.Value.Clear();
         this.resetCache.Value = true;
     }
 
@@ -341,19 +253,19 @@ internal sealed class ChestFinder : BaseFeature
     {
         if (this.currentIndex.Value < 0)
         {
-            this.currentIndex.Value = this.cachedContainers.Value.Count - 1;
+            this.currentIndex.Value = this.pointers.Value.Count - 1;
         }
-        else if (this.currentIndex.Value >= this.cachedContainers.Value.Count)
+        else if (this.currentIndex.Value >= this.pointers.Value.Count)
         {
             this.currentIndex.Value = 0;
         }
 
-        this.cachedContainers.Value[this.currentIndex.Value].Chest.ShowMenu();
+        this.pointers.Value[this.currentIndex.Value].Container.ShowMenu();
     }
 
     private void SearchForStorages()
     {
-        this.cachedContainers.Value.Clear();
+        this.pointers.Value.Clear();
         if (this.itemMatcher.Value.IsEmpty)
         {
             return;
@@ -363,15 +275,15 @@ internal sealed class ChestFinder : BaseFeature
             .containerFactory.GetAllFromLocation(
                 Game1.player.currentLocation,
                 container => container.Options.ChestFinder == Option.Enabled)
-            .OfType<ChestContainer>())
+            .Where(container => container is ChestContainer or ObjectContainer))
         {
             if (container.Items.Any(this.itemMatcher.Value.MatchesFilter))
             {
-                this.cachedContainers.Value.Add(container);
+                this.pointers.Value.Add(new Pointer(container));
             }
         }
 
-        this.Log.Trace("{0}: Found {1} chests", this.Id, this.cachedContainers.Value.Count);
+        this.Log.Trace("{0}: Found {1} chests", this.Id, this.pointers.Value.Count);
         this.currentIndex.Value = 0;
     }
 }
