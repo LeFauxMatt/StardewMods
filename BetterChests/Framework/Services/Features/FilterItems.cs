@@ -136,11 +136,14 @@ internal sealed class FilterItems : BaseFeature
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.Top.Container?.Options.FilterItems != Option.Enabled)
+        if (this.itemGrabMenuManager.Top.Container?.Options.FilterItems == Option.Enabled)
         {
-            return;
+            this.itemGrabMenuManager.Bottom.AddHighlightMethod(this.itemGrabMenuManager.Top.Container.MatchesFilter);
         }
 
-        this.itemGrabMenuManager.Bottom.AddHighlightMethod(this.itemGrabMenuManager.Top.Container.MatchesFilter);
+        if (this.itemGrabMenuManager.Bottom.Container?.Options.FilterItems == Option.Enabled)
+        {
+            this.itemGrabMenuManager.Top.AddHighlightMethod(this.itemGrabMenuManager.Bottom.Container.MatchesFilter);
+        }
     }
 }

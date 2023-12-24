@@ -1,38 +1,32 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
-using System.Reflection.Emit;
-using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
 /// <summary>Locks items in inventory so they cannot be stashed.</summary>
 internal sealed class LockItemSlot : BaseFeature
 {
-#nullable disable
-    private static LockItemSlot instance;
-#nullable enable
-
-    private readonly IModEvents events;
-    private readonly Harmony harmony;
-    private readonly IInputHelper input;
+    private readonly IModEvents modEvents;
+    private readonly IInputHelper inputHelper;
+    private readonly ItemGrabMenuManager itemGrabMenuManager;
 
     /// <summary>Initializes a new instance of the <see cref="LockItemSlot" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="events">Dependency used for managing access to events.</param>
-    /// <param name="harmony">Dependency used to patch external code.</param>
-    /// <param name="input">Dependency used for checking and changing input state.</param>
-    public LockItemSlot(ILog log, ModConfig modConfig, IModEvents events, Harmony harmony, IInputHelper input)
+    /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
+    /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
+    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    public LockItemSlot(ILog log, ModConfig modConfig, IInputHelper inputHelper, ItemGrabMenuManager itemGrabMenuManager, IModEvents modEvents)
         : base(log, modConfig)
     {
-        LockItemSlot.instance = this;
-        this.events = events;
-        this.harmony = harmony;
-        this.input = input;
+        this.modEvents = modEvents;
+        this.inputHelper = inputHelper;
+        this.itemGrabMenuManager = itemGrabMenuManager;
     }
 
     /// <inheritdoc />
@@ -42,55 +36,91 @@ internal sealed class LockItemSlot : BaseFeature
     protected override void Activate()
     {
         // Events
-        this.events.Input.ButtonPressed += this.OnButtonPressed;
-        this.events.Input.ButtonsChanged += this.OnButtonsChanged;
-
-        // Harmony
-        this.harmony.Patch(
-            AccessTools.DeclaredMethod(
-                typeof(InventoryMenu),
-                nameof(InventoryMenu.draw),
-                [typeof(SpriteBatch), typeof(int), typeof(int), typeof(int)]),
-            transpiler: new HarmonyMethod(typeof(LockItemSlot), nameof(LockItemSlot.InventoryMenu_draw_transpiler)));
+        this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
+        this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this.events.Input.ButtonPressed -= this.OnButtonPressed;
-        this.events.Input.ButtonsChanged -= this.OnButtonsChanged;
-
-        // Harmony
-        this.harmony.Unpatch(
-            AccessTools.DeclaredMethod(
-                typeof(InventoryMenu),
-                nameof(InventoryMenu.draw),
-                [typeof(SpriteBatch), typeof(int), typeof(int), typeof(int)]),
-            AccessTools.DeclaredMethod(typeof(LockItemSlot), nameof(LockItemSlot.InventoryMenu_draw_transpiler)));
+        this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
+        this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
     }
 
-    private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
+    private static bool TryGetMenu(int mouseX, int mouseY, [NotNullWhen(true)] out InventoryMenu? inventoryMenu)
     {
-        foreach (var instruction in instructions)
+        inventoryMenu = Game1.activeClickableMenu switch
         {
-            yield return instruction;
+            ItemGrabMenu
+            {
+                inventory:
+                { } inventory,
+            } when inventory.isWithinBounds(mouseX, mouseY) => inventory,
+            ItemGrabMenu
+            {
+                ItemsToGrabMenu:
+                { } itemsToGrabMenu,
+            } when itemsToGrabMenu.isWithinBounds(mouseX, mouseY) => itemsToGrabMenu,
+            GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage
+            {
+                inventory:
+                { } inventoryPage,
+            } => inventoryPage,
+            _ => null,
+        };
 
-            if (instruction.opcode != OpCodes.Ldloc_0)
+        return inventoryMenu is not null;
+    }
+
+    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    {
+        if (this.itemGrabMenuManager.Top.Menu is not null
+            && this.itemGrabMenuManager.Top.Container?.Options.LockItemSlot == Option.Enabled)
+        {
+            this.DrawOverlay(e.SpriteBatch, this.itemGrabMenuManager.Top.Menu);
+        }
+
+        if (this.itemGrabMenuManager.Bottom.Menu is not null
+            && this.itemGrabMenuManager.Bottom.Container?.Options.LockItemSlot == Option.Enabled)
+        {
+            this.DrawOverlay(e.SpriteBatch, this.itemGrabMenuManager.Bottom.Menu);
+        }
+    }
+
+    private void DrawOverlay(SpriteBatch spriteBatch, InventoryMenu inventoryMenu)
+    {
+        foreach (var slot in inventoryMenu.inventory)
+        {
+            if (!int.TryParse(slot.name, out var index))
             {
                 continue;
             }
 
-            yield return new CodeInstruction(OpCodes.Ldarg_0);
-            yield return new CodeInstruction(OpCodes.Ldloc_S, (byte)5);
-            yield return CodeInstruction.Call(typeof(LockItemSlot), nameof(LockItemSlot.Tint));
+            var item = inventoryMenu.actualInventory.ElementAtOrDefault(index);
+            if (item is null || this.IsUnlocked(item))
+            {
+                continue;
+            }
+
+            var x = slot.bounds.X + slot.bounds.Width - 18;
+            var y = slot.bounds.Y + slot.bounds.Height - 18;
+            spriteBatch.Draw(
+                Game1.mouseCursors,
+                new Vector2(x - 40, y - 40),
+                new Rectangle(107, 442, 7, 8),
+                Color.White,
+                0f,
+                Vector2.Zero,
+                2,
+                SpriteEffects.None,
+                1f);
         }
     }
-
-    private static Color Tint(Color tint, InventoryMenu menu, int index) =>
-        menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot") == true
-            ? Utility.StringToColor(LockItemSlot.instance.ModConfig.SlotLockColor) ?? tint
-            : tint;
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
@@ -101,49 +131,26 @@ internal sealed class LockItemSlot : BaseFeature
             return;
         }
 
-        var (x, y) = Game1.getMousePosition(true);
-        var menu = Game1.activeClickableMenu switch
+        var (mouseX, mouseY) = Game1.getMousePosition(true);
+        if (!LockItemSlot.TryGetMenu(mouseX, mouseY, out var inventoryMenu))
         {
-            ItemGrabMenu
-            {
-                inventory:
-                { } inventory,
-            } when inventory.isWithinBounds(x, y) => inventory,
-            ItemGrabMenu
-            {
-                ItemsToGrabMenu:
-                { } itemsToGrabMenu,
-            } when itemsToGrabMenu.isWithinBounds(x, y) => itemsToGrabMenu,
-            GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage
-            {
-                inventory:
-                { } inventoryPage,
-            } => inventoryPage,
-            _ => null,
-        };
+            return;
+        }
 
-        var slot = menu?.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
+        var slot = inventoryMenu.inventory.FirstOrDefault(slot => slot.containsPoint(mouseX, mouseY));
         if (slot is null || !int.TryParse(slot.name, out var index))
         {
             return;
         }
 
-        var item = menu?.actualInventory.ElementAtOrDefault(index);
+        var item = inventoryMenu.actualInventory.ElementAtOrDefault(index);
         if (item is null)
         {
             return;
         }
 
-        if (item.modData.ContainsKey("furyx639.BetterChests/LockedSlot"))
-        {
-            item.modData.Remove("furyx639.BetterChests/LockedSlot");
-        }
-        else
-        {
-            item.modData["furyx639.BetterChests/LockedSlot"] = true.ToString();
-        }
-
-        this.input.Suppress(e.Button);
+        this.inputHelper.Suppress(e.Button);
+        this.ToggleLock(item);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
@@ -153,48 +160,52 @@ internal sealed class LockItemSlot : BaseFeature
             return;
         }
 
-        var (x, y) = Game1.getMousePosition(true);
-        var menu = Game1.activeClickableMenu switch
+        var (mouseX, mouseY) = Game1.getMousePosition(true);
+        if (!LockItemSlot.TryGetMenu(mouseX, mouseY, out var inventoryMenu))
         {
-            ItemGrabMenu
-            {
-                inventory:
-                { } inventory,
-            } when inventory.isWithinBounds(x, y) => inventory,
-            ItemGrabMenu
-            {
-                ItemsToGrabMenu:
-                { } itemsToGrabMenu,
-            } when itemsToGrabMenu.isWithinBounds(x, y) => itemsToGrabMenu,
-            GameMenu gameMenu when gameMenu.GetCurrentPage() is InventoryPage
-            {
-                inventory:
-                { } inventoryPage,
-            } => inventoryPage,
-            _ => null,
-        };
+            return;
+        }
 
-        var slot = menu?.inventory.FirstOrDefault(slot => slot.containsPoint(x, y));
+        var slot = inventoryMenu.inventory.FirstOrDefault(slot => slot.containsPoint(mouseX, mouseY));
         if (slot is null || !int.TryParse(slot.name, out var index))
         {
             return;
         }
 
-        var item = menu?.actualInventory.ElementAtOrDefault(index);
+        var item = inventoryMenu.actualInventory.ElementAtOrDefault(index);
         if (item is null)
         {
             return;
         }
 
-        if (item.modData.ContainsKey("furyx639.BetterChests/LockedSlot"))
+        this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.LockSlot);
+        this.ToggleLock(item);
+    }
+
+    private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
+    {
+        if (this.itemGrabMenuManager.Top.Container?.Options.LockItemSlot == Option.Enabled)
         {
-            item.modData.Remove("furyx639.BetterChests/LockedSlot");
+            this.itemGrabMenuManager.Top.AddHighlightMethod(this.IsUnlocked);
+        }
+
+        if (this.itemGrabMenuManager.Bottom.Container?.Options.LockItemSlot == Option.Enabled)
+        {
+            this.itemGrabMenuManager.Bottom.AddHighlightMethod(this.IsUnlocked);
+        }
+    }
+
+    private void ToggleLock(Item item)
+    {
+        if (this.IsUnlocked(item))
+        {
+            item.modData[this.UniqueId] = "Locked;";
         }
         else
         {
-            item.modData["furyx639.BetterChests/LockedSlot"] = true.ToString();
+            item.modData.Remove(this.UniqueId);
         }
-
-        this.input.SuppressActiveKeybinds(this.ModConfig.Controls.LockSlot);
     }
+
+    private bool IsUnlocked(Item item) => !item.modData.ContainsKey(this.UniqueId);
 }

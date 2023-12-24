@@ -6,6 +6,8 @@ using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
+// TODO: Method for accessing InventoryMenu from GameMenu
+
 /// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IInventoryMenuManager" />
 internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
 {
