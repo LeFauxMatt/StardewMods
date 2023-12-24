@@ -23,6 +23,7 @@ internal sealed class ItemGrabMenuManager : BaseService
 
     private readonly PerScreen<InventoryMenuManager> bottomMenu;
     private readonly ModConfig modConfig;
+    private readonly IInputHelper inputHelper;
     private readonly ContainerFactory containerFactory;
     private readonly PerScreen<IClickableMenu?> currentMenu = new();
     private readonly PerScreen<InventoryMenuManager> topMenu;
@@ -34,13 +35,15 @@ internal sealed class ItemGrabMenuManager : BaseService
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
+    /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
-    public ItemGrabMenuManager(ILog log, ModConfig modConfig, IModEvents modEvents, Harmony harmony, ContainerFactory containerFactory)
+    public ItemGrabMenuManager(ILog log, ModConfig modConfig, IModEvents modEvents, Harmony harmony, IInputHelper inputHelper, ContainerFactory containerFactory)
         : base(log)
     {
         // Init
         ItemGrabMenuManager.instance = this;
         this.modConfig = modConfig;
+        this.inputHelper = inputHelper;
         this.containerFactory = containerFactory;
         this.topMenu = new PerScreen<InventoryMenuManager>(() => new InventoryMenuManager(log));
         this.bottomMenu = new PerScreen<InventoryMenuManager>(() => new InventoryMenuManager(log));
@@ -50,6 +53,9 @@ internal sealed class ItemGrabMenuManager : BaseService
         modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         modEvents.GameLoop.UpdateTicked += this.OnUpdateTicked;
         modEvents.GameLoop.UpdateTicking += this.OnUpdateTicking;
+        modEvents.Input.ButtonPressed += this.OnButtonPressed;
+        modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
+        modEvents.Input.CursorMoved += this.OnCursorMoved;
         modEvents.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
 
         // Patches
@@ -198,19 +204,14 @@ internal sealed class ItemGrabMenuManager : BaseService
         this.currentMenu.Value = Game1.activeClickableMenu;
         if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
         {
-            this.topMenu.Value.Scrolled = 0;
-            this.topMenu.Value.Container = null;
-            this.topMenu.Value.Menu = null;
-            this.bottomMenu.Value.Scrolled = 0;
-            this.bottomMenu.Value.Menu = null;
-            this.bottomMenu.Value.Container = null;
+            this.topMenu.Value.Reset(null, null);
+            this.bottomMenu.Value.Reset(null, null);
             this.itemGrabMenuChanged.InvokeAll(this, new ItemGrabMenuChangedEventArgs());
             return;
         }
 
         // Update top menu
-        this.topMenu.Value.Reset();
-        this.topMenu.Value.Menu = itemGrabMenu.ItemsToGrabMenu;
+        this.topMenu.Value.Reset(itemGrabMenu, itemGrabMenu.ItemsToGrabMenu);
         if (itemGrabMenu.context is not Chest chest || !this.containerFactory.TryGetOne(chest, out var topContainer))
         {
             topContainer = null;
@@ -219,8 +220,7 @@ internal sealed class ItemGrabMenuManager : BaseService
         this.topMenu.Value.Container = topContainer;
 
         // Update bottom menu
-        this.bottomMenu.Value.Reset();
-        this.bottomMenu.Value.Menu = itemGrabMenu.inventory;
+        this.bottomMenu.Value.Reset(itemGrabMenu, itemGrabMenu.inventory);
         if (!itemGrabMenu.inventory.actualInventory.Equals(Game1.player.Items)
             || !this.containerFactory.TryGetOne(Game1.player, out var bottomContainer))
         {
@@ -235,6 +235,59 @@ internal sealed class ItemGrabMenuManager : BaseService
 
         // Disable background fade
         itemGrabMenu.drawBG = false;
+    }
+
+    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    {
+        if (this.CurrentMenu is null)
+        {
+            return;
+        }
+
+        var (mouseX, mouseY) = Game1.getMousePosition(true);
+        switch (e.Button)
+        {
+            case SButton.MouseLeft when this.topMenu.Value.LeftClick(mouseX, mouseY):
+                break;
+            case SButton.MouseLeft when this.bottomMenu.Value.LeftClick(mouseX, mouseY):
+                break;
+            default:
+                return;
+        }
+
+        this.inputHelper.Suppress(e.Button);
+    }
+
+    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    {
+        if (this.CurrentMenu is null)
+        {
+            return;
+        }
+
+        if (this.modConfig.Controls.ScrollUp.JustPressed())
+        {
+            this.Top.Scrolled--;
+            this.inputHelper.SuppressActiveKeybinds(this.modConfig.Controls.ScrollUp);
+        }
+
+        if (this.modConfig.Controls.ScrollDown.JustPressed())
+        {
+            this.Top.Scrolled++;
+            this.inputHelper.SuppressActiveKeybinds(this.modConfig.Controls.ScrollDown);
+        }
+    }
+
+    private void OnCursorMoved(object? sender, CursorMovedEventArgs e)
+    {
+        if (this.CurrentMenu is null)
+        {
+            return;
+        }
+
+        var (mouseX, mouseY) = Game1.getMousePosition(true);
+        this.topMenu.Value.Hover(mouseX, mouseY);
+        this.bottomMenu.Value.Hover(mouseX, mouseY);
     }
 
     private void OnMouseWheelScrolled(object? sender, MouseWheelScrolledEventArgs e)
@@ -280,6 +333,10 @@ internal sealed class ItemGrabMenuManager : BaseService
         {
             return;
         }
+
+        // Draw overlay
+        this.topMenu.Value.Draw(e.SpriteBatch);
+        this.bottomMenu.Value.Draw(e.SpriteBatch);
 
         // Redraw foreground
         if (this.CurrentMenu.hoverText != null
