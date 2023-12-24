@@ -14,7 +14,7 @@
   "storage.Other.name": "Other",
   "storage.Other.tooltip": "An unknown storage type.",
   // Effects
-  "effect.carry-chest-slow.description": "Overburdened -{{speed}} Speed",
+  "effect.carry-chest-slow.description": "Overburdened",
   // Config Pages
   "section.general.name": "General",
   "section.general.description": "General customization options for features.",

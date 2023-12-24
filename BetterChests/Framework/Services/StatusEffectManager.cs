@@ -26,6 +26,15 @@ internal sealed class StatusEffectManager : BaseService
         Game1.player.buffs.Apply(buff);
     }
 
+    /// <summary>Checks if the specified status effect is currently active on the player.</summary>
+    /// <param name="statusEffect">The status effect to check.</param>
+    /// <returns>True if the status effect is active on the player, otherwise false.</returns>
+    public bool HasEffect(StatusEffect statusEffect)
+    {
+        var id = this.GetId(statusEffect);
+        return !string.IsNullOrWhiteSpace(id) && Game1.player.buffs.IsApplied(id);
+    }
+
     /// <summary>Removes a custom status effect from the player.</summary>
     /// <param name="statusEffect">The status effect to remove.</param>
     public void RemoveEffect(StatusEffect statusEffect)
@@ -51,8 +60,8 @@ internal sealed class StatusEffectManager : BaseService
         {
             StatusEffect.Overburdened => new Buff(
                 this.Prefix + StatusEffect.Overburdened.ToStringFast(),
-                displayName: I18n.Effect_CarryChestSlow_Description(-1),
-                duration: 5_000,
+                displayName: I18n.Effect_CarryChestSlow_Description(),
+                duration: 60_000,
                 iconTexture: Game1.buffsIcons,
                 iconSheetIndex: 13,
                 effects: new BuffEffects { Speed = { -1 } }),

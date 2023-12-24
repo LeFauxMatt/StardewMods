@@ -3,7 +3,6 @@
 using HarmonyLib;
 using SimpleInjector;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
@@ -28,13 +27,10 @@ public sealed class ModEntry : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        var config = this.Helper.ReadConfig<ModConfig>();
-
         // Init
         this.container = new Container();
-        this.container.RegisterInstance(config);
-        this.container.RegisterInstance<IConfigWithLogLevel>(config);
-        this.container.RegisterSingleton(() => new Harmony(this.ModManifest.UniqueID));
+        this.container.Register(this.Helper.ReadConfig<ModConfig>, Lifestyle.Singleton);
+        this.container.Register(() => new Harmony(this.ModManifest.UniqueID), Lifestyle.Singleton);
 
         // SMAPI
         this.container.RegisterInstance(this.Helper);
@@ -50,14 +46,23 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.Translation);
 
         // Integrations
-        this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
-        this.container.RegisterSingleton<ContentPatcherIntegration>();
+        this.container.Register<FuryCoreIntegration>(Lifestyle.Singleton);
+        this.container.Register<GenericModConfigMenuIntegration>(Lifestyle.Singleton);
+        this.container.Register<ContentPatcherIntegration>(Lifestyle.Singleton);
 
         // Services
-        this.container.RegisterSingleton<Logging>();
-        this.container.RegisterSingleton<ConfigMenu>();
-        this.container.RegisterSingleton<ManagedStorages>();
-        this.container.RegisterSingleton<ModPatches>();
+        this.container.Register(
+            () =>
+            {
+                var furyCore = this.container.GetInstance<FuryCoreIntegration>();
+                var monitor = this.container.GetInstance<IMonitor>();
+                return furyCore.Api!.GetLogger(monitor);
+            },
+            Lifestyle.Singleton);
+
+        this.container.Register<ConfigMenu>(Lifestyle.Singleton);
+        this.container.Register<ManagedStorages>(Lifestyle.Singleton);
+        this.container.Register<ModPatches>(Lifestyle.Singleton);
 
         this.container.Verify();
     }

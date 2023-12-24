@@ -25,17 +25,10 @@ internal sealed class Controls
     /// <summary>Gets or sets controls to open <see cref="StardewValley.Menus.CraftingPage" />.</summary>
     public KeybindList OpenCrafting { get; set; } = new(SButton.K);
 
-    /// <summary>Gets or sets controls to open the first found chest.</summary>
+    /// <summary>Gets or sets controls to open the found chest.</summary>
     public KeybindList OpenFoundChest { get; set; } = new(
         new Keybind(SButton.LeftShift, SButton.Enter),
         new Keybind(SButton.RightShift, SButton.Enter));
-
-    /// <summary>Gets or sets controls to open the next found chest.</summary>
-    public KeybindList OpenNextChest { get; set; } = new(new Keybind(SButton.LeftControl, SButton.Tab));
-
-    /// <summary>Gets or sets controls to open the previous found chest.</summary>
-    public KeybindList OpenPreviousChest { get; set; } =
-        new(new Keybind(SButton.LeftControl, SButton.LeftShift, SButton.Tab));
 
     /// <summary>Gets or sets controls to switch to previous tab.</summary>
     public KeybindList PreviousTab { get; set; } = new(SButton.DPadLeft);

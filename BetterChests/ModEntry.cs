@@ -32,12 +32,9 @@ public sealed class ModEntry : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        var config = this.Helper.ReadConfig<ModConfig>();
-
         // Init
         this.container = new Container();
-        this.container.RegisterInstance(config);
-        this.container.RegisterInstance<IConfigWithLogLevel>(config);
+        this.container.Register(this.Helper.ReadConfig<ModConfig>, Lifestyle.Singleton);
         this.container.Register(() => new Harmony(this.ModManifest.UniqueID), Lifestyle.Singleton);
 
         // SMAPI

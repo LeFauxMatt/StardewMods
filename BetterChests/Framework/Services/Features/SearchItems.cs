@@ -8,27 +8,19 @@ using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Transient;
+using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
-
-// TODO: Refactor UI/SearchBar to support SearchItems and ChestFinder
 
 /// <summary>Adds a search bar to the top of the <see cref="ItemGrabMenu" />.</summary>
 internal sealed class SearchItems : BaseFeature
 {
-    private const int CountdownTimer = 20;
-    private readonly PerScreen<string> cachedText = new(() => string.Empty);
     private readonly IInputHelper inputHelper;
-
     private readonly PerScreen<bool> isActive = new();
     private readonly ItemGrabMenuManager itemGrabMenuManager;
     private readonly PerScreen<ItemMatcher> itemMatcher;
-
     private readonly IModEvents modEvents;
-    private readonly PerScreen<ClickableComponent> searchArea;
-    private readonly PerScreen<TextBox> searchField;
-    private readonly PerScreen<ClickableTextureComponent> searchIcon;
-    private readonly PerScreen<int> timeOut = new();
+    private readonly PerScreen<SearchBar> searchBar;
 
     /// <summary>Initializes a new instance of the <see cref="SearchItems" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
@@ -53,22 +45,17 @@ internal sealed class SearchItems : BaseFeature
         this.modEvents = modEvents;
 
         this.itemMatcher = new PerScreen<ItemMatcher>(itemMatcherFactory.GetOneForSearch);
-        this.searchArea =
-            new PerScreen<ClickableComponent>(() => new ClickableComponent(Rectangle.Empty, string.Empty));
-
-        this.searchField = new PerScreen<TextBox>(
-            () => new TextBox(
-                gameContentHelper.Load<Texture2D>("LooseSprites\\textBox"),
-                null,
-                Game1.smallFont,
-                Game1.textColor));
-
-        this.searchIcon = new PerScreen<ClickableTextureComponent>(
-            () => new ClickableTextureComponent(
-                Rectangle.Empty,
-                Game1.mouseCursors,
-                new Rectangle(80, 0, 13, 13),
-                2.5f));
+        var texture = gameContentHelper.Load<Texture2D>("LooseSprites/textBox");
+        this.searchBar = new PerScreen<SearchBar>(
+            () => new SearchBar(
+                texture,
+                () => this.itemMatcher.Value.SearchText,
+                value =>
+                {
+                    this.Log.Trace("{0}: Searching for {1}", this.Id, value);
+                    this.itemMatcher.Value.SearchText = value;
+                },
+                new Rectangle(0, 0, 384, texture.Height)));
     }
 
     /// <inheritdoc />
@@ -79,7 +66,7 @@ internal sealed class SearchItems : BaseFeature
     {
         // Events
         this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.modEvents.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        this.modEvents.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
         this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
         this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
         this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
@@ -90,9 +77,9 @@ internal sealed class SearchItems : BaseFeature
     {
         // Events
         this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.modEvents.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+        this.modEvents.Display.RenderingActiveMenu -= this.OnRenderingActiveMenu;
         this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
-        this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
         this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
     }
 
@@ -108,9 +95,7 @@ internal sealed class SearchItems : BaseFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!this.isActive.Value
-            || this.itemGrabMenuManager.CurrentMenu is null
-            || e.Button is not (SButton.MouseLeft or SButton.MouseRight or SButton.ControllerA))
+        if (!this.isActive.Value || this.itemGrabMenuManager.CurrentMenu is null)
         {
             return;
         }
@@ -118,16 +103,11 @@ internal sealed class SearchItems : BaseFeature
         var (mouseX, mouseY) = Game1.getMousePosition(true);
         switch (e.Button)
         {
-            case SButton.MouseLeft when this.searchArea.Value.containsPoint(mouseX, mouseY):
-                this.searchField.Value.Selected = true;
-                break;
-            case SButton.MouseRight when this.searchArea.Value.containsPoint(mouseX, mouseY):
-                this.searchField.Value.Selected = true;
-                this.searchField.Value.Text = string.Empty;
-                break;
             case SButton.MouseLeft:
+                this.searchBar.Value.LeftClick(mouseX, mouseY);
+                break;
             case SButton.MouseRight:
-                this.searchField.Value.Selected = false;
+                this.searchBar.Value.RightClick(mouseX, mouseY);
                 break;
             case SButton.Escape when this.itemGrabMenuManager.CurrentMenu.readyToClose():
                 Game1.playSound("bigDeSelect");
@@ -137,7 +117,7 @@ internal sealed class SearchItems : BaseFeature
             case SButton.Escape: return;
         }
 
-        if (this.searchField.Value.Selected)
+        if (this.searchBar.Value.Selected)
         {
             this.inputHelper.Suppress(e.Button);
         }
@@ -162,42 +142,37 @@ internal sealed class SearchItems : BaseFeature
             return;
         }
 
-        this.searchField.Value.Draw(e.SpriteBatch, false);
-        this.searchIcon.Value.draw(e.SpriteBatch);
+        this.searchBar.Value.Draw(e.SpriteBatch);
     }
 
-    private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
+    private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)
     {
-        if (!this.isActive.Value)
+        if (!this.isActive.Value || this.itemGrabMenuManager.CurrentMenu is null)
         {
             return;
         }
 
-        if (this.timeOut.Value > 0 && --this.timeOut.Value == 0)
-        {
-            this.Log.Trace("SearchItems: {0}", this.cachedText.Value);
-            this.itemMatcher.Value.SearchText = this.cachedText.Value;
-        }
-
-        if (this.searchField.Value.Text.Equals(this.cachedText.Value, StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        this.timeOut.Value = SearchItems.CountdownTimer;
-        this.cachedText.Value = this.searchField.Value.Text;
+        var (mouseX, mouseY) = Game1.getMousePosition(true);
+        this.searchBar.Value.Update(mouseX, mouseY);
     }
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.Top.Container?.Options.SearchItems != FeatureOption.Enabled)
+        if (this.itemGrabMenuManager.Top.Menu is null
+            || this.itemGrabMenuManager.Top.Container?.Options.SearchItems != FeatureOption.Enabled)
         {
             this.isActive.Value = false;
             return;
         }
 
+        var top = this.itemGrabMenuManager.Top;
+        this.isActive.Value = true;
+        this.searchBar.Value.MoveTo(
+            top.Menu.xPositionOnScreen + 512,
+            top.Menu.yPositionOnScreen - (IClickableMenu.borderWidth / 2) - Game1.tileSize + (top.Rows == 3 ? -20 : 4));
+
+        this.searchBar.Value.SetWidth(top.Columns == 12 ? 284 : 384);
         this.itemGrabMenuManager.Top.AddHighlightMethod(this.itemMatcher.Value.MatchesFilter);
         this.itemGrabMenuManager.Top.AddOperation(this.FilterBySearch);
-        this.isActive.Value = true;
     }
 }

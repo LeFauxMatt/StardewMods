@@ -6,11 +6,13 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Models;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
+using StardewValley.Objects;
 
 // TODO: Color copy+paste
 // TODO: Draw farmer nearby using cursor distance
@@ -22,16 +24,21 @@ internal sealed class HslColorPicker : BaseFeature
     private static HslColorPicker instance;
 #nullable enable
 
-    private readonly IGameContentHelper gameContentHelper;
+    private readonly PerScreen<ClickableTextureComponent> copyButton = new();
+    private readonly PerScreen<Rectangle> copyButtonArea = new();
     private readonly Harmony harmony;
+    private readonly PerScreen<Slider?> holding = new();
     private readonly PerScreen<HslColor> hslColor = new(() => default(HslColor));
-    private readonly PerScreen<Slider?> hue = new();
+    private readonly PerScreen<Slider> hue;
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<bool> isActive = new();
     private readonly ItemGrabMenuManager itemGrabMenuManager;
-    private readonly PerScreen<Slider?> lightness = new();
+    private readonly PerScreen<Slider> lightness;
     private readonly IModEvents modEvents;
-    private readonly PerScreen<Slider?> saturation = new();
+    private readonly PerScreen<ClickableTextureComponent> noColorButton = new();
+    private readonly PerScreen<Rectangle> noColorButtonArea = new();
+    private readonly PerScreen<Slider> saturation;
+    private readonly PerScreen<HslColor> savedColor = new();
     private readonly PerScreen<int> xPosition = new();
     private readonly PerScreen<int> yPosition = new();
 
@@ -54,15 +61,99 @@ internal sealed class HslColorPicker : BaseFeature
         : base(log, modConfig)
     {
         HslColorPicker.instance = this;
-        this.gameContentHelper = gameContentHelper;
         this.harmony = harmony;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
         this.modEvents = modEvents;
+
+        var hslTexture = gameContentHelper.Load<Texture2D>(AssetHandler.HslTexturePath);
+        var colors = new Color[hslTexture.Width * hslTexture.Height];
+        hslTexture.GetData(colors);
+        var hslColors = colors.Select(HslColor.FromColor).Distinct().ToArray();
+
+        this.copyButton = new PerScreen<ClickableTextureComponent>(
+            () => new ClickableTextureComponent(
+                new Rectangle(0, 0, 8, 8),
+                gameContentHelper.Load<Texture2D>(AssetHandler.IconTexturePath),
+                new Rectangle(116, 4, 8, 8),
+                3));
+
+        this.noColorButton = new PerScreen<ClickableTextureComponent>(
+            () => new ClickableTextureComponent(
+                new Rectangle(0, 0, 7, 7),
+                Game1.mouseCursors,
+                new Rectangle(295, 503, 7, 7),
+                Game1.pixelZoom));
+
+        this.hue = new PerScreen<Slider>(
+            () => new Slider(
+                hslTexture,
+                () => this.CurrentColor.H,
+                value =>
+                {
+                    this.CurrentColor = this.ColorSelection == 0
+                        ? hslColors[(int)(value * hslColors.Length)]
+                        : this.CurrentColor with { H = value };
+
+                    this.UpdateColor();
+                },
+                new Rectangle(0, 0, 23, 522),
+                29));
+
+        this.saturation = new PerScreen<Slider>(
+            () => new Slider(
+                value => (this.CurrentColor with
+                {
+                    S = this.ColorSelection == 0 ? 0 : value,
+                    L = Math.Max(0.01f, this.ColorSelection == 0 ? value : this.CurrentColor.L),
+                }).ToRgbColor(),
+                () => this.CurrentColor.S,
+                value =>
+                {
+                    this.CurrentColor = this.ColorSelection == 0
+                        ? new HslColor(0, value, 0.5f)
+                        : this.CurrentColor with
+                        {
+                            S = value,
+                            L = Math.Max(0.01f, this.CurrentColor.L),
+                        };
+
+                    this.UpdateColor();
+                },
+                new Rectangle(0, 0, 23, 256),
+                16));
+
+        this.lightness = new PerScreen<Slider>(
+            () => new Slider(
+                value => (this.CurrentColor with
+                {
+                    S = this.ColorSelection == 0 ? 0 : this.CurrentColor.S,
+                    L = value,
+                }).ToRgbColor(),
+                () => this.CurrentColor.L,
+                value =>
+                {
+                    this.CurrentColor = this.CurrentColor with { L = value };
+                    this.UpdateColor();
+                },
+                new Rectangle(0, 0, 23, 256),
+                16));
     }
 
     /// <inheritdoc />
     public override bool ShouldBeActive => this.ModConfig.DefaultOptions.HslColorPicker != FeatureOption.Disabled;
+
+    private int ColorSelection
+    {
+        get => this.itemGrabMenuManager.CurrentMenu?.chestColorPicker?.colorSelection ?? 0;
+        set
+        {
+            if (this.itemGrabMenuManager.CurrentMenu?.chestColorPicker is not null)
+            {
+                this.itemGrabMenuManager.CurrentMenu.chestColorPicker.colorSelection = value;
+            }
+        }
+    }
 
     private HslColor CurrentColor
     {
@@ -75,6 +166,7 @@ internal sealed class HslColorPicker : BaseFeature
     {
         // Events
         this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.modEvents.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
         this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
         this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
 
@@ -106,7 +198,8 @@ internal sealed class HslColorPicker : BaseFeature
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.modEvents.Display.RenderingActiveMenu -= this.OnRenderingActiveMenu;
         this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
         this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
 
@@ -196,28 +289,87 @@ internal sealed class HslColorPicker : BaseFeature
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (!this.isActive.Value
-            || e.Button is not (SButton.MouseLeft or SButton.ControllerA)
-            || this.itemGrabMenuManager.CurrentMenu?.colorPickerToggleButton is null)
+            || e.Button is not (SButton.MouseLeft or SButton.MouseRight or SButton.ControllerA or SButton.ControllerB)
+            || this.holding.Value is not null
+            || this.itemGrabMenuManager.CurrentMenu?.chestColorPicker is not
+            {
+                itemToDrawColored: Chest chest,
+            } colorPicker
+            || this.itemGrabMenuManager.Top.Container is not ChestContainer container)
         {
             return;
         }
 
         var (mouseX, mouseY) = Game1.getMousePosition(true);
-        if (!this.itemGrabMenuManager.CurrentMenu.colorPickerToggleButton.containsPoint(mouseX, mouseY))
+        if (this.itemGrabMenuManager.CurrentMenu.colorPickerToggleButton.containsPoint(mouseX, mouseY))
+        {
+            this.inputHelper.Suppress(e.Button);
+            Game1.playSound("drumkit6");
+            Game1.player.showChestColorPicker = !Game1.player.showChestColorPicker;
+            return;
+        }
+
+        if (!Game1.player.showChestColorPicker)
         {
             return;
         }
 
-        this.inputHelper.Suppress(e.Button);
-        Game1.player.showChestColorPicker = !Game1.player.showChestColorPicker;
-        Game1.playSound("drumkit6");
+        if (this.noColorButtonArea.Value.Contains(mouseX, mouseY))
+        {
+            this.inputHelper.Suppress(e.Button);
+            Game1.playSound("coin");
+            this.CurrentColor = new HslColor(0, 0, 0);
+            colorPicker.colorSelection = 0;
+            chest.playerChoiceColor.Value = Color.Black;
+            container.Chest.playerChoiceColor.Value = Color.Black;
+            return;
+        }
+
+        if (this.copyButtonArea.Value.Contains(mouseX, mouseY))
+        {
+            this.inputHelper.Suppress(e.Button);
+            Game1.playSound("coin");
+            if (e.Button is SButton.MouseLeft or SButton.ControllerA)
+            {
+                this.savedColor.Value = this.CurrentColor;
+            }
+            else
+            {
+                this.CurrentColor = this.savedColor.Value;
+                this.UpdateColor();
+            }
+
+            return;
+        }
+
+        if (this.hue.Value.LeftClick(mouseX, mouseY))
+        {
+            this.holding.Value = this.hue.Value;
+        }
+        else if (this.saturation.Value.LeftClick(mouseX, mouseY))
+        {
+            this.holding.Value = this.saturation.Value;
+        }
+        else if (this.lightness.Value.LeftClick(mouseX, mouseY))
+        {
+            this.holding.Value = this.lightness.Value;
+        }
+
+        if (this.holding.Value is not null)
+        {
+            this.inputHelper.Suppress(e.Button);
+            Game1.playSound("coin");
+        }
     }
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.CurrentMenu?.chestColorPicker is not
-                { } colorPicker
-            || this.itemGrabMenuManager.Top.Container?.Options.HslColorPicker != FeatureOption.Enabled)
+            {
+                itemToDrawColored: Chest chest,
+            }
+            || this.itemGrabMenuManager.Top.Container is not ChestContainer container
+            || container.Options.HslColorPicker != FeatureOption.Enabled)
         {
             this.isActive.Value = false;
             return;
@@ -225,51 +377,38 @@ internal sealed class HslColorPicker : BaseFeature
 
         this.isActive.Value = true;
         this.itemGrabMenuManager.CurrentMenu.discreteColorPickerCC = null;
-        this.xPosition.Value = this.ModConfig.ColorPickerArea switch
-        {
-            ColorPickerArea.Left => this.itemGrabMenuManager.CurrentMenu.xPositionOnScreen
-                - (2 * Game1.tileSize)
-                - (IClickableMenu.borderWidth / 2),
-            _ => this.itemGrabMenuManager.CurrentMenu.xPositionOnScreen
-                + this.itemGrabMenuManager.CurrentMenu.width
-                + 96
-                + (IClickableMenu.borderWidth / 0x2),
-        };
+        this.xPosition.Value = this.itemGrabMenuManager.CurrentMenu.xPositionOnScreen
+            - (2 * Game1.tileSize)
+            - (IClickableMenu.borderWidth / 2);
 
         this.yPosition.Value = this.itemGrabMenuManager.CurrentMenu.yPositionOnScreen
             - 56
             + (IClickableMenu.borderWidth / 2);
 
-        var hsl = this.CurrentColor;
+        chest.playerChoiceColor.Value = container.Chest.playerChoiceColor.Value;
+        this.CurrentColor = container.Chest.playerChoiceColor.Value == Color.Black
+            ? new HslColor(0, 0, 0)
+            : HslColor.FromColor(container.Chest.playerChoiceColor.Value);
 
-        this.hue.Value = new Slider(
-            this.gameContentHelper.Load<Texture2D>(AssetHandler.HslTexturePath),
-            () => hsl.H,
-            value => hsl.H = value,
-            new Rectangle(this.xPosition.Value, this.yPosition.Value + 36, 23, 522),
-            29);
-
-        this.lightness.Value = new Slider(
-            value => new HslColor(hsl.H, colorPicker.colorSelection == 0 ? 0 : hsl.S, Math.Max(0.01f, value)).ToRgbColor(),
-            () => hsl.L,
-            value => hsl.L = value,
-            new Rectangle(this.xPosition.Value + 32, this.yPosition.Value + 36, 23, 256),
-            16);
-
-        this.saturation.Value = new Slider(
-            value => new HslColor(
-                hsl.H,
-                colorPicker.colorSelection == 0 ? 0 : value,
-                Math.Max(0.01f, colorPicker.colorSelection == 0 ? value : hsl.L)).ToRgbColor(),
-            () => hsl.S,
-            value => hsl.S = value,
-            new Rectangle(this.xPosition.Value + 32, this.yPosition.Value + 300, 23, 256),
-            16);
+        this.copyButtonArea.Value = new Rectangle(this.xPosition.Value + 30, this.yPosition.Value - 4, 36, 36);
+        this.noColorButtonArea.Value = new Rectangle(this.xPosition.Value - 6, this.yPosition.Value - 4, 36, 36);
+        this.noColorButton.Value.bounds.X = this.xPosition.Value - 2;
+        this.noColorButton.Value.bounds.Y = this.yPosition.Value;
+        this.copyButton.Value.bounds.X = this.xPosition.Value + 34;
+        this.copyButton.Value.bounds.Y = this.yPosition.Value + 2;
+        this.hue.Value.MoveTo(this.xPosition.Value, this.yPosition.Value + 36);
+        this.saturation.Value.MoveTo(this.xPosition.Value + 32, this.yPosition.Value + 300);
+        this.lightness.Value.MoveTo(this.xPosition.Value + 32, this.yPosition.Value + 36);
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (!this.isActive.Value || !Game1.player.showChestColorPicker)
+        if (!this.isActive.Value
+            || !Game1.player.showChestColorPicker
+            || this.itemGrabMenuManager.CurrentMenu?.chestColorPicker is not
+            {
+                itemToDrawColored: Chest chest,
+            } colorPicker)
         {
             return;
         }
@@ -284,18 +423,81 @@ internal sealed class HslColorPicker : BaseFeature
             Color.LightGray);
 
         // No color button
+        this.noColorButton.Value.draw(e.SpriteBatch);
+
+        // Copy button
+        this.copyButton.Value.draw(e.SpriteBatch);
 
         // Hue slider
-        this.hue.Value?.Draw(e.SpriteBatch);
+        this.hue.Value.Draw(e.SpriteBatch);
 
         // Saturation slider
-        this.saturation.Value?.Draw(e.SpriteBatch);
+        this.saturation.Value.Draw(e.SpriteBatch);
 
         // Lightness slider
-        this.lightness.Value?.Draw(e.SpriteBatch);
+        this.lightness.Value.Draw(e.SpriteBatch);
 
         // No color button (selected)
+        if (colorPicker.colorSelection == 0)
+        {
+            IClickableMenu.drawTextureBox(
+                e.SpriteBatch,
+                Game1.mouseCursors,
+                new Rectangle(375, 357, 3, 3),
+                this.noColorButtonArea.Value.X,
+                this.noColorButtonArea.Value.Y,
+                36,
+                36,
+                Color.Black,
+                Game1.pixelZoom,
+                false);
+        }
 
         // Chest
+        chest.draw(
+            e.SpriteBatch,
+            this.xPosition.Value,
+            this.yPosition.Value - Game1.tileSize - (IClickableMenu.borderWidth / 2),
+            local: true);
+    }
+
+    private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)
+    {
+        if (!this.isActive.Value || !Game1.player.showChestColorPicker)
+        {
+            return;
+        }
+
+        var isDown = this.inputHelper.IsDown(SButton.MouseLeft) || this.inputHelper.IsSuppressed(SButton.MouseLeft);
+        if (!isDown)
+        {
+            if (this.holding.Value is not null)
+            {
+                this.holding.Value.Holding = false;
+                this.holding.Value = null;
+            }
+        }
+
+        var (mouseX, mouseY) = Game1.getMousePosition(true);
+        this.hue.Value.Update(mouseX, mouseY);
+        this.saturation.Value.Update(mouseX, mouseY);
+        this.lightness.Value.Update(mouseX, mouseY);
+    }
+
+    private void UpdateColor()
+    {
+        if (this.itemGrabMenuManager.CurrentMenu?.chestColorPicker is not
+            {
+                itemToDrawColored: Chest chest,
+            }
+            || this.itemGrabMenuManager.Top.Container is not ChestContainer container)
+        {
+            return;
+        }
+
+        var c = this.CurrentColor.ToRgbColor();
+        container.Chest.playerChoiceColor.Value = c;
+        chest.playerChoiceColor.Value = c;
+        this.ColorSelection = (c.R << 0) | (c.G << 8) | (c.B << 16);
     }
 }

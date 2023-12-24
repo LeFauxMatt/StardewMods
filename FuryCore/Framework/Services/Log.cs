@@ -10,6 +10,8 @@ internal sealed class Log : ILog
     private readonly IConfigWithLogLevel config;
     private readonly IMonitor monitor;
 
+    private string lastMessage = string.Empty;
+
     /// <summary>Initializes a new instance of the <see cref="Log" /> class.</summary>
     /// <param name="config">Dependency used for accessing config data.</param>
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
@@ -22,7 +24,7 @@ internal sealed class Log : ILog
     /// <inheritdoc />
     public void Trace(string message, params object?[]? args) => this.Raise(message, LogLevel.Trace, args);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Debug(string message, params object?[]? args) => this.Raise(message, LogLevel.Debug, args);
 
     /// <inheritdoc />
@@ -34,7 +36,7 @@ internal sealed class Log : ILog
     /// <inheritdoc />
     public void Error(string message, params object?[]? args) => this.Raise(message, LogLevel.Error, args);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Alert(string message, params object?[]? args) => this.Raise(message, LogLevel.Alert, args);
 
     private void Raise(string message, LogLevel level, object?[]? args)
@@ -52,7 +54,13 @@ internal sealed class Log : ILog
                     message = string.Format(CultureInfo.InvariantCulture, message, args);
                 }
 
-                this.monitor.Log(message, level);
+                // Prevent consecutive duplicate messages
+                if (message != this.lastMessage)
+                {
+                    this.lastMessage = message;
+                    this.monitor.Log(message, level);
+                }
+
                 break;
             default:
                 // Suppress log

@@ -121,13 +121,16 @@ internal sealed class CarryChest : BaseFeature
             return;
         }
 
-        if (Game1.player.Items.Count(this.proxyChestManager.IsProxy) < this.ModConfig.CarryChestSlowLimit)
+        if (Game1.player.Items.Count(this.proxyChestManager.IsProxy) >= this.ModConfig.CarryChestSlowLimit)
         {
-            this.statusEffectManager.RemoveEffect(StatusEffect.Overburdened);
+            this.statusEffectManager.AddEffect(StatusEffect.Overburdened);
             return;
         }
 
-        this.statusEffectManager.AddEffect(StatusEffect.Overburdened);
+        if (this.statusEffectManager.HasEffect(StatusEffect.Overburdened))
+        {
+            this.statusEffectManager.RemoveEffect(StatusEffect.Overburdened);
+        }
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)

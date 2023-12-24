@@ -2,7 +2,6 @@ namespace StardewMods.BetterChests.Framework.Models;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewValley.Menus;
@@ -10,7 +9,6 @@ using StardewValley.Menus;
 /// <summary>Represents an inventory tab.</summary>
 internal sealed class InventoryTab : IItemFilter
 {
-    private readonly Func<InventoryTabArea> getArea;
     private readonly ItemMatcher itemMatcher;
 
     private bool selected;
@@ -21,24 +19,16 @@ internal sealed class InventoryTab : IItemFilter
     /// <param name="texture">The texture of the tab.</param>
     /// <param name="index">The index of the tab.</param>
     /// <param name="itemMatcher">The item matcher for filtering items in the inventory.</param>
-    /// <param name="getArea">A getter for the inventory tab area.</param>
-    public InventoryTab(
-        string name,
-        string hoverText,
-        Texture2D texture,
-        int index,
-        ItemMatcher itemMatcher,
-        Func<InventoryTabArea> getArea)
+    public InventoryTab(string name, string hoverText, Texture2D texture, int index, ItemMatcher itemMatcher)
     {
         this.itemMatcher = itemMatcher;
-        this.getArea = getArea;
         this.Component = new ClickableTextureComponent(
             name,
-            new Rectangle(0, 0, 16 * Game1.pixelZoom, 13 * Game1.pixelZoom),
+            new Rectangle(0, 0, 16 * Game1.pixelZoom, 16 * Game1.pixelZoom),
             string.Empty,
             hoverText,
             texture,
-            new Rectangle(16 * index, 4, 16, 12),
+            new Rectangle(16 * index, 4, 16, 16),
             Game1.pixelZoom);
     }
 
@@ -55,9 +45,7 @@ internal sealed class InventoryTab : IItemFilter
         spriteBatch.Draw(
             this.Component.texture,
             new Vector2(this.Component.bounds.X, this.Component.bounds.Y),
-            this.getArea() == InventoryTabArea.Bottom
-                ? new Rectangle(0, this.Component.sourceRect.Y, 16, this.Component.sourceRect.Height)
-                : new Rectangle(16, this.Component.sourceRect.Y, 16, this.Component.sourceRect.Height),
+            new Rectangle(16, this.Component.sourceRect.Y, 16, 16),
             this.selected ? Color.White : Color.Gray,
             0f,
             Vector2.Zero,
@@ -76,35 +64,15 @@ internal sealed class InventoryTab : IItemFilter
     public void Select()
     {
         this.selected = true;
-        switch (this.getArea())
-        {
-            case InventoryTabArea.Top:
-                this.Component.sourceRect.Y = 0;
-                this.Component.bounds.Y -= 4;
-                return;
-
-            case InventoryTabArea.Bottom:
-            default:
-                this.Component.sourceRect.Y = 4;
-                return;
-        }
+        this.Component.sourceRect.Y = 0;
+        this.Component.bounds.Y -= 4;
     }
 
     /// <summary>Unselects the current tab.</summary>
     public void Deselect()
     {
         this.selected = false;
-        switch (this.getArea())
-        {
-            case InventoryTabArea.Top:
-                this.Component.sourceRect.Y = 0;
-                this.Component.bounds.Y += 4;
-                return;
-
-            case InventoryTabArea.Bottom:
-            default:
-                this.Component.sourceRect.Y = 3;
-                return;
-        }
+        this.Component.sourceRect.Y = 0;
+        this.Component.bounds.Y += 4;
     }
 }

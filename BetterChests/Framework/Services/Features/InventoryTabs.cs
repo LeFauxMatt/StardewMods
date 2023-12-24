@@ -244,6 +244,7 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
     {
         this.cachedTabs.Value.Clear();
         if (this.itemGrabMenuManager.CurrentMenu is null
+            || this.itemGrabMenuManager.Top.Menu is null
             || this.itemGrabMenuManager.Top.Container is null
             || this.itemGrabMenuManager.Top.Container.Options.InventoryTabs != FeatureOption.Enabled
             || !this.itemGrabMenuManager.Top.Container.Options.InventoryTabList.Any())
@@ -261,80 +262,18 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
         }
 
         // Assign positions and ids
-        switch (this.ModConfig.InventoryTabArea)
-        {
-            case InventoryTabArea.Top:
-                this.AlignToTop(this.itemGrabMenuManager.CurrentMenu);
-                return;
-            case InventoryTabArea.Bottom:
-            default:
-                this.AlignToBottom(this.itemGrabMenuManager.CurrentMenu);
-                return;
-        }
-    }
-
-    private void AlignToBottom(ItemGrabMenu itemGrabMenu)
-    {
-        var yPosition = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen
-            + (Game1.tileSize * itemGrabMenu.ItemsToGrabMenu.rows)
-            + IClickableMenu.borderWidth;
-
-        var above = itemGrabMenu
-            .ItemsToGrabMenu.inventory
-            .TakeLast(itemGrabMenu.ItemsToGrabMenu.capacity / itemGrabMenu.ItemsToGrabMenu.rows)
-            .ToArray();
-
-        var below = itemGrabMenu
-            .inventory.inventory.Take(itemGrabMenu.inventory.capacity / itemGrabMenu.inventory.rows)
-            .ToArray();
-
-        var components = this.cachedTabs.Value.Select(tab => tab.Component).ToImmutableArray();
-        for (var i = 0; i < components.Length; ++i)
-        {
-            components[i].myID = 69_420 + i;
-            itemGrabMenu.allClickableComponents.Add(components[i]);
-            if (i > 0)
-            {
-                components[i - 1].rightNeighborID = 69_420 + i;
-                components[i].leftNeighborID = 69_419 + i;
-            }
-
-            if (i < below.Length)
-            {
-                below[i].upNeighborID = 69_420 + i;
-                components[i].downNeighborID = below[i].myID;
-            }
-
-            if (i < above.Length)
-            {
-                above[i].downNeighborID = 69_420 + i;
-                components[i].upNeighborID = above[i].myID;
-            }
-
-            this.cachedTabs.Value[i].Deselect();
-            components[i].bounds.X =
-                i > 0 ? components[i - 1].bounds.Right : itemGrabMenu.ItemsToGrabMenu.inventory[0].bounds.Left;
-
-            components[i].bounds.Y = yPosition;
-        }
-    }
-
-    private void AlignToTop(ItemGrabMenu itemGrabMenu)
-    {
-        var yPosition = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen
+        var top = this.itemGrabMenuManager.Top;
+        var yPosition = top.Menu.yPositionOnScreen
             - (IClickableMenu.borderWidth / 2)
             - Game1.tileSize
-            + 4;
+            + (top.Rows == 3 ? -20 : 4);
 
-        var below = itemGrabMenu
-            .ItemsToGrabMenu.inventory.Take(itemGrabMenu.ItemsToGrabMenu.capacity / itemGrabMenu.ItemsToGrabMenu.rows)
-            .ToArray();
-
+        var below = top.Menu.inventory.Take(this.itemGrabMenuManager.Top.Columns).ToArray();
         var components = this.cachedTabs.Value.Select(tab => tab.Component).ToImmutableArray();
         for (var i = 0; i < components.Length; ++i)
         {
             components[i].myID = 69_420 + i;
-            itemGrabMenu.allClickableComponents.Add(components[i]);
+            this.itemGrabMenuManager.CurrentMenu.allClickableComponents.Add(components[i]);
             if (i > 0)
             {
                 components[i - 1].rightNeighborID = 69_420 + i;
@@ -348,9 +287,7 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
             }
 
             this.cachedTabs.Value[i].Deselect();
-            components[i].bounds.X =
-                i > 0 ? components[i - 1].bounds.Right : itemGrabMenu.ItemsToGrabMenu.inventory[0].bounds.Left;
-
+            components[i].bounds.X = i > 0 ? components[i - 1].bounds.Right : top.Menu.inventory[0].bounds.Left;
             components[i].bounds.Y = yPosition;
         }
     }

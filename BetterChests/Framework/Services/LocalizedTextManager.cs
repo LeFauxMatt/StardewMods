@@ -39,19 +39,6 @@ internal sealed class LocalizedTextManager : BaseService
                 (12 * (value - (int)FeatureOption.Enabled + 1)).ToString(CultureInfo.InvariantCulture)),
         };
 
-    /// <summary>Formats an area value using localized text when available.</summary>
-    /// <param name="value">The area value to format.</param>
-    /// <returns>Localized text for the area value.</returns>
-    public string Area(string value) =>
-        value switch
-        {
-            nameof(ColorPickerArea.Right) => I18n.Area_Right_Name(),
-            nameof(ColorPickerArea.Left) => I18n.Area_Left_Name(),
-            nameof(InventoryTabArea.Top) => I18n.Area_Top_Name(),
-            nameof(InventoryTabArea.Bottom) => I18n.Area_Bottom_Name(),
-            _ => value,
-        };
-
     /// <summary>Formats range distance using localized text when available.</summary>
     /// <param name="value">The value for range distance to format.</param>
     /// <returns>Localized text for the range distance.</returns>

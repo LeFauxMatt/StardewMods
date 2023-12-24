@@ -1,6 +1,5 @@
 namespace StardewMods.ExpandedStorage.Framework.Services;
 
-using StardewMods.Common.Enums;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 
 /// <summary>Handles the config menu.</summary>
@@ -27,19 +26,9 @@ internal sealed class ConfigMenu
         gmcm.Api.Register(manifest, this.Reset, this.Save);
 
         // general options
-        gmcm.Api.AddSectionTitle(manifest, I18n.Config_Section_General_Title, I18n.Config_Section_General_Description);
-
-        gmcm.Api.AddTextOption(
-            manifest,
-            () => this.config.LogLevel.ToStringFast(),
-            value => this.config.LogLevel = SimpleLogLevelExtensions.TryParse(value, out var logLevel) ? logLevel : SimpleLogLevel.Less,
-            I18n.Config_LogLevel_Title,
-            I18n.Config_LogLevel_Description,
-            SimpleLogLevelExtensions.GetNames(),
-            Formatting.TryFormat);
     }
 
-    private void Reset() => this.config.LogLevel = SimpleLogLevel.Less;
+    private void Reset() { }
 
     private void Save() => this.helper.WriteConfig(this.config);
 }

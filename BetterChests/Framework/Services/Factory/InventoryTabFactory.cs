@@ -60,8 +60,7 @@ internal sealed class InventoryTabFactory : BaseService
             this.translationHelper.Get($"tab.{name}.Name").Default(name),
             this.gameContentHelper.Load<Texture2D>(data.Path),
             data.Index,
-            itemMatcher,
-            () => this.modConfig.InventoryTabArea);
+            itemMatcher);
 
         this.tabs.Value[name] = tab;
         return true;
