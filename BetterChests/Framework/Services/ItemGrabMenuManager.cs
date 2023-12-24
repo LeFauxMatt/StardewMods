@@ -20,8 +20,9 @@ internal sealed class ItemGrabMenuManager : BaseService
 #nullable disable
     private static ItemGrabMenuManager instance;
 #nullable enable
-    private readonly PerScreen<InventoryMenuManager> bottomMenu;
 
+    private readonly PerScreen<InventoryMenuManager> bottomMenu;
+    private readonly ModConfig modConfig;
     private readonly ContainerFactory containerFactory;
     private readonly PerScreen<IClickableMenu?> currentMenu = new();
     private readonly PerScreen<InventoryMenuManager> topMenu;
@@ -30,14 +31,16 @@ internal sealed class ItemGrabMenuManager : BaseService
 
     /// <summary>Initializes a new instance of the <see cref="ItemGrabMenuManager" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
-    public ItemGrabMenuManager(ILog log, IModEvents modEvents, Harmony harmony, ContainerFactory containerFactory)
+    public ItemGrabMenuManager(ILog log, ModConfig modConfig, IModEvents modEvents, Harmony harmony, ContainerFactory containerFactory)
         : base(log)
     {
         // Init
         ItemGrabMenuManager.instance = this;
+        this.modConfig = modConfig;
         this.containerFactory = containerFactory;
         this.topMenu = new PerScreen<InventoryMenuManager>(() => new InventoryMenuManager(log));
         this.bottomMenu = new PerScreen<InventoryMenuManager>(() => new InventoryMenuManager(log));
@@ -47,6 +50,7 @@ internal sealed class ItemGrabMenuManager : BaseService
         modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         modEvents.GameLoop.UpdateTicked += this.OnUpdateTicked;
         modEvents.GameLoop.UpdateTicking += this.OnUpdateTicking;
+        modEvents.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
 
         // Patches
         harmony.Patch(
@@ -64,6 +68,13 @@ internal sealed class ItemGrabMenuManager : BaseService
                 nameof(ItemGrabMenuManager.ItemGrabMenu_constructor_transpiler)));
     }
 
+    /// <summary>Event raised when the item grab menu has changed.</summary>
+    public event EventHandler<ItemGrabMenuChangedEventArgs> ItemGrabMenuChanged
+    {
+        add => this.itemGrabMenuChanged += value;
+        remove => this.itemGrabMenuChanged -= value;
+    }
+
     /// <summary>Gets the current item grab menu.</summary>
     public ItemGrabMenu? CurrentMenu =>
         Game1.activeClickableMenu?.Equals(this.currentMenu.Value) == true
@@ -75,13 +86,6 @@ internal sealed class ItemGrabMenuManager : BaseService
 
     /// <summary>Gets the inventory menu manager for the bottom inventory menu.</summary>
     public IInventoryMenuManager Bottom => this.bottomMenu.Value;
-
-    /// <summary>Event raised when the item grab menu has changed.</summary>
-    public event EventHandler<ItemGrabMenuChangedEventArgs> ItemGrabMenuChanged
-    {
-        add => this.itemGrabMenuChanged += value;
-        remove => this.itemGrabMenuChanged -= value;
-    }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Harmony")]
@@ -105,8 +109,7 @@ internal sealed class ItemGrabMenuManager : BaseService
         {
             if (index >= __instance.actualInventory.Count)
             {
-                __instance.inventory[index].name =
-                    __instance.actualInventory.Count.ToString(CultureInfo.InvariantCulture);
+                __instance.inventory[index].name = int.MaxValue.ToString(CultureInfo.InvariantCulture);
 
                 continue;
             }
@@ -195,8 +198,10 @@ internal sealed class ItemGrabMenuManager : BaseService
         this.currentMenu.Value = Game1.activeClickableMenu;
         if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
         {
+            this.topMenu.Value.Scrolled = 0;
             this.topMenu.Value.Container = null;
             this.topMenu.Value.Menu = null;
+            this.bottomMenu.Value.Scrolled = 0;
             this.bottomMenu.Value.Menu = null;
             this.bottomMenu.Value.Container = null;
             this.itemGrabMenuChanged.InvokeAll(this, new ItemGrabMenuChangedEventArgs());
@@ -232,28 +237,51 @@ internal sealed class ItemGrabMenuManager : BaseService
         itemGrabMenu.drawBG = false;
     }
 
-    [EventPriority((EventPriority)int.MaxValue)]
-    private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)
+    private void OnMouseWheelScrolled(object? sender, MouseWheelScrolledEventArgs e)
     {
-        // Redraw background
-        if (this.CurrentMenu is not null)
-        {
-            e.SpriteBatch.Draw(
-                Game1.fadeToBlackRect,
-                new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),
-                Color.Black * 0.5f);
-        }
-    }
-
-    [EventPriority((EventPriority)int.MinValue)]
-    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
-    {
-        // Redraw foreground
         if (this.CurrentMenu is null)
         {
             return;
         }
 
+        var (mouseX, mouseY) = Game1.getMousePosition(true);
+        if (this.Top.Menu?.isWithinBounds(mouseX, mouseY) == true)
+        {
+            var scroll = this.modConfig.Controls.ScrollPage.IsDown() ? this.Top.Rows : 1;
+            this.Top.Scrolled += e.Delta > 0 ? -scroll : scroll;
+        }
+
+        if (this.Bottom.Menu?.isWithinBounds(mouseX, mouseY) == true)
+        {
+            var scroll = this.modConfig.Controls.ScrollPage.IsDown() ? this.Bottom.Rows : 1;
+            this.Bottom.Scrolled += e.Delta > 0 ? -scroll : scroll;
+        }
+    }
+
+    [EventPriority((EventPriority)int.MaxValue)]
+    private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)
+    {
+        if (this.CurrentMenu is null)
+        {
+            return;
+        }
+
+        // Redraw background
+        e.SpriteBatch.Draw(
+            Game1.fadeToBlackRect,
+            new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),
+            Color.Black * 0.5f);
+    }
+
+    [EventPriority((EventPriority)int.MinValue)]
+    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    {
+        if (this.CurrentMenu is null)
+        {
+            return;
+        }
+
+        // Redraw foreground
         if (this.CurrentMenu.hoverText != null
             && (this.CurrentMenu.hoveredItem == null || this.CurrentMenu.ItemsToGrabMenu == null))
         {

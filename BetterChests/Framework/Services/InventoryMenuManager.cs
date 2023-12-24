@@ -62,8 +62,9 @@ internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
         // Validate the scrolled value
         var totalRows = (int)Math.Ceiling((double)aggregateItems.Count / this.Columns);
         var maxScroll = Math.Max(0, totalRows - this.Rows);
+        this.Scrolled = Math.Max(0, Math.Min(this.Scrolled, maxScroll));
 
-        return aggregateItems.Skip(Math.Min(this.Scrolled, maxScroll) * this.Columns).Take(this.Capacity);
+        return aggregateItems.Skip(this.Scrolled * this.Columns).Take(this.Capacity);
     }
 
     /// <summary>Resets the state of the object by clearing the lists of highlight methods and operations.</summary>
