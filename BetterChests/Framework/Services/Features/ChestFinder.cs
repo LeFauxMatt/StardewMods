@@ -32,7 +32,6 @@ internal sealed class ChestFinder : BaseFeature
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
-    /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemMatcherFactory">Dependency used for getting an ItemMatcher.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
@@ -41,7 +40,6 @@ internal sealed class ChestFinder : BaseFeature
         ILog log,
         ModConfig modConfig,
         ContainerFactory containerFactory,
-        IGameContentHelper gameContentHelper,
         IInputHelper inputHelper,
         ItemMatcherFactory itemMatcherFactory,
         IModEvents modEvents,
@@ -53,24 +51,21 @@ internal sealed class ChestFinder : BaseFeature
         this.modEvents = modEvents;
         this.toolbarIconsIntegration = toolbarIconsIntegration;
         this.itemMatcher = new PerScreen<ItemMatcher>(itemMatcherFactory.GetOneForSearch);
-        var texture = gameContentHelper.Load<Texture2D>("LooseSprites/textBox");
         this.searchBar = new PerScreen<SearchBar>(
             () => new SearchBar(
-                texture,
                 () => this.itemMatcher.Value.SearchText,
                 value =>
                 {
                     this.Log.Trace("{0}: Searching for {1}", this.Id, value);
                     this.itemMatcher.Value.SearchText = value;
                     this.resetCache.Value = true;
-                },
-                new Rectangle(0, 0, Math.Min(12 * Game1.tileSize, Game1.uiViewport.Width), texture.Height)));
+                }));
 
         this.searchOverlay = new PerScreen<SearchOverlay>(() => new SearchOverlay(this.searchBar.Value));
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.ChestFinder != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.ChestFinder != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -367,7 +362,7 @@ internal sealed class ChestFinder : BaseFeature
         foreach (var container in this
             .containerFactory.GetAllFromLocation(
                 Game1.player.currentLocation,
-                container => container.Options.ChestFinder == FeatureOption.Enabled)
+                container => container.Options.ChestFinder == Option.Enabled)
             .OfType<ChestContainer>())
         {
             if (container.Items.Any(this.itemMatcher.Value.MatchesFilter))

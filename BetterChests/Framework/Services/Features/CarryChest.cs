@@ -21,7 +21,7 @@ internal sealed class CarryChest : BaseFeature
     private readonly Harmony harmony;
     private readonly IInputHelper inputHelper;
     private readonly IModEvents modEvents;
-    private readonly ProxyChestManager proxyChestManager;
+    private readonly ProxyChestFactory proxyChestFactory;
     private readonly StatusEffectManager statusEffectManager;
 
     /// <summary>Initializes a new instance of the <see cref="CarryChest" /> class.</summary>
@@ -31,7 +31,7 @@ internal sealed class CarryChest : BaseFeature
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
-    /// <param name="proxyChestManager">Dependency used for creating virtualized chests.</param>
+    /// <param name="proxyChestFactory">Dependency used for creating virtualized chests.</param>
     /// <param name="statusEffectManager">Dependency used for adding and removing custom buffs.</param>
     public CarryChest(
         ILog log,
@@ -40,7 +40,7 @@ internal sealed class CarryChest : BaseFeature
         Harmony harmony,
         IInputHelper inputHelper,
         IModEvents modEvents,
-        ProxyChestManager proxyChestManager,
+        ProxyChestFactory proxyChestFactory,
         StatusEffectManager statusEffectManager)
         : base(log, modConfig)
     {
@@ -49,12 +49,12 @@ internal sealed class CarryChest : BaseFeature
         this.containerFactory = containerFactory;
         this.harmony = harmony;
         this.inputHelper = inputHelper;
-        this.proxyChestManager = proxyChestManager;
+        this.proxyChestFactory = proxyChestFactory;
         this.statusEffectManager = statusEffectManager;
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.CarryChest != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.CarryChest != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -93,7 +93,7 @@ internal sealed class CarryChest : BaseFeature
         ref bool __result)
     {
         if (!__result
-            || !CarryChest.instance.proxyChestManager.TryGetProxy(__instance, out var chest)
+            || !CarryChest.instance.proxyChestFactory.TryGetProxy(__instance, out var chest)
             || !location.Objects.TryGetValue(
                 new Vector2((int)(x / (float)Game1.tileSize), (int)(y / (float)Game1.tileSize)),
                 out var obj)
@@ -111,7 +111,7 @@ internal sealed class CarryChest : BaseFeature
         }
 
         // Restore proxy
-        CarryChest.instance.proxyChestManager.TryRestoreProxy(placedChest);
+        CarryChest.instance.proxyChestFactory.TryRestoreProxy(placedChest);
     }
 
     private void OnOneSecondUpdateTicked(object? sender, OneSecondUpdateTickedEventArgs e)
@@ -121,7 +121,7 @@ internal sealed class CarryChest : BaseFeature
             return;
         }
 
-        if (Game1.player.Items.Count(this.proxyChestManager.IsProxy) >= this.ModConfig.CarryChestSlowLimit)
+        if (Game1.player.Items.Count(this.proxyChestFactory.IsProxy) >= this.ModConfig.CarryChestSlowLimit)
         {
             this.statusEffectManager.AddEffect(StatusEffect.Overburdened);
             return;
@@ -150,14 +150,14 @@ internal sealed class CarryChest : BaseFeature
             || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
             || obj is not Chest chest
             || !this.containerFactory.TryGetOne(obj, out var container)
-            || container.Options.CarryChest != FeatureOption.Enabled)
+            || container.Options.CarryChest != Option.Enabled)
         {
             return;
         }
 
         // Check carrying limits
         if (this.ModConfig.CarryChestLimit > 0
-            && Game1.player.Items.Count(this.proxyChestManager.IsProxy) >= this.ModConfig.CarryChestLimit)
+            && Game1.player.Items.Count(this.proxyChestFactory.IsProxy) >= this.ModConfig.CarryChestLimit)
         {
             Game1.showRedMessage(I18n.Alert_CarryChestLimit_HitLimit());
             this.inputHelper.Suppress(e.Button);
@@ -165,7 +165,7 @@ internal sealed class CarryChest : BaseFeature
         }
 
         // Try to create proxy item
-        if (!this.proxyChestManager.TryCreateRequest(chest, out var request))
+        if (!this.proxyChestFactory.TryCreateRequest(chest, out var request))
         {
             return;
         }

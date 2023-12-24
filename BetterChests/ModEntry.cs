@@ -89,7 +89,7 @@ public sealed class ModEntry : Mod
         this.container.Register<InventoryTabFactory>(Lifestyle.Singleton);
         this.container.Register<ItemGrabMenuManager>(Lifestyle.Singleton);
         this.container.Register<StatusEffectManager>(Lifestyle.Singleton);
-        this.container.Register<ProxyChestManager>(Lifestyle.Singleton);
+        this.container.Register<ProxyChestFactory>(Lifestyle.Singleton);
 
         // Features
         this.container.Collection.Register<IFeature>(
@@ -110,7 +110,7 @@ public sealed class ModEntry : Mod
                 Lifestyle.Singleton.CreateRegistration<OrganizeChest>(this.container),
                 Lifestyle.Singleton.CreateRegistration<ResizeChest>(this.container),
                 Lifestyle.Singleton.CreateRegistration<SearchItems>(this.container),
-                Lifestyle.Singleton.CreateRegistration<SlotLock>(this.container),
+                Lifestyle.Singleton.CreateRegistration<LockItemSlot>(this.container),
                 Lifestyle.Singleton.CreateRegistration<StashToChest>(this.container),
                 Lifestyle.Singleton.CreateRegistration<TransferItems>(this.container),
                 Lifestyle.Singleton.CreateRegistration<UnloadChest>(this.container),

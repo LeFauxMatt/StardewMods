@@ -3,7 +3,6 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
@@ -45,7 +44,7 @@ internal sealed class OpenHeldChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.OpenHeldChest != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.OpenHeldChest != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -95,21 +94,19 @@ internal sealed class OpenHeldChest : BaseFeature
         if (!Context.IsPlayerFree
             || !e.Button.IsActionButton()
             || Game1.player.CurrentItem is null
-            || !this.containerFactory.TryGetOne(Game1.player.CurrentItem, out var storage)
-            || storage.Options.OpenHeldChest != FeatureOption.Enabled
-            || storage is not ChestContainer chestStorage)
+            || !this.containerFactory.TryGetOne(Game1.player.CurrentItem, out var container)
+            || container.Options.OpenHeldChest != Option.Enabled)
         {
             return;
         }
 
-        Game1.player.currentLocation.localSound("openChest");
-        chestStorage.Chest.ShowMenu();
         this.inputHelper.Suppress(e.Button);
+        container.ShowMenu();
     }
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.Top.Container?.Options.OpenHeldChest != FeatureOption.Enabled)
+        if (this.itemGrabMenuManager.Top.Container?.Options.OpenHeldChest != Option.Enabled)
         {
             return;
         }
@@ -119,12 +116,11 @@ internal sealed class OpenHeldChest : BaseFeature
 
     private bool MatchesFilter(Item item)
     {
-        if (this.itemGrabMenuManager.Top.Container is not IContainer<Chest> container
-            || !container.Source.TryGetTarget(out var chest))
+        switch (this.itemGrabMenuManager.Top.Container)
         {
-            return true;
+            case ObjectContainer container: return container.Object != item;
+            case ChestContainer container: return container.Chest != item;
+            default: return true;
         }
-
-        return chest != item;
     }
 }

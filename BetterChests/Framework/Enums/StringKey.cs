@@ -8,4 +8,7 @@ internal enum StringKey
 {
     /// <summary>Assign a custom label to chests.</summary>
     ChestLabel,
+
+    /// <summary>Resize the carrying capacity of a chest.</summary>
+    ResizeChest,
 }

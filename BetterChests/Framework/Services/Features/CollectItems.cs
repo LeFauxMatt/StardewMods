@@ -14,8 +14,8 @@ internal sealed class CollectItems : BaseFeature
 #nullable disable
     private static CollectItems instance;
 #nullable enable
-    private readonly PerScreen<List<IContainer>> cachedContainers = new(() => []);
 
+    private readonly PerScreen<List<IContainer>> cachedContainers = new(() => []);
     private readonly ContainerFactory containerFactory;
     private readonly Harmony harmony;
     private readonly IInputHelper inputHelper;
@@ -46,7 +46,7 @@ internal sealed class CollectItems : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.CollectItems != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.CollectItems != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -145,7 +145,7 @@ internal sealed class CollectItems : BaseFeature
         this.cachedContainers.Value.Clear();
         foreach (var storage in this.containerFactory.GetAllFromPlayer(
             Game1.player,
-            container => container.Options.ChestFinder == FeatureOption.Enabled))
+            container => container.Options.ChestFinder == Option.Enabled))
         {
             this.cachedContainers.Value.Add(storage);
         }

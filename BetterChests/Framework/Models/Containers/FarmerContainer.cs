@@ -11,10 +11,10 @@ internal sealed class FarmerContainer : BaseContainer<Farmer>
 {
     /// <summary>Initializes a new instance of the <see cref="FarmerContainer" /> class.</summary>
     /// <param name="itemMatcher">The item matcher to use for filters.</param>
-    /// <param name="storageType">The type of storage object.</param>
+    /// <param name="baseOptions">The type of storage object.</param>
     /// <param name="farmer">The farmer whose inventory is holding the container.</param>
-    public FarmerContainer(ItemMatcher itemMatcher, IStorage storageType, Farmer farmer)
-        : base(itemMatcher, storageType) =>
+    public FarmerContainer(ItemMatcher itemMatcher, IStorageOptions baseOptions, Farmer farmer)
+        : base(itemMatcher, baseOptions) =>
         this.Source = new WeakReference<Farmer>(farmer);
 
     /// <summary>Gets the farmer container of the storage.</summary>

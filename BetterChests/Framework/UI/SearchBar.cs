@@ -17,25 +17,25 @@ internal sealed class SearchBar
     private int timeout;
 
     /// <summary>Initializes a new instance of the <see cref="SearchBar" /> class.</summary>
-    /// <param name="texture">The texture used for the search overlay.</param>
     /// <param name="getMethod">The function that gets the current search text.</param>
     /// <param name="setMethod">The action that sets the search text.</param>
     /// <param name="area">The area in which the search overlay is displayed.</param>
-    public SearchBar(Texture2D texture, Func<string> getMethod, Action<string> setMethod, Rectangle area)
+    public SearchBar(Func<string> getMethod, Action<string> setMethod)
     {
         this.previousText = getMethod();
         this.setMethod = setMethod;
-        this.area = area;
+        var texture = Game1.content.Load<Texture2D>("LooseSprites\\textBox");
+        this.area = new Rectangle(0, 0, 100, texture.Height);
         this.textBox = new TextBox(texture, null, Game1.smallFont, Game1.textColor)
         {
-            X = area.X,
-            Y = area.Y,
-            Width = area.Width,
+            X = this.area.X,
+            Y = this.area.Y,
+            Width = this.area.Width,
             Selected = true,
         };
 
         this.icon = new ClickableTextureComponent(
-            new Rectangle(area.X + this.textBox.Width - 38, area.Y + 6, 32, 32),
+            new Rectangle(this.area.X + this.textBox.Width - 38, this.area.Y + 6, 32, 32),
             Game1.mouseCursors,
             new Rectangle(80, 0, 13, 13),
             2.5f);
@@ -71,6 +71,13 @@ internal sealed class SearchBar
         this.area.Width = width;
         this.textBox.Width = width;
         this.icon.bounds.X = this.area.X + this.textBox.Width - 38;
+    }
+
+    /// <summary>Clears the text.</summary>
+    public void Clear()
+    {
+        this.textBox.Text = string.Empty;
+        this.setMethod(this.textBox.Text);
     }
 
     /// <summary>Draws the search overlay to the screen.</summary>

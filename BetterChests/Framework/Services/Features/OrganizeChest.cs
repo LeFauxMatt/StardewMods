@@ -17,7 +17,6 @@ internal sealed class OrganizeChest : BaseFeature
 
     private readonly Harmony harmony;
     private readonly IInputHelper inputHelper;
-
     private readonly PerScreen<bool> isActive = new();
     private readonly ItemGrabMenuManager itemGrabMenuManager;
     private readonly IModEvents modEvents;
@@ -46,7 +45,7 @@ internal sealed class OrganizeChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.OrganizeChest != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.OrganizeChest != Option.Disabled;
 
     /// <summary>Organizes the items in the collection.</summary>
     /// <param name="reverse">Determines whether to sort the items in reverse order. The default value is false.</param>
@@ -205,7 +204,7 @@ internal sealed class OrganizeChest : BaseFeature
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.CurrentMenu is null
-            || this.itemGrabMenuManager.Top.Container?.Options.OrganizeChest != FeatureOption.Enabled)
+            || this.itemGrabMenuManager.Top.Container?.Options.OrganizeChest != Option.Enabled)
         {
             this.isActive.Value = false;
             return;

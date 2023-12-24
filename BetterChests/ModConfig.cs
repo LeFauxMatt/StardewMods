@@ -2,16 +2,16 @@
 
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models;
-using StardewMods.BetterChests.Framework.Models.Storages;
+using StardewMods.BetterChests.Framework.Models.StorageOptions;
 
 /// <summary>Mod config data for Better Chests.</summary>
 internal sealed class ModConfig
 {
     /// <summary>Gets or sets a value containing the default storage options.</summary>
-    public DefaultStorage DefaultOptions { get; set; } = new();
+    public DefaultStorageOptions DefaultOptions { get; set; } = new();
 
     /// <summary>Gets or sets a value indicating how many chests can be carried at once.</summary>
-    public int CarryChestLimit { get; set; } = 1;
+    public int CarryChestLimit { get; set; } = 3;
 
     /// <summary>Gets or sets a value indicating how many chests can be carried before applying a slowness effect.</summary>
     public int CarryChestSlowLimit { get; set; } = 1;
@@ -20,7 +20,7 @@ internal sealed class ModConfig
     public Controls Controls { get; set; } = new();
 
     /// <summary>Gets or sets a value indicating the range which workbenches will craft from.</summary>
-    public FeatureOptionRange CraftFromWorkbench { get; set; } = FeatureOptionRange.Location;
+    public RangeOption CraftFromWorkbench { get; set; } = RangeOption.Location;
 
     /// <summary>Gets or sets a value indicating the distance in tiles that the workbench can be remotely crafted from.</summary>
     public int CraftFromWorkbenchDistance { get; set; } = -1;

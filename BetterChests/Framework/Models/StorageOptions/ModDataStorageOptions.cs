@@ -1,15 +1,15 @@
-namespace StardewMods.BetterChests.Framework.Models.Storages;
+namespace StardewMods.BetterChests.Framework.Models.StorageOptions;
 
 using StardewValley.Mods;
 
 /// <inheritdoc />
-internal sealed class ModDataStorage : DictionaryStorage
+internal sealed class ModDataStorageOptions : DictionaryStorageOptions
 {
     private readonly ModDataDictionary modData;
 
-    /// <summary>Initializes a new instance of the <see cref="ModDataStorage" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ModDataStorageOptions" /> class.</summary>
     /// <param name="modData">The mod data dictionary.</param>
-    public ModDataStorage(ModDataDictionary modData) => this.modData = modData;
+    public ModDataStorageOptions(ModDataDictionary modData) => this.modData = modData;
 
     /// <inheritdoc />
     protected override bool TryGetValue(string key, [NotNullWhen(true)] out string? value) =>

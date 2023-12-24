@@ -1,6 +1,5 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
-using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -11,38 +10,33 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
 /// <summary>Locks items in inventory so they cannot be stashed.</summary>
-internal sealed class SlotLock : BaseFeature
+internal sealed class LockItemSlot : BaseFeature
 {
-    private static readonly MethodBase InventoryMenuDraw = AccessTools.Method(
-        typeof(InventoryMenu),
-        nameof(InventoryMenu.draw),
-        new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) });
-
 #nullable disable
-    private static SlotLock instance;
+    private static LockItemSlot instance;
 #nullable enable
 
     private readonly IModEvents events;
     private readonly Harmony harmony;
     private readonly IInputHelper input;
 
-    /// <summary>Initializes a new instance of the <see cref="SlotLock" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="LockItemSlot" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="events">Dependency used for managing access to events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="input">Dependency used for checking and changing input state.</param>
-    public SlotLock(ILog log, ModConfig modConfig, IModEvents events, Harmony harmony, IInputHelper input)
+    public LockItemSlot(ILog log, ModConfig modConfig, IModEvents events, Harmony harmony, IInputHelper input)
         : base(log, modConfig)
     {
-        SlotLock.instance = this;
+        LockItemSlot.instance = this;
         this.events = events;
         this.harmony = harmony;
         this.input = input;
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.SlotLock != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.LockItemSlot != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -53,8 +47,11 @@ internal sealed class SlotLock : BaseFeature
 
         // Harmony
         this.harmony.Patch(
-            SlotLock.InventoryMenuDraw,
-            transpiler: new HarmonyMethod(typeof(SlotLock), nameof(SlotLock.InventoryMenu_draw_transpiler)));
+            AccessTools.DeclaredMethod(
+                typeof(InventoryMenu),
+                nameof(InventoryMenu.draw),
+                [typeof(SpriteBatch), typeof(int), typeof(int), typeof(int)]),
+            transpiler: new HarmonyMethod(typeof(LockItemSlot), nameof(LockItemSlot.InventoryMenu_draw_transpiler)));
     }
 
     /// <inheritdoc />
@@ -66,8 +63,11 @@ internal sealed class SlotLock : BaseFeature
 
         // Harmony
         this.harmony.Unpatch(
-            SlotLock.InventoryMenuDraw,
-            AccessTools.Method(typeof(SlotLock), nameof(SlotLock.InventoryMenu_draw_transpiler)));
+            AccessTools.DeclaredMethod(
+                typeof(InventoryMenu),
+                nameof(InventoryMenu.draw),
+                [typeof(SpriteBatch), typeof(int), typeof(int), typeof(int)]),
+            AccessTools.DeclaredMethod(typeof(LockItemSlot), nameof(LockItemSlot.InventoryMenu_draw_transpiler)));
     }
 
     private static IEnumerable<CodeInstruction> InventoryMenu_draw_transpiler(IEnumerable<CodeInstruction> instructions)
@@ -83,13 +83,13 @@ internal sealed class SlotLock : BaseFeature
 
             yield return new CodeInstruction(OpCodes.Ldarg_0);
             yield return new CodeInstruction(OpCodes.Ldloc_S, (byte)5);
-            yield return CodeInstruction.Call(typeof(SlotLock), nameof(SlotLock.Tint));
+            yield return CodeInstruction.Call(typeof(LockItemSlot), nameof(LockItemSlot.Tint));
         }
     }
 
     private static Color Tint(Color tint, InventoryMenu menu, int index) =>
         menu.actualInventory.ElementAtOrDefault(index)?.modData.ContainsKey("furyx639.BetterChests/LockedSlot") == true
-            ? Utility.StringToColor(SlotLock.instance.ModConfig.SlotLockColor) ?? tint
+            ? Utility.StringToColor(LockItemSlot.instance.ModConfig.SlotLockColor) ?? tint
             : tint;
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)

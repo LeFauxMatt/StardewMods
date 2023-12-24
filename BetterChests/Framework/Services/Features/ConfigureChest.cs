@@ -18,8 +18,8 @@ internal sealed class ConfigureChest : BaseFeature
 #nullable disable
     private static ConfigureChest instance;
 #nullable enable
-    private readonly PerScreen<ClickableTextureComponent> configButton;
 
+    private readonly PerScreen<ClickableTextureComponent> configButton;
     private readonly ContainerFactory containerFactory;
     private readonly GenericModConfigMenuIntegration genericModConfigMenuIntegration;
     private readonly Harmony harmony;
@@ -72,7 +72,7 @@ internal sealed class ConfigureChest : BaseFeature
 
     /// <inheritdoc />
     public override bool ShouldBeActive =>
-        this.ModConfig.DefaultOptions.ConfigureChest != FeatureOption.Disabled
+        this.ModConfig.DefaultOptions.ConfigureChest != Option.Disabled
         && this.genericModConfigMenuIntegration.IsLoaded;
 
     /// <inheritdoc />
@@ -196,7 +196,7 @@ internal sealed class ConfigureChest : BaseFeature
             || !this.ModConfig.Controls.Configure.JustPressed()
             || Game1.player.CurrentItem is null
             || !this.containerFactory.TryGetOne(Game1.player.CurrentItem, out var container)
-            || container.Options.ConfigureChest == FeatureOption.Disabled)
+            || container.Options.ConfigureChest == Option.Disabled)
         {
             return;
         }
@@ -209,7 +209,7 @@ internal sealed class ConfigureChest : BaseFeature
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.CurrentMenu is null
-            || this.itemGrabMenuManager.Top.Container?.Options.ConfigureChest != FeatureOption.Enabled)
+            || this.itemGrabMenuManager.Top.Container?.Options.ConfigureChest != Option.Enabled)
         {
             this.isActive.Value = false;
             return;

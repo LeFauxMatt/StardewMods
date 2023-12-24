@@ -28,7 +28,7 @@ internal sealed class LabelChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.LabelChest != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.LabelChest != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -53,7 +53,7 @@ internal sealed class LabelChest : BaseFeature
                 context: Chest chest,
             }
             || !this.containerFactory.TryGetOne(chest, out var container)
-            || container.Options.LabelChest != FeatureOption.Enabled
+            || container.Options.LabelChest != Option.Enabled
             || string.IsNullOrWhiteSpace(container.Options.ChestLabel))
         {
             return;
@@ -82,7 +82,7 @@ internal sealed class LabelChest : BaseFeature
         if ((!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
                 && !Game1.currentLocation.Objects.TryGetValue(pos - new Vector2(0, -1), out obj))
             || !this.containerFactory.TryGetOne(obj, out var storage)
-            || storage.Options.LabelChest != FeatureOption.Enabled
+            || storage.Options.LabelChest != Option.Enabled
             || string.IsNullOrWhiteSpace(storage.Options.ChestLabel))
         {
             return;

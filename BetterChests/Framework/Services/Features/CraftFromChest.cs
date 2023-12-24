@@ -38,7 +38,7 @@ internal sealed class CraftFromChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.CraftFromChest != FeatureOptionRange.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.CraftFromChest != RangeOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()

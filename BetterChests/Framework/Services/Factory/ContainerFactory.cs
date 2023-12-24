@@ -3,7 +3,7 @@ namespace StardewMods.BetterChests.Framework.Services.Factory;
 using System.Runtime.CompilerServices;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
-using StardewMods.BetterChests.Framework.Models.Storages;
+using StardewMods.BetterChests.Framework.Models.StorageOptions;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Buildings;
 using StardewValley.GameData.BigCraftables;
@@ -15,24 +15,24 @@ internal sealed class ContainerFactory : BaseService
     private readonly ConditionalWeakTable<object, IContainer> cachedContainers = new();
     private readonly ModConfig config;
     private readonly ItemMatcherFactory itemMatchers;
-    private readonly ProxyChestManager proxyChestManager;
-    private readonly Dictionary<string, IStorage> storageTypes = new();
+    private readonly ProxyChestFactory proxyChestFactory;
+    private readonly Dictionary<string, IStorageOptions> storageOptions = new();
 
     /// <summary>Initializes a new instance of the <see cref="ContainerFactory" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="config">Dependency used for accessing config data.</param>
     /// <param name="itemMatchers">Dependency used for getting an ItemMatcher.</param>
-    /// <param name="proxyChestManager">Dependency used for creating virtualized chests.</param>
+    /// <param name="proxyChestFactory">Dependency used for creating virtualized chests.</param>
     public ContainerFactory(
         ILog log,
         ModConfig config,
         ItemMatcherFactory itemMatchers,
-        ProxyChestManager proxyChestManager)
+        ProxyChestFactory proxyChestFactory)
         : base(log)
     {
         this.config = config;
         this.itemMatchers = itemMatchers;
-        this.proxyChestManager = proxyChestManager;
+        this.proxyChestFactory = proxyChestFactory;
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ internal sealed class ContainerFactory : BaseService
     {
         foreach (var item in parentContainer.Items)
         {
-            if (!this.TryGetOne(item, out var childContainer))
+            if (item is null || !this.TryGetOne(item, out var childContainer))
             {
                 continue;
             }
@@ -115,10 +115,10 @@ internal sealed class ContainerFactory : BaseService
                 continue;
             }
 
-            if (!this.storageTypes.TryGetValue($"(B){building.buildingType.Value}", out var storageType))
+            if (!this.storageOptions.TryGetValue($"(B){building.buildingType.Value}", out var storageType))
             {
-                storageType = new BuildingStorage(this.config.DefaultOptions, building.GetData());
-                this.storageTypes.Add($"(B){building.buildingType.Value}", storageType);
+                storageType = new BuildingStorageOptions(this.config.DefaultOptions, building.GetData());
+                this.storageOptions.Add($"(B){building.buildingType.Value}", storageType);
             }
 
             foreach (var chest in building.buildingChests)
@@ -141,10 +141,10 @@ internal sealed class ContainerFactory : BaseService
         if (location.GetFridge() is
             { } fridge)
         {
-            if (!this.storageTypes.TryGetValue($"(L){location.Name}", out var storageType))
+            if (!this.storageOptions.TryGetValue($"(L){location.Name}", out var storageType))
             {
-                storageType = new LocationStorage(this.config.DefaultOptions, location.GetData());
-                this.storageTypes.Add($"(L){location.Name}", storageType);
+                storageType = new LocationStorageOptions(this.config.DefaultOptions, location.GetData());
+                this.storageOptions.Add($"(L){location.Name}", storageType);
             }
 
             if (!this.cachedContainers.TryGetValue(fridge, out var container))
@@ -181,7 +181,7 @@ internal sealed class ContainerFactory : BaseService
         // Search for containers from farmer inventory
         foreach (var item in farmer.Items)
         {
-            if (!this.TryGetOne(item, out var childContainer))
+            if (item is null || !this.TryGetOne(item, out var childContainer))
             {
                 continue;
             }
@@ -206,28 +206,31 @@ internal sealed class ContainerFactory : BaseService
         }
 
         var chest = item as Chest ?? (item as SObject)?.heldObject.Value as Chest;
-        if (chest is null && !this.proxyChestManager.TryGetProxy(item, out chest))
+        if (chest is null && !this.proxyChestFactory.TryGetProxy(item, out chest))
         {
             container = null;
             return false;
         }
 
-        if (!this.storageTypes.TryGetValue(item.QualifiedItemId, out var storageType))
+        if (!this.storageOptions.TryGetValue(item.QualifiedItemId, out var storageOption))
         {
-            var data = ItemRegistry.GetData(item.QualifiedItemId).RawData as BigCraftableData ?? new BigCraftableData();
-            storageType = new BigCraftableStorage(this.config.DefaultOptions, data);
-            this.storageTypes.Add(item.QualifiedItemId, storageType);
+            var data =
+                ItemRegistry.GetData(item.QualifiedItemId)?.RawData as BigCraftableData ?? new BigCraftableData();
+
+            storageOption = new BigCraftableStorageOptions(this.config.DefaultOptions, data);
+            this.storageOptions.Add(item.QualifiedItemId, storageOption);
         }
 
         var itemMatcher = this.itemMatchers.GetDefault();
         container = item switch
         {
-            Chest => new ChestContainer(itemMatcher, storageType, chest),
-            SObject obj => new ObjectContainer(itemMatcher, storageType, obj, chest),
-            _ => new ChestContainer(itemMatcher, storageType, chest),
+            Chest => new ChestContainer(itemMatcher, storageOption, chest),
+            SObject obj => new ObjectContainer(itemMatcher, storageOption, obj, chest),
+            _ => new ChestContainer(itemMatcher, storageOption, chest),
         };
 
         this.cachedContainers.AddOrUpdate(item, container);
+        this.cachedContainers.AddOrUpdate(chest, container);
         return true;
     }
 

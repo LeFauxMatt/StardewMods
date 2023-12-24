@@ -53,9 +53,15 @@ internal sealed class ItemGrabMenuManager : BaseService
             AccessTools.DeclaredMethod(
                 typeof(InventoryMenu),
                 nameof(InventoryMenu.draw),
-                new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(int) }),
+                [typeof(SpriteBatch), typeof(int), typeof(int), typeof(int)]),
             new HarmonyMethod(typeof(ItemGrabMenuManager), nameof(ItemGrabMenuManager.InventoryMenu_draw_prefix)),
             new HarmonyMethod(typeof(ItemGrabMenuManager), nameof(ItemGrabMenuManager.InventoryMenu_draw_postfix)));
+
+        harmony.Patch(
+            AccessTools.GetDeclaredConstructors(typeof(ItemGrabMenu)).Single(ctor => ctor.GetParameters().Length > 5),
+            transpiler: new HarmonyMethod(
+                typeof(ItemGrabMenuManager),
+                nameof(ItemGrabMenuManager.ItemGrabMenu_constructor_transpiler)));
     }
 
     /// <summary>Gets the current item grab menu.</summary>
@@ -131,6 +137,29 @@ internal sealed class ItemGrabMenuManager : BaseService
         __instance.actualInventory = __state.Container.Items;
     }
 
+    private static IEnumerable<CodeInstruction> ItemGrabMenu_constructor_transpiler(
+        IEnumerable<CodeInstruction> instructions)
+    {
+        var counter = 0;
+        foreach (var instruction in instructions)
+        {
+            if (instruction.Calls(AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.GetActualCapacity)))
+                && ++counter == 2)
+            {
+                yield return instruction;
+                yield return CodeInstruction.Call(
+                    typeof(ItemGrabMenuManager),
+                    nameof(ItemGrabMenuManager.GetActualCapacity));
+            }
+            else
+            {
+                yield return instruction;
+            }
+        }
+    }
+
+    private static int GetActualCapacity(int capacity) => capacity > 70 ? 70 : capacity;
+
     private void OnUpdateTicking(object? sender, UpdateTickingEventArgs e) => this.UpdateMenu();
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e) => this.UpdateMenu();
@@ -157,7 +186,7 @@ internal sealed class ItemGrabMenuManager : BaseService
 
     private void UpdateMenu()
     {
-        if (Game1.activeClickableMenu?.Equals(this.currentMenu.Value) == true)
+        if (Game1.activeClickableMenu == this.currentMenu.Value)
         {
             this.UpdateHighlightMethods();
             return;
@@ -166,8 +195,10 @@ internal sealed class ItemGrabMenuManager : BaseService
         this.currentMenu.Value = Game1.activeClickableMenu;
         if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
         {
+            this.topMenu.Value.Container = null;
             this.topMenu.Value.Menu = null;
             this.bottomMenu.Value.Menu = null;
+            this.bottomMenu.Value.Container = null;
             this.itemGrabMenuChanged.InvokeAll(this, new ItemGrabMenuChangedEventArgs());
             return;
         }

@@ -1,16 +1,16 @@
-namespace StardewMods.BetterChests.Framework.Models.Storages;
+namespace StardewMods.BetterChests.Framework.Models.StorageOptions;
 
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewValley.GameData.Locations;
 
 /// <inheritdoc />
-internal sealed class LocationStorage : ChildStorage
+internal sealed class LocationStorageOptions : ChildStorageOptions
 {
-    /// <summary>Initializes a new instance of the <see cref="LocationStorage" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="LocationStorageOptions" /> class.</summary>
     /// <param name="default">The default storage options.</param>
     /// <param name="data">The location data.</param>
-    public LocationStorage(IStorage @default, LocationData data)
-        : base(@default, new CustomFieldsStorage(data.CustomFields)) =>
+    public LocationStorageOptions(IStorageOptions @default, LocationData data)
+        : base(@default, new CustomFieldsStorageOptions(data.CustomFields)) =>
         this.Data = data;
 
     /// <summary>Gets the location data.</summary>

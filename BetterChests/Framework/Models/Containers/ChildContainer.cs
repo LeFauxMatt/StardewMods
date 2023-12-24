@@ -34,7 +34,7 @@ internal class ChildContainer : IContainer
     public string Description => this.child.Description;
 
     /// <inheritdoc />
-    public IStorage Options => this.child.Options;
+    public IStorageOptions Options => this.child.Options;
 
     /// <inheritdoc />
     public IInventory Items => this.child.Items;
@@ -50,6 +50,9 @@ internal class ChildContainer : IContainer
 
     /// <inheritdoc />
     public void ForEachItem(Func<Item, bool> action) => this.child.ForEachItem(action);
+
+    /// <inheritdoc />
+    public void ShowMenu() => this.child.ShowMenu();
 
     /// <inheritdoc />
     public bool Transfer(Item item, IContainer containerTo, out Item? remaining) =>

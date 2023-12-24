@@ -4,7 +4,7 @@ using NetEscapades.EnumGenerators;
 
 /// <summary>Keys used for FeatureOptionRange fields in DictionaryStorageOptions.</summary>
 [EnumExtensions]
-internal enum FeatureOptionRangeKey
+internal enum RangeOptionKey
 {
     /// <summary>Allows chests to be remotely crafted from.</summary>
     CraftFromChest,

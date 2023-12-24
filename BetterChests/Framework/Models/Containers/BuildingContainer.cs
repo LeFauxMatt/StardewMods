@@ -14,11 +14,11 @@ internal sealed class BuildingContainer : ChestContainer
 
     /// <summary>Initializes a new instance of the <see cref="BuildingContainer" /> class.</summary>
     /// <param name="itemMatcher">The item matcher to use for filters.</param>
-    /// <param name="storageType">The type of storage object.</param>
+    /// <param name="baseOptions">The type of storage object.</param>
     /// <param name="building">The building to which the storage is connected.</param>
     /// <param name="chest">The chest storage of the container.</param>
-    public BuildingContainer(ItemMatcher itemMatcher, IStorage storageType, Building building, Chest chest)
-        : base(itemMatcher, storageType, chest) =>
+    public BuildingContainer(ItemMatcher itemMatcher, IStorageOptions baseOptions, Building building, Chest chest)
+        : base(itemMatcher, baseOptions, chest) =>
         this.building = new WeakReference<Building>(building);
 
     /// <summary>Gets the building container of the storage.</summary>

@@ -30,7 +30,7 @@ internal sealed class ResizeChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.ResizeChest != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.ResizeChest != CapacityOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate() =>
@@ -45,19 +45,24 @@ internal sealed class ResizeChest : BaseFeature
             AccessTools.DeclaredMethod(typeof(ResizeChest), nameof(ResizeChest.Chest_GetActualCapacity_postfix)));
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Chest_GetActualCapacity_postfix(Chest __instance, ref int __result)
     {
-        if (!ResizeChest.instance.containerFactory.TryGetOne(__instance, out var container))
+        if (!ResizeChest.instance.containerFactory.TryGetOne(__instance, out var container)
+            || container.Options.ResizeChest == CapacityOption.Disabled)
         {
             return;
         }
 
         __result = Math.Max(
-                container.Options.ResizeChestCapacity,
-                __instance.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count) switch
+            container.Items.Count,
+            container.Options.ResizeChest switch
             {
-                > 36 => 70, > 9 => 36, _ => 9,
-            };
+                CapacityOption.Small => 9,
+                CapacityOption.Medium => 36,
+                CapacityOption.Large => 70,
+                CapacityOption.Unlimited => Math.Max(70, container.Items.Count + 1),
+            });
     }
 }

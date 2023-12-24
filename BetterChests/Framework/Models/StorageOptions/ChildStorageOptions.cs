@@ -1,48 +1,48 @@
-namespace StardewMods.BetterChests.Framework.Models.Storages;
+namespace StardewMods.BetterChests.Framework.Models.StorageOptions;
 
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 
 /// <inheritdoc />
-internal class ChildStorage : IStorage
+internal class ChildStorageOptions : IStorageOptions
 {
-    private readonly IStorage child;
-    private readonly IStorage parent;
+    private readonly IStorageOptions child;
+    private readonly IStorageOptions parent;
 
-    /// <summary>Initializes a new instance of the <see cref="ChildStorage" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ChildStorageOptions" /> class.</summary>
     /// <param name="parent">The parent storage options.</param>
     /// <param name="child">The child storage options.</param>
-    public ChildStorage(IStorage parent, IStorage child)
+    public ChildStorageOptions(IStorageOptions parent, IStorageOptions child)
     {
         this.parent = parent;
         this.child = child;
     }
 
     /// <inheritdoc />
-    public FeatureOption AutoOrganize
+    public Option AutoOrganize
     {
-        get => this.GetFeatureOption(storage => storage.AutoOrganize);
+        get => this.GetOption(storage => storage.AutoOrganize);
         set => this.child.AutoOrganize = value;
     }
 
     /// <inheritdoc />
-    public FeatureOption CarryChest
+    public Option CarryChest
     {
-        get => this.GetFeatureOption(storage => storage.CarryChest);
+        get => this.GetOption(storage => storage.CarryChest);
         set => this.child.CarryChest = value;
     }
 
     /// <inheritdoc />
-    public FeatureOption ChestFinder
+    public Option ChestFinder
     {
-        get => this.GetFeatureOption(storage => storage.ChestFinder);
+        get => this.GetOption(storage => storage.ChestFinder);
         set => this.child.ChestFinder = value;
     }
 
     /// <inheritdoc />
-    public FeatureOption ChestInfo
+    public Option ChestInfo
     {
-        get => this.GetFeatureOption(storage => storage.ChestInfo);
+        get => this.GetOption(storage => storage.ChestInfo);
         set => this.child.ChestInfo = value;
     }
 
@@ -54,16 +54,16 @@ internal class ChildStorage : IStorage
     }
 
     /// <inheritdoc />
-    public FeatureOption CollectItems
+    public Option CollectItems
     {
-        get => this.GetFeatureOption(storage => storage.CollectItems);
+        get => this.GetOption(storage => storage.CollectItems);
         set => this.child.CollectItems = value;
     }
 
     /// <inheritdoc />
-    public FeatureOption ConfigureChest
+    public Option ConfigureChest
     {
-        get => this.GetFeatureOption(storage => storage.ConfigureChest);
+        get => this.GetOption(storage => storage.ConfigureChest);
         set => this.child.ConfigureChest = value;
     }
 
@@ -75,9 +75,9 @@ internal class ChildStorage : IStorage
     }
 
     /// <inheritdoc />
-    public FeatureOptionRange CraftFromChest
+    public RangeOption CraftFromChest
     {
-        get => this.GetFeatureOptionRange(storage => storage.CraftFromChest);
+        get => this.GetRange(storage => storage.CraftFromChest);
         set => this.child.CraftFromChest = value;
     }
 
@@ -99,16 +99,16 @@ internal class ChildStorage : IStorage
     }
 
     /// <inheritdoc />
-    public FeatureOption HslColorPicker
+    public Option HslColorPicker
     {
-        get => this.GetFeatureOption(storage => storage.HslColorPicker);
+        get => this.GetOption(storage => storage.HslColorPicker);
         set => this.child.HslColorPicker = value;
     }
 
     /// <inheritdoc />
-    public FeatureOption FilterItems
+    public Option FilterItems
     {
-        get => this.GetFeatureOption(storage => storage.FilterItems);
+        get => this.GetOption(storage => storage.FilterItems);
         set => this.child.FilterItems = value;
     }
 
@@ -120,16 +120,16 @@ internal class ChildStorage : IStorage
     }
 
     /// <inheritdoc />
-    public FeatureOption HideUnselectedItems
+    public Option HideUnselectedItems
     {
-        get => this.GetFeatureOption(storage => storage.HideUnselectedItems);
+        get => this.GetOption(storage => storage.HideUnselectedItems);
         set => this.child.HideUnselectedItems = value;
     }
 
     /// <inheritdoc />
-    public FeatureOption InventoryTabs
+    public Option InventoryTabs
     {
-        get => this.GetFeatureOption(storage => storage.InventoryTabs);
+        get => this.GetOption(storage => storage.InventoryTabs);
         set => this.child.InventoryTabs = value;
     }
 
@@ -141,23 +141,23 @@ internal class ChildStorage : IStorage
     }
 
     /// <inheritdoc />
-    public FeatureOption LabelChest
+    public Option LabelChest
     {
-        get => this.GetFeatureOption(storage => storage.LabelChest);
+        get => this.GetOption(storage => storage.LabelChest);
         set => this.child.LabelChest = value;
     }
 
     /// <inheritdoc />
-    public FeatureOption OpenHeldChest
+    public Option OpenHeldChest
     {
-        get => this.GetFeatureOption(storage => storage.OpenHeldChest);
+        get => this.GetOption(storage => storage.OpenHeldChest);
         set => this.child.OpenHeldChest = value;
     }
 
     /// <inheritdoc />
-    public FeatureOption OrganizeChest
+    public Option OrganizeChest
     {
-        get => this.GetFeatureOption(storage => storage.OrganizeChest);
+        get => this.GetOption(storage => storage.OrganizeChest);
         set => this.child.OrganizeChest = value;
     }
 
@@ -182,37 +182,30 @@ internal class ChildStorage : IStorage
     }
 
     /// <inheritdoc />
-    public FeatureOption ResizeChest
+    public CapacityOption ResizeChest
     {
-        get => this.GetFeatureOption(storage => storage.ResizeChest);
+        get => this.GetCapacity(storage => storage.ResizeChest);
         set => this.child.ResizeChest = value;
     }
 
     /// <inheritdoc />
-    public int ResizeChestCapacity
+    public Option SearchItems
     {
-        get => this.child.ResizeChestCapacity == 0 ? this.parent.ResizeChestCapacity : this.child.ResizeChestCapacity;
-        set => this.child.ResizeChestCapacity = value;
-    }
-
-    /// <inheritdoc />
-    public FeatureOption SearchItems
-    {
-        get => this.GetFeatureOption(storage => storage.SearchItems);
+        get => this.GetOption(storage => storage.SearchItems);
         set => this.child.SearchItems = value;
     }
 
     /// <inheritdoc />
-    public FeatureOption SlotLock
+    public Option LockItemSlot
     {
-        get => this.GetFeatureOption(storage => storage.SlotLock);
-        set => this.child.SlotLock = value;
+        get => this.GetOption(storage => storage.LockItemSlot);
+        set => this.child.LockItemSlot = value;
     }
 
     /// <inheritdoc />
-    public FeatureOptionRange StashToChest
+    public RangeOption StashToChest
     {
-        get => this.GetFeatureOptionRange(storage => storage.StashToChest);
+        get => this.GetRange(storage => storage.StashToChest);
         set => this.child.StashToChest = value;
     }
 
@@ -240,30 +233,30 @@ internal class ChildStorage : IStorage
     }
 
     /// <inheritdoc />
-    public FeatureOption StashToChestStacks
+    public Option StashToChestStacks
     {
-        get => this.GetFeatureOption(storage => storage.StashToChestStacks);
+        get => this.GetOption(storage => storage.StashToChestStacks);
         set => this.child.StashToChestStacks = value;
     }
 
     /// <inheritdoc />
-    public FeatureOption TransferItems
+    public Option TransferItems
     {
-        get => this.GetFeatureOption(storage => storage.TransferItems);
+        get => this.GetOption(storage => storage.TransferItems);
         set => this.child.TransferItems = value;
     }
 
     /// <inheritdoc />
-    public FeatureOption UnloadChest
+    public Option UnloadChest
     {
-        get => this.GetFeatureOption(storage => storage.UnloadChest);
+        get => this.GetOption(storage => storage.UnloadChest);
         set => this.child.UnloadChest = value;
     }
 
     /// <inheritdoc />
-    public FeatureOption UnloadChestCombine
+    public Option UnloadChestCombine
     {
-        get => this.GetFeatureOption(storage => storage.UnloadChestCombine);
+        get => this.GetOption(storage => storage.UnloadChestCombine);
         set => this.child.UnloadChestCombine = value;
     }
 
@@ -273,26 +266,38 @@ internal class ChildStorage : IStorage
     /// <inheritdoc />
     public virtual string GetDisplayName() => this.parent.GetDisplayName();
 
-    private FeatureOption GetFeatureOption(Func<IStorage, FeatureOption> selector)
+    private CapacityOption GetCapacity(Func<IStorageOptions, CapacityOption> selector)
     {
         var childValue = selector(this.child);
         var parentValue = selector(this.parent);
         return childValue switch
         {
-            _ when parentValue == FeatureOption.Disabled => FeatureOption.Disabled,
-            FeatureOption.Default => parentValue,
+            _ when parentValue == CapacityOption.Disabled => CapacityOption.Disabled,
+            CapacityOption.Default => parentValue,
             _ => childValue,
         };
     }
 
-    private FeatureOptionRange GetFeatureOptionRange(Func<IStorage, FeatureOptionRange> selector)
+    private Option GetOption(Func<IStorageOptions, Option> selector)
     {
         var childValue = selector(this.child);
         var parentValue = selector(this.parent);
         return childValue switch
         {
-            _ when parentValue == FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
-            FeatureOptionRange.Default => parentValue,
+            _ when parentValue == Option.Disabled => Option.Disabled,
+            Option.Default => parentValue,
+            _ => childValue,
+        };
+    }
+
+    private RangeOption GetRange(Func<IStorageOptions, RangeOption> selector)
+    {
+        var childValue = selector(this.child);
+        var parentValue = selector(this.parent);
+        return childValue switch
+        {
+            _ when parentValue == RangeOption.Disabled => RangeOption.Disabled,
+            RangeOption.Default => parentValue,
             _ => childValue,
         };
     }

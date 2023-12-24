@@ -25,7 +25,7 @@ internal sealed class AutoOrganize : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.AutoOrganize != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.AutoOrganize != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate() => this.modEvents.GameLoop.DayEnding += this.OnDayEnding;
@@ -38,7 +38,7 @@ internal sealed class AutoOrganize : BaseFeature
     private void OrganizeAll()
     {
         var containerGroups = this
-            .containerFactory.GetAll(container => container.Options.AutoOrganize == FeatureOption.Enabled)
+            .containerFactory.GetAll(container => container.Options.AutoOrganize == Option.Enabled)
             .GroupBy(container => container.Options.StashToChestPriority)
             .ToDictionary(containerGroup => containerGroup.Key, group => group.ToList());
 

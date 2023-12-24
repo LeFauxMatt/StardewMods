@@ -12,17 +12,16 @@ internal static class Extensions
     /// <param name="parent">The context where the source object is contained.</param>
     /// <param name="position">The coordinates.</param>
     /// <returns>Returns true if the location is within range.</returns>
-    public static bool
-        WithinRangeOfPlayer(this FeatureOptionRange range, int distance, object parent, Vector2 position) =>
+    public static bool WithinRangeOfPlayer(this RangeOption range, int distance, object parent, Vector2 position) =>
         range switch
         {
-            FeatureOptionRange.World => true,
-            FeatureOptionRange.Inventory when parent is Farmer farmer && farmer.Equals(Game1.player) => true,
-            FeatureOptionRange.Default or FeatureOptionRange.Disabled or FeatureOptionRange.Inventory => false,
-            FeatureOptionRange.Location when
-                parent is GameLocation location && !location.Equals(Game1.currentLocation) => false,
-            FeatureOptionRange.Location when distance == -1 => true,
-            FeatureOptionRange.Location when Math.Abs(position.X - Game1.player.Tile.X)
+            RangeOption.World => true,
+            RangeOption.Inventory when parent is Farmer farmer && farmer.Equals(Game1.player) => true,
+            RangeOption.Default or RangeOption.Disabled or RangeOption.Inventory => false,
+            RangeOption.Location when parent is GameLocation location && !location.Equals(Game1.currentLocation) =>
+                false,
+            RangeOption.Location when distance == -1 => true,
+            RangeOption.Location when Math.Abs(position.X - Game1.player.Tile.X)
                 + Math.Abs(position.Y - Game1.player.Tile.Y)
                 <= distance => true,
             _ => false,

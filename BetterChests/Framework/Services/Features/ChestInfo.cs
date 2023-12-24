@@ -1,4 +1,4 @@
-﻿namespace StardewMods.BetterChests.Framework.Services.Features;
+namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
@@ -16,8 +16,8 @@ internal sealed class ChestInfo : BaseFeature
     private const string AlphaNumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
     private static readonly int LineHeight = (int)Game1.smallFont.MeasureString(ChestInfo.AlphaNumeric).Y;
-    private readonly PerScreen<List<Info>> cachedInfo = new(() => []);
 
+    private readonly PerScreen<List<Info>> cachedInfo = new(() => []);
     private readonly ContainerFactory containerFactory;
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<bool> isActive = new();
@@ -44,7 +44,7 @@ internal sealed class ChestInfo : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.ChestInfo != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.ChestInfo != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -152,7 +152,7 @@ internal sealed class ChestInfo : BaseFeature
                 context: Chest chest,
             }
             || !this.containerFactory.TryGetOne(chest, out var container)
-            || container.Options.ChestInfo != FeatureOption.Enabled)
+            || container.Options.ChestInfo != Option.Enabled)
         {
             return;
         }
@@ -163,12 +163,17 @@ internal sealed class ChestInfo : BaseFeature
         // Add type
         this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_Type(), container.DisplayName));
 
-        // Add location
-        this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_Location(), container.Location.Name));
+        if (container.Location is not null)
+        {
+            // Add location
+            this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_Location(), container.Location.Name));
 
-        // Add position
-        this.cachedInfo.Value.Add(
-            new Info(I18n.ChestInfo_Position(), $"{(int)container.TileLocation.X}, {(int)container.TileLocation.Y}"));
+            // Add position
+            this.cachedInfo.Value.Add(
+                new Info(
+                    I18n.ChestInfo_Position(),
+                    $"{(int)container.TileLocation.X}, {(int)container.TileLocation.Y}"));
+        }
 
         // Add inventory
         if (container is ChildContainer

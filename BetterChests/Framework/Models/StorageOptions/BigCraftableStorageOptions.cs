@@ -1,16 +1,16 @@
-namespace StardewMods.BetterChests.Framework.Models.Storages;
+namespace StardewMods.BetterChests.Framework.Models.StorageOptions;
 
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewValley.GameData.BigCraftables;
 
 /// <inheritdoc />
-internal sealed class BigCraftableStorage : ChildStorage
+internal sealed class BigCraftableStorageOptions : ChildStorageOptions
 {
-    /// <summary>Initializes a new instance of the <see cref="BigCraftableStorage" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="BigCraftableStorageOptions" /> class.</summary>
     /// <param name="default">The default storage options.</param>
     /// <param name="data">The big craftable data.</param>
-    public BigCraftableStorage(IStorage @default, BigCraftableData data)
-        : base(@default, new CustomFieldsStorage(data.CustomFields)) =>
+    public BigCraftableStorageOptions(IStorageOptions @default, BigCraftableData data)
+        : base(@default, new CustomFieldsStorageOptions(data.CustomFields)) =>
         this.Data = data;
 
     /// <summary>Gets the big craftable data.</summary>

@@ -4,7 +4,7 @@ using NetEscapades.EnumGenerators;
 
 /// <summary>Indicates at what range a feature will be enabled.</summary>
 [EnumExtensions]
-internal enum FeatureOptionRange
+internal enum RangeOption
 {
     /// <summary>Feature inherits from a parent config.</summary>
     Default = 0,

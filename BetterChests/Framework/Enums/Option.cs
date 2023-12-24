@@ -4,7 +4,7 @@ using NetEscapades.EnumGenerators;
 
 /// <summary>Indicates if a feature is enabled, disabled, or will inherit from a parent config.</summary>
 [EnumExtensions]
-internal enum FeatureOption
+internal enum Option
 {
     /// <summary>Feature inherits from a parent config.</summary>
     Default = 0,

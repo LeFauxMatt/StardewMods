@@ -43,7 +43,7 @@ internal sealed class StashToChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.StashToChest != FeatureOptionRange.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.StashToChest != RangeOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -92,7 +92,7 @@ internal sealed class StashToChest : BaseFeature
                 context: Chest chest,
             } itemGrabMenu
             || !this.containerFactory.TryGetOne(chest, out var container)
-            || container.Options.StashToChest is FeatureOptionRange.Disabled or FeatureOptionRange.Default)
+            || container.Options.StashToChest is RangeOption.Disabled or RangeOption.Default)
         {
             return;
         }
@@ -128,7 +128,7 @@ internal sealed class StashToChest : BaseFeature
                 context: Chest chest,
             }
             || !this.containerFactory.TryGetOne(chest, out var container)
-            || container.Options.StashToChest is FeatureOptionRange.Disabled or FeatureOptionRange.Default)
+            || container.Options.StashToChest is RangeOption.Disabled or RangeOption.Default)
         {
             return;
         }
@@ -208,7 +208,7 @@ internal sealed class StashToChest : BaseFeature
         return;
 
         bool Predicate(IContainer container) =>
-            container.Options.StashToChest is FeatureOptionRange.Disabled or FeatureOptionRange.Default
+            container.Options.StashToChest is RangeOption.Disabled or RangeOption.Default
             && !container.Options.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name)
             && !(container.Options.StashToChestDisableLocations.Contains("UndergroundMine")
                 && Game1.player.currentLocation is MineShaft mineShaft

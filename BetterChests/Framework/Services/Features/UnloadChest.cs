@@ -34,7 +34,7 @@ internal sealed class UnloadChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.UnloadChest != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.UnloadChest != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate() => this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
@@ -49,7 +49,7 @@ internal sealed class UnloadChest : BaseFeature
             || !e.Button.IsUseToolButton()
             || this.inputHelper.IsSuppressed(e.Button)
             || !this.containerFactory.TryGetOne(Game1.player.CurrentItem, out var fromStorage)
-            || fromStorage.Options.UnloadChest != FeatureOption.Enabled)
+            || fromStorage.Options.UnloadChest != Option.Enabled)
         {
             return;
         }
@@ -58,7 +58,7 @@ internal sealed class UnloadChest : BaseFeature
         if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
             || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
             || !this.containerFactory.TryGetOne(obj, out var toStorage)
-            || toStorage.Options.UnloadChest != FeatureOption.Enabled)
+            || toStorage.Options.UnloadChest != Option.Enabled)
         {
             return;
         }

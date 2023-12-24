@@ -14,7 +14,6 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
-// TODO: Color copy+paste
 // TODO: Draw farmer nearby using cursor distance
 
 /// <summary>Adds a color picker that support hue, saturation, and lightness.</summary>
@@ -141,7 +140,7 @@ internal sealed class HslColorPicker : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.HslColorPicker != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.HslColorPicker != Option.Disabled;
 
     private int ColorSelection
     {
@@ -369,7 +368,7 @@ internal sealed class HslColorPicker : BaseFeature
                 itemToDrawColored: Chest chest,
             }
             || this.itemGrabMenuManager.Top.Container is not ChestContainer container
-            || container.Options.HslColorPicker != FeatureOption.Enabled)
+            || container.Options.HslColorPicker != Option.Enabled)
         {
             this.isActive.Value = false;
             return;

@@ -55,7 +55,7 @@ internal sealed class FilterItems : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.FilterItems != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.FilterItems != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -136,7 +136,7 @@ internal sealed class FilterItems : BaseFeature
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.Top.Container?.Options.FilterItems != FeatureOption.Enabled)
+        if (this.itemGrabMenuManager.Top.Container?.Options.FilterItems != Option.Enabled)
         {
             return;
         }

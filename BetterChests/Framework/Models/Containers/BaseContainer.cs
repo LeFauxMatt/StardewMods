@@ -3,7 +3,7 @@ namespace StardewMods.BetterChests.Framework.Models.Containers;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
-using StardewMods.BetterChests.Framework.Models.Storages;
+using StardewMods.BetterChests.Framework.Models.StorageOptions;
 using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewValley.Inventories;
 using StardewValley.Mods;
@@ -14,9 +14,9 @@ internal abstract class BaseContainer<TSource> : BaseContainer, IContainer<TSour
 {
     /// <summary>Initializes a new instance of the <see cref="BaseContainer{TSource}" /> class.</summary>
     /// <param name="itemMatcher">The item matcher to use for filters.</param>
-    /// <param name="storageType">The type of storage object.</param>
-    protected BaseContainer(ItemMatcher itemMatcher, IStorage storageType)
-        : base(itemMatcher, storageType) { }
+    /// <param name="baseOptions">The type of storage object.</param>
+    protected BaseContainer(ItemMatcher itemMatcher, IStorageOptions baseOptions)
+        : base(itemMatcher, baseOptions) { }
 
     /// <inheritdoc />
     public abstract bool IsAlive { get; }
@@ -29,29 +29,30 @@ internal abstract class BaseContainer<TSource> : BaseContainer, IContainer<TSour
 internal abstract class BaseContainer : IContainer
 {
     private const string LockedSlotKey = "furyx639.BetterChests/LockedSlot";
+    private readonly IStorageOptions baseOptions;
 
     private readonly ItemMatcher itemMatcher;
-    private readonly Lazy<IStorage> options;
-    private readonly IStorage storageType;
+    private readonly Lazy<IStorageOptions> storageOptions;
 
     /// <summary>Initializes a new instance of the <see cref="BaseContainer" /> class.</summary>
     /// <param name="itemMatcher">The item matcher to use for filters.</param>
-    /// <param name="storageType">The type of storage object.</param>
-    protected BaseContainer(ItemMatcher itemMatcher, IStorage storageType)
+    /// <param name="baseOptions">The type of storage object.</param>
+    protected BaseContainer(ItemMatcher itemMatcher, IStorageOptions baseOptions)
     {
         this.itemMatcher = itemMatcher;
-        this.storageType = storageType;
-        this.options = new Lazy<IStorage>(() => new ChildStorage(storageType, new ModDataStorage(this.ModData)));
+        this.baseOptions = baseOptions;
+        this.storageOptions = new Lazy<IStorageOptions>(
+            () => new ChildStorageOptions(baseOptions, new ModDataStorageOptions(this.ModData)));
     }
 
     /// <inheritdoc />
-    public string DisplayName => this.storageType.GetDisplayName();
+    public string DisplayName => this.baseOptions.GetDisplayName();
 
     /// <inheritdoc />
-    public string Description => this.storageType.GetDescription();
+    public string Description => this.baseOptions.GetDescription();
 
     /// <inheritdoc />
-    public IStorage Options => this.options.Value;
+    public IStorageOptions Options => this.storageOptions.Value;
 
     /// <inheritdoc />
     public abstract IInventory Items { get; }
@@ -83,6 +84,9 @@ internal abstract class BaseContainer : IContainer
     }
 
     /// <inheritdoc />
+    public virtual void ShowMenu() { }
+
+    /// <inheritdoc />
     public bool Transfer(Item item, IContainer containerTo, out Item? remaining)
     {
         if (!this.Items.Contains(item))
@@ -91,7 +95,7 @@ internal abstract class BaseContainer : IContainer
             return false;
         }
 
-        if (this.Options.SlotLock == FeatureOption.Enabled && item.modData.ContainsKey(BaseContainer.LockedSlotKey))
+        if (this.Options.LockItemSlot == Option.Enabled && item.modData.ContainsKey(BaseContainer.LockedSlotKey))
         {
             remaining = null;
             return false;
@@ -113,7 +117,7 @@ internal abstract class BaseContainer : IContainer
     /// <inheritdoc />
     public bool MatchesFilter(Item item)
     {
-        if (this.Options.FilterItems != FeatureOption.Enabled)
+        if (this.Options.FilterItems != Option.Enabled)
         {
             return true;
         }

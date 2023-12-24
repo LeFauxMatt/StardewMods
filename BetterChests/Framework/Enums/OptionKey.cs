@@ -4,7 +4,7 @@ using NetEscapades.EnumGenerators;
 
 /// <summary>Keys used for FeatureOption fields in DictionaryStorageOptions.</summary>
 [EnumExtensions]
-internal enum FeatureOptionKey
+internal enum OptionKey
 {
     /// <summary>Automatically organizes chests.</summary>
     AutoOrganize,
@@ -42,6 +42,9 @@ internal enum FeatureOptionKey
     /// <summary>Allows labeling chest with a name.</summary>
     LabelChest,
 
+    /// <summary>Allows items to be locked in their slot so they will not be transferred automatically.</summary>
+    LockItemSlot,
+
     /// <summary>Allows chests to be opened while held.</summary>
     OpenHeldChest,
 
@@ -53,9 +56,6 @@ internal enum FeatureOptionKey
 
     /// <summary>Adds a search bar to the chest menu.</summary>
     SearchItems,
-
-    /// <summary>Allows items to be locked in their slot so they will not be transferred automatically.</summary>
-    SlotLock,
 
     /// <summary>Allows StashToChest to fill existing stacks of items even if the chest is not categorized for that item.</summary>
     StashToChestStacks,

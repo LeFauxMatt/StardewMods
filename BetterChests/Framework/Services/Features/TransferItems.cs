@@ -15,9 +15,9 @@ using StardewValley.Objects;
 internal sealed class TransferItems : BaseFeature
 {
     private const string IconPath = "furyx639.BetterChests/Icons";
+
     private readonly ContainerFactory containers;
     private readonly PerScreen<ClickableTextureComponent> downArrow;
-
     private readonly IModEvents events;
     private readonly IInputHelper input;
     private readonly PerScreen<ClickableTextureComponent> upArrow;
@@ -66,7 +66,7 @@ internal sealed class TransferItems : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.TransferItems != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.TransferItems != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -93,9 +93,9 @@ internal sealed class TransferItems : BaseFeature
                 context: Chest chest,
             }
             || !this.containers.TryGetOne(chest, out var container)
-            || container.Options.TransferItems != FeatureOption.Enabled
+            || container.Options.TransferItems != Option.Enabled
             || !this.containers.TryGetOne(Game1.player, out var farmerContainer)
-            || farmerContainer.Options.TransferItems != FeatureOption.Enabled)
+            || farmerContainer.Options.TransferItems != Option.Enabled)
         {
             return;
         }
@@ -128,9 +128,9 @@ internal sealed class TransferItems : BaseFeature
                 context: Chest chest,
             }
             || !this.containers.TryGetOne(chest, out var container)
-            || container.Options.TransferItems != FeatureOption.Enabled
+            || container.Options.TransferItems != Option.Enabled
             || !this.containers.TryGetOne(Game1.player, out var farmerContainer)
-            || farmerContainer.Options.TransferItems != FeatureOption.Enabled)
+            || farmerContainer.Options.TransferItems != Option.Enabled)
         {
             return;
         }
@@ -190,7 +190,7 @@ internal sealed class TransferItems : BaseFeature
 
         if (itemGrabMenu.context is Chest chest
             && this.containers.TryGetOne(chest, out var container)
-            && container.Options.TransferItems == FeatureOption.Enabled)
+            && container.Options.TransferItems == Option.Enabled)
         {
             this.upArrow.Value.visible = true;
             this.upArrow.Value.bounds.Y = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen - Game1.tileSize;
@@ -199,8 +199,7 @@ internal sealed class TransferItems : BaseFeature
                 - 24;
         }
 
-        if (this.containers.TryGetOne(Game1.player, out container)
-            && container.Options.TransferItems == FeatureOption.Enabled)
+        if (this.containers.TryGetOne(Game1.player, out container) && container.Options.TransferItems == Option.Enabled)
         {
             this.downArrow.Value.visible = true;
             this.downArrow.Value.bounds.Y = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen - Game1.tileSize;

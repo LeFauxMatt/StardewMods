@@ -32,11 +32,11 @@ internal sealed class LocalizedTextManager : BaseService
     public string Capacity(int value) =>
         value switch
         {
-            (int)FeatureOption.Default => I18n.Option_Default_Name(),
-            (int)FeatureOption.Disabled => I18n.Option_Disabled_Name(),
+            (int)Enums.Option.Default => I18n.Option_Default_Name(),
+            (int)Enums.Option.Disabled => I18n.Option_Disabled_Name(),
             8 => I18n.Config_ResizeChestCapacity_ValueUnlimited(),
             _ => I18n.Config_ResizeChestCapacity_ValueMany(
-                (12 * (value - (int)FeatureOption.Enabled + 1)).ToString(CultureInfo.InvariantCulture)),
+                (12 * (value - (int)Enums.Option.Enabled + 1)).ToString(CultureInfo.InvariantCulture)),
         };
 
     /// <summary>Formats range distance using localized text when available.</summary>
@@ -45,13 +45,13 @@ internal sealed class LocalizedTextManager : BaseService
     public string Distance(int value) =>
         value switch
         {
-            (int)FeatureOptionRange.Default => I18n.Option_Default_Name(),
-            (int)FeatureOptionRange.Disabled => I18n.Option_Disabled_Name(),
-            (int)FeatureOptionRange.Inventory => I18n.Option_Inventory_Name(),
-            (int)FeatureOptionRange.World - 1 => I18n.Config_RangeDistance_ValueUnlimited(),
-            (int)FeatureOptionRange.World => I18n.Option_World_Name(),
-            >= (int)FeatureOptionRange.Location => I18n.Config_RangeDistance_ValueMany(
-                Math.Pow(2, 1 + value - (int)FeatureOptionRange.Location).ToString(CultureInfo.InvariantCulture)),
+            (int)RangeOption.Default => I18n.Option_Default_Name(),
+            (int)RangeOption.Disabled => I18n.Option_Disabled_Name(),
+            (int)RangeOption.Inventory => I18n.Option_Inventory_Name(),
+            (int)RangeOption.World - 1 => I18n.Config_RangeDistance_ValueUnlimited(),
+            (int)RangeOption.World => I18n.Option_World_Name(),
+            >= (int)RangeOption.Location => I18n.Config_RangeDistance_ValueMany(
+                Math.Pow(2, 1 + value - (int)RangeOption.Location).ToString(CultureInfo.InvariantCulture)),
             _ => I18n.Option_Default_Name(),
         };
 
@@ -75,9 +75,9 @@ internal sealed class LocalizedTextManager : BaseService
     public string Option(string value) =>
         value switch
         {
-            nameof(FeatureOption.Default) => I18n.Option_Default_Name(),
-            nameof(FeatureOption.Disabled) => I18n.Option_Disabled_Name(),
-            nameof(FeatureOption.Enabled) => I18n.Option_Enabled_Name(),
+            nameof(Enums.Option.Default) => I18n.Option_Default_Name(),
+            nameof(Enums.Option.Disabled) => I18n.Option_Disabled_Name(),
+            nameof(Enums.Option.Enabled) => I18n.Option_Enabled_Name(),
             _ => value,
         };
 
@@ -113,11 +113,11 @@ internal sealed class LocalizedTextManager : BaseService
     public string Range(string value) =>
         value switch
         {
-            nameof(FeatureOptionRange.Default) => I18n.Option_Default_Name(),
-            nameof(FeatureOptionRange.Disabled) => I18n.Option_Disabled_Name(),
-            nameof(FeatureOptionRange.Inventory) => I18n.Option_Inventory_Name(),
-            nameof(FeatureOptionRange.Location) => I18n.Option_Location_Name(),
-            nameof(FeatureOptionRange.World) => I18n.Option_World_Name(),
+            nameof(RangeOption.Default) => I18n.Option_Default_Name(),
+            nameof(RangeOption.Disabled) => I18n.Option_Disabled_Name(),
+            nameof(RangeOption.Inventory) => I18n.Option_Inventory_Name(),
+            nameof(RangeOption.Location) => I18n.Option_Location_Name(),
+            nameof(RangeOption.World) => I18n.Option_World_Name(),
             _ => value,
         };
 

@@ -9,53 +9,53 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
 
 /// <summary>Manages the global inventories and chest/item creation and retrieval operations.</summary>
-internal sealed class ProxyChestManager : BaseService
+internal sealed class ProxyChestFactory : BaseService
 {
     private const string AlphaNumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private const string ColorKey = "PlayerChoiceColor";
     private const string GlobalInventoryIdKey = "GlobalInventoryId";
 
 #nullable disable
-    private static ProxyChestManager instance;
+    private static ProxyChestFactory instance;
 #nullable enable
 
     private readonly Dictionary<string, Chest> proxyChests = new();
 
-    /// <summary>Initializes a new instance of the <see cref="ProxyChestManager" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ProxyChestFactory" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
-    public ProxyChestManager(ILog log, Harmony harmony)
+    public ProxyChestFactory(ILog log, Harmony harmony)
         : base(log)
     {
         // Init
-        ProxyChestManager.instance = this;
+        ProxyChestFactory.instance = this;
 
         // Patches
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(Item), nameof(Item.canBeDropped)),
-            postfix: new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Item_canBeDropped_postfix)));
+            postfix: new HarmonyMethod(typeof(ProxyChestFactory), nameof(ProxyChestFactory.Item_canBeDropped_postfix)));
 
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(Item), nameof(Item.canBeTrashed)),
-            postfix: new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Item_canBeTrashed_postfix)));
+            postfix: new HarmonyMethod(typeof(ProxyChestFactory), nameof(ProxyChestFactory.Item_canBeTrashed_postfix)));
 
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(Item), nameof(Item.canStackWith)),
-            postfix: new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Item_canStackWith_postfix)));
+            postfix: new HarmonyMethod(typeof(ProxyChestFactory), nameof(ProxyChestFactory.Item_canStackWith_postfix)));
 
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.drawInMenu)),
-            postfix: new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Object_drawInMenu_postfix)));
+            postfix: new HarmonyMethod(typeof(ProxyChestFactory), nameof(ProxyChestFactory.Object_drawInMenu_postfix)));
 
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.drawWhenHeld)),
-            new HarmonyMethod(typeof(ProxyChestManager), nameof(ProxyChestManager.Object_drawWhenHeld_prefix)));
+            new HarmonyMethod(typeof(ProxyChestFactory), nameof(ProxyChestFactory.Object_drawWhenHeld_prefix)));
 
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.maximumStackSize)),
             postfix: new HarmonyMethod(
-                typeof(ProxyChestManager),
-                nameof(ProxyChestManager.Object_maximumStackSize_postfix)));
+                typeof(ProxyChestFactory),
+                nameof(ProxyChestFactory.Object_maximumStackSize_postfix)));
     }
 
     /// <summary>
@@ -83,13 +83,13 @@ internal sealed class ProxyChestManager : BaseService
         var item = ItemRegistry.Create(chest.QualifiedItemId);
 
         item.Name = chest.Name;
-        item.modData[this.Prefix + ProxyChestManager.GlobalInventoryIdKey] = id;
+        item.modData[this.Prefix + ProxyChestFactory.GlobalInventoryIdKey] = id;
 
         if (chest.playerChoiceColor.Value != Color.Black)
         {
             var c = chest.playerChoiceColor.Value;
             var color = (c.R << 0) | (c.G << 8) | (c.B << 16);
-            item.modData[this.Prefix + ProxyChestManager.ColorKey] = color.ToString(CultureInfo.InvariantCulture);
+            item.modData[this.Prefix + ProxyChestFactory.ColorKey] = color.ToString(CultureInfo.InvariantCulture);
         }
 
         foreach (var (key, value) in chest.modData.Pairs)
@@ -123,7 +123,7 @@ internal sealed class ProxyChestManager : BaseService
     /// <returns>True if the item is a proxy; otherwise, false.</returns>
     public bool IsProxy(ISalable salable) =>
         salable is Item item
-        && item.modData.TryGetValue(this.Prefix + ProxyChestManager.GlobalInventoryIdKey, out var id)
+        && item.modData.TryGetValue(this.Prefix + ProxyChestFactory.GlobalInventoryIdKey, out var id)
         && Game1.player.team.globalInventories.ContainsKey(id)
         && this.proxyChests.ContainsKey(id);
 
@@ -133,7 +133,7 @@ internal sealed class ProxyChestManager : BaseService
     /// <returns>True if the proxy chest exists; otherwise, false.</returns>
     public bool TryGetProxy(Item item, [NotNullWhen(true)] out Chest? chest)
     {
-        if (!item.modData.TryGetValue(this.Prefix + ProxyChestManager.GlobalInventoryIdKey, out var id)
+        if (!item.modData.TryGetValue(this.Prefix + ProxyChestFactory.GlobalInventoryIdKey, out var id)
             || !Game1.player.team.globalInventories.ContainsKey(id))
         {
             chest = null;
@@ -146,7 +146,7 @@ internal sealed class ProxyChestManager : BaseService
         }
 
         var color = Color.Black;
-        if (item.modData.TryGetValue(this.Prefix + ProxyChestManager.ColorKey, out var colorString)
+        if (item.modData.TryGetValue(this.Prefix + ProxyChestFactory.ColorKey, out var colorString)
             && int.TryParse(colorString, out var colorValue))
         {
             var r = (byte)(colorValue & 0xFF);
@@ -190,6 +190,8 @@ internal sealed class ProxyChestManager : BaseService
         chest.Items.OverwriteWith(globalInventory);
 
         // Clear Global Inventory
+        chest.modData.Remove(this.Prefix + ProxyChestFactory.GlobalInventoryIdKey);
+        chest.modData.Remove(this.Prefix + ProxyChestFactory.ColorKey);
         Game1.player.team.globalInventories.Remove(id);
         Game1.player.team.globalInventoryMutexes.Remove(id);
         this.proxyChests.Remove(id);
@@ -201,7 +203,7 @@ internal sealed class ProxyChestManager : BaseService
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_canBeDropped_postfix(Item __instance, ref bool __result)
     {
-        if (__result && ProxyChestManager.instance.IsProxy(__instance))
+        if (__result && ProxyChestFactory.instance.IsProxy(__instance))
         {
             __result = false;
         }
@@ -212,7 +214,7 @@ internal sealed class ProxyChestManager : BaseService
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_canBeTrashed_postfix(Item __instance, ref bool __result)
     {
-        if (__result && ProxyChestManager.instance.IsProxy(__instance))
+        if (__result && ProxyChestFactory.instance.IsProxy(__instance))
         {
             __result = false;
         }
@@ -223,7 +225,7 @@ internal sealed class ProxyChestManager : BaseService
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
-        if (__result && (ProxyChestManager.instance.IsProxy(__instance) || ProxyChestManager.instance.IsProxy(other)))
+        if (__result && (ProxyChestFactory.instance.IsProxy(__instance) || ProxyChestFactory.instance.IsProxy(other)))
         {
             __result = false;
         }
@@ -239,7 +241,7 @@ internal sealed class ProxyChestManager : BaseService
         float scaleSize,
         Color color)
     {
-        if (!ProxyChestManager.instance.TryGetProxy(__instance, out var chest))
+        if (!ProxyChestFactory.instance.TryGetProxy(__instance, out var chest))
         {
             return;
         }
@@ -264,7 +266,7 @@ internal sealed class ProxyChestManager : BaseService
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static bool Object_drawWhenHeld_prefix(SObject __instance, SpriteBatch spriteBatch, Vector2 objectPosition)
     {
-        if (!ProxyChestManager.instance.TryGetProxy(__instance, out var chest))
+        if (!ProxyChestFactory.instance.TryGetProxy(__instance, out var chest))
         {
             return true;
         }
@@ -279,7 +281,7 @@ internal sealed class ProxyChestManager : BaseService
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Object_maximumStackSize_postfix(SObject __instance, ref int __result)
     {
-        if (__result > 0 && ProxyChestManager.instance.IsProxy(__instance))
+        if (__result > 0 && ProxyChestFactory.instance.IsProxy(__instance))
         {
             __result = -1;
         }
@@ -292,7 +294,7 @@ internal sealed class ProxyChestManager : BaseService
 
         for (var i = 0; i < stringChars.Length; i++)
         {
-            stringChars[i] = ProxyChestManager.AlphaNumeric[random.Next(ProxyChestManager.AlphaNumeric.Length)];
+            stringChars[i] = ProxyChestFactory.AlphaNumeric[random.Next(ProxyChestFactory.AlphaNumeric.Length)];
         }
 
         return new string(stringChars);
@@ -300,11 +302,11 @@ internal sealed class ProxyChestManager : BaseService
 
     private string GenerateGlobalInventoryId()
     {
-        var globalInventoryId = this.Prefix + ProxyChestManager.RandomString();
+        var globalInventoryId = this.Prefix + ProxyChestFactory.RandomString();
         while (Game1.player.team.globalInventories.ContainsKey(globalInventoryId)
             || Game1.player.team.globalInventoryMutexes.ContainsKey(globalInventoryId))
         {
-            globalInventoryId = this.Prefix + ProxyChestManager.RandomString();
+            globalInventoryId = this.Prefix + ProxyChestFactory.RandomString();
         }
 
         return globalInventoryId;

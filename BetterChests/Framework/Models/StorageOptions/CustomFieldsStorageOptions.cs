@@ -1,13 +1,13 @@
-namespace StardewMods.BetterChests.Framework.Models.Storages;
+namespace StardewMods.BetterChests.Framework.Models.StorageOptions;
 
 /// <inheritdoc />
-internal sealed class CustomFieldsStorage : DictionaryStorage
+internal sealed class CustomFieldsStorageOptions : DictionaryStorageOptions
 {
     private readonly Dictionary<string, string> customFields;
 
-    /// <summary>Initializes a new instance of the <see cref="CustomFieldsStorage" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="CustomFieldsStorageOptions" /> class.</summary>
     /// <param name="customFields">The custom fields.</param>
-    public CustomFieldsStorage(Dictionary<string, string> customFields) => this.customFields = customFields;
+    public CustomFieldsStorageOptions(Dictionary<string, string> customFields) => this.customFields = customFields;
 
     /// <inheritdoc />
     protected override bool TryGetValue(string key, [NotNullWhen(true)] out string? value) =>

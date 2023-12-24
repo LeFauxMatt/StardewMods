@@ -1,7 +1,5 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
@@ -25,7 +23,6 @@ internal sealed class SearchItems : BaseFeature
     /// <summary>Initializes a new instance of the <see cref="SearchItems" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="itemMatcherFactory">Dependency used for getting an ItemMatcher.</param>
@@ -33,7 +30,6 @@ internal sealed class SearchItems : BaseFeature
     public SearchItems(
         ILog log,
         ModConfig modConfig,
-        IGameContentHelper gameContentHelper,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         ItemMatcherFactory itemMatcherFactory,
@@ -45,21 +41,22 @@ internal sealed class SearchItems : BaseFeature
         this.modEvents = modEvents;
 
         this.itemMatcher = new PerScreen<ItemMatcher>(itemMatcherFactory.GetOneForSearch);
-        var texture = gameContentHelper.Load<Texture2D>("LooseSprites/textBox");
         this.searchBar = new PerScreen<SearchBar>(
             () => new SearchBar(
-                texture,
                 () => this.itemMatcher.Value.SearchText,
                 value =>
                 {
-                    this.Log.Trace("{0}: Searching for {1}", this.Id, value);
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        this.Log.Trace("{0}: Searching for {1}", this.Id, value);
+                    }
+
                     this.itemMatcher.Value.SearchText = value;
-                },
-                new Rectangle(0, 0, 384, texture.Height)));
+                }));
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.SearchItems != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.SearchItems != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -85,7 +82,7 @@ internal sealed class SearchItems : BaseFeature
 
     private IEnumerable<Item> FilterBySearch(IEnumerable<Item> items)
     {
-        if (this.ModConfig.DefaultOptions.HideUnselectedItems is FeatureOption.Enabled)
+        if (this.ModConfig.DefaultOptions.HideUnselectedItems is Option.Enabled)
         {
             return items.Where(this.itemMatcher.Value.MatchesFilter);
         }
@@ -125,7 +122,7 @@ internal sealed class SearchItems : BaseFeature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.Top.Container?.Options.SearchItems != FeatureOption.Enabled
+        if (this.itemGrabMenuManager.Top.Container?.Options.SearchItems != Option.Enabled
             || !this.ModConfig.Controls.ToggleSearch.JustPressed())
         {
             return;
@@ -159,9 +156,10 @@ internal sealed class SearchItems : BaseFeature
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.Top.Menu is null
-            || this.itemGrabMenuManager.Top.Container?.Options.SearchItems != FeatureOption.Enabled)
+            || this.itemGrabMenuManager.Top.Container?.Options.SearchItems != Option.Enabled)
         {
             this.isActive.Value = false;
+            this.searchBar.Value.Clear();
             return;
         }
 
@@ -169,7 +167,7 @@ internal sealed class SearchItems : BaseFeature
         this.isActive.Value = true;
         this.searchBar.Value.MoveTo(
             top.Menu.xPositionOnScreen + 512,
-            top.Menu.yPositionOnScreen - (IClickableMenu.borderWidth / 2) - Game1.tileSize + (top.Rows == 3 ? -20 : 4));
+            top.Menu.yPositionOnScreen - (IClickableMenu.borderWidth / 2) - Game1.tileSize - (top.Rows == 3 ? 20 : 4));
 
         this.searchBar.Value.SetWidth(top.Columns == 12 ? 284 : 384);
         this.itemGrabMenuManager.Top.AddHighlightMethod(this.itemMatcher.Value.MatchesFilter);

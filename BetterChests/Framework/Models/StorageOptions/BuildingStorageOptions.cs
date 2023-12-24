@@ -1,16 +1,16 @@
-namespace StardewMods.BetterChests.Framework.Models.Storages;
+namespace StardewMods.BetterChests.Framework.Models.StorageOptions;
 
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewValley.GameData.Buildings;
 
 /// <inheritdoc />
-internal sealed class BuildingStorage : ChildStorage
+internal sealed class BuildingStorageOptions : ChildStorageOptions
 {
-    /// <summary>Initializes a new instance of the <see cref="BuildingStorage" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="BuildingStorageOptions" /> class.</summary>
     /// <param name="default">The default storage options.</param>
     /// <param name="data">The building data.</param>
-    public BuildingStorage(IStorage @default, BuildingData data)
-        : base(@default, new CustomFieldsStorage(data.CustomFields)) =>
+    public BuildingStorageOptions(IStorageOptions @default, BuildingData data)
+        : base(@default, new CustomFieldsStorageOptions(data.CustomFields)) =>
         this.Data = data;
 
     /// <summary>Gets the building data.</summary>

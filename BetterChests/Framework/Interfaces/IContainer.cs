@@ -14,7 +14,7 @@ internal interface IContainer : IItemFilter
     string Description { get; }
 
     /// <summary>Gets options for the storage instance.</summary>
-    IStorage Options { get; }
+    IStorageOptions Options { get; }
 
     /// <summary>Gets the collection of items.</summary>
     IInventory Items { get; }
@@ -31,6 +31,9 @@ internal interface IContainer : IItemFilter
     /// <summary>Executes a given action for each item in the collection.</summary>
     /// <param name="action">The action to be executed for each item.</param>
     public void ForEachItem(Func<Item, bool> action);
+
+    /// <summary>Opens an item grab menu for this container.</summary>
+    public void ShowMenu();
 
     /// <summary>Transfers an item to a different storage.</summary>
     /// <param name="item">The item to transfer.</param>

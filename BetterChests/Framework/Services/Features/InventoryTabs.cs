@@ -47,7 +47,7 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.InventoryTabs != FeatureOption.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.InventoryTabs != Option.Disabled;
 
     /// <inheritdoc />
     public bool MatchesFilter(Item item) =>
@@ -81,7 +81,7 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
 
     private IEnumerable<Item> FilterByTab(IEnumerable<Item> items)
     {
-        if (this.ModConfig.DefaultOptions.HideUnselectedItems == FeatureOption.Enabled)
+        if (this.ModConfig.DefaultOptions.HideUnselectedItems == Option.Enabled)
         {
             return items.Where(this.MatchesFilter);
         }
@@ -208,6 +208,10 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
                     this.Id,
                     this.cachedTabs.Value[this.newIndex.Value].Component.hoverText);
             }
+            else
+            {
+                this.Log.Trace("{0}: Set tab to All", this.Id);
+            }
 
             this.currentIndex.Value = this.newIndex.Value;
         }
@@ -228,15 +232,17 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.Top.Container?.Options.InventoryTabs != FeatureOption.Enabled)
+        if (this.itemGrabMenuManager.Top.Container?.Options.InventoryTabs != Option.Enabled)
         {
             this.isActive.Value = false;
+            this.newIndex.Value = -1;
             return;
         }
 
         this.isActive.Value = true;
         this.itemGrabMenuManager.Top.AddHighlightMethod(this.MatchesFilter);
         this.itemGrabMenuManager.Top.AddOperation(this.FilterByTab);
+        this.currentIndex.Value = -1;
         this.resetCache.Value = true;
     }
 
@@ -246,7 +252,7 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
         if (this.itemGrabMenuManager.CurrentMenu is null
             || this.itemGrabMenuManager.Top.Menu is null
             || this.itemGrabMenuManager.Top.Container is null
-            || this.itemGrabMenuManager.Top.Container.Options.InventoryTabs != FeatureOption.Enabled
+            || this.itemGrabMenuManager.Top.Container.Options.InventoryTabs != Option.Enabled
             || !this.itemGrabMenuManager.Top.Container.Options.InventoryTabList.Any())
         {
             return;
@@ -266,7 +272,7 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
         var yPosition = top.Menu.yPositionOnScreen
             - (IClickableMenu.borderWidth / 2)
             - Game1.tileSize
-            + (top.Rows == 3 ? -20 : 4);
+            - (top.Rows == 3 ? 20 : 4);
 
         var below = top.Menu.inventory.Take(this.itemGrabMenuManager.Top.Columns).ToArray();
         var components = this.cachedTabs.Value.Select(tab => tab.Component).ToImmutableArray();
