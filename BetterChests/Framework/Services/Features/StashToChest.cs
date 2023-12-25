@@ -1,6 +1,5 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
-using System.Globalization;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
@@ -162,41 +161,47 @@ internal sealed class StashToChest : BaseFeature
 
         var topPriority = containerGroups.Keys.Max();
         var bottomPriority = containerGroups.Keys.Min();
-
         var stashedAny = false;
-        farmerContainer.ForEachItem(
-            item =>
+
+        for (var priority = topPriority; priority >= bottomPriority; --priority)
+        {
+            if (!containerGroups.TryGetValue(priority, out var containersTo))
             {
-                var stack = item.Stack;
-                for (var priority = topPriority; priority >= bottomPriority; --priority)
+                continue;
+            }
+
+            var noneEligible = false;
+            foreach (var containerTo in containersTo)
+            {
+                if (!farmerContainer.Transfer(containerTo, out var amounts))
                 {
-                    if (!containerGroups.TryGetValue(priority, out var storages))
+                    noneEligible = true;
+                    break;
+                }
+
+                foreach (var (name, amount) in amounts)
+                {
+                    if (amount <= 0)
                     {
                         continue;
                     }
 
-                    foreach (var storage in storages)
-                    {
-                        if (!farmerContainer.Transfer(item, storage, out var remaining))
-                        {
-                            continue;
-                        }
-
-                        stashedAny = true;
-                        var amount = stack - (remaining?.Stack ?? 0);
-                        this.Log.Trace(
-                            "StashToChest: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}",
-                            item.Name,
-                            amount.ToString(CultureInfo.InvariantCulture),
-                            farmerContainer,
-                            storage);
-
-                        return true;
-                    }
+                    stashedAny = true;
+                    this.Log.Trace(
+                        "{0}: {{ Item: {1}, Quantity: {2}, From: {3}, To: {4} }}",
+                        this.Id,
+                        name,
+                        amount,
+                        farmerContainer,
+                        containerTo);
                 }
+            }
 
-                return true;
-            });
+            if (noneEligible)
+            {
+                break;
+            }
+        }
 
         if (!stashedAny)
         {
@@ -209,6 +214,7 @@ internal sealed class StashToChest : BaseFeature
 
         bool Predicate(IContainer container) =>
             container.Options.StashToChest is RangeOption.Disabled or RangeOption.Default
+            && container.Items.Count < container.Capacity
             && !container.Options.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name)
             && !(container.Options.StashToChestDisableLocations.Contains("UndergroundMine")
                 && Game1.player.currentLocation is MineShaft mineShaft
@@ -226,24 +232,23 @@ internal sealed class StashToChest : BaseFeature
             return;
         }
 
-        farmerContainer.ForEachItem(
-            item =>
-            {
-                var stack = item.Stack;
-                if (!farmerContainer.Transfer(item, container, out var remaining))
-                {
-                    return true;
-                }
+        if (!farmerContainer.Transfer(container, out var amounts))
+        {
+            return;
+        }
 
-                var amount = stack - (remaining?.Stack ?? 0);
+        foreach (var (name, amount) in amounts)
+        {
+            if (amount > 0)
+            {
                 this.Log.Trace(
-                    "StashToChest: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}",
-                    item.Name,
-                    amount.ToString(CultureInfo.InvariantCulture),
+                    "{0}: {{ Item: {1}, Quantity: {2}, From: {3}, To: {4} }}",
+                    this.Id,
+                    name,
+                    amount,
                     farmerContainer,
                     container);
-
-                return true;
-            });
+            }
+        }
     }
 }

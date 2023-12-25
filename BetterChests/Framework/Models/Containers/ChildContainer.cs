@@ -33,6 +33,9 @@ internal class ChildContainer : IContainer
     /// <inheritdoc />
     public string Description => this.child.Description;
 
+    /// <inheritdoc/>
+    public int Capacity => this.child.Capacity;
+
     /// <inheritdoc />
     public IStorageOptions Options => this.child.Options;
 
@@ -57,9 +60,9 @@ internal class ChildContainer : IContainer
     /// <inheritdoc />
     public void ShowMenu() => this.child.ShowMenu();
 
-    /// <inheritdoc />
-    public bool Transfer(Item item, IContainer containerTo, out Item? remaining) =>
-        this.child.Transfer(item, containerTo, out remaining);
+    /// <inheritdoc/>
+    public bool Transfer(IContainer containerTo, [NotNullWhen(true)] out Dictionary<string, int>? amounts) =>
+        this.child.Transfer(containerTo, out amounts);
 
     /// <inheritdoc />
     public bool MatchesFilter(Item item) => this.child.MatchesFilter(item);
@@ -69,4 +72,7 @@ internal class ChildContainer : IContainer
 
     /// <inheritdoc />
     public bool TryRemove(Item item) => this.child.TryRemove(item);
+
+    /// <inheritdoc/>
+    public override string ToString() => $"{this.DisplayName} in {this.Parent}";
 }

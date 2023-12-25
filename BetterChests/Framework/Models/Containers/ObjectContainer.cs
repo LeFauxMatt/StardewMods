@@ -28,6 +28,9 @@ internal class ObjectContainer : BaseContainer<SObject>
     public SObject Object =>
         this.Source.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(ChestContainer));
 
+    /// <inheritdoc/>
+    public override int Capacity => this.chest.GetActualCapacity();
+
     /// <inheritdoc />
     public override IInventory Items => this.chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 

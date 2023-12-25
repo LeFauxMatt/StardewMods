@@ -6,6 +6,13 @@ using StardewMods.BetterChests.Framework.Enums;
 /// <summary>Extension methods for Better Chests.</summary>
 internal static class Extensions
 {
+    private const string LockItemKey = "furyx639.BetterChests/LockItem";
+
+    /// <summary>Determines if the specified item is locked.</summary>
+    /// <param name="item">The item to check for locking.</param>
+    /// <returns>Returns <c>true</c> if the item is locked; otherwise, <c>false</c>.</returns>
+    public static bool IsLocked(this Item item) => item.modData.ContainsKey(Extensions.LockItemKey);
+
     /// <summary>Tests whether the player is within range of the location.</summary>
     /// <param name="range">The range.</param>
     /// <param name="distance">The distance in tiles to the player.</param>

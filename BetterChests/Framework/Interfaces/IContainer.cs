@@ -7,11 +7,14 @@ using StardewValley.Mods;
 /// <summary>An instance of a game object that can store items.</summary>
 internal interface IContainer : IItemFilter
 {
-    /// <summary>Gets the name of the storage.</summary>
+    /// <summary>Gets the name of the container.</summary>
     string DisplayName { get; }
 
-    /// <summary>Gets the description of the storage.</summary>
+    /// <summary>Gets the description of the container.</summary>
     string Description { get; }
+
+    /// <summary>Gets the capacity of the container.</summary>
+    int Capacity { get; }
 
     /// <summary>Gets options for the storage instance.</summary>
     IStorageOptions Options { get; }
@@ -39,12 +42,11 @@ internal interface IContainer : IItemFilter
     /// <summary>Opens an item grab menu for this container.</summary>
     public void ShowMenu();
 
-    /// <summary>Transfers an item to a different container.</summary>
-    /// <param name="item">The item to transfer.</param>
+    /// <summary>Transfers all items to a different container.</summary>
     /// <param name="containerTo">The container to transfer the item to.</param>
-    /// <param name="remaining">Contains the remaining item after addition, if any.</param>
-    /// <returns>Returns true if the transfer was successful; otherwise, false.</returns>
-    public bool Transfer(Item item, IContainer containerTo, out Item? remaining);
+    /// <param name="amounts">Contains the amount of eligible items transferred, if any.</param>
+    /// <returns>Returns true if any items were eligible to transfer; otherwise, false.</returns>
+    public bool Transfer(IContainer containerTo, [NotNullWhen(true)] out Dictionary<string, int>? amounts);
 
     /// <summary>Tries to remove an item from the container.</summary>
     /// <param name="item">The item to remove.</param>

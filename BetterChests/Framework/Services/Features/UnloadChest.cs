@@ -49,8 +49,8 @@ internal sealed class UnloadChest : BaseFeature
             || !e.Button.IsUseToolButton()
             || this.inputHelper.IsSuppressed(e.Button)
             || Game1.player.CurrentItem is null
-            || !this.containerFactory.TryGetOne(Game1.player.CurrentItem, out var fromStorage)
-            || fromStorage.Options.UnloadChest != Option.Enabled)
+            || !this.containerFactory.TryGetOne(Game1.player.CurrentItem, out var containerFrom)
+            || containerFrom.Options.UnloadChest != Option.Enabled)
         {
             return;
         }
@@ -58,36 +58,30 @@ internal sealed class UnloadChest : BaseFeature
         var pos = CommonHelpers.GetCursorTile(1, false);
         if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
             || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-            || !this.containerFactory.TryGetOne(obj, out var toStorage)
-            || toStorage.Options.UnloadChest != Option.Enabled)
+            || !this.containerFactory.TryGetOne(obj, out var containerTo)
+            || containerTo.Options.UnloadChest != Option.Enabled)
         {
             return;
         }
 
-        // Stash items into target chest
-        for (var index = fromStorage.Items.Count - 1; index >= 0; --index)
+        this.inputHelper.Suppress(e.Button);
+        if (!containerFrom.Transfer(containerTo, out var amounts))
         {
-            var item = fromStorage.Items[index];
-            if (item is null)
-            {
-                continue;
-            }
-
-            var stack = item.Stack;
-            if (!fromStorage.Transfer(item, toStorage, out var remaining))
-            {
-                continue;
-            }
-
-            var amount = stack - (remaining?.Stack ?? 0);
-            this.Log.Trace(
-                "UnloadChest: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}",
-                item.Name,
-                amount.ToString(CultureInfo.InvariantCulture),
-                fromStorage,
-                toStorage);
+            return;
         }
 
-        this.inputHelper.Suppress(e.Button);
+        foreach (var (name, amount) in amounts)
+        {
+            if (amount > 0)
+            {
+                this.Log.Trace(
+                    "{0}: {{ Item: {1}, Quantity: {2}, From: {3}, To: {4} }}",
+                    this.Id,
+                    name,
+                    amount,
+                    containerFrom,
+                    containerTo);
+            }
+        }
     }
 }

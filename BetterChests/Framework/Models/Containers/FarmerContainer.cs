@@ -21,6 +21,9 @@ internal sealed class FarmerContainer : BaseContainer<Farmer>
     public Farmer Farmer =>
         this.Source.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(FarmerContainer));
 
+    /// <inheritdoc/>
+    public override int Capacity => this.Farmer.MaxItems;
+
     /// <inheritdoc />
     public override IInventory Items => this.Farmer.Items;
 

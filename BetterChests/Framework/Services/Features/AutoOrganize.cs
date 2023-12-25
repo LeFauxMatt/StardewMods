@@ -37,70 +37,69 @@ internal sealed class AutoOrganize : BaseFeature
 
     private void OrganizeAll()
     {
-        var containerGroups = this
+        var containerGroupsTo = this
             .containerFactory.GetAll(container => container.Options.AutoOrganize == Option.Enabled)
             .GroupBy(container => container.Options.StashToChestPriority)
             .ToDictionary(containerGroup => containerGroup.Key, group => group.ToList());
 
-        var topPriority = containerGroups.Keys.Max();
-        var bottomPriority = containerGroups.Keys.Min();
+        var containerGroupsFrom = new Dictionary<int, List<IContainer>>();
+        foreach (var (priority, containers) in containerGroupsTo)
+        {
+            containerGroupsFrom.Add(priority, new List<IContainer>(containers));
+        }
+
+        var topPriority = containerGroupsTo.Keys.Max();
+        var bottomPriority = containerGroupsTo.Keys.Min();
 
         for (var priorityTo = topPriority; priorityTo >= bottomPriority; --priorityTo)
         {
-            if (!containerGroups.TryGetValue(priorityTo, out var containersTo))
+            if (!containerGroupsTo.TryGetValue(priorityTo, out var containersTo))
             {
                 continue;
             }
 
             for (var priorityFrom = priorityTo - 1; priorityFrom >= bottomPriority; --priorityFrom)
             {
-                if (!containerGroups.TryGetValue(priorityFrom, out var containersFrom))
+                if (!containerGroupsFrom.TryGetValue(priorityFrom, out var containersFrom))
                 {
                     continue;
                 }
 
-                foreach (var containerTo in containersTo)
+                for (var indexTo = containersTo.Count - 1; indexTo >= 0; --indexTo)
                 {
-                    this.OrganizeFrom(containerTo, containersFrom);
-                }
-            }
+                    var containerTo = containersTo[indexTo];
+                    for (var indexFrom = containersFrom.Count - 1; indexFrom >= 0; --indexFrom)
+                    {
+                        if (containerTo.Items.Count >= containerTo.Capacity)
+                        {
+                            break;
+                        }
 
-            foreach (var containerTo in containersTo)
-            {
-                containerTo.OrganizeItems();
+                        var containerFrom = containersFrom[indexFrom];
+                        if (!containerFrom.Transfer(containerTo, out var amounts))
+                        {
+                            containersFrom.RemoveAt(indexFrom);
+                            continue;
+                        }
+
+                        foreach (var (name, amount) in amounts)
+                        {
+                            if (amount > 0)
+                            {
+                                this.Log.Trace(
+                                    "{0}: {{ Item: {1}, Quantity: {2}, From: {3}, To: {4} }}",
+                                    this.Id,
+                                    name,
+                                    amount,
+                                    containerFrom,
+                                    containerTo);
+                            }
+                        }
+                    }
+
+                    containerTo.OrganizeItems();
+                }
             }
         }
     }
-
-    private void OrganizeFrom(IContainer containerFrom, List<IContainer> containersTo) =>
-        containerFrom.ForEachItem(
-            item =>
-            {
-                var stack = item.Stack;
-                foreach (var toStorage in containersTo)
-                {
-                    if (!containerFrom.Transfer(item, toStorage, out var remaining))
-                    {
-                        continue;
-                    }
-
-                    var amount = stack - (remaining?.Stack ?? 0);
-                    this.Log.Trace(
-                        "{0}: Organized {1} ({2}) from {3} to {4}",
-                        this.Id,
-                        item.Name,
-                        amount,
-                        containerFrom,
-                        toStorage);
-
-                    if (remaining is null)
-                    {
-                        return true;
-                    }
-
-                    stack = remaining.Stack;
-                }
-
-                return true;
-            });
 }

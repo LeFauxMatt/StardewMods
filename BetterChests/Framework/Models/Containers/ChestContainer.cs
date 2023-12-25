@@ -22,6 +22,9 @@ internal class ChestContainer : BaseContainer<Chest>
     public Chest Chest =>
         this.Source.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(ChestContainer));
 
+    /// <inheritdoc/>
+    public override int Capacity => this.Chest.GetActualCapacity();
+
     /// <inheritdoc />
     public override IInventory Items => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 

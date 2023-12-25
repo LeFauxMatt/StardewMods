@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework.Services.Features;
 
-using System.Globalization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
@@ -8,7 +7,6 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
-using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
@@ -17,7 +15,6 @@ internal sealed class TransferItems : BaseFeature
 {
     private const string IconPath = "furyx639.BetterChests/Icons";
 
-    private readonly ContainerFactory containerFactory;
     private readonly PerScreen<ClickableTextureComponent> downArrow;
     private readonly IInputHelper inputHelper;
     private readonly ItemGrabMenuManager itemGrabMenuManager;
@@ -27,7 +24,6 @@ internal sealed class TransferItems : BaseFeature
     /// <summary>Initializes a new instance of the <see cref="TransferItems" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
@@ -35,14 +31,12 @@ internal sealed class TransferItems : BaseFeature
     public TransferItems(
         ILog log,
         ModConfig modConfig,
-        ContainerFactory containerFactory,
         IGameContentHelper gameContentHelper,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         IModEvents modEvents)
         : base(log, modConfig)
     {
-        this.containerFactory = containerFactory;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
         this.modEvents = modEvents;
@@ -91,24 +85,27 @@ internal sealed class TransferItems : BaseFeature
         this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
     }
 
-    private void Transfer(IContainer from, IContainer to) =>
-        from.ForEachItem(
-            item =>
-            {
-                var stack = item.Stack;
-                if (from.Transfer(item, to, out var remaining))
-                {
-                    var amount = stack - (remaining?.Stack ?? 0);
-                    this.Log.Trace(
-                        "TransferItems: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}",
-                        item.Name,
-                        amount.ToString(CultureInfo.InvariantCulture),
-                        from,
-                        to);
-                }
+    private void Transfer(IContainer containerFrom, IContainer containerTo)
+    {
+        if (!containerFrom.Transfer(containerTo, out var amounts))
+        {
+            return;
+        }
 
-                return true;
-            });
+        foreach (var (name, amount) in amounts)
+        {
+            if (amount > 0)
+            {
+                this.Log.Trace(
+                    "{0}: {{ Item: {1}, Quantity: {2}, From: {3}, To: {4} }}",
+                    this.Id,
+                    name,
+                    amount,
+                    containerFrom,
+                    containerTo);
+            }
+        }
+    }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {

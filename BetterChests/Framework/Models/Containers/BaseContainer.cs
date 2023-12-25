@@ -29,9 +29,7 @@ internal abstract class BaseContainer<TSource> : BaseContainer, IContainer<TSour
 /// <inheritdoc />
 internal abstract class BaseContainer : IContainer
 {
-    private const string LockItemKey = "furyx639.BetterChests/LockItem";
     private readonly IStorageOptions baseOptions;
-
     private readonly ItemMatcher itemMatcher;
     private readonly Lazy<IStorageOptions> storageOptions;
 
@@ -51,6 +49,9 @@ internal abstract class BaseContainer : IContainer
 
     /// <inheritdoc />
     public string Description => this.baseOptions.GetDescription();
+
+    /// <inheritdoc/>
+    public abstract int Capacity { get; }
 
     /// <inheritdoc />
     public IStorageOptions Options => this.storageOptions.Value;
@@ -173,26 +174,41 @@ internal abstract class BaseContainer : IContainer
     public virtual void ShowMenu() { }
 
     /// <inheritdoc />
-    public virtual bool Transfer(Item item, IContainer containerTo, out Item? remaining)
+    public virtual bool Transfer(IContainer containerTo, [NotNullWhen(true)] out Dictionary<string, int>? amounts)
     {
-        if (!this.Items.Contains(item))
+        var items = new Dictionary<string, int>();
+        this.ForEachItem(
+            item =>
+            {
+                if (containerTo.Items.Count >= containerTo.Capacity)
+                {
+                    return false;
+                }
+
+                if (this.Options.LockItem == Option.Enabled && item.IsLocked())
+                {
+                    return true;
+                }
+
+                var stack = item.Stack;
+                items.TryAdd(item.Name, 0);
+                if (!containerTo.TryAdd(item, out var remaining) || !this.TryRemove(item))
+                {
+                    return true;
+                }
+
+                items[item.Name] += stack - (remaining?.Stack ?? 0);
+                return true;
+            });
+
+        if (items.Any())
         {
-            remaining = null;
-            return false;
+            amounts = items;
+            return true;
         }
 
-        if (this.Options.LockItem == Option.Enabled && item.modData.ContainsKey(BaseContainer.LockItemKey))
-        {
-            remaining = null;
-            return false;
-        }
-
-        if (!containerTo.TryAdd(item, out remaining))
-        {
-            return false;
-        }
-
-        return remaining is null && this.TryRemove(item);
+        amounts = null;
+        return false;
     }
 
     /// <inheritdoc />
@@ -216,4 +232,7 @@ internal abstract class BaseContainer : IContainer
 
     /// <inheritdoc />
     public abstract bool TryRemove(Item item);
+
+    /// <inheritdoc/>
+    public override string ToString() => $"{this.DisplayName} at {this.Location.DisplayName} ({this.TileLocation.X:n0}, {this.TileLocation.Y:n0})";
 }
