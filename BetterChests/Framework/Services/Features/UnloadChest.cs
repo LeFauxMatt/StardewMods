@@ -48,6 +48,7 @@ internal sealed class UnloadChest : BaseFeature
         if (!Context.IsPlayerFree
             || !e.Button.IsUseToolButton()
             || this.inputHelper.IsSuppressed(e.Button)
+            || Game1.player.CurrentItem is null
             || !this.containerFactory.TryGetOne(Game1.player.CurrentItem, out var fromStorage)
             || fromStorage.Options.UnloadChest != Option.Enabled)
         {

@@ -43,13 +43,13 @@ internal enum OptionKey
     LabelChest,
 
     /// <summary>Allows items to be locked in their slot so they will not be transferred automatically.</summary>
-    LockItemSlot,
+    LockItem,
 
     /// <summary>Allows chests to be opened while held.</summary>
     OpenHeldChest,
 
     /// <summary>Overrides the sort function to group and sort by a custom field.</summary>
-    OrganizeChest,
+    OrganizeItems,
 
     /// <summary>Customize the carrying capacity of a chest.</summary>
     ResizeChest,

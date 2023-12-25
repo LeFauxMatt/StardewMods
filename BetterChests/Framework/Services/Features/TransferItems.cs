@@ -6,46 +6,51 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <summary>Transfer all items into or out from a chest.</summary>
 internal sealed class TransferItems : BaseFeature
 {
     private const string IconPath = "furyx639.BetterChests/Icons";
 
-    private readonly ContainerFactory containers;
+    private readonly ContainerFactory containerFactory;
     private readonly PerScreen<ClickableTextureComponent> downArrow;
-    private readonly IModEvents events;
-    private readonly IInputHelper input;
+    private readonly IInputHelper inputHelper;
+    private readonly ItemGrabMenuManager itemGrabMenuManager;
+    private readonly IModEvents modEvents;
     private readonly PerScreen<ClickableTextureComponent> upArrow;
 
     /// <summary>Initializes a new instance of the <see cref="TransferItems" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="events">Dependency used for managing access to events.</param>
-    /// <param name="gameContent">Dependency used for loading game assets.</param>
-    /// <param name="input">Dependency used for checking and changing input state.</param>
-    /// <param name="containers">Dependency used for accessing containers.</param>
+    /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
+    /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
+    /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
+    /// <param name="modEvents">Dependency used for managing access to events.</param>
     public TransferItems(
         ILog log,
         ModConfig modConfig,
-        IModEvents events,
-        IGameContentHelper gameContent,
-        IInputHelper input,
-        ContainerFactory containers)
+        ContainerFactory containerFactory,
+        IGameContentHelper gameContentHelper,
+        IInputHelper inputHelper,
+        ItemGrabMenuManager itemGrabMenuManager,
+        IModEvents modEvents)
         : base(log, modConfig)
     {
-        this.events = events;
-        this.input = input;
-        this.containers = containers;
+        this.containerFactory = containerFactory;
+        this.inputHelper = inputHelper;
+        this.itemGrabMenuManager = itemGrabMenuManager;
+        this.modEvents = modEvents;
 
         this.downArrow = new PerScreen<ClickableTextureComponent>(
             () => new ClickableTextureComponent(
                 new Rectangle(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
-                gameContent.Load<Texture2D>(TransferItems.IconPath),
+                gameContentHelper.Load<Texture2D>(TransferItems.IconPath),
                 new Rectangle(84, 0, 7, 16),
                 Game1.pixelZoom)
             {
@@ -56,7 +61,7 @@ internal sealed class TransferItems : BaseFeature
         this.upArrow = new PerScreen<ClickableTextureComponent>(
             () => new ClickableTextureComponent(
                 new Rectangle(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
-                gameContent.Load<Texture2D>(TransferItems.IconPath),
+                gameContentHelper.Load<Texture2D>(TransferItems.IconPath),
                 new Rectangle(100, 0, 7, 16),
                 Game1.pixelZoom)
             {
@@ -72,167 +77,118 @@ internal sealed class TransferItems : BaseFeature
     protected override void Activate()
     {
         // Events
-        this.events.Display.MenuChanged += this.OnMenuChanged;
-        this.events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.events.Input.ButtonPressed += this.OnButtonPressed;
+        this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
+        this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this.events.Display.MenuChanged += this.OnMenuChanged;
-        this.events.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.events.Input.ButtonPressed -= this.OnButtonPressed;
+        this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
+        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
+        this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
     }
 
-    private void TransferDown()
-    {
-        if (Game1.activeClickableMenu is not ItemGrabMenu
+    private void Transfer(IContainer from, IContainer to) =>
+        from.ForEachItem(
+            item =>
             {
-                context: Chest chest,
-            }
-            || !this.containers.TryGetOne(chest, out var container)
-            || container.Options.TransferItems != Option.Enabled
-            || !this.containers.TryGetOne(Game1.player, out var farmerContainer)
-            || farmerContainer.Options.TransferItems != Option.Enabled)
-        {
-            return;
-        }
+                var stack = item.Stack;
+                if (from.Transfer(item, to, out var remaining))
+                {
+                    var amount = stack - (remaining?.Stack ?? 0);
+                    this.Log.Trace(
+                        "TransferItems: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}",
+                        item.Name,
+                        amount.ToString(CultureInfo.InvariantCulture),
+                        from,
+                        to);
+                }
 
-        foreach (var item in container.Items)
-        {
-            if (item is null)
-            {
-                continue;
-            }
-
-            var stack = item.Stack;
-            if (container.Transfer(item, farmerContainer, out var remaining))
-            {
-                var amount = stack - (remaining?.Stack ?? 0);
-                this.Log.Trace(
-                    "TransferItems: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}",
-                    item.Name,
-                    amount.ToString(CultureInfo.InvariantCulture),
-                    container,
-                    farmerContainer);
-            }
-        }
-    }
-
-    private void TransferUp()
-    {
-        if (Game1.activeClickableMenu is not ItemGrabMenu
-            {
-                context: Chest chest,
-            }
-            || !this.containers.TryGetOne(chest, out var container)
-            || container.Options.TransferItems != Option.Enabled
-            || !this.containers.TryGetOne(Game1.player, out var farmerContainer)
-            || farmerContainer.Options.TransferItems != Option.Enabled)
-        {
-            return;
-        }
-
-        foreach (var item in container.Items)
-        {
-            if (item is null)
-            {
-                continue;
-            }
-
-            var stack = item.Stack;
-            if (farmerContainer.Transfer(item, container, out var remaining))
-            {
-                var amount = stack - (remaining?.Stack ?? 0);
-                this.Log.Trace(
-                    "TransferItems: {{ Item: {0}, Quantity: {1}, From: {2}, To: {3} }}",
-                    item.Name,
-                    amount.ToString(CultureInfo.InvariantCulture),
-                    farmerContainer,
-                    container);
-            }
-        }
-    }
+                return true;
+            });
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu || e.Button is not SButton.MouseLeft)
+        if (e.Button is not SButton.MouseLeft
+            || this.itemGrabMenuManager.Top.Container is null
+            || this.itemGrabMenuManager.Bottom.Container is null)
         {
             return;
         }
 
-        var (x, y) = Game1.getMousePosition(true);
-        if (this.downArrow.Value.visible && this.downArrow.Value.containsPoint(x, y))
+        var (mouseX, mouseY) = Game1.getMousePosition(true);
+        if (this.upArrow.Value.visible && this.upArrow.Value.containsPoint(mouseX, mouseY))
         {
-            this.TransferDown();
-            this.input.Suppress(e.Button);
+            this.inputHelper.Suppress(e.Button);
+            this.Transfer(this.itemGrabMenuManager.Bottom.Container, this.itemGrabMenuManager.Top.Container);
             return;
         }
 
-        if (this.upArrow.Value.visible && this.upArrow.Value.containsPoint(x, y))
+        if (this.downArrow.Value.visible && this.downArrow.Value.containsPoint(mouseX, mouseY))
         {
-            this.TransferUp();
-            this.input.Suppress(e.Button);
+            this.inputHelper.Suppress(e.Button);
+            this.Transfer(this.itemGrabMenuManager.Top.Container, this.itemGrabMenuManager.Bottom.Container);
         }
     }
 
-    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        this.downArrow.Value.visible = false;
-        this.upArrow.Value.visible = false;
-
-        if (e.NewMenu is not ItemGrabMenu itemGrabMenu)
+        if (this.itemGrabMenuManager.Top.Menu is null
+            || this.itemGrabMenuManager.Bottom.Menu is null
+            || this.itemGrabMenuManager.Top.Container is null
+            || this.itemGrabMenuManager.Bottom.Container is null)
         {
+            this.upArrow.Value.visible = false;
+            this.downArrow.Value.visible = false;
             return;
         }
 
-        if (itemGrabMenu.context is Chest chest
-            && this.containers.TryGetOne(chest, out var container)
-            && container.Options.TransferItems == Option.Enabled)
+        var top = this.itemGrabMenuManager.Top;
+        var bottom = this.itemGrabMenuManager.Bottom;
+        this.upArrow.Value.visible = top.Container?.Options.TransferItems == Option.Enabled;
+        this.downArrow.Value.visible = bottom.Container?.Options.TransferItems == Option.Enabled;
+
+        if (this.upArrow.Value.visible)
         {
-            this.upArrow.Value.visible = true;
-            this.upArrow.Value.bounds.Y = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen - Game1.tileSize;
-            this.upArrow.Value.bounds.X = itemGrabMenu.ItemsToGrabMenu.xPositionOnScreen
-                + itemGrabMenu.ItemsToGrabMenu.width
-                - 24;
+            var topLeft = bottom.Menu.inventory[0];
+            this.upArrow.Value.bounds.X = topLeft.bounds.X - 24;
+            this.upArrow.Value.bounds.Y = topLeft.bounds.Y - 32;
         }
 
-        if (this.containers.TryGetOne(Game1.player, out container) && container.Options.TransferItems == Option.Enabled)
+        if (this.downArrow.Value.visible)
         {
-            this.downArrow.Value.visible = true;
-            this.downArrow.Value.bounds.Y = itemGrabMenu.ItemsToGrabMenu.yPositionOnScreen - Game1.tileSize;
-            this.downArrow.Value.bounds.X = itemGrabMenu.ItemsToGrabMenu.xPositionOnScreen
-                + itemGrabMenu.ItemsToGrabMenu.width
-                - 60;
+            var bottomLeft = top.Menu.inventory[top.Capacity - top.Columns];
+            this.downArrow.Value.bounds.X = bottomLeft.bounds.X - 24;
+            this.downArrow.Value.bounds.Y = bottomLeft.bounds.Y + 32;
         }
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu)
+        if (this.itemGrabMenuManager.CurrentMenu is null)
         {
             return;
         }
 
-        var (x, y) = Game1.getMousePosition(true);
+        var (mouseX, mouseY) = Game1.getMousePosition(true);
         if (this.downArrow.Value.visible)
         {
             this.downArrow.Value.draw(e.SpriteBatch);
-            if (this.downArrow.Value.containsPoint(x, y))
+            if (this.downArrow.Value.containsPoint(mouseX, mouseY))
             {
-                itemGrabMenu.hoverText = this.downArrow.Value.hoverText;
-                return;
+                this.itemGrabMenuManager.CurrentMenu.hoverText = this.downArrow.Value.hoverText;
             }
         }
 
         if (this.upArrow.Value.visible)
         {
             this.upArrow.Value.draw(e.SpriteBatch);
-            if (this.upArrow.Value.containsPoint(x, y))
+            if (this.upArrow.Value.containsPoint(mouseX, mouseY))
             {
-                itemGrabMenu.hoverText = this.upArrow.Value.hoverText;
+                this.itemGrabMenuManager.CurrentMenu.hoverText = this.upArrow.Value.hoverText;
             }
         }
     }

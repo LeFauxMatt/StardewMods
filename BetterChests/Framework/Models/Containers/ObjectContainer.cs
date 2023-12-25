@@ -60,4 +60,17 @@ internal class ObjectContainer : BaseContainer<SObject>
         remaining = this.chest.addItem(item);
         return remaining is null || remaining.Stack != stack;
     }
+
+    /// <inheritdoc />
+    public override bool TryRemove(Item item)
+    {
+        if (!this.Items.Contains(item))
+        {
+            return false;
+        }
+
+        this.Items.Remove(item);
+        this.Items.RemoveEmptySlots();
+        return true;
+    }
 }

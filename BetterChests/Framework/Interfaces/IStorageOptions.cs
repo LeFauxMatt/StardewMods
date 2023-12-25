@@ -66,19 +66,19 @@ internal interface IStorageOptions
     public Option LabelChest { get; set; }
 
     /// <summary>Gets or sets a value indicating whether the slot lock feature is enabled.</summary>
-    public Option LockItemSlot { get; set; }
+    public Option LockItem { get; set; }
 
     /// <summary>Gets or sets a value indicating if the chest can be opened while it's being carried in the players inventory.</summary>
     public Option OpenHeldChest { get; set; }
 
     /// <summary>Gets or sets a value indicating if the chest can be organized with custom sorting/grouping.</summary>
-    public Option OrganizeChest { get; set; }
+    public Option OrganizeItems { get; set; }
 
     /// <summary>Gets or sets a value indicating how items will be grouped when organized.</summary>
-    public GroupBy OrganizeChestGroupBy { get; set; }
+    public GroupBy OrganizeItemsGroupBy { get; set; }
 
     /// <summary>Gets or sets a value indicating how items will be sorted when organized.</summary>
-    public SortBy OrganizeChestSortBy { get; set; }
+    public SortBy OrganizeItemsSortBy { get; set; }
 
     /// <summary>Gets or sets a value the chest's carrying capacity.</summary>
     public CapacityOption ResizeChest { get; set; }

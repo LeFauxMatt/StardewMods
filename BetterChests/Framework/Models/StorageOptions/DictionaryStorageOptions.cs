@@ -137,10 +137,10 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public Option LockItemSlot
+    public Option LockItem
     {
-        get => this.Get(OptionKey.LockItemSlot);
-        set => this.Set(OptionKey.LockItemSlot, value);
+        get => this.Get(OptionKey.LockItem);
+        set => this.Set(OptionKey.LockItem, value);
     }
 
     /// <inheritdoc />
@@ -151,17 +151,17 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public Option OrganizeChest
+    public Option OrganizeItems
     {
-        get => this.Get(OptionKey.OrganizeChest);
-        set => this.Set(OptionKey.OrganizeChest, value);
+        get => this.Get(OptionKey.OrganizeItems);
+        set => this.Set(OptionKey.OrganizeItems, value);
     }
 
     /// <inheritdoc />
-    public GroupBy OrganizeChestGroupBy { get; set; }
+    public GroupBy OrganizeItemsGroupBy { get; set; }
 
     /// <inheritdoc />
-    public SortBy OrganizeChestSortBy { get; set; }
+    public SortBy OrganizeItemsSortBy { get; set; }
 
     /// <inheritdoc />
     public CapacityOption ResizeChest

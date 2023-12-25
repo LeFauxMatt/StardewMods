@@ -46,4 +46,16 @@ internal sealed class FarmerContainer : BaseContainer<Farmer>
         remaining = this.Farmer.addItemToInventory(item);
         return remaining is null || remaining.Stack != stack;
     }
+
+    /// <inheritdoc />
+    public override bool TryRemove(Item item)
+    {
+        if (!this.Items.Contains(item))
+        {
+            return false;
+        }
+
+        this.Farmer.removeItemFromInventory(item);
+        return true;
+    }
 }

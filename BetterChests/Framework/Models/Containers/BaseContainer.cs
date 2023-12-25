@@ -6,6 +6,7 @@ using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
 using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewValley.Inventories;
+using StardewValley.Menus;
 using StardewValley.Mods;
 
 /// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IContainer{TSource}" />
@@ -28,7 +29,7 @@ internal abstract class BaseContainer<TSource> : BaseContainer, IContainer<TSour
 /// <inheritdoc />
 internal abstract class BaseContainer : IContainer
 {
-    private const string LockedSlotKey = "furyx639.BetterChests/LockedSlot";
+    private const string LockItemKey = "furyx639.BetterChests/LockItem";
     private readonly IStorageOptions baseOptions;
 
     private readonly ItemMatcher itemMatcher;
@@ -67,6 +68,91 @@ internal abstract class BaseContainer : IContainer
     public abstract ModDataDictionary ModData { get; }
 
     /// <inheritdoc />
+    public void OrganizeItems(bool reverse = false)
+    {
+        if (this.Options is
+            {
+                OrganizeItemsGroupBy: GroupBy.Default,
+                OrganizeItemsSortBy: SortBy.Default,
+            })
+        {
+            ItemGrabMenu.organizeItemsInList(this.Items);
+            return;
+        }
+
+        var items = this.Items.ToArray();
+        Array.Sort(
+            items,
+            (i1, i2) =>
+            {
+                if (i2 == null)
+                {
+                    return -1;
+                }
+
+                if (i1 == null)
+                {
+                    return 1;
+                }
+
+                if (i1.Equals(i2))
+                {
+                    return 0;
+                }
+
+                var g1 = this.Options.OrganizeItemsGroupBy switch
+                    {
+                        GroupBy.Category => i1
+                            .GetContextTags()
+                            .FirstOrDefault(tag => tag.StartsWith("category_", StringComparison.OrdinalIgnoreCase)),
+                        GroupBy.Color => i1
+                            .GetContextTags()
+                            .FirstOrDefault(tag => tag.StartsWith("color_", StringComparison.OrdinalIgnoreCase)),
+                        GroupBy.Name => i1.DisplayName,
+                        _ => null,
+                    }
+                    ?? string.Empty;
+
+                var g2 = this.Options.OrganizeItemsGroupBy switch
+                    {
+                        GroupBy.Category => i2
+                            .GetContextTags()
+                            .FirstOrDefault(tag => tag.StartsWith("category_", StringComparison.OrdinalIgnoreCase)),
+                        GroupBy.Color => i2
+                            .GetContextTags()
+                            .FirstOrDefault(tag => tag.StartsWith("color_", StringComparison.OrdinalIgnoreCase)),
+                        GroupBy.Name => i2.DisplayName,
+                        _ => null,
+                    }
+                    ?? string.Empty;
+
+                if (!g1.Equals(g2, StringComparison.OrdinalIgnoreCase))
+                {
+                    return string.Compare(g1, g2, StringComparison.OrdinalIgnoreCase);
+                }
+
+                var o1 = this.Options.OrganizeItemsSortBy switch
+                {
+                    SortBy.Type => i1.Category, SortBy.Quality => i1.Quality, SortBy.Quantity => i1.Stack, _ => 0,
+                };
+
+                var o2 = this.Options.OrganizeItemsSortBy switch
+                {
+                    SortBy.Type => i2.Category, SortBy.Quality => i2.Quality, SortBy.Quantity => i2.Stack, _ => 0,
+                };
+
+                return o1.CompareTo(o2);
+            });
+
+        if (reverse)
+        {
+            Array.Reverse(items);
+        }
+
+        this.Items.OverwriteWith(items);
+    }
+
+    /// <inheritdoc />
     public void ForEachItem(Func<Item, bool> action)
     {
         for (var index = this.Items.Count - 1; index >= 0; --index)
@@ -87,7 +173,7 @@ internal abstract class BaseContainer : IContainer
     public virtual void ShowMenu() { }
 
     /// <inheritdoc />
-    public bool Transfer(Item item, IContainer containerTo, out Item? remaining)
+    public virtual bool Transfer(Item item, IContainer containerTo, out Item? remaining)
     {
         if (!this.Items.Contains(item))
         {
@@ -95,7 +181,7 @@ internal abstract class BaseContainer : IContainer
             return false;
         }
 
-        if (this.Options.LockItemSlot == Option.Enabled && item.modData.ContainsKey(BaseContainer.LockedSlotKey))
+        if (this.Options.LockItem == Option.Enabled && item.modData.ContainsKey(BaseContainer.LockItemKey))
         {
             remaining = null;
             return false;
@@ -106,12 +192,7 @@ internal abstract class BaseContainer : IContainer
             return false;
         }
 
-        if (remaining is null)
-        {
-            this.Items.Remove(item);
-        }
-
-        return true;
+        return remaining is null && this.TryRemove(item);
     }
 
     /// <inheritdoc />
@@ -132,4 +213,7 @@ internal abstract class BaseContainer : IContainer
 
     /// <inheritdoc />
     public abstract bool TryAdd(Item item, out Item? remaining);
+
+    /// <inheritdoc />
+    public abstract bool TryRemove(Item item);
 }

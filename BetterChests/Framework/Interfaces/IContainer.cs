@@ -28,6 +28,10 @@ internal interface IContainer : IItemFilter
     /// <summary>Gets the mod data dictionary.</summary>
     ModDataDictionary ModData { get; }
 
+    /// <summary>Arranges items in container according to group by and sort by options.</summary>
+    /// <param name="reverse">Whether to sort the items in reverse order.</param>
+    public void OrganizeItems(bool reverse = false);
+
     /// <summary>Executes a given action for each item in the collection.</summary>
     /// <param name="action">The action to be executed for each item.</param>
     public void ForEachItem(Func<Item, bool> action);
@@ -35,15 +39,20 @@ internal interface IContainer : IItemFilter
     /// <summary>Opens an item grab menu for this container.</summary>
     public void ShowMenu();
 
-    /// <summary>Transfers an item to a different storage.</summary>
+    /// <summary>Transfers an item to a different container.</summary>
     /// <param name="item">The item to transfer.</param>
-    /// <param name="containerTo">The storage to transfer the item to.</param>
+    /// <param name="containerTo">The container to transfer the item to.</param>
     /// <param name="remaining">Contains the remaining item after addition, if any.</param>
     /// <returns>Returns true if the transfer was successful; otherwise, false.</returns>
     public bool Transfer(Item item, IContainer containerTo, out Item? remaining);
 
-    /// <summary>Tries to add an item to the storage.</summary>
-    /// <param name="item">The item to give.</param>
+    /// <summary>Tries to remove an item from the container.</summary>
+    /// <param name="item">The item to remove.</param>
+    /// <returns>True if the item was successfully taken; otherwise, false.</returns>
+    public bool TryRemove(Item item);
+
+    /// <summary>Tries to add an item to the container.</summary>
+    /// <param name="item">The item to add.</param>
     /// <param name="remaining">When this method returns, contains the remaining item after addition, if any.</param>
     /// <returns>True if the item was successfully given; otherwise, false.</returns>
     public bool TryAdd(Item item, out Item? remaining);

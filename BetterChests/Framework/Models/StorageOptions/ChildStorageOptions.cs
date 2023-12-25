@@ -155,30 +155,30 @@ internal class ChildStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public Option OrganizeChest
+    public Option OrganizeItems
     {
-        get => this.GetOption(storage => storage.OrganizeChest);
-        set => this.child.OrganizeChest = value;
+        get => this.GetOption(storage => storage.OrganizeItems);
+        set => this.child.OrganizeItems = value;
     }
 
     /// <inheritdoc />
-    public GroupBy OrganizeChestGroupBy
+    public GroupBy OrganizeItemsGroupBy
     {
         get =>
-            this.child.OrganizeChestGroupBy == GroupBy.Default
-                ? this.parent.OrganizeChestGroupBy
-                : this.child.OrganizeChestGroupBy;
-        set => this.child.OrganizeChestGroupBy = value;
+            this.child.OrganizeItemsGroupBy == GroupBy.Default
+                ? this.parent.OrganizeItemsGroupBy
+                : this.child.OrganizeItemsGroupBy;
+        set => this.child.OrganizeItemsGroupBy = value;
     }
 
     /// <inheritdoc />
-    public SortBy OrganizeChestSortBy
+    public SortBy OrganizeItemsSortBy
     {
         get =>
-            this.child.OrganizeChestSortBy == SortBy.Default
-                ? this.parent.OrganizeChestSortBy
-                : this.child.OrganizeChestSortBy;
-        set => this.child.OrganizeChestSortBy = value;
+            this.child.OrganizeItemsSortBy == SortBy.Default
+                ? this.parent.OrganizeItemsSortBy
+                : this.child.OrganizeItemsSortBy;
+        set => this.child.OrganizeItemsSortBy = value;
     }
 
     /// <inheritdoc />
@@ -196,10 +196,10 @@ internal class ChildStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public Option LockItemSlot
+    public Option LockItem
     {
-        get => this.GetOption(storage => storage.LockItemSlot);
-        set => this.child.LockItemSlot = value;
+        get => this.GetOption(storage => storage.LockItem);
+        set => this.child.LockItem = value;
     }
 
     /// <inheritdoc />

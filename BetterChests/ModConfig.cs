@@ -34,9 +34,6 @@ internal sealed class ModConfig
     /// <summary>Gets or sets the symbol used to denote negative searches.</summary>
     public char SearchNegationSymbol { get; set; } = '!';
 
-    /// <summary>Gets or sets the color of locked slots.</summary>
-    public string SlotLockColor { get; set; } = "Red";
-
     /// <summary>Gets or sets a value indicating whether the slot lock button needs to be held down.</summary>
     public bool SlotLockHold { get; set; } = true;
 }

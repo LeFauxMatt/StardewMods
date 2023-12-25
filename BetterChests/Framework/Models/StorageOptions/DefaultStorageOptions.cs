@@ -64,19 +64,19 @@ internal sealed class DefaultStorageOptions : IStorageOptions
     public Option LabelChest { get; set; } = Option.Enabled;
 
     /// <inheritdoc />
-    public Option LockItemSlot { get; set; } = Option.Enabled;
+    public Option LockItem { get; set; } = Option.Enabled;
 
     /// <inheritdoc />
     public Option OpenHeldChest { get; set; } = Option.Enabled;
 
     /// <inheritdoc />
-    public Option OrganizeChest { get; set; } = Option.Disabled;
+    public Option OrganizeItems { get; set; } = Option.Disabled;
 
     /// <inheritdoc />
-    public GroupBy OrganizeChestGroupBy { get; set; } = GroupBy.Default;
+    public GroupBy OrganizeItemsGroupBy { get; set; } = GroupBy.Default;
 
     /// <inheritdoc />
-    public SortBy OrganizeChestSortBy { get; set; } = SortBy.Default;
+    public SortBy OrganizeItemsSortBy { get; set; } = SortBy.Default;
 
     /// <inheritdoc />
     public CapacityOption ResizeChest { get; set; } = CapacityOption.Large;

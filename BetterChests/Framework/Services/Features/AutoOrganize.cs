@@ -59,10 +59,15 @@ internal sealed class AutoOrganize : BaseFeature
                     continue;
                 }
 
-                foreach (var storageTo in containersTo)
+                foreach (var containerTo in containersTo)
                 {
-                    this.OrganizeFrom(storageTo, containersFrom);
+                    this.OrganizeFrom(containerTo, containersFrom);
                 }
+            }
+
+            foreach (var containerTo in containersTo)
+            {
+                containerTo.OrganizeItems();
             }
         }
     }

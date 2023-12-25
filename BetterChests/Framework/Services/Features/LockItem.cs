@@ -9,19 +9,24 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
 /// <summary>Locks items in inventory so they cannot be stashed.</summary>
-internal sealed class LockItemSlot : BaseFeature
+internal sealed class LockItem : BaseFeature
 {
-    private readonly IModEvents modEvents;
     private readonly IInputHelper inputHelper;
     private readonly ItemGrabMenuManager itemGrabMenuManager;
+    private readonly IModEvents modEvents;
 
-    /// <summary>Initializes a new instance of the <see cref="LockItemSlot" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="LockItem" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
-    public LockItemSlot(ILog log, ModConfig modConfig, IInputHelper inputHelper, ItemGrabMenuManager itemGrabMenuManager, IModEvents modEvents)
+    public LockItem(
+        ILog log,
+        ModConfig modConfig,
+        IInputHelper inputHelper,
+        ItemGrabMenuManager itemGrabMenuManager,
+        IModEvents modEvents)
         : base(log, modConfig)
     {
         this.modEvents = modEvents;
@@ -30,7 +35,7 @@ internal sealed class LockItemSlot : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.LockItemSlot != Option.Disabled;
+    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.LockItem != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -80,13 +85,13 @@ internal sealed class LockItemSlot : BaseFeature
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
         if (this.itemGrabMenuManager.Top.Menu is not null
-            && this.itemGrabMenuManager.Top.Container?.Options.LockItemSlot == Option.Enabled)
+            && this.itemGrabMenuManager.Top.Container?.Options.LockItem == Option.Enabled)
         {
             this.DrawOverlay(e.SpriteBatch, this.itemGrabMenuManager.Top.Menu);
         }
 
         if (this.itemGrabMenuManager.Bottom.Menu is not null
-            && this.itemGrabMenuManager.Bottom.Container?.Options.LockItemSlot == Option.Enabled)
+            && this.itemGrabMenuManager.Bottom.Container?.Options.LockItem == Option.Enabled)
         {
             this.DrawOverlay(e.SpriteBatch, this.itemGrabMenuManager.Bottom.Menu);
         }
@@ -132,7 +137,7 @@ internal sealed class LockItemSlot : BaseFeature
         }
 
         var (mouseX, mouseY) = Game1.getMousePosition(true);
-        if (!LockItemSlot.TryGetMenu(mouseX, mouseY, out var inventoryMenu))
+        if (!LockItem.TryGetMenu(mouseX, mouseY, out var inventoryMenu))
         {
             return;
         }
@@ -161,7 +166,7 @@ internal sealed class LockItemSlot : BaseFeature
         }
 
         var (mouseX, mouseY) = Game1.getMousePosition(true);
-        if (!LockItemSlot.TryGetMenu(mouseX, mouseY, out var inventoryMenu))
+        if (!LockItem.TryGetMenu(mouseX, mouseY, out var inventoryMenu))
         {
             return;
         }
@@ -184,12 +189,12 @@ internal sealed class LockItemSlot : BaseFeature
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.Top.Container?.Options.LockItemSlot == Option.Enabled)
+        if (this.itemGrabMenuManager.Top.Container?.Options.LockItem == Option.Enabled)
         {
             this.itemGrabMenuManager.Top.AddHighlightMethod(this.IsUnlocked);
         }
 
-        if (this.itemGrabMenuManager.Bottom.Container?.Options.LockItemSlot == Option.Enabled)
+        if (this.itemGrabMenuManager.Bottom.Container?.Options.LockItem == Option.Enabled)
         {
             this.itemGrabMenuManager.Bottom.AddHighlightMethod(this.IsUnlocked);
         }

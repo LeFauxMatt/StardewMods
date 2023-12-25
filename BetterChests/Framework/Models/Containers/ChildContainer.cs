@@ -49,6 +49,9 @@ internal class ChildContainer : IContainer
     public ModDataDictionary ModData => this.child.ModData;
 
     /// <inheritdoc />
+    public void OrganizeItems(bool reverse = false) => this.child.OrganizeItems(reverse);
+
+    /// <inheritdoc />
     public void ForEachItem(Func<Item, bool> action) => this.child.ForEachItem(action);
 
     /// <inheritdoc />
@@ -63,4 +66,7 @@ internal class ChildContainer : IContainer
 
     /// <inheritdoc />
     public bool TryAdd(Item item, out Item? remaining) => this.child.TryAdd(item, out remaining);
+
+    /// <inheritdoc />
+    public bool TryRemove(Item item) => this.child.TryRemove(item);
 }
