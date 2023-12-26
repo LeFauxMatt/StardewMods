@@ -6,7 +6,7 @@ using NetEscapades.EnumGenerators;
 [EnumExtensions]
 internal enum RangeOption
 {
-    /// <summary>Feature inherits from a parent config.</summary>
+    /// <summary>Range is inherited from a parent config.</summary>
     Default = 0,
 
     /// <summary>Feature is disabled.</summary>

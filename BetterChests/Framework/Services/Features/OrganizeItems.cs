@@ -4,17 +4,21 @@ using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
+// TODO: Add UI for sorting method
+
 /// <summary>Sort items in a chest using a customized criteria.</summary>
-internal sealed class OrganizeItems : BaseFeature
+internal sealed class OrganizeItems : BaseFeature<OrganizeItems>
 {
 #nullable disable
     private static OrganizeItems instance;
 #nullable enable
 
+    private readonly ContainerOperations containerOperations;
     private readonly Harmony harmony;
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<bool> isActive = new();
@@ -24,13 +28,15 @@ internal sealed class OrganizeItems : BaseFeature
     /// <summary>Initializes a new instance of the <see cref="OrganizeItems" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
+    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public OrganizeItems(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
+        ContainerOperations containerOperations,
         Harmony harmony,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
@@ -38,6 +44,7 @@ internal sealed class OrganizeItems : BaseFeature
         : base(log, modConfig)
     {
         OrganizeItems.instance = this;
+        this.containerOperations = containerOperations;
         this.harmony = harmony;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
@@ -45,7 +52,7 @@ internal sealed class OrganizeItems : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.OrganizeItems != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.OrganizeItems != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -92,7 +99,7 @@ internal sealed class OrganizeItems : BaseFeature
             return true;
         }
 
-        container.OrganizeItems();
+        OrganizeItems.instance.containerOperations.OrganizeItems(container);
         return false;
     }
 
@@ -114,7 +121,7 @@ internal sealed class OrganizeItems : BaseFeature
 
         this.inputHelper.Suppress(e.Button);
         Game1.playSound("Ship");
-        this.itemGrabMenuManager.Top.Container.OrganizeItems(e.Button == SButton.MouseRight);
+        this.containerOperations.OrganizeItems(this.itemGrabMenuManager.Top.Container, e.Button == SButton.MouseRight);
     }
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)

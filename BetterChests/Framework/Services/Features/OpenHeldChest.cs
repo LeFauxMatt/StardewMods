@@ -3,6 +3,7 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
@@ -10,7 +11,7 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
 
 /// <summary>Allows a chest to be opened while in the farmer's inventory.</summary>
-internal sealed class OpenHeldChest : BaseFeature
+internal sealed class OpenHeldChest : BaseFeature<OpenHeldChest>
 {
     private readonly ContainerFactory containerFactory;
     private readonly Harmony harmony;
@@ -28,7 +29,7 @@ internal sealed class OpenHeldChest : BaseFeature
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public OpenHeldChest(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
         ContainerFactory containerFactory,
         Harmony harmony,
         IInputHelper inputHelper,
@@ -44,7 +45,7 @@ internal sealed class OpenHeldChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.OpenHeldChest != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.OpenHeldChest != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()

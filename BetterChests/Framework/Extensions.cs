@@ -6,13 +6,6 @@ using StardewMods.BetterChests.Framework.Enums;
 /// <summary>Extension methods for Better Chests.</summary>
 internal static class Extensions
 {
-    private const string LockItemKey = "furyx639.BetterChests/LockItem";
-
-    /// <summary>Determines if the specified item is locked.</summary>
-    /// <param name="item">The item to check for locking.</param>
-    /// <returns>Returns <c>true</c> if the item is locked; otherwise, <c>false</c>.</returns>
-    public static bool IsLocked(this Item item) => item.modData.ContainsKey(Extensions.LockItemKey);
-
     /// <summary>Tests whether the player is within range of the location.</summary>
     /// <param name="range">The range.</param>
     /// <param name="distance">The distance in tiles to the player.</param>
@@ -74,34 +67,12 @@ internal static class Extensions
     //         value => data.SetDistance(featureName, value),
     //         name,
     //         tooltip,
-    //         (int)FeatureOptionRange.Default,
-    //         (int)FeatureOptionRange.World,
+    //         (int)RangeOption.Default,
+    //         (int)RangeOption.World,
     //         1,
     //         Formatting.Distance);
     //
-    // /// <summary>Add a feature option at the current position in the form.</summary>
-    // /// <param name="gmcm">Dependency for Generic Mod Config Menu integration.</param>
-    // /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    // /// <param name="getValue">Get the current value from the mod config.</param>
-    // /// <param name="setValue">Set a new value in the mod config.</param>
-    // /// <param name="name">The label text to show in the form.</param>
-    // /// <param name="tooltip">The tooltip text shown when the cursor hovers on the field.</param>
-    // public static void AddFeatureOption(
-    //     this GenericModConfigMenuIntegration gmcm,
-    //     IManifest manifest,
-    //     Func<FeatureOption> getValue,
-    //     Action<FeatureOption> setValue,
-    //     Func<string> name,
-    //     Func<string> tooltip) =>
-    //     gmcm.Api!.AddTextOption(
-    //         manifest,
-    //         () => getValue().ToStringFast(),
-    //         value => setValue(FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default),
-    //         name,
-    //         tooltip,
-    //         FeatureOptionExtensions.GetNames(),
-    //         Formatting.Option);
-    //
+
     // /// <summary>Add a feature option range at the current position in the form.</summary>
     // /// <param name="gmcm">Dependency for Generic Mod Config Menu integration.</param>
     // /// <param name="manifest">Dependency for accessing mod manifest.</param>
@@ -109,21 +80,21 @@ internal static class Extensions
     // /// <param name="setValue">Set a new value in the mod config.</param>
     // /// <param name="name">The label text to show in the form.</param>
     // /// <param name="tooltip">The tooltip text shown when the cursor hovers on the field.</param>
-    // public static void AddFeatureOptionRange(
+    // public static void AddRangeOption(
     //     this GenericModConfigMenuIntegration gmcm,
     //     IManifest manifest,
-    //     Func<FeatureOptionRange> getValue,
-    //     Action<FeatureOptionRange> setValue,
+    //     Func<RangeOption> getValue,
+    //     Action<RangeOption> setValue,
     //     Func<string> name,
     //     Func<string> tooltip) =>
     //     gmcm.Api!.AddTextOption(
     //         manifest,
     //         () => getValue().ToStringFast(),
     //         value => setValue(
-    //             FeatureOptionRangeExtensions.TryParse(value, out var range) ? range : FeatureOptionRange.Default),
+    //             RangeOptionExtensions.TryParse(value, out var range) ? range : RangeOption.Default),
     //         name,
     //         tooltip,
-    //         FeatureOptionRangeExtensions.GetNames(),
+    //         RangeOptionExtensions.GetNames(),
     //         Formatting.Range);
     //
     // /// <summary>Gets storage distance from a player in tiles.</summary>
@@ -200,10 +171,10 @@ internal static class Extensions
     // private static int GetChestCapacity(this IStorageData data) =>
     //     data.ResizeChestCapacity switch
     //     {
-    //         _ when data.ResizeChest is FeatureOption.Default => (int)FeatureOption.Default,
-    //         _ when data.ResizeChest is FeatureOption.Disabled => (int)FeatureOption.Disabled,
+    //         _ when data.ResizeChest is Option.Default => (int)Option.Default,
+    //         _ when data.ResizeChest is Option.Disabled => (int)Option.Disabled,
     //         -1 => 8,
-    //         _ => ((int)FeatureOption.Enabled + (data.ResizeChestCapacity / 12)) - 1,
+    //         _ => ((int)Option.Enabled + (data.ResizeChestCapacity / 12)) - 1,
     //     };
     //
     // private static int GetDistance(this IStorageData data, string featureName)
@@ -224,15 +195,15 @@ internal static class Extensions
     //
     //     return distance switch
     //     {
-    //         _ when feature is FeatureOptionRange.Default => (int)FeatureOptionRange.Default,
-    //         _ when feature is FeatureOptionRange.Disabled => (int)FeatureOptionRange.Disabled,
-    //         _ when feature is FeatureOptionRange.Inventory => (int)FeatureOptionRange.Inventory,
-    //         _ when feature is FeatureOptionRange.World => (int)FeatureOptionRange.World,
-    //         >= 2 when feature is FeatureOptionRange.Location => ((int)FeatureOptionRange.Location
+    //         _ when feature is RangeOption.Default => (int)RangeOption.Default,
+    //         _ when feature is RangeOption.Disabled => (int)RangeOption.Disabled,
+    //         _ when feature is RangeOption.Inventory => (int)RangeOption.Inventory,
+    //         _ when feature is RangeOption.World => (int)RangeOption.World,
+    //         >= 2 when feature is RangeOption.Location => ((int)RangeOption.Location
     //                 + (int)Math.Ceiling(Math.Log2(distance)))
     //             - 1,
-    //         _ when feature is FeatureOptionRange.Location => (int)FeatureOptionRange.World - 1,
-    //         _ => (int)FeatureOptionRange.Default,
+    //         _ when feature is RangeOption.Location => (int)RangeOption.World - 1,
+    //         _ => (int)RangeOption.Default,
     //     };
     // }
     //
@@ -254,18 +225,18 @@ internal static class Extensions
     // {
     //     data.ResizeChestCapacity = value switch
     //     {
-    //         (int)FeatureOption.Default => 0,
-    //         (int)FeatureOption.Disabled => 0,
+    //         (int)Option.Default => 0,
+    //         (int)Option.Disabled => 0,
     //         8 => -1,
-    //         >= (int)FeatureOption.Enabled => 12 * ((1 + value) - (int)FeatureOption.Enabled),
+    //         >= (int)Option.Enabled => 12 * ((1 + value) - (int)Option.Enabled),
     //         _ => 0,
     //     };
     //
     //     data.ResizeChest = value switch
     //     {
-    //         (int)FeatureOption.Default => FeatureOption.Default,
-    //         (int)FeatureOption.Disabled => FeatureOption.Disabled,
-    //         _ => FeatureOption.Enabled,
+    //         (int)Option.Default => Option.Default,
+    //         (int)Option.Disabled => Option.Disabled,
+    //         _ => Option.Enabled,
     //     };
     // }
     //
@@ -273,23 +244,23 @@ internal static class Extensions
     // {
     //     var distance = value switch
     //     {
-    //         (int)FeatureOptionRange.Default => 0,
-    //         (int)FeatureOptionRange.Disabled => 0,
-    //         (int)FeatureOptionRange.Inventory => 0,
-    //         (int)FeatureOptionRange.World - 1 => -1,
-    //         (int)FeatureOptionRange.World => 0,
-    //         >= (int)FeatureOptionRange.Location => (int)Math.Pow(2, (1 + value) - (int)FeatureOptionRange.Location),
+    //         (int)RangeOption.Default => 0,
+    //         (int)RangeOption.Disabled => 0,
+    //         (int)RangeOption.Inventory => 0,
+    //         (int)RangeOption.World - 1 => -1,
+    //         (int)RangeOption.World => 0,
+    //         >= (int)RangeOption.Location => (int)Math.Pow(2, (1 + value) - (int)RangeOption.Location),
     //         _ => 0,
     //     };
     //
     //     var range = value switch
     //     {
-    //         (int)FeatureOptionRange.Default => FeatureOptionRange.Default,
-    //         (int)FeatureOptionRange.Disabled => FeatureOptionRange.Disabled,
-    //         (int)FeatureOptionRange.Inventory => FeatureOptionRange.Inventory,
-    //         (int)FeatureOptionRange.World => FeatureOptionRange.World,
-    //         (int)FeatureOptionRange.World - 1 => FeatureOptionRange.Location,
-    //         _ => FeatureOptionRange.Location,
+    //         (int)RangeOption.Default => RangeOption.Default,
+    //         (int)RangeOption.Disabled => RangeOption.Disabled,
+    //         (int)RangeOption.Inventory => RangeOption.Inventory,
+    //         (int)RangeOption.World => RangeOption.World,
+    //         (int)RangeOption.World - 1 => RangeOption.Location,
+    //         _ => RangeOption.Location,
     //     };
     //
     //     switch (featureName)

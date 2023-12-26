@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -11,7 +12,7 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>Show stats to the side of a chest.</summary>
-internal sealed class ChestInfo : BaseFeature
+internal sealed class ChestInfo : BaseFeature<ChestInfo>
 {
     private const string AlphaNumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -32,7 +33,7 @@ internal sealed class ChestInfo : BaseFeature
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public ChestInfo(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
         ContainerFactory containerFactory,
         IInputHelper inputHelper,
         IModEvents modEvents)
@@ -44,7 +45,7 @@ internal sealed class ChestInfo : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.ChestInfo != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.ChestInfo != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -68,12 +69,12 @@ internal sealed class ChestInfo : BaseFeature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (this.resetCache.Value || !this.cachedInfo.Value.Any() || !this.ModConfig.Controls.ToggleInfo.JustPressed())
+        if (this.resetCache.Value || !this.cachedInfo.Value.Any() || !this.Config.Controls.ToggleInfo.JustPressed())
         {
             return;
         }
 
-        this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.ToggleInfo);
+        this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.ToggleInfo);
         this.isActive.Value = !this.isActive.Value;
         this.Log.Trace("{0}: Toggled chest info to {1}", this.Id, this.isActive.Value);
     }

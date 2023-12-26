@@ -4,6 +4,7 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -11,7 +12,7 @@ using StardewValley.Locations;
 using StardewValley.Objects;
 
 /// <summary>Allows a placed chest full of items to be picked up by the farmer.</summary>
-internal sealed class CarryChest : BaseFeature
+internal sealed class CarryChest : BaseFeature<CarryChest>
 {
 #nullable disable
     private static CarryChest instance;
@@ -35,7 +36,7 @@ internal sealed class CarryChest : BaseFeature
     /// <param name="statusEffectManager">Dependency used for adding and removing custom buffs.</param>
     public CarryChest(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
         ContainerFactory containerFactory,
         Harmony harmony,
         IInputHelper inputHelper,
@@ -54,7 +55,7 @@ internal sealed class CarryChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.CarryChest != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.CarryChest != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -116,12 +117,12 @@ internal sealed class CarryChest : BaseFeature
 
     private void OnOneSecondUpdateTicked(object? sender, OneSecondUpdateTickedEventArgs e)
     {
-        if (this.ModConfig.CarryChestSlowLimit == 0)
+        if (this.Config.CarryChestSlowLimit == 0)
         {
             return;
         }
 
-        if (Game1.player.Items.Count(this.proxyChestFactory.IsProxy) >= this.ModConfig.CarryChestSlowLimit)
+        if (Game1.player.Items.Count(this.proxyChestFactory.IsProxy) >= this.Config.CarryChestSlowLimit)
         {
             this.statusEffectManager.AddEffect(StatusEffect.Overburdened);
             return;
@@ -156,8 +157,8 @@ internal sealed class CarryChest : BaseFeature
         }
 
         // Check carrying limits
-        if (this.ModConfig.CarryChestLimit > 0
-            && Game1.player.Items.Count(this.proxyChestFactory.IsProxy) >= this.ModConfig.CarryChestLimit)
+        if (this.Config.CarryChestLimit > 0
+            && Game1.player.Items.Count(this.proxyChestFactory.IsProxy) >= this.Config.CarryChestLimit)
         {
             Game1.showRedMessage(I18n.Alert_CarryChestLimit_HitLimit());
             this.inputHelper.Suppress(e.Button);

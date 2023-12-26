@@ -8,22 +8,22 @@ public sealed class FuryCoreApi : IFuryCoreApi
 {
     private readonly IConfigWithLogLevel config;
     private readonly IModInfo mod;
-    private readonly IThemeHelper themeHelper;
+    private readonly ITheming theming;
 
     /// <summary>Initializes a new instance of the <see cref="FuryCoreApi" /> class.</summary>
     /// <param name="mod">Dependency used for accessing mod info.</param>
     /// <param name="config">Dependency used for accessing config data.</param>
-    /// <param name="themeHelper">Dependency used for swapping palettes.</param>
-    public FuryCoreApi(IModInfo mod, IConfigWithLogLevel config, IThemeHelper themeHelper)
+    /// <param name="theming">Dependency used for swapping palettes.</param>
+    public FuryCoreApi(IModInfo mod, IConfigWithLogLevel config, ITheming theming)
     {
         this.mod = mod;
         this.config = config;
-        this.themeHelper = themeHelper;
+        this.theming = theming;
     }
 
     /// <inheritdoc />
-    public ILog GetLogger(IMonitor monitor) => new Log(this.config, monitor);
+    public ILog CreateLogService(IMonitor monitor) => new Log(this.config, monitor);
 
     /// <inheritdoc />
-    public IThemeHelper GetThemeHelper() => this.themeHelper;
+    public ITheming CreateThemingService() => this.theming;
 }

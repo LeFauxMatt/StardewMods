@@ -11,10 +11,10 @@ using StardewMods.BetterChests.Framework.Services.Features;
 [EnumExtensions]
 internal enum CapacityOption
 {
-    /// <summary>Use an inherited capacity.</summary>
+    /// <summary>Capacity is inherited by a parent config.</summary>
     Default = 0,
 
-    /// <summary>Use the default capacity.</summary>
+    /// <summary>Vanilla capacity.</summary>
     Disabled = 1,
 
     /// <summary>Resize to 9 item slots.</summary>

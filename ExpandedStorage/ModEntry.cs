@@ -56,7 +56,7 @@ public sealed class ModEntry : Mod
             {
                 var furyCore = this.container.GetInstance<FuryCoreIntegration>();
                 var monitor = this.container.GetInstance<IMonitor>();
-                return furyCore.Api!.GetLogger(monitor);
+                return furyCore.Api!.CreateLogService(monitor);
             },
             Lifestyle.Singleton);
 

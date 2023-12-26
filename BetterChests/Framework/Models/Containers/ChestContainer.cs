@@ -2,7 +2,6 @@ namespace StardewMods.BetterChests.Framework.Models.Containers;
 
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Interfaces;
-using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewValley.Inventories;
 using StardewValley.Mods;
 using StardewValley.Objects;
@@ -11,18 +10,17 @@ using StardewValley.Objects;
 internal class ChestContainer : BaseContainer<Chest>
 {
     /// <summary>Initializes a new instance of the <see cref="ChestContainer" /> class.</summary>
-    /// <param name="itemMatcher">The item matcher to use for filters.</param>
     /// <param name="baseOptions">The type of storage object.</param>
     /// <param name="chest">The chest storage of the container.</param>
-    public ChestContainer(ItemMatcher itemMatcher, IStorageOptions baseOptions, Chest chest)
-        : base(itemMatcher, baseOptions) =>
+    public ChestContainer(IStorageOptions baseOptions, Chest chest)
+        : base(baseOptions) =>
         this.Source = new WeakReference<Chest>(chest);
 
     /// <summary>Gets the chest container of the storage.</summary>
     public Chest Chest =>
         this.Source.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(ChestContainer));
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override int Capacity => this.Chest.GetActualCapacity();
 
     /// <inheritdoc />

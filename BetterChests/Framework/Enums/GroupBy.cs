@@ -6,7 +6,7 @@ using NetEscapades.EnumGenerators;
 [EnumExtensions]
 internal enum GroupBy
 {
-    /// <summary>Default grouping (Ungrouped).</summary>
+    /// <summary>Default grouping.</summary>
     Default = 0,
 
     /// <summary>Group by category.</summary>

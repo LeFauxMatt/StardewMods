@@ -9,16 +9,16 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 internal sealed class AssetHandler : BaseService
 {
     /// <summary>The game path to the hsl texture.</summary>
-    public const string HslTexturePath = BaseService.ModPrefix + "/HueBar";
+    public const string HslTexturePath = BaseService.ModId + "/HueBar";
 
     /// <summary>The game path to the icon texture.</summary>
-    public const string IconTexturePath = BaseService.ModPrefix + "/Icons";
+    public const string IconTexturePath = BaseService.ModId + "/Icons";
 
     /// <summary>The game path to the tab texture.</summary>
-    public const string TabTexturePath = BaseService.ModPrefix + "/Tabs/Texture";
+    public const string TabTexturePath = BaseService.ModId + "/Tabs/Texture";
 
     /// <summary>The game path to tab data.</summary>
-    public const string TabDataPath = BaseService.ModPrefix + "/Tabs";
+    public const string TabDataPath = BaseService.ModId + "/Tabs";
 
     private readonly IDataHelper data;
 
@@ -26,13 +26,13 @@ internal sealed class AssetHandler : BaseService
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="events">Dependency used for managing access to events.</param>
     /// <param name="data">Dependency used for storing and retrieving data.</param>
-    /// <param name="themeHelper">Dependency used for swapping palettes.</param>
-    public AssetHandler(ILog log, IModEvents events, IDataHelper data, IThemeHelper themeHelper)
+    /// <param name="theming">Dependency used for swapping palettes.</param>
+    public AssetHandler(ILog log, IModEvents events, IDataHelper data, ITheming theming)
         : base(log)
     {
         // Init
         this.data = data;
-        themeHelper.AddAssets(AssetHandler.IconTexturePath, AssetHandler.TabTexturePath);
+        theming.AddAssets(AssetHandler.IconTexturePath, AssetHandler.TabTexturePath);
 
         // Events
         events.Content.AssetRequested += this.OnAssetRequested;

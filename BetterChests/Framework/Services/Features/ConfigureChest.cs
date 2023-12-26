@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -13,7 +14,7 @@ using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewValley.Menus;
 
 /// <summary>Configure storages individually.</summary>
-internal sealed class ConfigureChest : BaseFeature
+internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
 {
 #nullable disable
     private static ConfigureChest instance;
@@ -40,7 +41,7 @@ internal sealed class ConfigureChest : BaseFeature
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public ConfigureChest(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
         ContainerFactory containerFactory,
         IGameContentHelper gameContentHelper,
         GenericModConfigMenuIntegration genericModConfigMenuIntegration,
@@ -72,8 +73,7 @@ internal sealed class ConfigureChest : BaseFeature
 
     /// <inheritdoc />
     public override bool ShouldBeActive =>
-        this.ModConfig.DefaultOptions.ConfigureChest != Option.Disabled
-        && this.genericModConfigMenuIntegration.IsLoaded;
+        this.Config.DefaultOptions.ConfigureChest != Option.Disabled && this.genericModConfigMenuIntegration.IsLoaded;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -193,7 +193,7 @@ internal sealed class ConfigureChest : BaseFeature
         }
 
         if (!Context.IsPlayerFree
-            || !this.ModConfig.Controls.Configure.JustPressed()
+            || !this.Config.Controls.ConfigureChest.JustPressed()
             || Game1.player.CurrentItem is null
             || !this.containerFactory.TryGetOne(Game1.player.CurrentItem, out var container)
             || container.Options.ConfigureChest == Option.Disabled)
@@ -201,7 +201,7 @@ internal sealed class ConfigureChest : BaseFeature
             return;
         }
 
-        this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.Configure);
+        this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.ConfigureChest);
 
         // Show Generic Mod Config Menu
     }

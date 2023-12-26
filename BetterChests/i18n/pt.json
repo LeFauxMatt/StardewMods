@@ -94,12 +94,6 @@
   "option.inventory.name": "Inventário",
   "option.location.name": "Localização",
   "option.world.name": "Mundo",
-  // Menu Areas
-  "area.top.name": "Acima do menu de inventário.",
-  "area.right.name": "À direita do menu de inventário.",
-  "area.bottom.name": "Abaixo do menu de inventário.",
-  "area.left.name": "À esquerda do menu de inventário.",
-  "area.custom.name": "Uma posição personalizada.",
   // UI - Button
   "button.configure.name": "Configurar",
   "button.stash-to-chest.name": "Estocar em Baús",

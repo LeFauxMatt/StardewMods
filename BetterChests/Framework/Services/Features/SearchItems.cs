@@ -3,6 +3,7 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Transient;
@@ -11,7 +12,7 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
 /// <summary>Adds a search bar to the top of the <see cref="ItemGrabMenu" />.</summary>
-internal sealed class SearchItems : BaseFeature
+internal sealed class SearchItems : BaseFeature<SearchItems>
 {
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<bool> isActive = new();
@@ -29,7 +30,7 @@ internal sealed class SearchItems : BaseFeature
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public SearchItems(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         ItemMatcherFactory itemMatcherFactory,
@@ -56,7 +57,7 @@ internal sealed class SearchItems : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.SearchItems != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.SearchItems != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -80,15 +81,15 @@ internal sealed class SearchItems : BaseFeature
         this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
     }
 
-    private IEnumerable<Item> FilterBySearch(IEnumerable<Item> items)
-    {
-        if (this.ModConfig.DefaultOptions.HideUnselectedItems is Option.Enabled)
-        {
-            return items.Where(this.itemMatcher.Value.MatchesFilter);
-        }
-
-        return this.itemMatcher.Value.IsEmpty ? items : items.OrderByDescending(this.itemMatcher.Value.MatchesFilter);
-    }
+    private IEnumerable<Item> FilterBySearch(IEnumerable<Item> items) =>
+        this.itemMatcher.Value.IsEmpty
+            ? items
+            : this.Config.SearchItemsMethod switch
+            {
+                Method.Sorted or Method.GrayedOut => items.OrderByDescending(this.itemMatcher.Value.MatchesFilter),
+                Method.Hidden => items.Where(this.itemMatcher.Value.MatchesFilter),
+                _ => items,
+            };
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
@@ -123,13 +124,13 @@ internal sealed class SearchItems : BaseFeature
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.Top.Container?.Options.SearchItems != Option.Enabled
-            || !this.ModConfig.Controls.ToggleSearch.JustPressed())
+            || !this.Config.Controls.ToggleSearch.JustPressed())
         {
             return;
         }
 
         this.isActive.Value = !this.isActive.Value;
-        this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.ToggleSearch);
+        this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.ToggleSearch);
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)

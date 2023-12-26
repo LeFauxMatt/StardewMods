@@ -13,25 +13,18 @@ using StardewValley.Objects;
 internal sealed class ContainerFactory : BaseService
 {
     private readonly ConditionalWeakTable<object, IContainer> cachedContainers = new();
-    private readonly ModConfig config;
-    private readonly ItemMatcherFactory itemMatchers;
+    private readonly IModConfig modConfig;
     private readonly ProxyChestFactory proxyChestFactory;
     private readonly Dictionary<string, IStorageOptions> storageOptions = new();
 
     /// <summary>Initializes a new instance of the <see cref="ContainerFactory" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="config">Dependency used for accessing config data.</param>
-    /// <param name="itemMatchers">Dependency used for getting an ItemMatcher.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="proxyChestFactory">Dependency used for creating virtualized chests.</param>
-    public ContainerFactory(
-        ILog log,
-        ModConfig config,
-        ItemMatcherFactory itemMatchers,
-        ProxyChestFactory proxyChestFactory)
+    public ContainerFactory(ILog log, IModConfig modConfig, ProxyChestFactory proxyChestFactory)
         : base(log)
     {
-        this.config = config;
-        this.itemMatchers = itemMatchers;
+        this.modConfig = modConfig;
         this.proxyChestFactory = proxyChestFactory;
     }
 
@@ -117,7 +110,7 @@ internal sealed class ContainerFactory : BaseService
 
             if (!this.storageOptions.TryGetValue($"(B){building.buildingType.Value}", out var storageType))
             {
-                storageType = new BuildingStorageOptions(this.config.DefaultOptions, building.GetData());
+                storageType = new BuildingStorageOptions(this.modConfig.DefaultOptions, building.GetData());
                 this.storageOptions.Add($"(B){building.buildingType.Value}", storageType);
             }
 
@@ -125,7 +118,7 @@ internal sealed class ContainerFactory : BaseService
             {
                 if (!this.cachedContainers.TryGetValue(chest, out var container))
                 {
-                    container = new BuildingContainer(this.itemMatchers.GetDefault(), storageType, building, chest);
+                    container = new BuildingContainer(storageType, building, chest);
 
                     this.cachedContainers.AddOrUpdate(chest, container);
                 }
@@ -143,13 +136,13 @@ internal sealed class ContainerFactory : BaseService
         {
             if (!this.storageOptions.TryGetValue($"(L){location.Name}", out var storageType))
             {
-                storageType = new LocationStorageOptions(this.config.DefaultOptions, location.GetData());
+                storageType = new LocationStorageOptions(this.modConfig.DefaultOptions, location.GetData());
                 this.storageOptions.Add($"(L){location.Name}", storageType);
             }
 
             if (!this.cachedContainers.TryGetValue(fridge, out var container))
             {
-                container = new FridgeContainer(this.itemMatchers.GetDefault(), storageType, location, fridge);
+                container = new FridgeContainer(storageType, location, fridge);
 
                 this.cachedContainers.AddOrUpdate(fridge, container);
             }
@@ -217,16 +210,15 @@ internal sealed class ContainerFactory : BaseService
             var data =
                 ItemRegistry.GetData(item.QualifiedItemId)?.RawData as BigCraftableData ?? new BigCraftableData();
 
-            storageOption = new BigCraftableStorageOptions(this.config.DefaultOptions, data);
+            storageOption = new BigCraftableStorageOptions(this.modConfig.DefaultOptions, data);
             this.storageOptions.Add(item.QualifiedItemId, storageOption);
         }
 
-        var itemMatcher = this.itemMatchers.GetDefault();
         container = item switch
         {
-            Chest => new ChestContainer(itemMatcher, storageOption, chest),
-            SObject obj => new ObjectContainer(itemMatcher, storageOption, obj, chest),
-            _ => new ChestContainer(itemMatcher, storageOption, chest),
+            Chest => new ChestContainer(storageOption, chest),
+            SObject obj => new ObjectContainer(storageOption, obj, chest),
+            _ => new ChestContainer(storageOption, chest),
         };
 
         this.cachedContainers.AddOrUpdate(item, container);
@@ -245,7 +237,7 @@ internal sealed class ContainerFactory : BaseService
             return true;
         }
 
-        container = new FarmerContainer(this.itemMatchers.GetDefault(), this.config.DefaultOptions, farmer);
+        container = new FarmerContainer(this.modConfig.DefaultOptions, farmer);
         this.cachedContainers.AddOrUpdate(farmer, container);
         return true;
     }

@@ -17,7 +17,7 @@ using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <summary>Craft using items from placed chests and chests in the farmer's inventory.</summary>
-internal sealed class CraftFromChest : BaseFeature
+internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
 {
 #nullable disable
     private static CraftFromChest instance;
@@ -39,7 +39,7 @@ internal sealed class CraftFromChest : BaseFeature
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public CraftFromChest(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
         ContainerFactory containerFactory,
         Harmony harmony,
         IInputHelper inputHelper,
@@ -56,7 +56,7 @@ internal sealed class CraftFromChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.CraftFromChest != RangeOption.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.CraftFromChest != RangeOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -146,15 +146,19 @@ internal sealed class CraftFromChest : BaseFeature
         }
     }
 
-    private static IEnumerable<CodeInstruction> Workbench_checkForAction_transpiler(IEnumerable<CodeInstruction> instructions)
+    private static IEnumerable<CodeInstruction> Workbench_checkForAction_transpiler(
+        IEnumerable<CodeInstruction> instructions)
     {
         var found = default(CodeInstruction);
         foreach (var instruction in instructions)
         {
-            found ??= instruction.opcode == OpCodes.Ldfld && instruction.operand is FieldInfo
+            found ??= instruction.opcode == OpCodes.Ldfld
+                && instruction.operand is FieldInfo
                 {
                     Name: "nearby_chests",
-                } ? instruction : null;
+                }
+                    ? instruction
+                    : null;
 
             if (found is not null && instruction.Is(OpCodes.Newobj, AccessTools.Constructor(typeof(List<NetMutex>))))
             {
@@ -173,7 +177,7 @@ internal sealed class CraftFromChest : BaseFeature
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     private static void AddNearbyChests(List<Chest> nearbyChests)
     {
-        if (CraftFromChest.instance.ModConfig.CraftFromWorkbench is RangeOption.Disabled or RangeOption.Default)
+        if (CraftFromChest.instance.Config.CraftFromWorkbench is RangeOption.Disabled or RangeOption.Default)
         {
             return;
         }
@@ -192,12 +196,13 @@ internal sealed class CraftFromChest : BaseFeature
         bool Predicate(IContainer container) =>
             container.Options.CraftFromChest is not RangeOption.Disabled
             && container.Items.Count > 0
-            && !container.Options.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
-            && !(container.Options.CraftFromChestDisableLocations.Contains("UndergroundMine")
+            && !CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains(
+                Game1.player.currentLocation.Name)
+            && !(CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains("UndergroundMine")
                 && Game1.player.currentLocation is MineShaft mineShaft
                 && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
-            && CraftFromChest.instance.ModConfig.CraftFromWorkbench.WithinRange(
-                CraftFromChest.instance.ModConfig.CraftFromWorkbenchDistance,
+            && CraftFromChest.instance.Config.CraftFromWorkbench.WithinRange(
+                CraftFromChest.instance.Config.CraftFromWorkbenchDistance,
                 container.Location,
                 container.TileLocation);
     }
@@ -210,24 +215,25 @@ internal sealed class CraftFromChest : BaseFeature
         bool Predicate(IContainer container) =>
             container.Options.CraftFromChest is not (RangeOption.Disabled or RangeOption.Default)
             && container.Items.Count > 0
-            && !container.Options.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
-            && !(container.Options.CraftFromChestDisableLocations.Contains("UndergroundMine")
+            && !CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains(
+                Game1.player.currentLocation.Name)
+            && !(CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains("UndergroundMine")
                 && Game1.player.currentLocation is MineShaft mineShaft
                 && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
             && container.Options.CraftFromChest.WithinRange(
-                container.Options.CraftFromChestDistance,
+                CraftFromChest.instance.Config.CraftFromChestDistance,
                 container.Location,
                 container.TileLocation);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !this.ModConfig.Controls.OpenCrafting.JustPressed())
+        if (!Context.IsPlayerFree || !this.Config.Controls.OpenCrafting.JustPressed())
         {
             return;
         }
 
-        this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.OpenCrafting);
+        this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.OpenCrafting);
         this.OpenCraftingMenu();
     }
 
@@ -269,12 +275,12 @@ internal sealed class CraftFromChest : BaseFeature
         bool Predicate(IContainer container) =>
             container.Options.CraftFromChest is not (RangeOption.Disabled or RangeOption.Default)
             && container.Items.Count > 0
-            && !container.Options.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
-            && !(container.Options.CraftFromChestDisableLocations.Contains("UndergroundMine")
+            && !this.Config.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
+            && !(this.Config.CraftFromChestDisableLocations.Contains("UndergroundMine")
                 && Game1.player.currentLocation is MineShaft mineShaft
                 && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
             && container.Options.CraftFromChest.WithinRange(
-                container.Options.CraftFromChestDistance,
+                this.Config.CraftFromChestDistance,
                 container.Location,
                 container.TileLocation);
     }

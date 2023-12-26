@@ -4,13 +4,15 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
 /// <summary>Locks items in inventory so they cannot be stashed.</summary>
-internal sealed class LockItem : BaseFeature
+internal sealed class LockItem : BaseFeature<LockItem>
 {
+    private readonly ContainerOperations containerOperations;
     private readonly IInputHelper inputHelper;
     private readonly ItemGrabMenuManager itemGrabMenuManager;
     private readonly IModEvents modEvents;
@@ -18,24 +20,27 @@ internal sealed class LockItem : BaseFeature
     /// <summary>Initializes a new instance of the <see cref="LockItem" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
+    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public LockItem(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
+        ContainerOperations containerOperations,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         IModEvents modEvents)
         : base(log, modConfig)
     {
+        this.containerOperations = containerOperations;
         this.modEvents = modEvents;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.LockItem != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.LockItem != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -44,6 +49,7 @@ internal sealed class LockItem : BaseFeature
         this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
         this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.containerOperations.ItemTransferring += this.OnItemTransferring;
         this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
     }
 
@@ -54,6 +60,7 @@ internal sealed class LockItem : BaseFeature
         this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
         this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
         this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.containerOperations.ItemTransferring -= this.OnItemTransferring;
         this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
     }
 
@@ -84,14 +91,12 @@ internal sealed class LockItem : BaseFeature
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (this.itemGrabMenuManager.Top.Menu is not null
-            && this.itemGrabMenuManager.Top.Container?.Options.LockItem == Option.Enabled)
+        if (this.itemGrabMenuManager.Top.Menu is not null)
         {
             this.DrawOverlay(e.SpriteBatch, this.itemGrabMenuManager.Top.Menu);
         }
 
-        if (this.itemGrabMenuManager.Bottom.Menu is not null
-            && this.itemGrabMenuManager.Bottom.Container?.Options.LockItem == Option.Enabled)
+        if (this.itemGrabMenuManager.Bottom.Menu is not null)
         {
             this.DrawOverlay(e.SpriteBatch, this.itemGrabMenuManager.Bottom.Menu);
         }
@@ -129,9 +134,7 @@ internal sealed class LockItem : BaseFeature
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!this.ModConfig.SlotLockHold
-            || e.Button is not SButton.MouseLeft
-            || !this.ModConfig.Controls.LockSlot.IsDown())
+        if (!this.Config.LockItemHold || e.Button is not SButton.MouseLeft || !this.Config.Controls.LockSlot.IsDown())
         {
             return;
         }
@@ -160,7 +163,7 @@ internal sealed class LockItem : BaseFeature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (this.ModConfig.SlotLockHold || !this.ModConfig.Controls.LockSlot.JustPressed())
+        if (this.Config.LockItemHold || !this.Config.Controls.LockSlot.JustPressed())
         {
             return;
         }
@@ -183,20 +186,21 @@ internal sealed class LockItem : BaseFeature
             return;
         }
 
-        this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.LockSlot);
+        this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.LockSlot);
         this.ToggleLock(item);
     }
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.Top.Container?.Options.LockItem == Option.Enabled)
-        {
-            this.itemGrabMenuManager.Top.AddHighlightMethod(this.IsUnlocked);
-        }
+        this.itemGrabMenuManager.Top.AddHighlightMethod(this.IsUnlocked);
+        this.itemGrabMenuManager.Bottom.AddHighlightMethod(this.IsUnlocked);
+    }
 
-        if (this.itemGrabMenuManager.Bottom.Container?.Options.LockItem == Option.Enabled)
+    private void OnItemTransferring(object? sender, ItemTransferringEventArgs e)
+    {
+        if (!this.IsUnlocked(e.Item))
         {
-            this.itemGrabMenuManager.Bottom.AddHighlightMethod(this.IsUnlocked);
+            e.PreventTransfer();
         }
     }
 

@@ -114,12 +114,6 @@
   "sort-by.type.name": "类别",
   "sort-by.quality.name": "品质",
   "sort-by.quantity.name": "数量",
-  // Menu Areas
-  "area.top.name": "在菜单界面上面.",
-  "area.right.name": "在菜单界面右边.",
-  "area.bottom.name": "在菜单界面下面.",
-  "area.left.name": "在菜单界面左边.",
-  "area.custom.name": "自定义位置.",
   // UI - Button
   "button.configure.name": "设置",
   "button.stash-to-chest.name": "存入箱子",

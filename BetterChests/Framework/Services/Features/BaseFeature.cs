@@ -4,19 +4,20 @@ using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IFeature" />
-internal abstract class BaseFeature : BaseService, IFeature
+internal abstract class BaseFeature<TFeature> : BaseService<TFeature>, IFeature
+    where TFeature : class
 {
     private bool isActivated;
 
-    /// <summary>Initializes a new instance of the <see cref="BaseFeature" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="BaseFeature{TFeature}" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    protected BaseFeature(ILog log, ModConfig modConfig)
+    protected BaseFeature(ILog log, IModConfig modConfig)
         : base(log) =>
-        this.ModConfig = modConfig;
+        this.Config = modConfig;
 
     /// <summary>Gets the dependency used for accessing config data.</summary>
-    protected ModConfig ModConfig { get; }
+    protected IModConfig Config { get; }
 
     /// <inheritdoc />
     public abstract bool ShouldBeActive { get; }

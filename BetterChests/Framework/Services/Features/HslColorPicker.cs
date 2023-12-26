@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.UI;
@@ -17,7 +18,7 @@ using StardewValley.Objects;
 // TODO: Draw farmer nearby using cursor distance
 
 /// <summary>Adds a color picker that support hue, saturation, and lightness.</summary>
-internal sealed class HslColorPicker : BaseFeature
+internal sealed class HslColorPicker : BaseFeature<HslColorPicker>
 {
 #nullable disable
     private static HslColorPicker instance;
@@ -51,7 +52,7 @@ internal sealed class HslColorPicker : BaseFeature
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public HslColorPicker(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
         IGameContentHelper gameContentHelper,
         Harmony harmony,
         IInputHelper inputHelper,
@@ -140,7 +141,7 @@ internal sealed class HslColorPicker : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.HslColorPicker != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.HslColorPicker != Option.Disabled;
 
     private int ColorSelection
     {

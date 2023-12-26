@@ -2,12 +2,13 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using HarmonyLib;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
 
 /// <summary>Expand the capacity of chests and add scrolling to access extra items.</summary>
-internal sealed class ResizeChest : BaseFeature
+internal sealed class ResizeChest : BaseFeature<ResizeChest>
 {
 #nullable disable
     private static ResizeChest instance;
@@ -21,7 +22,7 @@ internal sealed class ResizeChest : BaseFeature
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
-    public ResizeChest(ILog log, ModConfig modConfig, ContainerFactory containerFactory, Harmony harmony)
+    public ResizeChest(ILog log, IModConfig modConfig, ContainerFactory containerFactory, Harmony harmony)
         : base(log, modConfig)
     {
         ResizeChest.instance = this;
@@ -30,7 +31,7 @@ internal sealed class ResizeChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.ResizeChest != CapacityOption.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.ResizeChest != CapacityOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate() =>

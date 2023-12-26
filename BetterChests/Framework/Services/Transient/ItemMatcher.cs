@@ -1,12 +1,13 @@
 ﻿namespace StardewMods.BetterChests.Framework.Services.Transient;
 
 using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.BetterChests.Framework.Models;
 using StardewValley.Extensions;
 
 /// <summary>Matches item name/tags against a set of search phrases.</summary>
 internal sealed class ItemMatcher : IItemFilter
 {
-    private readonly ModConfig config;
+    private readonly DefaultConfig defaultConfig;
     private readonly Dictionary<string, ParsedTerm> parsedTerms = new();
     private readonly ITranslationHelper translation;
     private string searchText = string.Empty;
@@ -14,11 +15,11 @@ internal sealed class ItemMatcher : IItemFilter
     private ParsedTerm[] terms = Array.Empty<ParsedTerm>();
 
     /// <summary>Initializes a new instance of the <see cref="ItemMatcher" /> class.</summary>
-    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="defaultConfig">Dependency used for accessing config data.</param>
     /// <param name="translation">Dependency used for accessing translations.</param>
-    public ItemMatcher(ModConfig config, ITranslationHelper translation)
+    public ItemMatcher(DefaultConfig defaultConfig, ITranslationHelper translation)
     {
-        this.config = config;
+        this.defaultConfig = defaultConfig;
         this.translation = translation;
     }
 
@@ -38,11 +39,14 @@ internal sealed class ItemMatcher : IItemFilter
                     continue;
                 }
 
-                var notMatch = searchTerm[0] == this.config.SearchNegationSymbol;
+                var notMatch = searchTerm[0] == this.defaultConfig.SearchNegationSymbol;
                 var newValue = notMatch ? searchTerm[1..] : searchTerm;
 
-                var tagMatch = this.OnlyTags || newValue[0] == this.config.SearchTagSymbol;
-                newValue = tagMatch && searchTerm.StartsWith(this.config.SearchTagSymbol) ? newValue[1..] : newValue;
+                var tagMatch = this.OnlyTags || newValue[0] == this.defaultConfig.SearchTagSymbol;
+                newValue = tagMatch && searchTerm.StartsWith(this.defaultConfig.SearchTagSymbol)
+                    ? newValue[1..]
+                    : newValue;
+
                 if (string.IsNullOrWhiteSpace(newValue))
                 {
                     continue;

@@ -5,7 +5,7 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Buffs;
 
 /// <summary>Responsible for adding or removing custom buffs.</summary>
-internal sealed class StatusEffectManager : BaseService
+internal sealed class StatusEffectManager : BaseService<StatusEffectManager>
 {
     /// <summary>Initializes a new instance of the <see cref="StatusEffectManager" /> class.</summary>
     /// <param name="log">Dependency used for monitoring and logging.</param>

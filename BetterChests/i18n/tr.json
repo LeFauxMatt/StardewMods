@@ -114,12 +114,6 @@
   "sort-by.type.name": "Cinsi",
   "sort-by.quality.name": "Kalite",
   "sort-by.quantity.name": "Miktar",
-  // Menu Areas
-  "area.top.name": "Envanter Menüsünün Üzerinde.",
-  "area.right.name": "Envanter Menüsünün Sağında.",
-  "area.bottom.name": "Envanter Menüsünün Altında.",
-  "area.left.name": "Envanter Menüsünün Solunda.",
-  "area.custom.name": "Özelleştirilmiş bir pozisyon.",
   // UI - Button
   "button.configure.name": "Yapılandır",
   "button.stash-to-chest.name": "Sandıkta Sakla",

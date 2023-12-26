@@ -2,7 +2,6 @@ namespace StardewMods.BetterChests.Framework.Models.Containers;
 
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Interfaces;
-using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewValley.Mods;
 using StardewValley.Objects;
 
@@ -10,12 +9,11 @@ using StardewValley.Objects;
 internal sealed class FridgeContainer : ChestContainer
 {
     /// <summary>Initializes a new instance of the <see cref="FridgeContainer" /> class.</summary>
-    /// <param name="itemMatcher">The item matcher to use for filters.</param>
     /// <param name="baseOptions">The type of storage object.</param>
     /// <param name="location">The game location where the fridge storage is located.</param>
     /// <param name="chest">The chest storage of the container.</param>
-    public FridgeContainer(ItemMatcher itemMatcher, IStorageOptions baseOptions, GameLocation location, Chest chest)
-        : base(itemMatcher, baseOptions, chest) =>
+    public FridgeContainer(IStorageOptions baseOptions, GameLocation location, Chest chest)
+        : base(baseOptions, chest) =>
         this.Location = location;
 
     /// <inheritdoc />

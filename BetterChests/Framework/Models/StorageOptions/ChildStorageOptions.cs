@@ -21,28 +21,28 @@ internal class ChildStorageOptions : IStorageOptions
     /// <inheritdoc />
     public Option AutoOrganize
     {
-        get => this.GetOption(storage => storage.AutoOrganize);
+        get => this.Get(storage => storage.AutoOrganize);
         set => this.child.AutoOrganize = value;
     }
 
     /// <inheritdoc />
     public Option CarryChest
     {
-        get => this.GetOption(storage => storage.CarryChest);
+        get => this.Get(storage => storage.CarryChest);
         set => this.child.CarryChest = value;
     }
 
     /// <inheritdoc />
     public Option ChestFinder
     {
-        get => this.GetOption(storage => storage.ChestFinder);
+        get => this.Get(storage => storage.ChestFinder);
         set => this.child.ChestFinder = value;
     }
 
     /// <inheritdoc />
     public Option ChestInfo
     {
-        get => this.GetOption(storage => storage.ChestInfo);
+        get => this.Get(storage => storage.ChestInfo);
         set => this.child.ChestInfo = value;
     }
 
@@ -56,80 +56,49 @@ internal class ChildStorageOptions : IStorageOptions
     /// <inheritdoc />
     public Option CollectItems
     {
-        get => this.GetOption(storage => storage.CollectItems);
+        get => this.Get(storage => storage.CollectItems);
         set => this.child.CollectItems = value;
     }
 
     /// <inheritdoc />
     public Option ConfigureChest
     {
-        get => this.GetOption(storage => storage.ConfigureChest);
+        get => this.Get(storage => storage.ConfigureChest);
         set => this.child.ConfigureChest = value;
-    }
-
-    /// <inheritdoc />
-    public InGameMenu ConfigureMenu
-    {
-        get => this.child.ConfigureMenu == InGameMenu.Default ? this.parent.ConfigureMenu : this.child.ConfigureMenu;
-        set => this.child.ConfigureMenu = value;
     }
 
     /// <inheritdoc />
     public RangeOption CraftFromChest
     {
-        get => this.GetRange(storage => storage.CraftFromChest);
+        get => this.Get(storage => storage.CraftFromChest);
         set => this.child.CraftFromChest = value;
-    }
-
-    /// <inheritdoc />
-    public HashSet<string> CraftFromChestDisableLocations
-    {
-        get => this.child.CraftFromChestDisableLocations.Union(this.parent.CraftFromChestDisableLocations).ToHashSet();
-        set => this.child.CraftFromChestDisableLocations = value;
-    }
-
-    /// <inheritdoc />
-    public int CraftFromChestDistance
-    {
-        get =>
-            this.child.CraftFromChestDistance == 0
-                ? this.parent.CraftFromChestDistance
-                : this.child.CraftFromChestDistance;
-        set => this.child.CraftFromChestDistance = value;
     }
 
     /// <inheritdoc />
     public Option HslColorPicker
     {
-        get => this.GetOption(storage => storage.HslColorPicker);
+        get => this.Get(storage => storage.HslColorPicker);
         set => this.child.HslColorPicker = value;
     }
 
     /// <inheritdoc />
-    public Option FilterItems
+    public Option CategorizeChest
     {
-        get => this.GetOption(storage => storage.FilterItems);
-        set => this.child.FilterItems = value;
+        get => this.Get(storage => storage.CategorizeChest);
+        set => this.child.CategorizeChest = value;
     }
 
     /// <inheritdoc />
-    public HashSet<string> FilterItemsList
+    public HashSet<string> CategorizeChestTags
     {
-        get => this.child.FilterItemsList.Union(this.parent.FilterItemsList).ToHashSet();
-        set => this.child.FilterItemsList = value;
-    }
-
-    /// <inheritdoc />
-    public Option HideUnselectedItems
-    {
-        get => this.GetOption(storage => storage.HideUnselectedItems);
-        set => this.child.HideUnselectedItems = value;
+        get => this.child.CategorizeChestTags.Union(this.parent.CategorizeChestTags).ToHashSet();
+        set => this.child.CategorizeChestTags = value;
     }
 
     /// <inheritdoc />
     public Option InventoryTabs
     {
-        get => this.GetOption(storage => storage.InventoryTabs);
+        get => this.Get(storage => storage.InventoryTabs);
         set => this.child.InventoryTabs = value;
     }
 
@@ -141,23 +110,16 @@ internal class ChildStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public Option LabelChest
-    {
-        get => this.GetOption(storage => storage.LabelChest);
-        set => this.child.LabelChest = value;
-    }
-
-    /// <inheritdoc />
     public Option OpenHeldChest
     {
-        get => this.GetOption(storage => storage.OpenHeldChest);
+        get => this.Get(storage => storage.OpenHeldChest);
         set => this.child.OpenHeldChest = value;
     }
 
     /// <inheritdoc />
     public Option OrganizeItems
     {
-        get => this.GetOption(storage => storage.OrganizeItems);
+        get => this.Get(storage => storage.OrganizeItems);
         set => this.child.OrganizeItems = value;
     }
 
@@ -184,44 +146,22 @@ internal class ChildStorageOptions : IStorageOptions
     /// <inheritdoc />
     public CapacityOption ResizeChest
     {
-        get => this.GetCapacity(storage => storage.ResizeChest);
+        get => this.Get(storage => storage.ResizeChest);
         set => this.child.ResizeChest = value;
     }
 
     /// <inheritdoc />
     public Option SearchItems
     {
-        get => this.GetOption(storage => storage.SearchItems);
+        get => this.Get(storage => storage.SearchItems);
         set => this.child.SearchItems = value;
-    }
-
-    /// <inheritdoc />
-    public Option LockItem
-    {
-        get => this.GetOption(storage => storage.LockItem);
-        set => this.child.LockItem = value;
     }
 
     /// <inheritdoc />
     public RangeOption StashToChest
     {
-        get => this.GetRange(storage => storage.StashToChest);
+        get => this.Get(storage => storage.StashToChest);
         set => this.child.StashToChest = value;
-    }
-
-    /// <inheritdoc />
-    public HashSet<string> StashToChestDisableLocations
-    {
-        get => this.child.StashToChestDisableLocations.Union(this.parent.StashToChestDisableLocations).ToHashSet();
-        set => this.child.StashToChestDisableLocations = value;
-    }
-
-    /// <inheritdoc />
-    public int StashToChestDistance
-    {
-        get =>
-            this.child.StashToChestDistance == 0 ? this.parent.StashToChestDistance : this.child.StashToChestDistance;
-        set => this.child.StashToChestDistance = value;
     }
 
     /// <inheritdoc />
@@ -233,31 +173,17 @@ internal class ChildStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public Option StashToChestStacks
-    {
-        get => this.GetOption(storage => storage.StashToChestStacks);
-        set => this.child.StashToChestStacks = value;
-    }
-
-    /// <inheritdoc />
     public Option TransferItems
     {
-        get => this.GetOption(storage => storage.TransferItems);
+        get => this.Get(storage => storage.TransferItems);
         set => this.child.TransferItems = value;
     }
 
     /// <inheritdoc />
     public Option UnloadChest
     {
-        get => this.GetOption(storage => storage.UnloadChest);
+        get => this.Get(storage => storage.UnloadChest);
         set => this.child.UnloadChest = value;
-    }
-
-    /// <inheritdoc />
-    public Option UnloadChestCombine
-    {
-        get => this.GetOption(storage => storage.UnloadChestCombine);
-        set => this.child.UnloadChestCombine = value;
     }
 
     /// <inheritdoc />
@@ -266,7 +192,7 @@ internal class ChildStorageOptions : IStorageOptions
     /// <inheritdoc />
     public virtual string GetDisplayName() => this.parent.GetDisplayName();
 
-    private CapacityOption GetCapacity(Func<IStorageOptions, CapacityOption> selector)
+    private CapacityOption Get(Func<IStorageOptions, CapacityOption> selector)
     {
         var childValue = selector(this.child);
         var parentValue = selector(this.parent);
@@ -278,7 +204,7 @@ internal class ChildStorageOptions : IStorageOptions
         };
     }
 
-    private Option GetOption(Func<IStorageOptions, Option> selector)
+    private Option Get(Func<IStorageOptions, Option> selector)
     {
         var childValue = selector(this.child);
         var parentValue = selector(this.parent);
@@ -290,7 +216,7 @@ internal class ChildStorageOptions : IStorageOptions
         };
     }
 
-    private RangeOption GetRange(Func<IStorageOptions, RangeOption> selector)
+    private RangeOption Get(Func<IStorageOptions, RangeOption> selector)
     {
         var childValue = selector(this.child);
         var parentValue = selector(this.parent);

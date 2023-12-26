@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Extensions;
@@ -22,27 +23,33 @@ internal sealed class ItemGrabMenuManager : BaseService
 #nullable enable
 
     private readonly PerScreen<InventoryMenuManager> bottomMenu;
-    private readonly ModConfig modConfig;
-    private readonly IInputHelper inputHelper;
     private readonly ContainerFactory containerFactory;
     private readonly PerScreen<IClickableMenu?> currentMenu = new();
+    private readonly DefaultConfig defaultConfig;
+    private readonly IInputHelper inputHelper;
     private readonly PerScreen<InventoryMenuManager> topMenu;
 
     private EventHandler<ItemGrabMenuChangedEventArgs>? itemGrabMenuChanged;
 
     /// <summary>Initializes a new instance of the <see cref="ItemGrabMenuManager" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    /// <param name="defaultConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
-    public ItemGrabMenuManager(ILog log, ModConfig modConfig, IModEvents modEvents, Harmony harmony, IInputHelper inputHelper, ContainerFactory containerFactory)
+    public ItemGrabMenuManager(
+        ILog log,
+        DefaultConfig defaultConfig,
+        IModEvents modEvents,
+        Harmony harmony,
+        IInputHelper inputHelper,
+        ContainerFactory containerFactory)
         : base(log)
     {
         // Init
         ItemGrabMenuManager.instance = this;
-        this.modConfig = modConfig;
+        this.defaultConfig = defaultConfig;
         this.inputHelper = inputHelper;
         this.containerFactory = containerFactory;
         this.topMenu = new PerScreen<InventoryMenuManager>(() => new InventoryMenuManager(log));
@@ -74,13 +81,6 @@ internal sealed class ItemGrabMenuManager : BaseService
                 nameof(ItemGrabMenuManager.ItemGrabMenu_constructor_transpiler)));
     }
 
-    /// <summary>Event raised when the item grab menu has changed.</summary>
-    public event EventHandler<ItemGrabMenuChangedEventArgs> ItemGrabMenuChanged
-    {
-        add => this.itemGrabMenuChanged += value;
-        remove => this.itemGrabMenuChanged -= value;
-    }
-
     /// <summary>Gets the current item grab menu.</summary>
     public ItemGrabMenu? CurrentMenu =>
         Game1.activeClickableMenu?.Equals(this.currentMenu.Value) == true
@@ -92,6 +92,13 @@ internal sealed class ItemGrabMenuManager : BaseService
 
     /// <summary>Gets the inventory menu manager for the bottom inventory menu.</summary>
     public IInventoryMenuManager Bottom => this.bottomMenu.Value;
+
+    /// <summary>Event raised when the item grab menu has changed.</summary>
+    public event EventHandler<ItemGrabMenuChangedEventArgs> ItemGrabMenuChanged
+    {
+        add => this.itemGrabMenuChanged += value;
+        remove => this.itemGrabMenuChanged -= value;
+    }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Harmony")]
@@ -247,12 +254,9 @@ internal sealed class ItemGrabMenuManager : BaseService
         var (mouseX, mouseY) = Game1.getMousePosition(true);
         switch (e.Button)
         {
-            case SButton.MouseLeft when this.topMenu.Value.LeftClick(mouseX, mouseY):
-                break;
-            case SButton.MouseLeft when this.bottomMenu.Value.LeftClick(mouseX, mouseY):
-                break;
-            default:
-                return;
+            case SButton.MouseLeft when this.topMenu.Value.LeftClick(mouseX, mouseY): break;
+            case SButton.MouseLeft when this.bottomMenu.Value.LeftClick(mouseX, mouseY): break;
+            default: return;
         }
 
         this.inputHelper.Suppress(e.Button);
@@ -265,16 +269,16 @@ internal sealed class ItemGrabMenuManager : BaseService
             return;
         }
 
-        if (this.modConfig.Controls.ScrollUp.JustPressed())
+        if (this.defaultConfig.Controls.ScrollUp.JustPressed())
         {
             this.Top.Scrolled--;
-            this.inputHelper.SuppressActiveKeybinds(this.modConfig.Controls.ScrollUp);
+            this.inputHelper.SuppressActiveKeybinds(this.defaultConfig.Controls.ScrollUp);
         }
 
-        if (this.modConfig.Controls.ScrollDown.JustPressed())
+        if (this.defaultConfig.Controls.ScrollDown.JustPressed())
         {
             this.Top.Scrolled++;
-            this.inputHelper.SuppressActiveKeybinds(this.modConfig.Controls.ScrollDown);
+            this.inputHelper.SuppressActiveKeybinds(this.defaultConfig.Controls.ScrollDown);
         }
     }
 
@@ -300,13 +304,13 @@ internal sealed class ItemGrabMenuManager : BaseService
         var (mouseX, mouseY) = Game1.getMousePosition(true);
         if (this.Top.Menu?.isWithinBounds(mouseX, mouseY) == true)
         {
-            var scroll = this.modConfig.Controls.ScrollPage.IsDown() ? this.Top.Rows : 1;
+            var scroll = this.defaultConfig.Controls.ScrollPage.IsDown() ? this.Top.Rows : 1;
             this.Top.Scrolled += e.Delta > 0 ? -scroll : scroll;
         }
 
         if (this.Bottom.Menu?.isWithinBounds(mouseX, mouseY) == true)
         {
-            var scroll = this.modConfig.Controls.ScrollPage.IsDown() ? this.Bottom.Rows : 1;
+            var scroll = this.defaultConfig.Controls.ScrollPage.IsDown() ? this.Bottom.Rows : 1;
             this.Bottom.Scrolled += e.Delta > 0 ? -scroll : scroll;
         }
     }

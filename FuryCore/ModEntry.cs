@@ -57,7 +57,7 @@ public sealed class ModEntry : Mod
 
         // Services
         this.container.Register<ILog, Log>(Lifestyle.Singleton);
-        this.container.Register<IThemeHelper, ThemeHelper>(Lifestyle.Singleton);
+        this.container.Register<ITheming, Theming>(Lifestyle.Singleton);
         this.container.Register<ApiFactory>(Lifestyle.Singleton);
 
         this.container.Verify();

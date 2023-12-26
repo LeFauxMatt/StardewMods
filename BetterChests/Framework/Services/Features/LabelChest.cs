@@ -2,7 +2,7 @@
 
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -10,7 +10,7 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>Draw chest label to the screen.</summary>
-internal sealed class LabelChest : BaseFeature
+internal sealed class LabelChest : BaseFeature<LabelChest>
 {
     private readonly ContainerFactory containerFactory;
     private readonly IModEvents modEvents;
@@ -20,7 +20,7 @@ internal sealed class LabelChest : BaseFeature
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
-    public LabelChest(ILog log, ModConfig modConfig, ContainerFactory containerFactory, IModEvents modEvents)
+    public LabelChest(ILog log, IModConfig modConfig, ContainerFactory containerFactory, IModEvents modEvents)
         : base(log, modConfig)
     {
         this.containerFactory = containerFactory;
@@ -28,7 +28,7 @@ internal sealed class LabelChest : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.LabelChest != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.LabelChest;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -53,7 +53,6 @@ internal sealed class LabelChest : BaseFeature
                 context: Chest chest,
             }
             || !this.containerFactory.TryGetOne(chest, out var container)
-            || container.Options.LabelChest != Option.Enabled
             || string.IsNullOrWhiteSpace(container.Options.ChestLabel))
         {
             return;
@@ -82,7 +81,6 @@ internal sealed class LabelChest : BaseFeature
         if ((!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
                 && !Game1.currentLocation.Objects.TryGetValue(pos - new Vector2(0, -1), out obj))
             || !this.containerFactory.TryGetOne(obj, out var storage)
-            || storage.Options.LabelChest != Option.Enabled
             || string.IsNullOrWhiteSpace(storage.Options.ChestLabel))
         {
             return;

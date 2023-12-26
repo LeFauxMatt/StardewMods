@@ -16,27 +16,26 @@ internal sealed class LocalizedTextManager : BaseService
         : base(log) =>
         this.translations = translations;
 
-    /// <summary>Formats carry chest slow using localized text when available.</summary>
-    /// <param name="value">The value for carry chest slow to format.</param>
-    /// <returns>Localized text for the carry chest slow value.</returns>
-    public string Slow(int value) =>
+    public string CarryChestLimit(int value) =>
         value switch
         {
-            0 => I18n.Config_CarryChestSlow_ValueZero(),
-            _ => I18n.Config_CarryChestSlow_Value(value.ToString(CultureInfo.InvariantCulture)),
+            1 => I18n.Config_CarryChestLimit_ValueOne(),
+            > 1 => I18n.Config_CarryChestLimit_ValueMany(value),
+            _ => I18n.Config_CarryChestLimit_ValueUnlimited(),
         };
 
-    /// <summary>Formats chest capacity using localized text when available.</summary>
+    /// <summary>Formats capacity option using localized text when available.</summary>
     /// <param name="value">The value for capacity to format.</param>
-    /// <returns>Localized text for the capacity value.</returns>
-    public string Capacity(int value) =>
-        value switch
+    /// <returns>Localized text for the capacity.</returns>
+    public string Capacity(string value) =>
+        (CapacityOptionExtensions.TryParse(value, out var capacity) ? capacity : CapacityOption.Default) switch
         {
-            (int)Enums.Option.Default => I18n.Option_Default_Name(),
-            (int)Enums.Option.Disabled => I18n.Option_Disabled_Name(),
-            8 => I18n.Config_ResizeChestCapacity_ValueUnlimited(),
-            _ => I18n.Config_ResizeChestCapacity_ValueMany(
-                (12 * (value - (int)Enums.Option.Enabled + 1)).ToString(CultureInfo.InvariantCulture)),
+            CapacityOption.Disabled => I18n.Option_Disabled_Name(),
+            CapacityOption.Small => I18n.Capacity_Small_Name(),
+            CapacityOption.Medium => I18n.Capacity_Medium_Name(),
+            CapacityOption.Large => I18n.Capacity_Large_Name(),
+            >= CapacityOption.Unlimited => I18n.Capacity_Unlimited_Name(),
+            _ => I18n.Option_Default_Name(),
         };
 
     /// <summary>Formats range distance using localized text when available.</summary>
@@ -48,114 +47,70 @@ internal sealed class LocalizedTextManager : BaseService
             (int)RangeOption.Default => I18n.Option_Default_Name(),
             (int)RangeOption.Disabled => I18n.Option_Disabled_Name(),
             (int)RangeOption.Inventory => I18n.Option_Inventory_Name(),
-            (int)RangeOption.World - 1 => I18n.Config_RangeDistance_ValueUnlimited(),
+            (int)RangeOption.World - 1 => I18n.Range_Distance_Unlimited(),
             (int)RangeOption.World => I18n.Option_World_Name(),
-            >= (int)RangeOption.Location => I18n.Config_RangeDistance_ValueMany(
+            >= (int)RangeOption.Location => I18n.Range_Distance_Many(
                 Math.Pow(2, 1 + value - (int)RangeOption.Location).ToString(CultureInfo.InvariantCulture)),
             _ => I18n.Option_Default_Name(),
         };
 
-    /// <summary>Formats a menu value using localized text when available.</summary>
-    /// <param name="value">The menu value to format.</param>
-    /// <returns>Localized text for the menu value.</returns>
-    public string Menu(string value) =>
-        value switch
+    /// <summary>Formats a method value using localized text when available.</summary>
+    /// <param name="value">The method value to format.</param>
+    /// <returns>Localized text for the method value.</returns>
+    public string Method(string value) =>
+        (MethodExtensions.TryParse(value, out var method) ? method : Enums.Method.Default) switch
         {
-            nameof(InGameMenu.Default) => I18n.Option_Default_Name(),
-            nameof(InGameMenu.Categorize) => I18n.Menu_Categorize_Name(),
-            nameof(InGameMenu.Simple) => I18n.Menu_Simple_Name(),
-            nameof(InGameMenu.Full) => I18n.Menu_Full_Name(),
-            nameof(InGameMenu.Advanced) => I18n.Menu_Advanced_Name(),
-            _ => value,
+            Enums.Method.Sorted => I18n.Method_Sorted_Name(),
+            Enums.Method.GrayedOut => I18n.Method_GrayedOut_Name(),
+            Enums.Method.Hidden => I18n.Method_GrayedOut_Name(),
+            _ => I18n.Option_Default_Name(),
         };
 
     /// <summary>Formats an option value using localized text when available.</summary>
     /// <param name="value">The option value to format.</param>
     /// <returns>Localized text for the option value.</returns>
     public string Option(string value) =>
-        value switch
+        (OptionExtensions.TryParse(value, out var option) ? option : Enums.Option.Default) switch
         {
-            nameof(Enums.Option.Default) => I18n.Option_Default_Name(),
-            nameof(Enums.Option.Disabled) => I18n.Option_Disabled_Name(),
-            nameof(Enums.Option.Enabled) => I18n.Option_Enabled_Name(),
-            _ => value,
+            Enums.Option.Disabled => I18n.Option_Disabled_Name(),
+            Enums.Option.Enabled => I18n.Option_Enabled_Name(),
+            _ => I18n.Option_Default_Name(),
         };
 
     /// <summary>Formats a group by value using localized text when available.</summary>
     /// <param name="value">The group by value to format.</param>
     /// <returns>Localized text for the group by value.</returns>
-    public string OrganizeGroupBy(string value) =>
-        value switch
+    public string GroupBy(string value) =>
+        (GroupByExtensions.TryParse(value, out var groupBy) ? groupBy : Enums.GroupBy.Default) switch
         {
-            nameof(GroupBy.Default) => I18n.Option_Default_Name(),
-            nameof(GroupBy.Category) => I18n.GroupBy_Category_Name(),
-            nameof(GroupBy.Color) => I18n.GroupBy_Color_Name(),
-            nameof(GroupBy.Name) => I18n.SortBy_Name_Name(),
-            _ => value,
+            Enums.GroupBy.Category => I18n.GroupBy_Category_Name(),
+            Enums.GroupBy.Color => I18n.GroupBy_Color_Name(),
+            Enums.GroupBy.Name => I18n.SortBy_Name_Name(),
+            _ => I18n.Option_Default_Name(),
         };
 
     /// <summary>Formats a sort by value using localized text when available.</summary>
     /// <param name="value">The sort by value to format.</param>
     /// <returns>Localized text for the sort by value.</returns>
-    public string OrganizeSortBy(string value) =>
-        value switch
+    public string SortBy(string value) =>
+        (SortByExtensions.TryParse(value, out var sortBy) ? sortBy : Enums.SortBy.Default) switch
         {
-            nameof(SortBy.Default) => I18n.Option_Default_Name(),
-            nameof(SortBy.Type) => I18n.SortBy_Type_Name(),
-            nameof(SortBy.Quality) => I18n.SortBy_Quality_Name(),
-            nameof(SortBy.Quantity) => I18n.SortBy_Quantity_Name(),
-            _ => value,
+            Enums.SortBy.Type => I18n.SortBy_Type_Name(),
+            Enums.SortBy.Quality => I18n.SortBy_Quality_Name(),
+            Enums.SortBy.Quantity => I18n.SortBy_Quantity_Name(),
+            _ => I18n.Option_Default_Name(),
         };
 
     /// <summary>Formats a range value using localized text when available.</summary>
     /// <param name="value">The range value to format.</param>
     /// <returns>Localized text for the range value.</returns>
     public string Range(string value) =>
-        value switch
+        (RangeOptionExtensions.TryParse(value, out var rangeOption) ? rangeOption : RangeOption.Default) switch
         {
-            nameof(RangeOption.Default) => I18n.Option_Default_Name(),
-            nameof(RangeOption.Disabled) => I18n.Option_Disabled_Name(),
-            nameof(RangeOption.Inventory) => I18n.Option_Inventory_Name(),
-            nameof(RangeOption.Location) => I18n.Option_Location_Name(),
-            nameof(RangeOption.World) => I18n.Option_World_Name(),
-            _ => value,
-        };
-
-    /// <summary>Formats a storage name using localized text when available.</summary>
-    /// <param name="value">The storage to format.</param>
-    /// <returns>Localized text for the storage name.</returns>
-    public string StorageName(string value) =>
-        value switch
-        {
-            "Chest" => ItemRegistry.GetData("(BC)130").DisplayName,
-            "Mini-Fridge" => ItemRegistry.GetData("(BC)216").DisplayName,
-            "Stone Chest" => ItemRegistry.GetData("(BC)232").DisplayName,
-            "Mini-Shipping Bin" => ItemRegistry.GetData("(BC)248").DisplayName,
-            "Junimo Chest" => ItemRegistry.GetData("(BC)256").DisplayName,
-            "Junimo Hut" when Game1.buildingData.TryGetValue("Junimo Hut", out var buildingData) =>
-                TokenParser.ParseText(buildingData.Name),
-            "Shipping Bin" when Game1.buildingData.TryGetValue("Shipping Bin", out var buildingData) =>
-                TokenParser.ParseText(buildingData.Name),
-            "Fridge" => I18n.Storage_Fridge_Name(),
-            _ => this.translations.Get($"storage.{value}.name").Default(value),
-        };
-
-    /// <summary>Formats a storage tooltip using localized text when available.</summary>
-    /// <param name="value">The storage to format.</param>
-    /// <returns>Localized text for the storage tooltip.</returns>
-    public string StorageTooltip(string value) =>
-        value switch
-        {
-            "Chest" => ItemRegistry.GetData("(BC)130").Description,
-            "Mini-Fridge" => ItemRegistry.GetData("(BC)216").Description,
-            "Stone Chest" => ItemRegistry.GetData("(BC)232").Description,
-            "Mini-Shipping Bin" => ItemRegistry.GetData("(BC)248").Description,
-            "Junimo Chest" => ItemRegistry.GetData("(BC)256").Description,
-            "Junimo Hut" when Game1.buildingData.TryGetValue("Junimo Hut", out var buildingData) =>
-                TokenParser.ParseText(buildingData.Description),
-            "Shipping Bin" when Game1.buildingData.TryGetValue("Shipping Bin", out var buildingData) =>
-                TokenParser.ParseText(buildingData.Description),
-            "Fridge" => I18n.Storage_Fridge_Tooltip(),
-            _ => this.translations.Get($"storage.{value}.tooltip").Default(value),
+            RangeOption.Disabled => I18n.Option_Disabled_Name(),
+            RangeOption.Inventory => I18n.Option_Inventory_Name(),
+            RangeOption.Location => I18n.Option_Location_Name(),
+            RangeOption.World => I18n.Option_World_Name(),
+            _ => I18n.Option_Default_Name(),
         };
 }

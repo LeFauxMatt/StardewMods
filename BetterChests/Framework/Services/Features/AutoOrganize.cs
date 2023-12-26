@@ -7,25 +7,33 @@ using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Automatically organizes items between chests during sleep.</summary>
-internal sealed class AutoOrganize : BaseFeature
+internal sealed class AutoOrganize : BaseFeature<AutoOrganize>
 {
     private readonly ContainerFactory containerFactory;
+    private readonly ContainerOperations containerOperations;
     private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="AutoOrganize" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
+    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
-    public AutoOrganize(ILog log, ModConfig modConfig, IModEvents modEvents, ContainerFactory containerFactory)
+    public AutoOrganize(
+        ILog log,
+        IModConfig modConfig,
+        ContainerOperations containerOperations,
+        IModEvents modEvents,
+        ContainerFactory containerFactory)
         : base(log, modConfig)
     {
+        this.containerOperations = containerOperations;
         this.modEvents = modEvents;
         this.containerFactory = containerFactory;
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.AutoOrganize != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.AutoOrganize != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate() => this.modEvents.GameLoop.DayEnding += this.OnDayEnding;
@@ -76,7 +84,7 @@ internal sealed class AutoOrganize : BaseFeature
                         }
 
                         var containerFrom = containersFrom[indexFrom];
-                        if (!containerFrom.Transfer(containerTo, out var amounts))
+                        if (!this.containerOperations.Transfer(containerFrom, containerTo, out var amounts))
                         {
                             containersFrom.RemoveAt(indexFrom);
                             continue;
@@ -97,7 +105,7 @@ internal sealed class AutoOrganize : BaseFeature
                         }
                     }
 
-                    containerTo.OrganizeItems();
+                    this.containerOperations.OrganizeItems(containerTo);
                 }
             }
         }

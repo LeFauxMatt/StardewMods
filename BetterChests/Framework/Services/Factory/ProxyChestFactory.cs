@@ -9,7 +9,7 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
 
 /// <summary>Manages the global inventories and chest/item creation and retrieval operations.</summary>
-internal sealed class ProxyChestFactory : BaseService
+internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
 {
     private const string AlphaNumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private const string ColorKey = "PlayerChoiceColor";

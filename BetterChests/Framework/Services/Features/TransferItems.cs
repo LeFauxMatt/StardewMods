@@ -11,10 +11,9 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
 /// <summary>Transfer all items into or out from a chest.</summary>
-internal sealed class TransferItems : BaseFeature
+internal sealed class TransferItems : BaseFeature<TransferItems>
 {
-    private const string IconPath = "furyx639.BetterChests/Icons";
-
+    private readonly ContainerOperations containerOperations;
     private readonly PerScreen<ClickableTextureComponent> downArrow;
     private readonly IInputHelper inputHelper;
     private readonly ItemGrabMenuManager itemGrabMenuManager;
@@ -24,19 +23,22 @@ internal sealed class TransferItems : BaseFeature
     /// <summary>Initializes a new instance of the <see cref="TransferItems" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
+    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public TransferItems(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
+        ContainerOperations containerOperations,
         IGameContentHelper gameContentHelper,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         IModEvents modEvents)
         : base(log, modConfig)
     {
+        this.containerOperations = containerOperations;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
         this.modEvents = modEvents;
@@ -44,7 +46,7 @@ internal sealed class TransferItems : BaseFeature
         this.downArrow = new PerScreen<ClickableTextureComponent>(
             () => new ClickableTextureComponent(
                 new Rectangle(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
-                gameContentHelper.Load<Texture2D>(TransferItems.IconPath),
+                gameContentHelper.Load<Texture2D>(AssetHandler.IconTexturePath),
                 new Rectangle(84, 0, 7, 16),
                 Game1.pixelZoom)
             {
@@ -55,7 +57,7 @@ internal sealed class TransferItems : BaseFeature
         this.upArrow = new PerScreen<ClickableTextureComponent>(
             () => new ClickableTextureComponent(
                 new Rectangle(0, 0, 7 * Game1.pixelZoom, Game1.tileSize),
-                gameContentHelper.Load<Texture2D>(TransferItems.IconPath),
+                gameContentHelper.Load<Texture2D>(AssetHandler.IconTexturePath),
                 new Rectangle(100, 0, 7, 16),
                 Game1.pixelZoom)
             {
@@ -65,7 +67,7 @@ internal sealed class TransferItems : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.TransferItems != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.TransferItems != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -87,7 +89,7 @@ internal sealed class TransferItems : BaseFeature
 
     private void Transfer(IContainer containerFrom, IContainer containerTo)
     {
-        if (!containerFrom.Transfer(containerTo, out var amounts))
+        if (!this.containerOperations.Transfer(containerFrom, containerTo, out var amounts))
         {
             return;
         }

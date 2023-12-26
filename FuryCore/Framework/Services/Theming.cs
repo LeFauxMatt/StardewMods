@@ -6,7 +6,7 @@ using StardewModdingAPI.Events;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc />
-internal sealed class ThemeHelper : IThemeHelper
+internal sealed class Theming : ITheming
 {
     private readonly Dictionary<IAssetName, Texture2D> cachedTextures = new();
     private readonly IGameContentHelper gameContent;
@@ -25,10 +25,10 @@ internal sealed class ThemeHelper : IThemeHelper
 
     private bool initialize;
 
-    /// <summary>Initializes a new instance of the <see cref="ThemeHelper" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="Theming" /> class.</summary>
     /// <param name="events">Dependency used for managing access to events.</param>
     /// <param name="gameContent">Dependency used for loading game assets.</param>
-    public ThemeHelper(IModEvents events, IGameContentHelper gameContent)
+    public Theming(IModEvents events, IGameContentHelper gameContent)
     {
         this.gameContent = gameContent;
         events.Content.AssetReady += this.OnAssetReady;

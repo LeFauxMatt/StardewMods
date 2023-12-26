@@ -1,16 +1,17 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
-using System.Globalization;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Unload a held chest's contents into another chest.</summary>
-internal sealed class UnloadChest : BaseFeature
+internal sealed class UnloadChest : BaseFeature<UnloadChest>
 {
     private readonly ContainerFactory containerFactory;
+    private readonly ContainerOperations containerOperations;
     private readonly IInputHelper inputHelper;
     private readonly IModEvents modEvents;
 
@@ -18,23 +19,26 @@ internal sealed class UnloadChest : BaseFeature
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public UnloadChest(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
         ContainerFactory containerFactory,
+        ContainerOperations containerOperations,
         IInputHelper inputHelper,
         IModEvents modEvents)
         : base(log, modConfig)
     {
         this.containerFactory = containerFactory;
+        this.containerOperations = containerOperations;
         this.inputHelper = inputHelper;
         this.modEvents = modEvents;
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.UnloadChest != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.UnloadChest != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate() => this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
@@ -65,7 +69,7 @@ internal sealed class UnloadChest : BaseFeature
         }
 
         this.inputHelper.Suppress(e.Button);
-        if (!containerFrom.Transfer(containerTo, out var amounts))
+        if (!this.containerOperations.Transfer(containerFrom, containerTo, out var amounts))
         {
             return;
         }

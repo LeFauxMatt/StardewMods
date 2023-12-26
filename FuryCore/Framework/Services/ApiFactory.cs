@@ -6,19 +6,19 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 internal sealed class ApiFactory
 {
     private readonly IConfigWithLogLevel config;
-    private readonly IThemeHelper themeHelper;
+    private readonly ITheming theming;
 
     /// <summary>Initializes a new instance of the <see cref="ApiFactory" /> class.</summary>
     /// <param name="config">Dependency used for accessing config data.</param>
-    /// <param name="themeHelper">Dependency used for swapping palettes.</param>
-    public ApiFactory(IConfigWithLogLevel config, IThemeHelper themeHelper)
+    /// <param name="theming">Dependency used for swapping palettes.</param>
+    public ApiFactory(IConfigWithLogLevel config, ITheming theming)
     {
         this.config = config;
-        this.themeHelper = themeHelper;
+        this.theming = theming;
     }
 
     /// <summary>Creates an instance of the FuryCoreApi by providing the mod information.</summary>
     /// <param name="mod">The information related to the mod.</param>
     /// <returns>An instance of the FuryCoreApi.</returns>
-    public IFuryCoreApi CreateApi(IModInfo mod) => new FuryCoreApi(mod, this.config, this.themeHelper);
+    public IFuryCoreApi CreateApi(IModInfo mod) => new FuryCoreApi(mod, this.config, this.theming);
 }

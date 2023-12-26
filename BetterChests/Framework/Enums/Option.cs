@@ -6,7 +6,7 @@ using NetEscapades.EnumGenerators;
 [EnumExtensions]
 internal enum Option
 {
-    /// <summary>Feature inherits from a parent config.</summary>
+    /// <summary>Option is inherited from a parent config.</summary>
     Default = 0,
 
     /// <summary>Feature is disabled.</summary>

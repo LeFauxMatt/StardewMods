@@ -9,7 +9,7 @@ internal sealed class Controls
     public KeybindList CloseChestFinder { get; set; } = new(SButton.Escape);
 
     /// <summary>Gets or sets controls to configure currently held object.</summary>
-    public KeybindList Configure { get; set; } = new(SButton.End);
+    public KeybindList ConfigureChest { get; set; } = new(SButton.End);
 
     /// <summary>Gets or sets controls to find a chest.</summary>
     public KeybindList FindChest { get; set; } = new(

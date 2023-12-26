@@ -12,7 +12,7 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
 /// <summary>Adds tabs to the <see cref="ItemGrabMenu" /> to filter the displayed items.</summary>
-internal sealed class InventoryTabs : BaseFeature, IItemFilter
+internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
 {
     private readonly PerScreen<List<InventoryTab>> cachedTabs = new(() => []);
     private readonly PerScreen<int> currentIndex = new(() => -1);
@@ -33,7 +33,7 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public InventoryTabs(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
         IInputHelper inputHelper,
         InventoryTabFactory inventoryTabFactory,
         ItemGrabMenuManager itemGrabMenuManager,
@@ -47,11 +47,12 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.InventoryTabs != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.InventoryTabs != Option.Disabled;
 
     /// <inheritdoc />
     public bool MatchesFilter(Item item) =>
-        this.resetCache.Value
+        this.Config.InventoryTabMethod == Method.Default
+        || this.resetCache.Value
         || !this.cachedTabs.Value.Any()
         || this.currentIndex.Value < 0
         || this.currentIndex.Value >= this.cachedTabs.Value.Count
@@ -79,15 +80,15 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
         this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
     }
 
-    private IEnumerable<Item> FilterByTab(IEnumerable<Item> items)
-    {
-        if (this.ModConfig.DefaultOptions.HideUnselectedItems == Option.Enabled)
-        {
-            return items.Where(this.MatchesFilter);
-        }
-
-        return this.currentIndex.Value == -1 ? items : items.OrderByDescending(this.MatchesFilter);
-    }
+    private IEnumerable<Item> FilterByTab(IEnumerable<Item> items) =>
+        this.currentIndex.Value == -1
+            ? items
+            : this.Config.InventoryTabMethod switch
+            {
+                Method.Sorted or Method.GrayedOut => items.OrderByDescending(this.MatchesFilter),
+                Method.Hidden => items.Where(this.MatchesFilter),
+                _ => items,
+            };
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
@@ -122,16 +123,16 @@ internal sealed class InventoryTabs : BaseFeature, IItemFilter
             return;
         }
 
-        if (this.ModConfig.Controls.PreviousTab.JustPressed())
+        if (this.Config.Controls.PreviousTab.JustPressed())
         {
             this.newIndex.Value--;
-            this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.PreviousTab);
+            this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.PreviousTab);
         }
 
-        if (this.ModConfig.Controls.NextTab.JustPressed())
+        if (this.Config.Controls.NextTab.JustPressed())
         {
             this.newIndex.Value++;
-            this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.NextTab);
+            this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.NextTab);
         }
     }
 

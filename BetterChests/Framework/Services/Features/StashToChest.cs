@@ -12,9 +12,10 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>Stash items into placed chests and chests in the farmer's inventory.</summary>
-internal sealed class StashToChest : BaseFeature
+internal sealed class StashToChest : BaseFeature<StashToChest>
 {
     private readonly ContainerFactory containerFactory;
+    private readonly ContainerOperations containerOperations;
     private readonly IInputHelper inputHelper;
     private readonly IModEvents modEvents;
     private readonly ToolbarIconsIntegration toolbarIconsIntegration;
@@ -23,26 +24,29 @@ internal sealed class StashToChest : BaseFeature
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public StashToChest(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
         ContainerFactory containerFactory,
+        ContainerOperations containerOperations,
         IInputHelper inputHelper,
         IModEvents modEvents,
         ToolbarIconsIntegration toolbarIconsIntegration)
         : base(log, modConfig)
     {
         this.containerFactory = containerFactory;
+        this.containerOperations = containerOperations;
         this.inputHelper = inputHelper;
         this.modEvents = modEvents;
         this.toolbarIconsIntegration = toolbarIconsIntegration;
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.StashToChest != RangeOption.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.StashToChest != RangeOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -109,7 +113,7 @@ internal sealed class StashToChest : BaseFeature
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!this.ModConfig.Controls.StashItems.JustPressed())
+        if (!this.Config.Controls.StashItems.JustPressed())
         {
             return;
         }
@@ -117,7 +121,7 @@ internal sealed class StashToChest : BaseFeature
         // Stash to All
         if (Context.IsPlayerFree)
         {
-            this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.StashItems);
+            this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.StashItems);
             this.StashIntoAll();
             return;
         }
@@ -133,7 +137,7 @@ internal sealed class StashToChest : BaseFeature
         }
 
         // Stash to Current
-        this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.StashItems);
+        this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.StashItems);
         this.StashIntoContainer(container);
         Game1.playSound("Ship");
     }
@@ -148,7 +152,7 @@ internal sealed class StashToChest : BaseFeature
 
     private void StashIntoAll()
     {
-        if (!this.containerFactory.TryGetOne(Game1.player, out var farmerContainer))
+        if (!this.containerFactory.TryGetOne(Game1.player, out var containerFrom))
         {
             return;
         }
@@ -173,7 +177,7 @@ internal sealed class StashToChest : BaseFeature
             var noneEligible = false;
             foreach (var containerTo in containersTo)
             {
-                if (!farmerContainer.Transfer(containerTo, out var amounts))
+                if (!this.containerOperations.Transfer(containerFrom, containerTo, out var amounts))
                 {
                     noneEligible = true;
                     break;
@@ -192,7 +196,7 @@ internal sealed class StashToChest : BaseFeature
                         this.Id,
                         name,
                         amount,
-                        farmerContainer,
+                        containerFrom,
                         containerTo);
                 }
             }
@@ -215,24 +219,24 @@ internal sealed class StashToChest : BaseFeature
         bool Predicate(IContainer container) =>
             container.Options.StashToChest is not (RangeOption.Disabled or RangeOption.Default)
             && container.Items.Count < container.Capacity
-            && !container.Options.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name)
-            && !(container.Options.StashToChestDisableLocations.Contains("UndergroundMine")
+            && !this.Config.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name)
+            && !(this.Config.StashToChestDisableLocations.Contains("UndergroundMine")
                 && Game1.player.currentLocation is MineShaft mineShaft
                 && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
             && container.Options.StashToChest.WithinRange(
-                container.Options.StashToChestDistance,
+                this.Config.StashToChestDistance,
                 container.Location,
                 container.TileLocation);
     }
 
-    private void StashIntoContainer(IContainer container)
+    private void StashIntoContainer(IContainer containerTo)
     {
-        if (!this.containerFactory.TryGetOne(Game1.player, out var farmerContainer))
+        if (!this.containerFactory.TryGetOne(Game1.player, out var containerFrom))
         {
             return;
         }
 
-        if (!farmerContainer.Transfer(container, out var amounts))
+        if (!this.containerOperations.Transfer(containerFrom, containerTo, out var amounts))
         {
             return;
         }
@@ -246,8 +250,8 @@ internal sealed class StashToChest : BaseFeature
                     this.Id,
                     name,
                     amount,
-                    farmerContainer,
-                    container);
+                    containerFrom,
+                    containerTo);
             }
         }
     }

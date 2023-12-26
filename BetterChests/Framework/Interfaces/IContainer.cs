@@ -5,7 +5,7 @@ using StardewValley.Inventories;
 using StardewValley.Mods;
 
 /// <summary>An instance of a game object that can store items.</summary>
-internal interface IContainer : IItemFilter
+internal interface IContainer
 {
     /// <summary>Gets the name of the container.</summary>
     string DisplayName { get; }
@@ -31,22 +31,12 @@ internal interface IContainer : IItemFilter
     /// <summary>Gets the mod data dictionary.</summary>
     ModDataDictionary ModData { get; }
 
-    /// <summary>Arranges items in container according to group by and sort by options.</summary>
-    /// <param name="reverse">Whether to sort the items in reverse order.</param>
-    public void OrganizeItems(bool reverse = false);
-
     /// <summary>Executes a given action for each item in the collection.</summary>
     /// <param name="action">The action to be executed for each item.</param>
     public void ForEachItem(Func<Item, bool> action);
 
     /// <summary>Opens an item grab menu for this container.</summary>
     public void ShowMenu();
-
-    /// <summary>Transfers all items to a different container.</summary>
-    /// <param name="containerTo">The container to transfer the item to.</param>
-    /// <param name="amounts">Contains the amount of eligible items transferred, if any.</param>
-    /// <returns>Returns true if any items were eligible to transfer; otherwise, false.</returns>
-    public bool Transfer(IContainer containerTo, [NotNullWhen(true)] out Dictionary<string, int>? amounts);
 
     /// <summary>Tries to remove an item from the container.</summary>
     /// <param name="item">The item to remove.</param>

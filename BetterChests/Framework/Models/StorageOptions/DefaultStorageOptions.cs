@@ -13,6 +13,12 @@ internal sealed class DefaultStorageOptions : IStorageOptions
     public Option CarryChest { get; set; } = Option.Enabled;
 
     /// <inheritdoc />
+    public Option CategorizeChest { get; set; } = Option.Enabled;
+
+    /// <inheritdoc />
+    public HashSet<string> CategorizeChestTags { get; set; } = [];
+
+    /// <inheritdoc />
     public Option ChestFinder { get; set; } = Option.Enabled;
 
     /// <inheritdoc />
@@ -28,28 +34,10 @@ internal sealed class DefaultStorageOptions : IStorageOptions
     public Option ConfigureChest { get; set; } = Option.Enabled;
 
     /// <inheritdoc />
-    public InGameMenu ConfigureMenu { get; set; } = InGameMenu.Simple;
-
-    /// <inheritdoc />
     public RangeOption CraftFromChest { get; set; } = RangeOption.Location;
 
     /// <inheritdoc />
-    public HashSet<string> CraftFromChestDisableLocations { get; set; } = [];
-
-    /// <inheritdoc />
-    public int CraftFromChestDistance { get; set; } = -1;
-
-    /// <inheritdoc />
     public Option HslColorPicker { get; set; } = Option.Enabled;
-
-    /// <inheritdoc />
-    public Option FilterItems { get; set; } = Option.Enabled;
-
-    /// <inheritdoc />
-    public HashSet<string> FilterItemsList { get; set; } = [];
-
-    /// <inheritdoc />
-    public Option HideUnselectedItems { get; set; } = Option.Disabled;
 
     /// <inheritdoc />
     public Option InventoryTabs { get; set; } = Option.Enabled;
@@ -59,12 +47,6 @@ internal sealed class DefaultStorageOptions : IStorageOptions
     [
         "Clothing", "Cooking", "Crops", "Equipment", "Fishing", "Materials", "Misc", "Seeds",
     ];
-
-    /// <inheritdoc />
-    public Option LabelChest { get; set; } = Option.Enabled;
-
-    /// <inheritdoc />
-    public Option LockItem { get; set; } = Option.Enabled;
 
     /// <inheritdoc />
     public Option OpenHeldChest { get; set; } = Option.Enabled;
@@ -88,25 +70,13 @@ internal sealed class DefaultStorageOptions : IStorageOptions
     public RangeOption StashToChest { get; set; } = RangeOption.Location;
 
     /// <inheritdoc />
-    public HashSet<string> StashToChestDisableLocations { get; set; } = [];
-
-    /// <inheritdoc />
-    public int StashToChestDistance { get; set; } = -1;
-
-    /// <inheritdoc />
     public int StashToChestPriority { get; set; }
-
-    /// <inheritdoc />
-    public Option StashToChestStacks { get; set; } = Option.Enabled;
 
     /// <inheritdoc />
     public Option TransferItems { get; set; } = Option.Enabled;
 
     /// <inheritdoc />
     public Option UnloadChest { get; set; } = Option.Disabled;
-
-    /// <inheritdoc />
-    public Option UnloadChestCombine { get; set; } = Option.Disabled;
 
     /// <inheritdoc />
     public string GetDescription() => I18n.Storage_Other_Tooltip();

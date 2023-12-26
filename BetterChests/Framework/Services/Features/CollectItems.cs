@@ -9,7 +9,7 @@ using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Debris such as mined or farmed items can be collected into a Chest in the farmer's inventory.</summary>
-internal sealed class CollectItems : BaseFeature
+internal sealed class CollectItems : BaseFeature<CollectItems>
 {
 #nullable disable
     private static CollectItems instance;
@@ -31,7 +31,7 @@ internal sealed class CollectItems : BaseFeature
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public CollectItems(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
         ContainerFactory containerFactory,
         Harmony harmony,
         IInputHelper inputHelper,
@@ -46,7 +46,7 @@ internal sealed class CollectItems : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.CollectItems != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.CollectItems != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -121,9 +121,9 @@ internal sealed class CollectItems : BaseFeature
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
         // Toggle Collect Items
-        if (Context.IsPlayerFree && this.ModConfig.Controls.ToggleCollectItems.JustPressed())
+        if (Context.IsPlayerFree && this.Config.Controls.ToggleCollectItems.JustPressed())
         {
-            this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.ToggleCollectItems);
+            this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.ToggleCollectItems);
             var key = this.Prefix + "Disable";
             var disable = Game1.player.modData.ContainsKey(key);
             if (disable)

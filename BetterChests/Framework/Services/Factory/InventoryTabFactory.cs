@@ -10,26 +10,22 @@ internal sealed class InventoryTabFactory : BaseService
 {
     private readonly IGameContentHelper gameContentHelper;
     private readonly ItemMatcherFactory itemMatcherFactory;
-    private readonly ModConfig modConfig;
     private readonly Lazy<Dictionary<string, InventoryTabData>> tabData;
     private readonly PerScreen<Dictionary<string, InventoryTab>> tabs = new(() => []);
     private readonly ITranslationHelper translationHelper;
 
     /// <summary>Initializes a new instance of the <see cref="InventoryTabFactory" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="itemMatcherFactory">Dependency used for getting an ItemMatcher.</param>
     /// <param name="translationHelper">Dependency used for accessing translations.</param>
     public InventoryTabFactory(
         ILog log,
-        ModConfig modConfig,
         IGameContentHelper gameContentHelper,
         ItemMatcherFactory itemMatcherFactory,
         ITranslationHelper translationHelper)
         : base(log)
     {
-        this.modConfig = modConfig;
         this.gameContentHelper = gameContentHelper;
         this.itemMatcherFactory = itemMatcherFactory;
         this.translationHelper = translationHelper;

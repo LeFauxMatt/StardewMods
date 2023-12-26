@@ -13,36 +13,29 @@ internal sealed class ManagedStorages
 {
     private const string AssetPath = "Data/BigCraftables";
     private const string CustomFieldPrefix = "furyx639.ExpandedStorage";
-    private readonly ContentPatcherIntegration contentPatcher;
 
     private readonly Dictionary<string, StorageData> data = new();
-    private readonly IModEvents events;
-    private readonly IGameContentHelper gameContent;
+    private readonly IGameContentHelper gameContentHelper;
     private readonly ILog log;
 
-    private bool nextTick;
-
     /// <summary>Initializes a new instance of the <see cref="ManagedStorages" /> class.</summary>
-    /// <param name="contentPatcher">Dependency for Content Patcher integration.</param>
-    /// <param name="events">Dependency used for managing access to events.</param>
-    /// <param name="gameContent">Dependency used for loading game assets.</param>
+    /// <param name="contentPatcherIntegration">Dependency for Content Patcher integration.</param>
+    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     public ManagedStorages(
-        ContentPatcherIntegration contentPatcher,
-        IModEvents events,
-        IGameContentHelper gameContent,
-        ILog log)
+        ILog log,
+        ContentPatcherIntegration contentPatcherIntegration,
+        IModEvents modEvents,
+        IGameContentHelper gameContentHelper)
     {
         // Init
-        this.contentPatcher = contentPatcher;
-        this.events = events;
-        this.gameContent = gameContent;
         this.log = log;
-        this.nextTick = true;
+        this.gameContentHelper = gameContentHelper;
 
         // Events
-        this.events.Content.AssetReady += this.OnAssetReady;
-        this.events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+        modEvents.Content.AssetReady += this.OnAssetReady;
+        contentPatcherIntegration.ConditionsApiReady += this.OnConditionsApiReady;
     }
 
     /// <summary>Gets the Storage Data for Expanded Storage objects.</summary>
@@ -116,20 +109,6 @@ internal sealed class ManagedStorages
         }
     }
 
-    private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
-    {
-        if (this.contentPatcher.IsLoaded && !this.contentPatcher.Api.IsConditionsApiReady)
-        {
-            return;
-        }
-
-        if (this.nextTick)
-        {
-            this.nextTick = false;
-            return;
-        }
-
-        this.events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
-        _ = this.gameContent.Load<Dictionary<string, BigCraftableData>>(ManagedStorages.AssetPath);
-    }
+    private void OnConditionsApiReady(object? sender, EventArgs args) =>
+        _ = this.gameContentHelper.Load<Dictionary<string, BigCraftableData>>(ManagedStorages.AssetPath);
 }

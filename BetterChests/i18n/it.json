@@ -96,12 +96,6 @@
   "option.inventory.name": "Inventario",
   "option.location.name": "Mappa Corrente",
   "option.world.name": "Mondo",
-  // Menu Areas
-  "area.top.name": "Sopra il menu dell'inventario.",
-  "area.right.name": "A destra del menu dell'inventario.",
-  "area.bottom.name": "Sotto il menu dell'inventario.",
-  "area.left.name": "A sinistra del menu dell'inventario.",
-  "area.custom.name": "Una posizione personalizzata.",
   // UI - Button
   "button.Configure.name": "Configura",
   "button.stash-to-chest.name": "Deposita nei Bauli",

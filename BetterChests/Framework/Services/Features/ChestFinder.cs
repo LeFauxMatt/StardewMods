@@ -1,10 +1,10 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Transient;
@@ -14,15 +14,15 @@ using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewValley.Menus;
 
 /// <summary>Search for which chests have the item you're looking for.</summary>
-internal sealed class ChestFinder : BaseFeature
+internal sealed class ChestFinder : BaseFeature<ChestFinder>
 {
-    private readonly PerScreen<List<Pointer>> pointers = new(() => []);
     private readonly ContainerFactory containerFactory;
     private readonly PerScreen<int> currentIndex = new();
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<bool> isActive = new();
     private readonly PerScreen<ItemMatcher> itemMatcher;
     private readonly IModEvents modEvents;
+    private readonly PerScreen<List<Pointer>> pointers = new(() => []);
     private readonly PerScreen<bool> resetCache = new(() => true);
     private readonly PerScreen<SearchBar> searchBar;
     private readonly PerScreen<SearchOverlay> searchOverlay;
@@ -38,7 +38,7 @@ internal sealed class ChestFinder : BaseFeature
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public ChestFinder(
         ILog log,
-        ModConfig modConfig,
+        IModConfig modConfig,
         ContainerFactory containerFactory,
         IInputHelper inputHelper,
         ItemMatcherFactory itemMatcherFactory,
@@ -65,7 +65,7 @@ internal sealed class ChestFinder : BaseFeature
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.ModConfig.DefaultOptions.ChestFinder != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.ChestFinder != Option.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -148,24 +148,22 @@ internal sealed class ChestFinder : BaseFeature
         if (Context.IsPlayerFree
             && Game1.displayHUD
             && Game1.activeClickableMenu is null
-            && this.ModConfig.Controls.FindChest.JustPressed())
+            && this.Config.Controls.FindChest.JustPressed())
         {
             this.OpenSearchBar();
-            this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.FindChest);
+            this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.FindChest);
             return;
         }
 
         // Close Search Bar
-        if (this.isActive.Value && this.ModConfig.Controls.CloseChestFinder.JustPressed())
+        if (this.isActive.Value && this.Config.Controls.CloseChestFinder.JustPressed())
         {
             this.CloseSearchBar();
-            this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.CloseChestFinder);
+            this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.CloseChestFinder);
             return;
         }
 
-        if (!this.isActive.Value
-            || !this.pointers.Value.Any()
-            || !this.ModConfig.Controls.OpenFoundChest.JustPressed())
+        if (!this.isActive.Value || !this.pointers.Value.Any() || !this.Config.Controls.OpenFoundChest.JustPressed())
         {
             return;
         }
@@ -181,7 +179,7 @@ internal sealed class ChestFinder : BaseFeature
         }
 
         this.OpenFoundChest();
-        this.inputHelper.SuppressActiveKeybinds(this.ModConfig.Controls.OpenFoundChest);
+        this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.OpenFoundChest);
     }
 
     private void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)
