@@ -19,7 +19,7 @@ internal static class Extensions
     /// <param name="parent">The context where the source object is contained.</param>
     /// <param name="position">The coordinates.</param>
     /// <returns>Returns true if the location is within range.</returns>
-    public static bool WithinRangeOfPlayer(this RangeOption range, int distance, object parent, Vector2 position) =>
+    public static bool WithinRange(this RangeOption range, int distance, object parent, Vector2 position) =>
         range switch
         {
             RangeOption.World => true,

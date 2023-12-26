@@ -213,13 +213,13 @@ internal sealed class StashToChest : BaseFeature
         return;
 
         bool Predicate(IContainer container) =>
-            container.Options.StashToChest is RangeOption.Disabled or RangeOption.Default
+            container.Options.StashToChest is not (RangeOption.Disabled or RangeOption.Default)
             && container.Items.Count < container.Capacity
             && !container.Options.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name)
             && !(container.Options.StashToChestDisableLocations.Contains("UndergroundMine")
                 && Game1.player.currentLocation is MineShaft mineShaft
                 && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
-            && container.Options.StashToChest.WithinRangeOfPlayer(
+            && container.Options.StashToChest.WithinRange(
                 container.Options.StashToChestDistance,
                 container.Location,
                 container.TileLocation);
