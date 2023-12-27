@@ -112,7 +112,7 @@ public sealed class ModEntry : Mod
 
     private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
-        if (e.Name.IsEquivalentTo("furyx639.GarbageDay/Texture"))
+        if (e.NameWithoutLocale.IsEquivalentTo("furyx639.GarbageDay/Texture"))
         {
             e.LoadFromModFile<Texture2D>("assets/GarbageCan.png", AssetLoadPriority.Exclusive);
         }

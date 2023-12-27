@@ -76,7 +76,7 @@ internal abstract class BaseThemeHelper
 
     private void OnAssetReady(object? sender, AssetReadyEventArgs e)
     {
-        if (!this.initialize || !e.Name.IsEquivalentTo("LooseSprites/Cursors"))
+        if (!this.initialize || !e.NameWithoutLocale.IsEquivalentTo("LooseSprites/Cursors"))
         {
             return;
         }
@@ -100,7 +100,7 @@ internal abstract class BaseThemeHelper
 
     private void OnAssetsInvalidated(object? sender, AssetsInvalidatedEventArgs e)
     {
-        if (e.Names.Any(name => name.IsEquivalentTo("LooseSprites/Cursors")))
+        if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("LooseSprites/Cursors")))
         {
             this.initialize = true;
         }
