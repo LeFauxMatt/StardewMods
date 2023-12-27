@@ -131,7 +131,7 @@ internal sealed class ContainerOperations : BaseService
             item =>
             {
                 // Stop iterating if destination container is already at capacity
-                if (to.Items.Count >= to.Capacity)
+                if (to.Items.CountItemStacks() >= to.Capacity)
                 {
                     return false;
                 }

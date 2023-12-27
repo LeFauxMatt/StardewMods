@@ -8,7 +8,7 @@ using StardewMods.BetterChests.Framework.Models.StorageOptions;
 internal sealed class DefaultConfig : IModConfig
 {
     /// <inheritdoc />
-    public IStorageOptions DefaultOptions { get; set; } = new DefaultStorageOptions();
+    public DefaultStorageOptions DefaultOptions { get; set; } = new();
 
     /// <inheritdoc />
     public int CarryChestLimit { get; set; } = 3;

@@ -2,12 +2,13 @@ namespace StardewMods.BetterChests.Framework.Interfaces;
 
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.Models.StorageOptions;
 
 /// <summary>Mod config data for Better Chests.</summary>
 internal interface IModConfig
 {
     /// <summary>Gets a value containing the default storage options.</summary>
-    public IStorageOptions DefaultOptions { get; }
+    public DefaultStorageOptions DefaultOptions { get; }
 
     /// <summary>Gets a value indicating how many chests can be carried at once.</summary>
     public int CarryChestLimit { get; }

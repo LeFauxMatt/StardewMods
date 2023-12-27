@@ -22,8 +22,8 @@
   "section.tweaks.description": "Customize settings for mod features.",
   "section.controls.name": "Controls",
   "section.controls.description": "Controller/keyboard configurations.",
-  "section.chests.name": "Chests",
-  "section.chests.description": "Configure each chest type individually.",
+  "section.storages.name": "Storages",
+  "section.storages.description": "Configure each storage type individually.",
   // Main
   "config.auto-organize.name": "Auto Organize",
   "config.auto-organize.tooltip": "Automatically stash items into higher priority chests each night.",

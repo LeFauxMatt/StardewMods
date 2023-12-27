@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewValley.Inventories;
 using StardewValley.Mods;
+using StardewValley.Network;
 
 /// <inheritdoc />
 internal class ChildContainer : IContainer
@@ -50,6 +51,9 @@ internal class ChildContainer : IContainer
 
     /// <inheritdoc />
     public ModDataDictionary ModData => this.child.ModData;
+
+    /// <inheritdoc/>
+    public NetMutex? Mutex => this.child.Mutex;
 
     /// <inheritdoc />
     public void ForEachItem(Func<Item, bool> action) => this.child.ForEachItem(action);

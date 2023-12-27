@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewValley.Inventories;
 using StardewValley.Mods;
+using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <inheritdoc />
@@ -40,6 +41,9 @@ internal class ObjectContainer : BaseContainer<SObject>
 
     /// <inheritdoc />
     public override ModDataDictionary ModData => this.Object.modData;
+
+    /// <inheritdoc/>
+    public override NetMutex Mutex => this.chest.GetMutex();
 
     /// <inheritdoc />
     public override bool IsAlive => this.Source.TryGetTarget(out _);

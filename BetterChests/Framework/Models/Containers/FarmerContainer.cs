@@ -3,7 +3,9 @@ namespace StardewMods.BetterChests.Framework.Models.Containers;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewValley.Inventories;
+using StardewValley.Locations;
 using StardewValley.Mods;
+using StardewValley.Network;
 
 /// <inheritdoc />
 internal sealed class FarmerContainer : BaseContainer<Farmer>
@@ -33,6 +35,8 @@ internal sealed class FarmerContainer : BaseContainer<Farmer>
 
     /// <inheritdoc />
     public override ModDataDictionary ModData => this.Farmer.modData;
+
+    public override NetMutex? Mutex => (Utility.getHomeOfFarmer(this.Farmer) as Cabin)?.inventoryMutex;
 
     /// <inheritdoc />
     public override bool IsAlive => this.Source.TryGetTarget(out _);

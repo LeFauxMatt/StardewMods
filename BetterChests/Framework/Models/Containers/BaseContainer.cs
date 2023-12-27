@@ -5,6 +5,7 @@ using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
 using StardewValley.Inventories;
 using StardewValley.Mods;
+using StardewValley.Network;
 
 /// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IContainer{TSource}" />
 internal abstract class BaseContainer<TSource> : BaseContainer, IContainer<TSource>
@@ -60,6 +61,9 @@ internal abstract class BaseContainer : IContainer
 
     /// <inheritdoc />
     public abstract ModDataDictionary ModData { get; }
+
+    /// <inheritdoc/>
+    public abstract NetMutex? Mutex { get; }
 
     /// <inheritdoc />
     public void ForEachItem(Func<Item, bool> action)

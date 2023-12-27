@@ -7,7 +7,7 @@ using StardewValley.Extensions;
 /// <summary>Matches item name/tags against a set of search phrases.</summary>
 internal sealed class ItemMatcher : IItemFilter
 {
-    private readonly DefaultConfig defaultConfig;
+    private readonly IModConfig modConfig;
     private readonly Dictionary<string, ParsedTerm> parsedTerms = new();
     private readonly ITranslationHelper translation;
     private string searchText = string.Empty;
@@ -15,11 +15,11 @@ internal sealed class ItemMatcher : IItemFilter
     private ParsedTerm[] terms = Array.Empty<ParsedTerm>();
 
     /// <summary>Initializes a new instance of the <see cref="ItemMatcher" /> class.</summary>
-    /// <param name="defaultConfig">Dependency used for accessing config data.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="translation">Dependency used for accessing translations.</param>
-    public ItemMatcher(DefaultConfig defaultConfig, ITranslationHelper translation)
+    public ItemMatcher(IModConfig modConfig, ITranslationHelper translation)
     {
-        this.defaultConfig = defaultConfig;
+        this.modConfig = modConfig;
         this.translation = translation;
     }
 
@@ -39,11 +39,11 @@ internal sealed class ItemMatcher : IItemFilter
                     continue;
                 }
 
-                var notMatch = searchTerm[0] == this.defaultConfig.SearchNegationSymbol;
+                var notMatch = searchTerm[0] == this.modConfig.SearchNegationSymbol;
                 var newValue = notMatch ? searchTerm[1..] : searchTerm;
 
-                var tagMatch = this.OnlyTags || newValue[0] == this.defaultConfig.SearchTagSymbol;
-                newValue = tagMatch && searchTerm.StartsWith(this.defaultConfig.SearchTagSymbol)
+                var tagMatch = this.OnlyTags || newValue[0] == this.modConfig.SearchTagSymbol;
+                newValue = tagMatch && searchTerm.StartsWith(this.modConfig.SearchTagSymbol)
                     ? newValue[1..]
                     : newValue;
 

@@ -25,7 +25,7 @@ internal sealed class ItemGrabMenuManager : BaseService
     private readonly PerScreen<InventoryMenuManager> bottomMenu;
     private readonly ContainerFactory containerFactory;
     private readonly PerScreen<IClickableMenu?> currentMenu = new();
-    private readonly DefaultConfig defaultConfig;
+    private readonly IModConfig modConfig;
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<InventoryMenuManager> topMenu;
 
@@ -33,14 +33,14 @@ internal sealed class ItemGrabMenuManager : BaseService
 
     /// <summary>Initializes a new instance of the <see cref="ItemGrabMenuManager" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="defaultConfig">Dependency used for accessing config data.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     public ItemGrabMenuManager(
         ILog log,
-        DefaultConfig defaultConfig,
+        IModConfig modConfig,
         IModEvents modEvents,
         Harmony harmony,
         IInputHelper inputHelper,
@@ -49,7 +49,7 @@ internal sealed class ItemGrabMenuManager : BaseService
     {
         // Init
         ItemGrabMenuManager.instance = this;
-        this.defaultConfig = defaultConfig;
+        this.modConfig = modConfig;
         this.inputHelper = inputHelper;
         this.containerFactory = containerFactory;
         this.topMenu = new PerScreen<InventoryMenuManager>(() => new InventoryMenuManager(log));
@@ -269,16 +269,16 @@ internal sealed class ItemGrabMenuManager : BaseService
             return;
         }
 
-        if (this.defaultConfig.Controls.ScrollUp.JustPressed())
+        if (this.modConfig.Controls.ScrollUp.JustPressed())
         {
             this.Top.Scrolled--;
-            this.inputHelper.SuppressActiveKeybinds(this.defaultConfig.Controls.ScrollUp);
+            this.inputHelper.SuppressActiveKeybinds(this.modConfig.Controls.ScrollUp);
         }
 
-        if (this.defaultConfig.Controls.ScrollDown.JustPressed())
+        if (this.modConfig.Controls.ScrollDown.JustPressed())
         {
             this.Top.Scrolled++;
-            this.inputHelper.SuppressActiveKeybinds(this.defaultConfig.Controls.ScrollDown);
+            this.inputHelper.SuppressActiveKeybinds(this.modConfig.Controls.ScrollDown);
         }
     }
 
@@ -304,13 +304,13 @@ internal sealed class ItemGrabMenuManager : BaseService
         var (mouseX, mouseY) = Game1.getMousePosition(true);
         if (this.Top.Menu?.isWithinBounds(mouseX, mouseY) == true)
         {
-            var scroll = this.defaultConfig.Controls.ScrollPage.IsDown() ? this.Top.Rows : 1;
+            var scroll = this.modConfig.Controls.ScrollPage.IsDown() ? this.Top.Rows : 1;
             this.Top.Scrolled += e.Delta > 0 ? -scroll : scroll;
         }
 
         if (this.Bottom.Menu?.isWithinBounds(mouseX, mouseY) == true)
         {
-            var scroll = this.defaultConfig.Controls.ScrollPage.IsDown() ? this.Bottom.Rows : 1;
+            var scroll = this.modConfig.Controls.ScrollPage.IsDown() ? this.Bottom.Rows : 1;
             this.Bottom.Scrolled += e.Delta > 0 ? -scroll : scroll;
         }
     }

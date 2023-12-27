@@ -62,7 +62,7 @@ internal sealed class LocalizedTextManager : BaseService
         {
             Enums.Method.Sorted => I18n.Method_Sorted_Name(),
             Enums.Method.GrayedOut => I18n.Method_GrayedOut_Name(),
-            Enums.Method.Hidden => I18n.Method_GrayedOut_Name(),
+            Enums.Method.Hidden => I18n.Method_Hidden_Name(),
             _ => I18n.Option_Default_Name(),
         };
 

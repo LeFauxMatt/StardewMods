@@ -22,6 +22,7 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
     private readonly AutomateIntegration automateIntegration;
     private readonly ConditionalWeakTable<IContainer, ItemMatcher> cachedItemMatchers = new();
     private readonly ContainerFactory containerFactory;
+    private readonly ContainerOperations containerOperations;
     private readonly Harmony harmony;
     private readonly ItemGrabMenuManager itemGrabMenuManager;
     private readonly ItemMatcherFactory itemMatcherFactory;
@@ -35,6 +36,7 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="automateIntegration">Dependency for integration with Automate.</param>
     /// <param name="containerFactory">Dependency for handling storages.</param>
+    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="itemMatcherFactory">Dependency used for getting an ItemMatcher.</param>
@@ -45,6 +47,7 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
         IModConfig modConfig,
         AutomateIntegration automateIntegration,
         ContainerFactory containerFactory,
+        ContainerOperations containerOperations,
         Harmony harmony,
         ItemGrabMenuManager itemGrabMenuManager,
         ItemMatcherFactory itemMatcherFactory,
@@ -55,6 +58,7 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
         CategorizeChest.instance = this;
         this.automateIntegration = automateIntegration;
         this.containerFactory = containerFactory;
+        this.containerOperations = containerOperations;
         this.harmony = harmony;
         this.itemGrabMenuManager = itemGrabMenuManager;
         this.itemMatcherFactory = itemMatcherFactory;
@@ -70,6 +74,7 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
     {
         // Events
         this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.containerOperations.ItemTransferring += this.OnItemTransferring;
 
         // Patches
         this.harmony.Patch(
@@ -101,6 +106,7 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
     {
         // Events
         this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.containerOperations.ItemTransferring -= this.OnItemTransferring;
 
         // Patches
         this.harmony.Unpatch(
@@ -167,6 +173,29 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
             var itemMatcher = this.GetOrCreateItemMatcher(this.itemGrabMenuManager.Bottom.Container);
             this.itemGrabMenuManager.Top.AddHighlightMethod(itemMatcher.MatchesFilter);
         }
+    }
+
+    private void OnItemTransferring(object? sender, ItemTransferringEventArgs e)
+    {
+        if (e.To.Options.CategorizeChest != Option.Enabled)
+        {
+            return;
+        }
+
+        // Allow transfer if item matches categories
+        var itemMatcher = this.GetOrCreateItemMatcher(e.To);
+        if (!itemMatcher.IsEmpty && itemMatcher.MatchesFilter(e.Item))
+        {
+            return;
+        }
+
+        // Allow transfer if existing stacks are allowed and item is already in the chest
+        if (this.Config.StashToChestStacks && e.To.Items.ContainsId(e.Item.ItemId))
+        {
+            return;
+        }
+
+        e.PreventTransfer();
     }
 
     private ItemMatcher GetOrCreateItemMatcher(IContainer container)

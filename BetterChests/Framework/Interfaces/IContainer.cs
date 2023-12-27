@@ -3,6 +3,7 @@ namespace StardewMods.BetterChests.Framework.Interfaces;
 using Microsoft.Xna.Framework;
 using StardewValley.Inventories;
 using StardewValley.Mods;
+using StardewValley.Network;
 
 /// <summary>An instance of a game object that can store items.</summary>
 internal interface IContainer
@@ -30,6 +31,9 @@ internal interface IContainer
 
     /// <summary>Gets the mod data dictionary.</summary>
     ModDataDictionary ModData { get; }
+
+    /// <summary>Gets a mutex for the container.</summary>
+    NetMutex? Mutex { get; }
 
     /// <summary>Executes a given action for each item in the collection.</summary>
     /// <param name="action">The action to be executed for each item.</param>

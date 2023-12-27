@@ -1,12 +1,9 @@
-// <copyright file="ConfigManager.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-
 namespace StardewMods.BetterChests.Framework.Services;
 
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.Models.StorageOptions;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IModConfig" />
@@ -30,7 +27,7 @@ internal sealed class ConfigManager : BaseService, IModConfig
     }
 
     /// <inheritdoc />
-    public IStorageOptions DefaultOptions => this.modConfig.DefaultOptions;
+    public DefaultStorageOptions DefaultOptions => this.modConfig.DefaultOptions;
 
     /// <inheritdoc />
     public int CarryChestLimit => this.modConfig.CarryChestLimit;

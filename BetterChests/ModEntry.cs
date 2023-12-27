@@ -48,8 +48,9 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.ModRegistry);
         this.container.RegisterInstance(this.Helper.Reflection);
         this.container.RegisterInstance(this.Helper.Translation);
+        this.container.RegisterSingleton<IModConfig, ConfigManager>();
+        this.container.RegisterSingleton<ConfigManager, ConfigManager>();
         this.container.RegisterSingleton<FeatureManager>();
-        this.container.RegisterSingleton<ConfigManager>();
         this.container.RegisterSingleton<AutomateIntegration>();
         this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
@@ -81,12 +82,14 @@ public sealed class ModEntry : Mod
             Lifestyle.Singleton);
 
         this.container.RegisterSingleton<AssetHandler>();
+        this.container.RegisterSingleton<ConfigMenuManager>();
         this.container.RegisterSingleton<ContainerFactory>();
-        this.container.RegisterSingleton<LocalizedTextManager>();
+        this.container.RegisterSingleton<ContainerOperations>();
         this.container.RegisterSingleton<InventoryTabFactory>();
         this.container.RegisterSingleton<ItemGrabMenuManager>();
-        this.container.RegisterSingleton<StatusEffectManager>();
+        this.container.RegisterSingleton<LocalizedTextManager>();
         this.container.RegisterSingleton<ProxyChestFactory>();
+        this.container.RegisterSingleton<StatusEffectManager>();
         this.container.Collection.Register<IFeature>(
             new[]
             {
@@ -112,33 +115,9 @@ public sealed class ModEntry : Mod
             },
             Lifestyle.Singleton);
 
-        // this.container.Collection.Register<IFeature>(
-        //     new[]
-        //     {
-        //         Lifestyle.Singleton.CreateRegistration<AutoOrganize>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<CarryChest>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<CategorizeChest>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<ChestFinder>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<ChestInfo>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<CollectItems>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<ConfigureChest>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<CraftFromChest>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<HslColorPicker>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<InventoryTabs>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<LabelChest>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<LockItem>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<OpenHeldChest>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<OrganizeItems>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<ResizeChest>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<SearchItems>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<StashToChest>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<TransferItems>(this.container),
-        //         Lifestyle.Singleton.CreateRegistration<UnloadChest>(this.container),
-        //     });
-
         this.container.Verify();
 
-        var configManager = this.container.GetInstance<ConfigManager>();
-        configManager.Reload();
+        var featureManager = this.container.GetInstance<FeatureManager>();
+        featureManager.Activate();
     }
 }

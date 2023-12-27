@@ -1,6 +1,5 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
-using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -9,11 +8,11 @@ using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewValley.Locations;
 using StardewValley.Menus;
-using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <summary>Craft using items from placed chests and chests in the farmer's inventory.</summary>
@@ -63,6 +62,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
     {
         // Events
         this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
+        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
 
         // Patches
         this.harmony.Patch(
@@ -70,12 +70,6 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
             transpiler: new HarmonyMethod(
                 typeof(CraftFromChest),
                 nameof(CraftFromChest.GameMenu_constructor_transpiler)));
-
-        this.harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(Workbench), nameof(Workbench.checkForAction)),
-            transpiler: new HarmonyMethod(
-                typeof(CraftFromChest),
-                nameof(CraftFromChest.Workbench_checkForAction_transpiler)));
 
         // Integrations
         if (!this.toolbarIconsIntegration.IsLoaded)
@@ -97,17 +91,12 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
     {
         // Events
         this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
+        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
 
         // Patches
         this.harmony.Unpatch(
             AccessTools.DeclaredConstructor(typeof(GameMenu), [typeof(bool)]),
             AccessTools.DeclaredMethod(typeof(CraftFromChest), nameof(CraftFromChest.GameMenu_constructor_transpiler)));
-
-        this.harmony.Unpatch(
-            AccessTools.DeclaredMethod(typeof(Workbench), nameof(Workbench.checkForAction)),
-            AccessTools.DeclaredMethod(
-                typeof(CraftFromChest),
-                nameof(CraftFromChest.Workbench_checkForAction_transpiler)));
 
         // Integrations
         if (!this.toolbarIconsIntegration.IsLoaded)
@@ -146,67 +135,6 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
         }
     }
 
-    private static IEnumerable<CodeInstruction> Workbench_checkForAction_transpiler(
-        IEnumerable<CodeInstruction> instructions)
-    {
-        var found = default(CodeInstruction);
-        foreach (var instruction in instructions)
-        {
-            found ??= instruction.opcode == OpCodes.Ldfld
-                && instruction.operand is FieldInfo
-                {
-                    Name: "nearby_chests",
-                }
-                    ? instruction
-                    : null;
-
-            if (found is not null && instruction.Is(OpCodes.Newobj, AccessTools.Constructor(typeof(List<NetMutex>))))
-            {
-                yield return new CodeInstruction(OpCodes.Ldloc_0);
-                yield return found;
-                yield return CodeInstruction.Call(typeof(CraftFromChest), nameof(CraftFromChest.AddNearbyChests));
-                yield return instruction;
-            }
-            else
-            {
-                yield return instruction;
-            }
-        }
-    }
-
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
-    private static void AddNearbyChests(List<Chest> nearbyChests)
-    {
-        if (CraftFromChest.instance.Config.CraftFromWorkbench is RangeOption.Disabled or RangeOption.Default)
-        {
-            return;
-        }
-
-        var containers = CraftFromChest.instance.containerFactory.GetAll(Predicate).OfType<ChestContainer>();
-        foreach (var container in containers)
-        {
-            if (!nearbyChests.Contains(container.Chest))
-            {
-                nearbyChests.Add(container.Chest);
-            }
-        }
-
-        return;
-
-        bool Predicate(IContainer container) =>
-            container.Options.CraftFromChest is not RangeOption.Disabled
-            && container.Items.Count > 0
-            && !CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains(
-                Game1.player.currentLocation.Name)
-            && !(CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains("UndergroundMine")
-                && Game1.player.currentLocation is MineShaft mineShaft
-                && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
-            && CraftFromChest.instance.Config.CraftFromWorkbench.WithinRange(
-                CraftFromChest.instance.Config.CraftFromWorkbenchDistance,
-                container.Location,
-                container.TileLocation);
-    }
-
     private static List<Chest>? GetMaterials()
     {
         var containers = CraftFromChest.instance.containerFactory.GetAll(Predicate).OfType<ChestContainer>().ToList();
@@ -226,6 +154,28 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
                 container.TileLocation);
     }
 
+    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    {
+        if (this.Config.CraftFromWorkbench is RangeOption.Disabled or RangeOption.Default
+            || !Context.IsPlayerFree
+            || Game1.player.CurrentItem is Tool
+            || !e.Button.IsUseToolButton()
+            || this.inputHelper.IsSuppressed(e.Button))
+        {
+            return;
+        }
+
+        var pos = CommonHelpers.GetCursorTile(1, false);
+        if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
+            || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+            || obj is not Workbench)
+        {
+            return;
+        }
+
+        this.OpenCraftingMenu(this.WorkbenchPredicate);
+    }
+
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
         if (!Context.IsPlayerFree || !this.Config.Controls.OpenCrafting.JustPressed())
@@ -234,54 +184,66 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
         }
 
         this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.OpenCrafting);
-        this.OpenCraftingMenu();
+        this.OpenCraftingMenu(this.DefaultPredicate);
     }
 
     private void OnToolbarIconPressed(object? sender, string id)
     {
         if (id == this.Id)
         {
-            this.OpenCraftingMenu();
+            this.OpenCraftingMenu(this.DefaultPredicate);
         }
     }
 
-    private void OpenCraftingMenu()
+    private void OpenCraftingMenu(Func<IContainer, bool> predicate)
     {
-        var containers = this.containerFactory.GetAll(Predicate).OfType<ChestContainer>().ToList();
+        var containers = this.containerFactory.GetAll(predicate).ToList();
         if (containers.Count == 0)
         {
             this.Log.Alert(I18n.Alert_CraftFromChest_NoEligible());
             return;
         }
 
-        var chests = containers.Select(container => container.Chest).ToList();
+        var mutexes = containers.Select(container => container.Mutex).ToArray();
+        var inventories = containers.Select(container => container.Items).ToList();
         _ = new MultipleMutexRequest(
-            chests.Select(chest => chest.GetMutex()).ToArray(),
+            mutexes,
             request =>
             {
                 var width = 800 + (IClickableMenu.borderWidth * 2);
                 var height = 600 + (IClickableMenu.borderWidth * 2);
                 var (x, y) = Utility.getTopLeftPositionForCenteringOnScreen(width, height).ToPoint();
-                Game1.activeClickableMenu = new CraftingPage(x, y, width, height, false, true, chests);
+                Game1.activeClickableMenu = new CraftingPage(x, y, width, height, false, true, inventories);
                 Game1.activeClickableMenu.exitFunction = request.ReleaseLocks;
             },
             _ =>
             {
                 this.Log.Alert(I18n.Alert_CraftFromChest_NoEligible());
             });
-
-        return;
-
-        bool Predicate(IContainer container) =>
-            container.Options.CraftFromChest is not (RangeOption.Disabled or RangeOption.Default)
-            && container.Items.Count > 0
-            && !this.Config.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
-            && !(this.Config.CraftFromChestDisableLocations.Contains("UndergroundMine")
-                && Game1.player.currentLocation is MineShaft mineShaft
-                && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
-            && container.Options.CraftFromChest.WithinRange(
-                this.Config.CraftFromChestDistance,
-                container.Location,
-                container.TileLocation);
     }
+
+    private bool DefaultPredicate(IContainer container) =>
+        container.Options.CraftFromChest is not (RangeOption.Disabled or RangeOption.Default)
+        && container.Items.Count > 0
+        && !this.Config.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
+        && !(this.Config.CraftFromChestDisableLocations.Contains("UndergroundMine")
+            && Game1.player.currentLocation is MineShaft mineShaft
+            && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
+        && container.Options.CraftFromChest.WithinRange(
+            this.Config.CraftFromChestDistance,
+            container.Location,
+            container.TileLocation);
+
+    private bool WorkbenchPredicate(IContainer container) =>
+        container.Options.CraftFromChest is not RangeOption.Disabled
+        && container.Items.Count > 0
+        && !CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains(
+            Game1.player.currentLocation.Name)
+        && !(CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains("UndergroundMine")
+            && Game1.player.currentLocation is MineShaft mineShaft
+            && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
+        && CraftFromChest.instance.Config.CraftFromWorkbench.WithinRange(
+            CraftFromChest.instance.Config.CraftFromWorkbenchDistance,
+            container.Location,
+            container.TileLocation);
 }
