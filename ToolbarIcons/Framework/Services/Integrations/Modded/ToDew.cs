@@ -1,6 +1,7 @@
-namespace StardewMods.ToolbarIcons.Framework.Integrations.Mods;
+namespace StardewMods.ToolbarIcons.Framework.Services.Integrations.Modded;
 
 using System.Reflection;
+using StardewMods.ToolbarIcons.Framework.Interfaces;
 using StardewValley.Menus;
 
 /// <inheritdoc />

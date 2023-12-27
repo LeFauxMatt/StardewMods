@@ -34,7 +34,8 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
     }
 
     /// <inheritdoc />
-    public void AddToolbarIcon(string id, string texturePath, Rectangle? sourceRect, string? hoverText) => this.toolbar.AddToolbarIcon($"{this.prefix}{id}", texturePath, sourceRect, hoverText);
+    public void AddToolbarIcon(string id, string texturePath, Rectangle? sourceRect, string? hoverText) =>
+        this.toolbar.AddToolbarIcon($"{this.prefix}{id}", texturePath, sourceRect, hoverText);
 
     /// <inheritdoc />
     public void RemoveToolbarIcon(string id) => this.toolbar.RemoveToolbarIcon($"{this.prefix}{id}");

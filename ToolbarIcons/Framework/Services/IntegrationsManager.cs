@@ -2,31 +2,40 @@
 
 using System.Globalization;
 using StardewModdingAPI.Events;
-using StardewMods.ToolbarIcons.Framework.Integrations;
+using StardewMods.ToolbarIcons.Framework.Interfaces;
+using StardewMods.ToolbarIcons.Framework.Services.Integrations;
 
 /// <summary>Handles integrations with other mods.</summary>
 internal sealed class IntegrationsManager
 {
-    private readonly EventsManager customEvents;
-    private readonly IGameContentHelper gameContent;
-    private readonly SimpleIntegration simple;
+    private readonly IEnumerable<ICustomIntegration> customIntegrations;
+    private readonly EventsManager eventsManager;
+    private readonly IGameContentHelper gameContentHelper;
+    private readonly SimpleIntegration simpleIntegration;
 
     private bool isLoaded;
 
     /// <summary>Initializes a new instance of the <see cref="IntegrationsManager" /> class.</summary>
-    /// <param name="customEvents">Dependency used for custom events.</param>
-    /// <param name="events">Dependency used for managing access to events.</param>
-    /// <param name="gameContent">Dependency used for loading game assets.</param>
-    /// <param name="simple">Dependency used for adding a simple mod integration.</param>
-    public IntegrationsManager(EventsManager customEvents, IModEvents events, IGameContentHelper gameContent, SimpleIntegration simple)
+    /// <param name="customIntegrations">Integrations directly supported by the mod.</param>
+    /// <param name="eventsManager">Dependency used for custom events.</param>
+    /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
+    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="simpleIntegration">Dependency used for adding a simple mod integration.</param>
+    public IntegrationsManager(
+        IEnumerable<ICustomIntegration> customIntegrations,
+        EventsManager eventsManager,
+        IGameContentHelper gameContentHelper,
+        IModEvents modEvents,
+        SimpleIntegration simpleIntegration)
     {
         // Init
-        this.customEvents = customEvents;
-        this.gameContent = gameContent;
-        this.simple = simple;
+        this.customIntegrations = customIntegrations;
+        this.eventsManager = eventsManager;
+        this.gameContentHelper = gameContentHelper;
+        this.simpleIntegration = simpleIntegration;
 
         // Events
-        events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+        modEvents.GameLoop.SaveLoaded += this.OnSaveLoaded;
     }
 
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
@@ -36,7 +45,7 @@ internal sealed class IntegrationsManager
             return;
         }
 
-        foreach (var (key, data) in this.gameContent.Load<Dictionary<string, string>>(AssetHandler.ToolbarPath))
+        foreach (var (key, data) in this.gameContentHelper.Load<Dictionary<string, string>>(AssetHandler.ToolbarPath))
         {
             var info = data.Split('/');
             var modId = key.Split('/')[0];
@@ -44,18 +53,23 @@ internal sealed class IntegrationsManager
             switch (info[3])
             {
                 case "menu":
-                    this.simple.AddMenu(modId, index, info[0], info[4], info[1]);
+                    this.simpleIntegration.AddMenu(modId, index, info[0], info[4], info[1]);
                     break;
                 case "method":
-                    this.simple.AddMethod(modId, index, info[0], info[4], info[1]);
+                    this.simpleIntegration.AddMethod(modId, index, info[0], info[4], info[1]);
                     break;
                 case "keybind":
-                    this.simple.AddKeybind(modId, index, info[0], info[4], info[1]);
+                    this.simpleIntegration.AddKeybind(modId, index, info[0], info[4], info[1]);
                     break;
             }
         }
 
+        foreach (var integration in this.customIntegrations)
+        {
+            integration.AddIntegration();
+        }
+
         this.isLoaded = true;
-        this.customEvents.InvokeToolbarIconsLoaded();
+        this.eventsManager.InvokeToolbarIconsLoaded();
     }
 }

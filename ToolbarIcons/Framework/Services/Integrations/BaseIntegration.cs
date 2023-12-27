@@ -1,4 +1,4 @@
-﻿namespace StardewMods.ToolbarIcons.Framework.Integrations;
+﻿namespace StardewMods.ToolbarIcons.Framework.Services.Integrations;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -7,34 +7,39 @@ using StardewMods.ToolbarIcons.Framework.Services;
 /// <summary>Base class for adding toolbar icons for integrated mods.</summary>
 internal abstract class BaseIntegration
 {
-    private readonly IGameContentHelper gameContent;
+    private readonly IGameContentHelper gameContentHelper;
     private readonly Dictionary<string, Action> icons = new();
-    private readonly ToolbarHandler toolbar;
+    private readonly ToolbarHandler toolbarHandler;
 
     /// <summary>Initializes a new instance of the <see cref="BaseIntegration" /> class.</summary>
-    /// <param name="customEvents">Dependency used for custom events.</param>
-    /// <param name="gameContent">Dependency used for loading game assets.</param>
+    /// <param name="eventsManager">Dependency used for custom events.</param>
+    /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="modRegistry">Dependency for fetching metadata about loaded mods.</param>
-    /// <param name="reflection">Dependency used for accessing inaccessible code.</param>
-    /// <param name="toolbar">API to add icons above or below the toolbar.</param>
+    /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
+    /// <param name="toolbarHandler">API to add icons above or below the toolbar.</param>
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor", Justification = "Dependency Injection")]
-    protected BaseIntegration(EventsManager customEvents, IGameContentHelper gameContent, IModRegistry modRegistry, IReflectionHelper reflection, ToolbarHandler toolbar)
+    protected BaseIntegration(
+        EventsManager eventsManager,
+        IGameContentHelper gameContentHelper,
+        IModRegistry modRegistry,
+        IReflectionHelper reflectionHelper,
+        ToolbarHandler toolbarHandler)
     {
         // Init
-        this.gameContent = gameContent;
+        this.gameContentHelper = gameContentHelper;
         this.ModRegistry = modRegistry;
-        this.Reflection = reflection;
-        this.toolbar = toolbar;
+        this.ReflectionHelper = reflectionHelper;
+        this.toolbarHandler = toolbarHandler;
 
         // Events
-        customEvents.ToolbarIconPressed += this.OnToolbarIconPressed;
+        eventsManager.ToolbarIconPressed += this.OnToolbarIconPressed;
     }
 
     /// <summary>Gets helper for fetching metadata about loaded mods.</summary>
     protected IModRegistry ModRegistry { get; }
 
     /// <summary>Gets helper for accessing inaccessible code.</summary>
-    protected IReflectionHelper Reflection { get; }
+    protected IReflectionHelper ReflectionHelper { get; }
 
     /// <summary>Adds a toolbar icon for an integrated mod.</summary>
     /// <param name="modId">The id of the mod.</param>
@@ -45,9 +50,13 @@ internal abstract class BaseIntegration
     /// <returns>Returns true if the icon was added.</returns>
     protected bool AddIntegration(string modId, int index, string hoverText, Action action, string? texturePath = null)
     {
-        var texture = this.gameContent.Load<Texture2D>(texturePath ?? AssetHandler.IconPath);
+        var texture = this.gameContentHelper.Load<Texture2D>(texturePath ?? AssetHandler.IconPath);
         var cols = texture.Width / 16;
-        this.toolbar.AddToolbarIcon($"{modId}.{hoverText}", texturePath ?? AssetHandler.IconPath, new Rectangle(16 * (index % cols), 16 * (index / cols), 16, 16), hoverText);
+        this.toolbarHandler.AddToolbarIcon(
+            $"{modId}.{hoverText}",
+            texturePath ?? AssetHandler.IconPath,
+            new Rectangle(16 * (index % cols), 16 * (index / cols), 16, 16),
+            hoverText);
 
         this.icons.Add($"{modId}.{hoverText}", action);
         return true;

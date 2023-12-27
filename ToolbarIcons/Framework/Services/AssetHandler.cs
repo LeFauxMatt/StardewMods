@@ -16,8 +16,8 @@ internal sealed class AssetHandler
     public const string ToolbarPath = "furyx639.ToolbarIcons/Toolbar";
 
     /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
-    /// <param name="events">Dependency used for managing access to events.</param>
-    public AssetHandler(IModEvents events) => events.Content.AssetRequested += AssetHandler.OnAssetRequested;
+    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    public AssetHandler(IModEvents modEvents) => modEvents.Content.AssetRequested += AssetHandler.OnAssetRequested;
 
     private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {

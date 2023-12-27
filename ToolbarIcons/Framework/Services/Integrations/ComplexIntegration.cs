@@ -1,4 +1,4 @@
-﻿namespace StardewMods.ToolbarIcons.Framework.Integrations;
+﻿namespace StardewMods.ToolbarIcons.Framework.Services.Integrations;
 
 using StardewMods.ToolbarIcons.Framework.Services;
 
@@ -6,13 +6,18 @@ using StardewMods.ToolbarIcons.Framework.Services;
 internal sealed class ComplexIntegration : BaseIntegration
 {
     /// <summary>Initializes a new instance of the <see cref="ComplexIntegration" /> class.</summary>
-    /// <param name="customEvents">Dependency used for custom events.</param>
-    /// <param name="gameContent">Dependency used for loading game assets.</param>
+    /// <param name="eventsManager">Dependency used for custom events.</param>
+    /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="modRegistry">Dependency for fetching metadata about loaded mods.</param>
-    /// <param name="reflection">Dependency used for accessing inaccessible code.</param>
-    /// <param name="toolbar">Dependency for managing the toolbar icons.</param>
-    public ComplexIntegration(EventsManager customEvents, IGameContentHelper gameContent, IModRegistry modRegistry, IReflectionHelper reflection, ToolbarHandler toolbar)
-        : base(customEvents, gameContent, modRegistry, reflection, toolbar)
+    /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
+    /// <param name="toolbarHandler">Dependency for managing the toolbar icons.</param>
+    public ComplexIntegration(
+        EventsManager eventsManager,
+        IGameContentHelper gameContentHelper,
+        IModRegistry modRegistry,
+        IReflectionHelper reflectionHelper,
+        ToolbarHandler toolbarHandler)
+        : base(eventsManager, gameContentHelper, modRegistry, reflectionHelper, toolbarHandler)
     {
         // Nothing
     }
@@ -58,14 +63,19 @@ internal sealed class ComplexIntegration : BaseIntegration
     /// <param name="method">The method to run.</param>
     /// <param name="arguments">The arguments to pass to the method.</param>
     /// <returns>Returns true if the icon was added.</returns>
-    public bool AddMethodWithParams(string modId, int index, string hoverText, string method, params object?[] arguments)
+    public bool AddMethodWithParams(
+        string modId,
+        int index,
+        string hoverText,
+        string method,
+        params object?[] arguments)
     {
         if (!this.TryGetMod(modId, out var mod))
         {
             return false;
         }
 
-        var action = this.Reflection.GetMethod(mod, method, false);
+        var action = this.ReflectionHelper.GetMethod(mod, method, false);
         if (action is null)
         {
             return false;
