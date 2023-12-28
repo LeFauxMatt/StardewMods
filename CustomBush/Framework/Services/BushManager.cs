@@ -19,6 +19,7 @@ internal sealed class BushManager
 {
     private const string ModDataId = "furyx639.CustomBush/Id";
     private const string ModDataItem = "furyx639.CustomBush/ShakeOff";
+    private const string ModDataQuality = "furyx639.CustomBush/Quality";
 
 #nullable disable
     private static BushManager instance;
@@ -33,7 +34,7 @@ internal sealed class BushManager
     /// <param name="assets">Dependency used for managing assets.</param>
     /// <param name="gameContent">Dependency used for loading game assets.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="logging">Dependency used for logging debug information to the console.</param>
     public BushManager(AssetHandler assets, IGameContentHelper gameContent, Harmony harmony, Logging logging)
     {
         BushManager.instance = this;
@@ -213,16 +214,17 @@ internal sealed class BushManager
 
         // Try to produce item
         BushManager.instance.logging.Trace("{0} attempting to produce random item.", id);
-        if (!BushManager.instance.TryToProduceRandomItem(__instance, bushModel, out itemId))
+        if (!BushManager.instance.TryToProduceRandomItem(__instance, bushModel, out var item))
         {
             BushManager.instance.logging.Trace("{0} will not produce. No item was produced.", id);
             __result = false;
             return;
         }
 
-        BushManager.instance.logging.Trace("{0} selected {1} to grow.", id, itemId);
+        BushManager.instance.logging.Trace("{0} selected {1} to grow.", id, item.QualifiedItemId);
         __result = true;
-        __instance.modData[BushManager.ModDataItem] = itemId;
+        __instance.modData[BushManager.ModDataItem] = item.QualifiedItemId;
+        __instance.modData[BushManager.ModDataQuality] = item.Quality.ToString(CultureInfo.InvariantCulture);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -246,10 +248,22 @@ internal sealed class BushManager
     {
         foreach (var instruction in instructions)
         {
-            if (instruction.LoadsConstant("(O)815"))
+            if (instruction.Calls(
+                AccessTools.DeclaredMethod(
+                    typeof(Game1),
+                    nameof(Game1.createObjectDebris),
+                    [
+                        typeof(string),
+                        typeof(int),
+                        typeof(int),
+                        typeof(int),
+                        typeof(int),
+                        typeof(float),
+                        typeof(GameLocation)
+                    ])))
             {
                 yield return new CodeInstruction(OpCodes.Ldarg_0);
-                yield return CodeInstruction.Call(typeof(BushManager), nameof(BushManager.GetItemProduced));
+                yield return CodeInstruction.Call(typeof(BushManager), nameof(BushManager.CreateObjectDebris));
             }
             else
             {
@@ -283,22 +297,27 @@ internal sealed class BushManager
     }
 
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
-    private static string GetItemProduced(Bush bush)
+    private static void CreateObjectDebris(string id, int xTile, int yTile, int groundLevel, int itemQuality, float velocityMultiplier, GameLocation? location, Bush bush)
     {
-        if (bush.modData.TryGetValue(BushManager.ModDataItem, out var itemId) && !string.IsNullOrWhiteSpace(itemId))
+        if (bush.modData.TryGetValue(BushManager.ModDataItem, out var itemId)
+            && !string.IsNullOrWhiteSpace(itemId)
+            && bush.modData.TryGetValue(BushManager.ModDataQuality, out var quality)
+            && int.TryParse(quality, out itemQuality))
         {
             bush.modData.Remove(BushManager.ModDataItem);
-            return itemId;
+            Game1.createObjectDebris(itemId, xTile, yTile, groundLevel, itemQuality, velocityMultiplier, location);
+            return;
         }
 
-        if (!bush.modData.TryGetValue(BushManager.ModDataId, out var id)
-            || !BushManager.instance.assets.Data.TryGetValue(id, out var bushModel)
-            || !BushManager.instance.TryToProduceRandomItem(bush, bushModel, out itemId))
+        if (!bush.modData.TryGetValue(BushManager.ModDataId, out var bushId)
+            || !BushManager.instance.assets.Data.TryGetValue(bushId, out var bushModel)
+            || !BushManager.instance.TryToProduceRandomItem(bush, bushModel, out var item))
         {
-            return "(O)815";
+            Game1.createObjectDebris(id, xTile, yTile, groundLevel, itemQuality, velocityMultiplier, location);
+            return;
         }
 
-        return itemId;
+        Game1.createObjectDebris(item.QualifiedItemId, xTile, yTile, groundLevel, item.Quality, velocityMultiplier, location);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -383,21 +402,20 @@ internal sealed class BushManager
         }
     }
 
-    private bool TryToProduceRandomItem(Bush bush, BushModel bushModel, [NotNullWhen(true)] out string? itemId)
+    private bool TryToProduceRandomItem(Bush bush, BushModel bushModel, [NotNullWhen(true)] out Item? item)
     {
         foreach (var drop in bushModel.ItemsProduced)
         {
-            var item = this.TryToProduceItem(bush, drop);
+            item = this.TryToProduceItem(bush, drop);
             if (item is null)
             {
                 continue;
             }
 
-            itemId = item.QualifiedItemId;
             return true;
         }
 
-        itemId = null;
+        item = null;
         return false;
     }
 
