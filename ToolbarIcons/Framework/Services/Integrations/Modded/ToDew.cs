@@ -5,25 +5,23 @@ using StardewMods.ToolbarIcons.Framework.Interfaces;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-internal sealed class ToDew : ICustomIntegration
+internal sealed class ToDew : IActionIntegration
 {
-    private const string ModId = "jltaylor-us.ToDew";
-    private const string ModType = "ToDew.ToDoMenu";
+    /// <inheritdoc/>
+    public string ModId => "jltaylor-us.ToDew";
 
-    private readonly ComplexIntegration complex;
+    /// <inheritdoc/>
+    public int Index => 7;
 
-    /// <summary>Initializes a new instance of the <see cref="ToDew" /> class.</summary>
-    /// <param name="complex">Dependency for adding a complex mod integration.</param>
-    public ToDew(ComplexIntegration complex) => this.complex = complex;
+    /// <inheritdoc/>
+    public string HoverText => I18n.Button_ToDew();
 
     /// <inheritdoc />
-    public void AddIntegration() => this.complex.AddCustomAction(ToDew.ModId, 7, I18n.Button_ToDew(), ToDew.GetAction);
-
-    private static Action? GetAction(IMod mod)
+    public Action? GetAction(IMod mod)
     {
         var modType = mod.GetType();
         var perScreenList = modType.GetField("list", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(mod);
-        var toDoMenu = modType.Assembly.GetType(ToDew.ModType);
+        var toDoMenu = modType.Assembly.GetType("ToDew.ToDoMenu");
         if (perScreenList is null || toDoMenu is null)
         {
             return null;
@@ -37,13 +35,13 @@ internal sealed class ToDew : ICustomIntegration
                 return;
             }
 
-            var action = toDoMenu.GetConstructor(new[] { modType, value.GetType() });
+            var action = toDoMenu.GetConstructor([modType, value.GetType()]);
             if (action is null)
             {
                 return;
             }
 
-            var menu = action.Invoke(new[] { mod, value });
+            var menu = action.Invoke([mod, value]);
             Game1.activeClickableMenu = (IClickableMenu)menu;
         };
     }

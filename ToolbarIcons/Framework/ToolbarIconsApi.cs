@@ -8,22 +8,22 @@ using StardewMods.ToolbarIcons.Framework.Services;
 public sealed class ToolbarIconsApi : IToolbarIconsApi
 {
     private readonly string prefix;
-    private readonly ToolbarHandler toolbar;
+    private readonly ToolbarManager toolbar;
 
     private EventHandler<string>? toolbarIconPressed;
 
     /// <summary>Initializes a new instance of the <see cref="ToolbarIconsApi" /> class.</summary>
     /// <param name="mod">Mod info from the calling mod.</param>
-    /// <param name="customEvents">Dependency used for custom events.</param>
+    /// <param name="eventsManager">Dependency used for custom events.</param>
     /// <param name="toolbar">Dependency for managing the toolbar icons.</param>
-    internal ToolbarIconsApi(IModInfo mod, EventsManager customEvents, ToolbarHandler toolbar)
+    internal ToolbarIconsApi(IModInfo mod, EventsManager eventsManager, ToolbarManager toolbar)
     {
         // Init
-        this.prefix = $"{mod.Manifest.UniqueID}/";
+        this.prefix = mod.Manifest.UniqueID + "/";
         this.toolbar = toolbar;
 
         // Events
-        customEvents.ToolbarIconPressed += this.OnToolbarIconPressed;
+        eventsManager.ToolbarIconPressed += this.OnToolbarIconPressed;
     }
 
     /// <summary>Raised after a toolbar icon is pressed.</summary>

@@ -3,25 +3,20 @@ namespace StardewMods.ToolbarIcons.Framework.Services.Integrations.Modded;
 using StardewMods.ToolbarIcons.Framework.Interfaces;
 
 /// <inheritdoc />
-internal sealed class DynamicGameAssets : ICustomIntegration
+internal sealed class DynamicGameAssets : IMethodIntegration
 {
-    private const string Argument = "dga_store";
-    private const string Method = "OnStoreCommand";
-    private const string ModId = "spacechase0.DynamicGameAssets";
+    /// <inheritdoc/>
+    public string ModId => "spacechase0.DynamicGameAssets";
 
-    private readonly ComplexIntegration complexIntegration;
+    /// <inheritdoc/>
+    public int Index => 3;
 
-    /// <summary>Initializes a new instance of the <see cref="DynamicGameAssets" /> class.</summary>
-    /// <param name="complexIntegration">Dependency for adding a complex mod integration.</param>
-    public DynamicGameAssets(ComplexIntegration complexIntegration) => this.complexIntegration = complexIntegration;
+    /// <inheritdoc/>
+    public string HoverText => I18n.Button_DynamicGameAssets();
 
-    /// <inheritdoc />
-    public void AddIntegration() =>
-        this.complexIntegration.AddMethodWithParams(
-            DynamicGameAssets.ModId,
-            3,
-            I18n.Button_DynamicGameAssets(),
-            DynamicGameAssets.Method,
-            DynamicGameAssets.Argument,
-            Array.Empty<string>());
+    /// <inheritdoc/>
+    public string MethodName => "OnStoreCommand";
+
+    /// <inheritdoc/>
+    public object?[] Arguments => ["dga_store", Array.Empty<string>()];
 }

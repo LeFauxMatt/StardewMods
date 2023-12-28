@@ -5,8 +5,10 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Buffs;
 
 /// <summary>Responsible for adding or removing custom buffs.</summary>
-internal sealed class StatusEffectManager : BaseService<StatusEffectManager>
+internal sealed class StatusEffectManager : BaseService
 {
+    private const string Prefix = BaseService.ModId + "/";
+
     /// <summary>Initializes a new instance of the <see cref="StatusEffectManager" /> class.</summary>
     /// <param name="log">Dependency used for monitoring and logging.</param>
     public StatusEffectManager(ILog log)
@@ -52,14 +54,14 @@ internal sealed class StatusEffectManager : BaseService<StatusEffectManager>
     private string GetId(StatusEffect statusEffect) =>
         statusEffect switch
         {
-            StatusEffect.Overburdened => this.Prefix + StatusEffect.Overburdened.ToStringFast(), _ => string.Empty,
+            StatusEffect.Overburdened => StatusEffectManager.Prefix + StatusEffect.Overburdened.ToStringFast(), _ => string.Empty,
         };
 
     private Buff? GetEffect(StatusEffect statusEffect) =>
         statusEffect switch
         {
             StatusEffect.Overburdened => new Buff(
-                this.Prefix + StatusEffect.Overburdened.ToStringFast(),
+                StatusEffectManager.Prefix + StatusEffect.Overburdened.ToStringFast(),
                 displayName: I18n.Effect_CarryChestSlow_Description(),
                 duration: 60_000,
                 iconTexture: Game1.buffsIcons,

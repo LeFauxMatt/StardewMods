@@ -2,6 +2,7 @@
 
 using SimpleInjector;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.ToolbarIcons.Framework;
 using StardewMods.ToolbarIcons.Framework.Interfaces;
@@ -32,7 +33,7 @@ public sealed class ModEntry : Mod
     public override object GetApi(IModInfo mod)
     {
         var customEvents = this.container.GetInstance<EventsManager>();
-        var toolbar = this.container.GetInstance<ToolbarHandler>();
+        var toolbar = this.container.GetInstance<ToolbarManager>();
         return new ToolbarIconsApi(mod, customEvents, toolbar);
     }
 
@@ -55,25 +56,38 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.Translation);
         this.container.RegisterInstance(this.Helper.ReadConfig<ModConfig>());
         this.container.RegisterInstance(new Dictionary<string, ClickableTextureComponent>());
+        this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
-        this.container.RegisterSingleton<SimpleIntegration>();
-        this.container.RegisterSingleton<ComplexIntegration>();
         this.container.RegisterSingleton<AssetHandler>();
-        this.container.RegisterSingleton<EventsManager>();
-        this.container.RegisterSingleton<IntegrationsManager>();
         this.container.RegisterSingleton<ConfigMenuManager>();
-        this.container.RegisterSingleton<ThemeHelper>();
-        this.container.RegisterSingleton<ToolbarHandler>();
+        this.container.RegisterSingleton<EventsManager>();
+        this.container.RegisterSingleton<IntegrationManager>();
+        this.container.RegisterSingleton<ToolbarManager>();
         this.container.Collection.Register<ICustomIntegration>(
             typeof(AlwaysScrollMap),
             typeof(CjbCheatsMenu),
             typeof(CjbItemSpawner),
-            typeof(DynamicGameAssets),
-            typeof(GenericCustomConfigMenu),
-            typeof(StardewAquarium),
-            typeof(ToDew),
             typeof(DailyQuests),
-            typeof(SpecialOrders));
+            typeof(DynamicGameAssets),
+            typeof(GenericModConfigMenu),
+            typeof(SpecialOrders),
+            typeof(StardewAquarium),
+            typeof(ToDew));
+
+        this.container.RegisterSingleton(
+            () =>
+            {
+                var furyCore = this.container.GetInstance<FuryCoreIntegration>();
+                var monitor = this.container.GetInstance<IMonitor>();
+                return furyCore.Api!.CreateLogService(monitor);
+            });
+
+        this.container.RegisterSingleton(
+            () =>
+            {
+                var furyCore = this.container.GetInstance<FuryCoreIntegration>();
+                return furyCore.Api!.CreateThemingService();
+            });
 
         this.container.Verify();
     }

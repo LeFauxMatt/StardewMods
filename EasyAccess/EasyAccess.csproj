@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Easy Access</Name>
     <Description>Provides easier access to producers in the game.</Description>
-    <Version>2.1.0-alpha.20231211</Version>
+    <Version>2.1.0-alpha.20231228</Version>
     <RootNamespace>StardewMods.EasyAccess</RootNamespace>
     <UniqueId>furyx639.EasyAccess</UniqueId>
     <UpdateKeys>Nexus:11002</UpdateKeys>

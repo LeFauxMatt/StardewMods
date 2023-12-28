@@ -5,59 +5,60 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.ToolbarIcons.Framework.Models;
 using StardewValley.Menus;
 
 // TODO: Center Toolbar Icons
 
 /// <summary>Service for handling the toolbar icons on the screen.</summary>
-internal sealed class ToolbarHandler
+internal sealed class ToolbarManager
 {
     private readonly Dictionary<string, ClickableTextureComponent> components;
-    private readonly ModConfig config;
+    private readonly ModConfig modConfig;
     private readonly PerScreen<string> currentHoverText = new();
-    private readonly EventsManager customEvents;
-    private readonly IModEvents events;
-    private readonly IGameContentHelper gameContent;
-    private readonly IInputHelper input;
+    private readonly EventsManager eventsManager;
+    private readonly IModEvents modEvents;
+    private readonly IGameContentHelper gameContentHelper;
+    private readonly IInputHelper inputHelper;
     private readonly PerScreen<ComponentArea> lastArea = new(() => ComponentArea.Custom);
     private readonly PerScreen<ClickableComponent> lastButton = new();
     private readonly PerScreen<Toolbar> lastToolbar = new();
-    private readonly IMonitor monitor;
-    private readonly IReflectionHelper reflection;
+    private readonly ILog log;
+    private readonly IReflectionHelper reflectionHelper;
 
-    /// <summary>Initializes a new instance of the <see cref="ToolbarHandler" /> class.</summary>
-    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <summary>Initializes a new instance of the <see cref="ToolbarManager" /> class.</summary>
+    /// <param name="log">Dependency used for monitoring and logging.</param>
     /// <param name="components">Dependency used for the toolbar icon components.</param>
-    /// <param name="config">Dependency used for accessing config data.</param>
-    /// <param name="customEvents">Dependency used for custom events.</param>
-    /// <param name="events">Dependency used for managing access to events.</param>
-    /// <param name="gameContent">Dependency used for loading game assets.</param>
-    /// <param name="input">Dependency used for checking and changing input state.</param>
-    /// <param name="reflection">Dependency used for accessing inaccessible code.</param>
-    public ToolbarHandler(
-        IMonitor monitor,
+    /// <param name="eventsManager">Dependency used for custom events.</param>
+    /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
+    /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
+    public ToolbarManager(
+        ILog log,
         Dictionary<string, ClickableTextureComponent> components,
-        ModConfig config,
-        EventsManager customEvents,
-        IModEvents events,
-        IGameContentHelper gameContent,
-        IInputHelper input,
-        IReflectionHelper reflection)
+        EventsManager eventsManager,
+        IGameContentHelper gameContentHelper,
+        IInputHelper inputHelper,
+        ModConfig modConfig,
+        IModEvents modEvents,
+        IReflectionHelper reflectionHelper)
     {
         // Init
-        this.monitor = monitor;
+        this.log = log;
         this.components = components;
-        this.config = config;
-        this.customEvents = customEvents;
-        this.events = events;
-        this.gameContent = gameContent;
-        this.input = input;
-        this.reflection = reflection;
+        this.modConfig = modConfig;
+        this.eventsManager = eventsManager;
+        this.modEvents = modEvents;
+        this.gameContentHelper = gameContentHelper;
+        this.inputHelper = inputHelper;
+        this.reflectionHelper = reflectionHelper;
 
         // Events
-        customEvents.ToolbarIconsLoaded += this.OnToolbarIconsLoaded;
-        customEvents.ToolbarIconsChanged += this.OnToolbarIconsChanged;
+        eventsManager.ToolbarIconsLoaded += this.OnToolbarIconsLoaded;
+        eventsManager.ToolbarIconsChanged += this.OnToolbarIconsChanged;
     }
 
     private static bool ShowToolbar => Game1.displayHUD && Context.IsPlayerFree && Game1.activeClickableMenu is null && Game1.onScreenMenus.OfType<Toolbar>().Any();
@@ -69,11 +70,11 @@ internal sealed class ToolbarHandler
     /// <param name="hoverText">Text to appear when hovering over the icon.</param>
     public void AddToolbarIcon(string id, string texturePath, Rectangle? sourceRect, string? hoverText)
     {
-        var icon = this.config.Icons.FirstOrDefault(icon => icon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        var icon = this.modConfig.Icons.FirstOrDefault(icon => icon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         if (icon is null)
         {
             icon = new ToolbarIcon(id);
-            this.config.Icons.Add(icon);
+            this.modConfig.Icons.Add(icon);
         }
 
         if (this.components.ContainsKey(id))
@@ -81,10 +82,10 @@ internal sealed class ToolbarHandler
             return;
         }
 
-        this.monitor.Log($"Adding icon: {id}");
+        this.log.Trace("Adding icon: {0}", id);
         this.components.Add(
             id,
-            new ClickableTextureComponent(new Rectangle(0, 0, 32, 32), this.gameContent.Load<Texture2D>(texturePath), sourceRect ?? new Rectangle(0, 0, 16, 16), 2f)
+            new ClickableTextureComponent(new Rectangle(0, 0, 32, 32), this.gameContentHelper.Load<Texture2D>(texturePath), sourceRect ?? new Rectangle(0, 0, 16, 16), 2f)
             {
                 hoverText = hoverText,
                 name = id,
@@ -96,15 +97,14 @@ internal sealed class ToolbarHandler
     /// <param name="id">A unique identifier for the icon.</param>
     public void RemoveToolbarIcon(string id)
     {
-        var toolbarIcon = this.config.Icons.FirstOrDefault(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
-
+        var toolbarIcon = this.modConfig.Icons.FirstOrDefault(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         if (toolbarIcon is null)
         {
             return;
         }
 
-        this.monitor.Log($"Removing icon: {id}");
-        this.config.Icons.Remove(toolbarIcon);
+        this.log.Trace("Removing icon: {0}", id);
+        this.modConfig.Icons.Remove(toolbarIcon);
         this.components.Remove(id);
     }
 
@@ -124,14 +124,14 @@ internal sealed class ToolbarHandler
         }
 
         this.lastToolbar.Value = activeToolbar;
-        var buttons = this.reflection.GetField<List<ClickableComponent>>(activeToolbar, "buttons").GetValue();
+        var buttons = this.reflectionHelper.GetField<List<ClickableComponent>>(activeToolbar, "buttons").GetValue();
         button = this.lastButton.Value = buttons.First();
         return true;
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!ToolbarHandler.ShowToolbar || this.input.IsSuppressed(e.Button))
+        if (!ToolbarManager.ShowToolbar || this.inputHelper.IsSuppressed(e.Button))
         {
             return;
         }
@@ -150,13 +150,13 @@ internal sealed class ToolbarHandler
         }
 
         Game1.playSound("drumkit6");
-        this.customEvents.InvokeToolbarIconPressed(component.name);
-        this.input.Suppress(e.Button);
+        this.eventsManager.InvokeToolbarIconPressed(component.name);
+        this.inputHelper.Suppress(e.Button);
     }
 
     private void OnCursorMoved(object? sender, CursorMovedEventArgs e)
     {
-        if (!ToolbarHandler.ShowToolbar)
+        if (!ToolbarManager.ShowToolbar)
         {
             return;
         }
@@ -175,7 +175,7 @@ internal sealed class ToolbarHandler
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
-        if (!ToolbarHandler.ShowToolbar)
+        if (!ToolbarManager.ShowToolbar)
         {
             return;
         }
@@ -188,7 +188,7 @@ internal sealed class ToolbarHandler
 
     private void OnRenderingHud(object? sender, RenderingHudEventArgs e)
     {
-        if (!ToolbarHandler.ShowToolbar)
+        if (!ToolbarManager.ShowToolbar)
         {
             return;
         }
@@ -198,7 +198,7 @@ internal sealed class ToolbarHandler
         foreach (var component in this.components.Values.Where(component => component.visible))
         {
             e.SpriteBatch.Draw(
-                this.gameContent.Load<Texture2D>(AssetHandler.IconPath),
+                this.gameContentHelper.Load<Texture2D>(AssetHandler.IconPath),
                 new Vector2(component.bounds.X, component.bounds.Y),
                 new Rectangle(0, 0, 16, 16),
                 Color.White,
@@ -214,7 +214,7 @@ internal sealed class ToolbarHandler
 
     private void OnToolbarIconsChanged(object? sender, EventArgs e)
     {
-        foreach (var icon in this.config.Icons)
+        foreach (var icon in this.modConfig.Icons)
         {
             if (this.components.TryGetValue(icon.Id, out var component))
             {
@@ -231,10 +231,10 @@ internal sealed class ToolbarHandler
         this.ReorientComponents();
 
         // Events
-        this.events.Input.ButtonPressed += this.OnButtonPressed;
-        this.events.Input.CursorMoved += this.OnCursorMoved;
-        this.events.Display.RenderedHud += this.OnRenderedHud;
-        this.events.Display.RenderingHud += this.OnRenderingHud;
+        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
+        this.modEvents.Input.CursorMoved += this.OnCursorMoved;
+        this.modEvents.Display.RenderedHud += this.OnRenderedHud;
+        this.modEvents.Display.RenderingHud += this.OnRenderingHud;
     }
 
     private void ReorientComponents()
@@ -288,7 +288,7 @@ internal sealed class ToolbarHandler
     private void ReorientComponents(ComponentArea area, int x, int y)
     {
         this.lastArea.Value = area;
-        foreach (var icon in this.config.Icons)
+        foreach (var icon in this.modConfig.Icons)
         {
             if (this.components.TryGetValue(icon.Id, out var component))
             {

@@ -3,31 +3,26 @@ namespace StardewMods.ToolbarIcons.Framework.Services.Integrations.Modded;
 using StardewMods.ToolbarIcons.Framework.Interfaces;
 
 /// <inheritdoc />
-internal sealed class AlwaysScrollMap : ICustomIntegration
+internal sealed class AlwaysScrollMap : IActionIntegration
 {
-    private const string ModId = "bcmpinc.AlwaysScrollMap";
-
-    private readonly ComplexIntegration complexIntegration;
     private readonly IReflectionHelper reflectionHelper;
 
     /// <summary>Initializes a new instance of the <see cref="AlwaysScrollMap" /> class.</summary>
-    /// <param name="complexIntegration">Dependency for adding a complex mod integration.</param>
     /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
-    public AlwaysScrollMap(ComplexIntegration complexIntegration, IReflectionHelper reflectionHelper)
-    {
-        this.complexIntegration = complexIntegration;
+    public AlwaysScrollMap(IReflectionHelper reflectionHelper) =>
         this.reflectionHelper = reflectionHelper;
-    }
 
-    /// <inheritdoc />
-    public void AddIntegration() =>
-        this.complexIntegration.AddCustomAction(
-            AlwaysScrollMap.ModId,
-            6,
-            I18n.Button_AlwaysScrollMap(),
-            this.GetAction);
+    /// <inheritdoc/>
+    public string ModId => "bcmpinc.AlwaysScrollMap";
 
-    private Action? GetAction(IMod mod)
+    /// <inheritdoc/>
+    public int Index => 6;
+
+    /// <inheritdoc/>
+    public string HoverText => I18n.Button_AlwaysScrollMap();
+
+    /// <inheritdoc/>
+    public Action? GetAction(IMod mod)
     {
         var config = mod.GetType().GetField("config")?.GetValue(mod);
         if (config is null)

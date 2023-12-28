@@ -4,27 +4,26 @@ using StardewMods.ToolbarIcons.Framework.Interfaces;
 using StardewValley.Menus;
 
 /// <inheritdoc />
-internal sealed class CjbItemSpawner : ICustomIntegration
+internal sealed class CjbItemSpawner : IActionIntegration
 {
-    private const string ModId = "CJBok.ItemSpawner";
-
-    private readonly ComplexIntegration complexIntegration;
     private readonly IReflectionHelper reflectionHelper;
 
     /// <summary>Initializes a new instance of the <see cref="CjbItemSpawner" /> class.</summary>
-    /// <param name="complexIntegration">Dependency for adding a complex mod integration.</param>
     /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
-    public CjbItemSpawner(ComplexIntegration complexIntegration, IReflectionHelper reflectionHelper)
-    {
-        this.complexIntegration = complexIntegration;
+    public CjbItemSpawner(IReflectionHelper reflectionHelper) =>
         this.reflectionHelper = reflectionHelper;
-    }
 
-    /// <inheritdoc />
-    public void AddIntegration() =>
-        this.complexIntegration.AddCustomAction(CjbItemSpawner.ModId, 5, I18n.Button_ItemSpawner(), this.GetAction);
+    /// <inheritdoc/>
+    public string ModId => "CJBok.ItemSpawner";
 
-    private Action? GetAction(IMod mod)
+    /// <inheritdoc/>
+    public int Index => 5;
+
+    /// <inheritdoc/>
+    public string HoverText => I18n.Button_ItemSpawner();
+
+    /// <inheritdoc/>
+    public Action? GetAction(IMod mod)
     {
         var buildMenu = this.reflectionHelper.GetMethod(mod, "BuildMenu", false);
         return () => { Game1.activeClickableMenu = buildMenu.Invoke<ItemGrabMenu>(); };

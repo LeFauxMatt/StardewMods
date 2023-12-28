@@ -5,7 +5,7 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IFeature" />
 internal abstract class BaseFeature<TFeature> : BaseService<TFeature>, IFeature
-    where TFeature : class
+    where TFeature : class, IFeature
 {
     private bool isActivated;
 
@@ -16,11 +16,11 @@ internal abstract class BaseFeature<TFeature> : BaseService<TFeature>, IFeature
         : base(log) =>
         this.Config = modConfig;
 
-    /// <summary>Gets the dependency used for accessing config data.</summary>
-    protected IModConfig Config { get; }
-
     /// <inheritdoc />
     public abstract bool ShouldBeActive { get; }
+
+    /// <summary>Gets the dependency used for accessing config data.</summary>
+    protected IModConfig Config { get; }
 
     /// <inheritdoc />
     public void SetActivated(bool warn = false)

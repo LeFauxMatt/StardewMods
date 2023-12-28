@@ -28,10 +28,9 @@ public sealed class ModEntry : Mod
         // Patches
         var harmony = new Harmony(this.ModManifest.UniqueID);
         harmony.Patch(
-            AccessTools.DeclaredMethod(
-                typeof(GameLocation),
-                nameof(GameLocation.damageMonster),
-                new[] { typeof(Rectangle), typeof(int), typeof(int), typeof(bool), typeof(float), typeof(int), typeof(float), typeof(float), typeof(bool), typeof(Farmer), typeof(bool) }),
+            AccessTools
+                .GetDeclaredMethods(typeof(GameLocation))
+                .Single(method => method.Name == "damageMonster" && method.GetParameters().Length >= 10),
             postfix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.GameLocation_damageMonster_postfix)));
     }
 

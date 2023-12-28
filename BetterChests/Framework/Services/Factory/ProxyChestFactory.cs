@@ -9,8 +9,9 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
 
 /// <summary>Manages the global inventories and chest/item creation and retrieval operations.</summary>
-internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
+internal sealed class ProxyChestFactory : BaseService
 {
+    private const string Prefix = BaseService.ModId + "/ProxyChest/";
     private const string AlphaNumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private const string ColorKey = "PlayerChoiceColor";
     private const string GlobalInventoryIdKey = "GlobalInventoryId";
@@ -72,24 +73,24 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
     {
         if (chest.GlobalInventoryId != null
             && (!Game1.player.team.globalInventories.ContainsKey(chest.GlobalInventoryId)
-                || !chest.GlobalInventoryId.StartsWith(this.Prefix, StringComparison.OrdinalIgnoreCase)))
+                || !chest.GlobalInventoryId.StartsWith(ProxyChestFactory.Prefix, StringComparison.OrdinalIgnoreCase)))
         {
             request = null;
             return false;
         }
 
-        var id = chest.GlobalInventoryId ?? this.GenerateGlobalInventoryId();
+        var id = chest.GlobalInventoryId ?? GenerateGlobalInventoryId();
         var globalInventory = Game1.player.team.GetOrCreateGlobalInventory(id);
         var item = ItemRegistry.Create(chest.QualifiedItemId);
 
         item.Name = chest.Name;
-        item.modData[this.Prefix + ProxyChestFactory.GlobalInventoryIdKey] = id;
+        item.modData[ProxyChestFactory.Prefix + ProxyChestFactory.GlobalInventoryIdKey] = id;
 
         if (chest.playerChoiceColor.Value != Color.Black)
         {
             var c = chest.playerChoiceColor.Value;
             var color = (c.R << 0) | (c.G << 8) | (c.B << 16);
-            item.modData[this.Prefix + ProxyChestFactory.ColorKey] = color.ToString(CultureInfo.InvariantCulture);
+            item.modData[ProxyChestFactory.Prefix + ProxyChestFactory.ColorKey] = color.ToString(CultureInfo.InvariantCulture);
         }
 
         foreach (var (key, value) in chest.modData.Pairs)
@@ -123,7 +124,7 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
     /// <returns>True if the item is a proxy; otherwise, false.</returns>
     public bool IsProxy(ISalable salable) =>
         salable is Item item
-        && item.modData.TryGetValue(this.Prefix + ProxyChestFactory.GlobalInventoryIdKey, out var id)
+        && item.modData.TryGetValue(ProxyChestFactory.Prefix + ProxyChestFactory.GlobalInventoryIdKey, out var id)
         && Game1.player.team.globalInventories.ContainsKey(id)
         && this.proxyChests.ContainsKey(id);
 
@@ -133,7 +134,7 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
     /// <returns>True if the proxy chest exists; otherwise, false.</returns>
     public bool TryGetProxy(Item item, [NotNullWhen(true)] out Chest? chest)
     {
-        if (!item.modData.TryGetValue(this.Prefix + ProxyChestFactory.GlobalInventoryIdKey, out var id)
+        if (!item.modData.TryGetValue(ProxyChestFactory.Prefix + ProxyChestFactory.GlobalInventoryIdKey, out var id)
             || !Game1.player.team.globalInventories.ContainsKey(id))
         {
             chest = null;
@@ -146,7 +147,7 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
         }
 
         var color = Color.Black;
-        if (item.modData.TryGetValue(this.Prefix + ProxyChestFactory.ColorKey, out var colorString)
+        if (item.modData.TryGetValue(ProxyChestFactory.Prefix + ProxyChestFactory.ColorKey, out var colorString)
             && int.TryParse(colorString, out var colorValue))
         {
             var r = (byte)(colorValue & 0xFF);
@@ -178,7 +179,7 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
     {
         if (chest.GlobalInventoryId == null
             || !Game1.player.team.globalInventories.ContainsKey(chest.GlobalInventoryId)
-            || !chest.GlobalInventoryId.StartsWith(this.Prefix, StringComparison.OrdinalIgnoreCase))
+            || !chest.GlobalInventoryId.StartsWith(ProxyChestFactory.Prefix, StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
@@ -190,8 +191,8 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
         chest.Items.OverwriteWith(globalInventory);
 
         // Clear Global Inventory
-        chest.modData.Remove(this.Prefix + ProxyChestFactory.GlobalInventoryIdKey);
-        chest.modData.Remove(this.Prefix + ProxyChestFactory.ColorKey);
+        chest.modData.Remove(ProxyChestFactory.Prefix + ProxyChestFactory.GlobalInventoryIdKey);
+        chest.modData.Remove(ProxyChestFactory.Prefix + ProxyChestFactory.ColorKey);
         Game1.player.team.globalInventories.Remove(id);
         Game1.player.team.globalInventoryMutexes.Remove(id);
         this.proxyChests.Remove(id);
@@ -300,13 +301,13 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
         return new string(stringChars);
     }
 
-    private string GenerateGlobalInventoryId()
+    private static string GenerateGlobalInventoryId()
     {
-        var globalInventoryId = this.Prefix + ProxyChestFactory.RandomString();
+        var globalInventoryId = ProxyChestFactory.Prefix + ProxyChestFactory.RandomString();
         while (Game1.player.team.globalInventories.ContainsKey(globalInventoryId)
             || Game1.player.team.globalInventoryMutexes.ContainsKey(globalInventoryId))
         {
-            globalInventoryId = this.Prefix + ProxyChestFactory.RandomString();
+            globalInventoryId = ProxyChestFactory.Prefix + ProxyChestFactory.RandomString();
         }
 
         return globalInventoryId;

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Helpful Spouses</Name>
     <Description>Helpful Spouses (and Roommates) will perform one or more customizable chores every morning. By default this all happens in a balanced/lore-friendly way.</Description>
-    <Version>2.0.0-alpha.20231211</Version>
+    <Version>2.0.0-alpha.20231228</Version>
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.HelpfulSpouses</RootNamespace>
     <UniqueId>furyx639.HelpfulSpouses</UniqueId>

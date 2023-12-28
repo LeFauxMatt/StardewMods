@@ -20,22 +20,22 @@ internal sealed class AssetHandler : BaseService
     /// <summary>The game path to tab data.</summary>
     public const string TabDataPath = BaseService.ModId + "/Tabs";
 
-    private readonly IDataHelper data;
+    private readonly IDataHelper dataHelper;
 
     /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="events">Dependency used for managing access to events.</param>
-    /// <param name="data">Dependency used for storing and retrieving data.</param>
+    /// <param name="dataHelper">Dependency used for storing and retrieving data.</param>
+    /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="theming">Dependency used for swapping palettes.</param>
-    public AssetHandler(ILog log, IModEvents events, IDataHelper data, ITheming theming)
+    public AssetHandler(ILog log, IDataHelper dataHelper, IModEvents modEvents, ITheming theming)
         : base(log)
     {
         // Init
-        this.data = data;
+        this.dataHelper = dataHelper;
         theming.AddAssets(AssetHandler.IconTexturePath, AssetHandler.TabTexturePath);
 
         // Events
-        events.Content.AssetRequested += this.OnAssetRequested;
+        modEvents.Content.AssetRequested += this.OnAssetRequested;
     }
 
     private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
@@ -55,6 +55,7 @@ internal sealed class AssetHandler : BaseService
         if (e.Name.IsEquivalentTo(AssetHandler.TabTexturePath))
         {
             e.LoadFromModFile<Texture2D>("assets/tabs.png", AssetLoadPriority.Exclusive);
+            return;
         }
 
         if (e.Name.IsEquivalentTo(AssetHandler.TabDataPath))
@@ -65,7 +66,7 @@ internal sealed class AssetHandler : BaseService
 
     private Dictionary<string, InventoryTabData> GetTabData()
     {
-        var tabData = this.data.ReadJsonFile<Dictionary<string, InventoryTabData>>("assets/tabs.json");
+        var tabData = this.dataHelper.ReadJsonFile<Dictionary<string, InventoryTabData>>("assets/tabs.json");
         if (tabData is not null && tabData.Any())
         {
             return tabData;
@@ -152,7 +153,7 @@ internal sealed class AssetHandler : BaseService
             },
         };
 
-        this.data.WriteJsonFile("assets/tabs.json", tabData);
+        this.dataHelper.WriteJsonFile("assets/tabs.json", tabData);
         return tabData;
     }
 }
