@@ -5,18 +5,18 @@ using StardewMods.ToolbarIcons.Framework.Interfaces;
 /// <inheritdoc />
 internal sealed class DynamicGameAssets : IMethodIntegration
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public string ModId => "spacechase0.DynamicGameAssets";
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int Index => 3;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public string HoverText => I18n.Button_DynamicGameAssets();
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public string MethodName => "OnStoreCommand";
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public object?[] Arguments => ["dga_store", Array.Empty<string>()];
 }

@@ -32,7 +32,9 @@ internal sealed class AssetHandler
     {
         if (e.Name.IsEquivalentTo(AssetHandler.DataPath))
         {
-            e.LoadFrom(() => new Dictionary<string, BushModel>(StringComparer.OrdinalIgnoreCase), AssetLoadPriority.Exclusive);
+            e.LoadFrom(
+                () => new Dictionary<string, BushModel>(StringComparer.OrdinalIgnoreCase),
+                AssetLoadPriority.Exclusive);
         }
     }
 

@@ -52,7 +52,7 @@ internal class ChildContainer : IContainer
     /// <inheritdoc />
     public ModDataDictionary ModData => this.child.ModData;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public NetMutex? Mutex => this.child.Mutex;
 
     /// <inheritdoc />

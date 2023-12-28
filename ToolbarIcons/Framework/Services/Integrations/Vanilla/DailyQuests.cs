@@ -6,12 +6,12 @@ using StardewValley.Menus;
 /// <inheritdoc />
 internal sealed class DailyQuests : IVanillaIntegration
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int Index => 9;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public string HoverText => I18n.Button_DailyQuests();
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void DoAction() => Game1.activeClickableMenu = new Billboard(true);
 }

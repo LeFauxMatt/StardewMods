@@ -52,7 +52,12 @@ internal sealed class GarbageCan
             return;
         }
 
-        this.Location.TryGetGarbageItem(whichCan, Game1.player.DailyLuck, out var item, out var selected, out var garbageRandom);
+        this.Location.TryGetGarbageItem(
+            whichCan,
+            Game1.player.DailyLuck,
+            out var item,
+            out var selected,
+            out var garbageRandom);
 
         this.random = garbageRandom;
         if (selected is null)

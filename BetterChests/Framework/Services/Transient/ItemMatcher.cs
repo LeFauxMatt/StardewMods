@@ -1,7 +1,6 @@
 ﻿namespace StardewMods.BetterChests.Framework.Services.Transient;
 
 using StardewMods.BetterChests.Framework.Interfaces;
-using StardewMods.BetterChests.Framework.Models;
 using StardewValley.Extensions;
 
 /// <summary>Matches item name/tags against a set of search phrases.</summary>
@@ -23,6 +22,9 @@ internal sealed class ItemMatcher : IItemFilter
         this.translation = translation;
     }
 
+    /// <summary>Gets a value indicating whether the search text is empty.</summary>
+    public bool IsEmpty => this.terms.Length == 0;
+
     /// <summary>Gets or sets a string representation of all registered search texts.</summary>
     public string SearchText
     {
@@ -43,9 +45,7 @@ internal sealed class ItemMatcher : IItemFilter
                 var newValue = notMatch ? searchTerm[1..] : searchTerm;
 
                 var tagMatch = this.OnlyTags || newValue[0] == this.modConfig.SearchTagSymbol;
-                newValue = tagMatch && searchTerm.StartsWith(this.modConfig.SearchTagSymbol)
-                    ? newValue[1..]
-                    : newValue;
+                newValue = tagMatch && searchTerm.StartsWith(this.modConfig.SearchTagSymbol) ? newValue[1..] : newValue;
 
                 if (string.IsNullOrWhiteSpace(newValue))
                 {
@@ -88,9 +88,6 @@ internal sealed class ItemMatcher : IItemFilter
 
     /// <summary>Gets or sets a value indicating whether all terms will be evaluated as context tags by default.</summary>
     public bool OnlyTags { get; set; } = true;
-
-    /// <summary>Gets a value indicating whether the search text is empty.</summary>
-    public bool IsEmpty => this.terms.Length == 0;
 
     /// <summary>Checks if an item matches the search phrases.</summary>
     /// <param name="item">The item to check.</param>

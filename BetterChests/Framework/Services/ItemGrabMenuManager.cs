@@ -7,7 +7,6 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Interfaces;
-using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Extensions;
@@ -81,6 +80,13 @@ internal sealed class ItemGrabMenuManager : BaseService
                 nameof(ItemGrabMenuManager.ItemGrabMenu_constructor_transpiler)));
     }
 
+    /// <summary>Event raised when the item grab menu has changed.</summary>
+    public event EventHandler<ItemGrabMenuChangedEventArgs> ItemGrabMenuChanged
+    {
+        add => this.itemGrabMenuChanged += value;
+        remove => this.itemGrabMenuChanged -= value;
+    }
+
     /// <summary>Gets the current item grab menu.</summary>
     public ItemGrabMenu? CurrentMenu =>
         Game1.activeClickableMenu?.Equals(this.currentMenu.Value) == true
@@ -92,13 +98,6 @@ internal sealed class ItemGrabMenuManager : BaseService
 
     /// <summary>Gets the inventory menu manager for the bottom inventory menu.</summary>
     public IInventoryMenuManager Bottom => this.bottomMenu.Value;
-
-    /// <summary>Event raised when the item grab menu has changed.</summary>
-    public event EventHandler<ItemGrabMenuChangedEventArgs> ItemGrabMenuChanged
-    {
-        add => this.itemGrabMenuChanged += value;
-        remove => this.itemGrabMenuChanged -= value;
-    }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "RedundantAssignment", Justification = "Harmony")]

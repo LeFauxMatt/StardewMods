@@ -14,12 +14,23 @@ internal sealed class ModPatches
     {
         var harmony = new Harmony(manifest.UniqueID);
         harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.draw), new[] { typeof(SpriteBatch), typeof(int), typeof(int), typeof(float) }),
+            AccessTools.DeclaredMethod(
+                typeof(Chest),
+                nameof(Chest.draw),
+                [typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)]),
             new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_draw_prefix)));
 
-        harmony.Patch(AccessTools.Method(typeof(Chest), nameof(Chest.performToolAction)), new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_performToolAction_prefix)));
-        harmony.Patch(AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)), new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_UpdateFarmerNearby_prefix)));
-        harmony.Patch(AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)), new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_updateWhenCurrentLocation_prefix)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.performToolAction)),
+            new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_performToolAction_prefix)));
+
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
+            new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_UpdateFarmerNearby_prefix)));
+
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
+            new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_updateWhenCurrentLocation_prefix)));
     }
 
     /// <summary>Initializes <see cref="ModPatches" />.</summary>
@@ -29,7 +40,13 @@ internal sealed class ModPatches
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_draw_prefix(Chest __instance, ref int ___currentLidFrame, SpriteBatch spriteBatch, int x, int y, float alpha)
+    private static bool Chest_draw_prefix(
+        Chest __instance,
+        ref int ___currentLidFrame,
+        SpriteBatch spriteBatch,
+        int x,
+        int y,
+        float alpha)
     {
         if (!__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan"))
         {
@@ -83,11 +100,17 @@ internal sealed class ModPatches
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_performToolAction_prefix(Chest __instance) => !__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan");
+    private static bool Chest_performToolAction_prefix(Chest __instance) =>
+        !__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan");
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_UpdateFarmerNearby_prefix(Chest __instance, ref bool ____farmerNearby, ref int ____shippingBinFrameCounter, ref int ___currentLidFrame, bool animate)
+    private static bool Chest_UpdateFarmerNearby_prefix(
+        Chest __instance,
+        ref bool ____farmerNearby,
+        ref int ____shippingBinFrameCounter,
+        ref int ___currentLidFrame,
+        bool animate)
     {
         if (!__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan"))
         {
@@ -95,7 +118,10 @@ internal sealed class ModPatches
         }
 
         var location = __instance.Location;
-        var shouldOpen = location.farmers.Any(farmer => Math.Abs(farmer.Tile.X - __instance.TileLocation.X) <= 1f && Math.Abs(farmer.Tile.Y - __instance.TileLocation.Y) <= 1f);
+        var shouldOpen = location.farmers.Any(
+            farmer => Math.Abs(farmer.Tile.X - __instance.TileLocation.X) <= 1f
+                && Math.Abs(farmer.Tile.Y - __instance.TileLocation.Y) <= 1f);
+
         if (shouldOpen == ____farmerNearby)
         {
             return false;
@@ -119,7 +145,11 @@ internal sealed class ModPatches
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_updateWhenCurrentLocation_prefix(Chest __instance, ref int ____shippingBinFrameCounter, ref bool ____farmerNearby, ref int ___currentLidFrame)
+    private static bool Chest_updateWhenCurrentLocation_prefix(
+        Chest __instance,
+        ref int ____shippingBinFrameCounter,
+        ref bool ____farmerNearby,
+        ref int ___currentLidFrame)
     {
         if (!__instance.modData.ContainsKey("furyx639.GarbageDay/WhichCan"))
         {

@@ -36,7 +36,7 @@ internal class ChestContainer : BaseContainer<Chest>
     /// <inheritdoc />
     public override ModDataDictionary ModData => this.Chest.modData;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override NetMutex Mutex => this.Chest.GetMutex();
 
     /// <inheritdoc />

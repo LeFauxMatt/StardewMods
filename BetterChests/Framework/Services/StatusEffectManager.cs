@@ -54,7 +54,8 @@ internal sealed class StatusEffectManager : BaseService
     private string GetId(StatusEffect statusEffect) =>
         statusEffect switch
         {
-            StatusEffect.Overburdened => StatusEffectManager.Prefix + StatusEffect.Overburdened.ToStringFast(), _ => string.Empty,
+            StatusEffect.Overburdened => StatusEffectManager.Prefix + StatusEffect.Overburdened.ToStringFast(),
+            _ => string.Empty,
         };
 
     private Buff? GetEffect(StatusEffect statusEffect) =>

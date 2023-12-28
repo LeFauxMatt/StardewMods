@@ -1,7 +1,5 @@
 ﻿namespace StardewMods.ToolbarIcons.Framework.Models;
 
-using StardewMods.ToolbarIcons.Framework.Interfaces;
-
 /// <summary>A single Toolbar Icon.</summary>
 public sealed class ToolbarIcon
 {
@@ -17,6 +15,6 @@ public sealed class ToolbarIcon
     /// <summary>Gets or sets a value indicating whether the Toolbar Icon is enabled.</summary>
     public bool Enabled { get; set; }
 
-    /// <summary>Gets the Id of the Toolbar Icon.</summary>
+    /// <summary>Gets or sets the Id of the Toolbar Icon.</summary>
     public string Id { get; set; }
 }

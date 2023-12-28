@@ -10,7 +10,9 @@ internal sealed class ModPatches
     private ModPatches(IManifest manifest)
     {
         var harmony = new Harmony(manifest.UniqueID);
-        harmony.Patch(AccessTools.Method(typeof(NPC), nameof(NPC.marriageDuties)), new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.NPC_marriageDuties_prefix)));
+        harmony.Patch(
+            AccessTools.Method(typeof(NPC), nameof(NPC.marriageDuties)),
+            new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.NPC_marriageDuties_prefix)));
     }
 
     /// <summary>Initializes <see cref="ModPatches" />.</summary>

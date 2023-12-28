@@ -26,7 +26,8 @@ internal sealed class LoveThePets : IChore
     }
 
     /// <inheritdoc />
-    public bool IsPossibleForSpouse(NPC spouse) => (this.config.FillWaterBowl || this.config.EnablePetting) && Game1.getFarm().characters.OfType<Pet>().Any();
+    public bool IsPossibleForSpouse(NPC spouse) =>
+        (this.config.FillWaterBowl || this.config.EnablePetting) && Game1.getFarm().characters.OfType<Pet>().Any();
 
     /// <inheritdoc />
     public bool TryPerformChore(NPC spouse)
@@ -51,7 +52,8 @@ internal sealed class LoveThePets : IChore
 
         foreach (var pet in farm.characters.OfType<Pet>())
         {
-            if (pet.lastPetDay.TryGetValue(Game1.player.UniqueMultiplayerID, out var curLastPetDay) && curLastPetDay == Game1.Date.TotalDays)
+            if (pet.lastPetDay.TryGetValue(Game1.player.UniqueMultiplayerID, out var curLastPetDay)
+                && curLastPetDay == Game1.Date.TotalDays)
             {
                 continue;
             }

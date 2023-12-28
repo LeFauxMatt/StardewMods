@@ -32,13 +32,16 @@ internal sealed class PetTheAnimals : IChore
         var farm = Game1.getFarm();
         foreach (var building in farm.buildings)
         {
-            if (building.isUnderConstruction() || building.GetIndoors() is not AnimalHouse animalHouse || animalHouse.characters.Count == 0)
+            if (building.isUnderConstruction()
+                || building.GetIndoors() is not AnimalHouse animalHouse
+                || animalHouse.characters.Count == 0)
             {
                 continue;
             }
 
             var data = building.GetData();
-            if (data.ValidOccupantTypes is null || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
+            if (data.ValidOccupantTypes is null
+                || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
             {
                 continue;
             }
@@ -67,7 +70,8 @@ internal sealed class PetTheAnimals : IChore
             }
 
             var data = building.GetData();
-            if (data.ValidOccupantTypes is null || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
+            if (data.ValidOccupantTypes is null
+                || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
             {
                 continue;
             }

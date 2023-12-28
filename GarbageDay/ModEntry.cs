@@ -23,13 +23,14 @@ public sealed class ModEntry : Mod
     private Multiplayer multiplayer;
 #nullable enable
 
+    private IEnumerable<GarbageCan> GarbageCans =>
+        this.garbageCans.Values.Select(garbageCan => garbageCan.Value).OfType<GarbageCan>();
+
     private GarbageCan? GarbageCan
     {
         get => this.perScreenGarbageCan.Value;
         set => this.perScreenGarbageCan.Value = value;
     }
-
-    private IEnumerable<GarbageCan> GarbageCans => this.garbageCans.Values.Select(garbageCan => garbageCan.Value).OfType<GarbageCan>();
 
     private NPC? Npc
     {
@@ -202,20 +203,27 @@ public sealed class ModEntry : Mod
                         }
 
                         // Remove base tile
-                        if (layer.Tiles[x, y] is not null && layer.Tiles[x, y].TileSheet.Id == "Town" && layer.Tiles[x, y].TileIndex == 78)
+                        if (layer.Tiles[x, y] is not null
+                            && layer.Tiles[x, y].TileSheet.Id == "Town"
+                            && layer.Tiles[x, y].TileIndex == 78)
                         {
                             layer.Tiles[x, y] = null;
                         }
 
                         // Remove Lid tile
                         layer = map.GetLayer("Front");
-                        if (layer.Tiles[x, y - 1] is not null && layer.Tiles[x, y - 1].TileSheet.Id == "Town" && layer.Tiles[x, y - 1].TileIndex == 46)
+                        if (layer.Tiles[x, y - 1] is not null
+                            && layer.Tiles[x, y - 1].TileSheet.Id == "Town"
+                            && layer.Tiles[x, y - 1].TileIndex == 46)
                         {
                             layer.Tiles[x, y - 1] = null;
                         }
 
                         // Add NoPath to tile
-                        map.GetLayer("Back").PickTile(new Location(x, y) * Game1.tileSize, Game1.viewport.Size)?.Properties.Add("NoPath", string.Empty);
+                        map
+                            .GetLayer("Back")
+                            .PickTile(new Location(x, y) * Game1.tileSize, Game1.viewport.Size)
+                            ?.Properties.Add("NoPath", string.Empty);
                     }
                 }
             },
@@ -240,7 +248,11 @@ public sealed class ModEntry : Mod
         }
 
         this.GarbageCan = garbageCan.Value;
-        var character = Utility.isThereAFarmerOrCharacterWithinDistance(this.GarbageCan.Tile, 7, this.GarbageCan.Location);
+        var character = Utility.isThereAFarmerOrCharacterWithinDistance(
+            this.GarbageCan.Tile,
+            7,
+            this.GarbageCan.Location);
+
         if (character is not NPC npc || character is Horse)
         {
             this.GarbageCan.CheckAction();
@@ -253,7 +265,11 @@ public sealed class ModEntry : Mod
         if (npc.Name.Equals("Linus", StringComparison.OrdinalIgnoreCase))
         {
             npc.doEmote(32);
-            npc.setNewDialogue(Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Linus"), true, true);
+            npc.setNewDialogue(
+                Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Linus"),
+                true,
+                true);
+
             Game1.player.changeFriendship(5, npc);
             this.multiplayer?.globalChatInfoMessage("LinusTrashCan");
         }
@@ -263,15 +279,27 @@ public sealed class ModEntry : Mod
             {
                 case 2:
                     npc.doEmote(28);
-                    npc.setNewDialogue(Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Child"), true, true);
+                    npc.setNewDialogue(
+                        Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Child"),
+                        true,
+                        true);
+
                     break;
                 case 1:
                     npc.doEmote(8);
-                    npc.setNewDialogue(Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Teen"), true, true);
+                    npc.setNewDialogue(
+                        Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Teen"),
+                        true,
+                        true);
+
                     break;
                 default:
                     npc.doEmote(12);
-                    npc.setNewDialogue(Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Adult"), true, true);
+                    npc.setNewDialogue(
+                        Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Adult"),
+                        true,
+                        true);
+
                     break;
             }
 
@@ -296,7 +324,8 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) => this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
+    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) =>
+        this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
@@ -323,7 +352,9 @@ public sealed class ModEntry : Mod
             {
                 foreach (var (tile, obj) in location.Objects.Pairs)
                 {
-                    if (obj is not Chest chest || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan) || this.garbageCans.ContainsKey(whichCan))
+                    if (obj is not Chest chest
+                        || !chest.modData.TryGetValue("furyx639.GarbageDay/WhichCan", out var whichCan)
+                        || this.garbageCans.ContainsKey(whichCan))
                     {
                         continue;
                     }

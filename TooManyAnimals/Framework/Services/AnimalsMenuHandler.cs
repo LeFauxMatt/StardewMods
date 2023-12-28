@@ -19,13 +19,21 @@ internal sealed class AnimalsMenuHandler
     private readonly PerScreen<int> currentPage = new();
 
     private readonly PerScreen<ClickableTextureComponent> nextPage = new(
-        () => new ClickableTextureComponent(new Rectangle(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom), Game1.mouseCursors, new Rectangle(365, 495, 12, 11), Game1.pixelZoom)
+        () => new ClickableTextureComponent(
+            new Rectangle(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom),
+            Game1.mouseCursors,
+            new Rectangle(365, 495, 12, 11),
+            Game1.pixelZoom)
         {
             myID = 69420,
         });
 
     private readonly PerScreen<ClickableTextureComponent> previousPage = new(
-        () => new ClickableTextureComponent(new Rectangle(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom), Game1.mouseCursors, new Rectangle(352, 495, 12, 11), Game1.pixelZoom)
+        () => new ClickableTextureComponent(
+            new Rectangle(0, 0, 12 * Game1.pixelZoom, 11 * Game1.pixelZoom),
+            Game1.mouseCursors,
+            new Rectangle(352, 495, 12, 11),
+            Game1.pixelZoom)
         {
             myID = 69421,
         });
@@ -45,7 +53,9 @@ internal sealed class AnimalsMenuHandler
         // Patches
         harmony.Patch(
             AccessTools.Constructor(typeof(PurchaseAnimalsMenu), new[] { typeof(List<SObject>), typeof(GameLocation) }),
-            new HarmonyMethod(typeof(AnimalsMenuHandler), nameof(AnimalsMenuHandler.PurchaseAnimalsMenu_constructor_prefix)));
+            new HarmonyMethod(
+                typeof(AnimalsMenuHandler),
+                nameof(AnimalsMenuHandler.PurchaseAnimalsMenu_constructor_prefix)));
 
         // Events
         modEvents.Display.MenuChanged += this.OnMenuChanged;
@@ -66,14 +76,14 @@ internal sealed class AnimalsMenuHandler
             if (!Game1.farmAnimalData.TryGetValue(obj.Name, out var animalData) || !animalData.CustomFields.Any())
             {
                 stock.Add(obj);
-                continue;
             }
 
             // Do custom stuff here
         }
 
         // Paginate stock
-        stock = stock.Skip(AnimalsMenuHandler.instance.currentPage.Value * AnimalsMenuHandler.instance.modConfig.AnimalShopLimit)
+        stock = stock
+            .Skip(AnimalsMenuHandler.instance.currentPage.Value * AnimalsMenuHandler.instance.modConfig.AnimalShopLimit)
             .Take(AnimalsMenuHandler.instance.modConfig.AnimalShopLimit)
             .ToList();
     }
@@ -85,13 +95,15 @@ internal sealed class AnimalsMenuHandler
             return;
         }
 
-        if (e.Button is not (SButton.MouseLeft or SButton.MouseRight) && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
+        if (e.Button is not (SButton.MouseLeft or SButton.MouseRight)
+            && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
         {
             return;
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        if (this.nextPage.Value.containsPoint(x, y) && (this.currentPage.Value + 1) * this.modConfig.AnimalShopLimit < stock.Count)
+        if (this.nextPage.Value.containsPoint(x, y)
+            && (this.currentPage.Value + 1) * this.modConfig.AnimalShopLimit < stock.Count)
         {
             this.SetPage(this.currentPage.Value + 1);
             return;
@@ -110,7 +122,8 @@ internal sealed class AnimalsMenuHandler
             return;
         }
 
-        if (this.modConfig.ControlScheme.NextPage.JustPressed() && (this.currentPage.Value + 1) * this.modConfig.AnimalShopLimit < stock.Count)
+        if (this.modConfig.ControlScheme.NextPage.JustPressed()
+            && (this.currentPage.Value + 1) * this.modConfig.AnimalShopLimit < stock.Count)
         {
             this.SetPage(this.currentPage.Value + 1);
             return;
@@ -161,13 +174,21 @@ internal sealed class AnimalsMenuHandler
         // Assign neighborId for controller
         var maxY = menu.animalsToPurchase.Max(component => component.bounds.Y);
         var bottomComponents = menu.animalsToPurchase.Where(component => component.bounds.Y == maxY).ToList();
-        this.previousPage.Value.upNeighborID = bottomComponents.OrderBy(component => Math.Abs(component.bounds.Center.X - this.previousPage.Value.bounds.X)).First().myID;
+        this.previousPage.Value.upNeighborID = bottomComponents
+            .OrderBy(component => Math.Abs(component.bounds.Center.X - this.previousPage.Value.bounds.X))
+            .First()
+            .myID;
 
-        this.nextPage.Value.upNeighborID = bottomComponents.OrderBy(component => Math.Abs(component.bounds.Center.X - this.nextPage.Value.bounds.X)).First().myID;
+        this.nextPage.Value.upNeighborID = bottomComponents
+            .OrderBy(component => Math.Abs(component.bounds.Center.X - this.nextPage.Value.bounds.X))
+            .First()
+            .myID;
 
         foreach (var component in bottomComponents)
         {
-            component.downNeighborID = component.bounds.Center.X <= menu.xPositionOnScreen + (menu.width / 2) ? this.previousPage.Value.myID : this.nextPage.Value.myID;
+            component.downNeighborID = component.bounds.Center.X <= menu.xPositionOnScreen + (menu.width / 2)
+                ? this.previousPage.Value.myID
+                : this.nextPage.Value.myID;
         }
     }
 
@@ -202,7 +223,9 @@ internal sealed class AnimalsMenuHandler
 
     private bool TryGetStock([NotNullWhen(true)] out List<SObject>? stock)
     {
-        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu || this.completeStock.Value is null || this.completeStock.Value.Count > this.modConfig.AnimalShopLimit)
+        if (Game1.activeClickableMenu is not PurchaseAnimalsMenu
+            || this.completeStock.Value is null
+            || this.completeStock.Value.Count > this.modConfig.AnimalShopLimit)
         {
             stock = null;
             return false;

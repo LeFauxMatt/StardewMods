@@ -15,7 +15,10 @@ internal sealed class RepairTheFences : IChore
     public void AddTokens(Dictionary<string, object> tokens) => tokens["FencesRepaired"] = this.fencesRepaired;
 
     /// <inheritdoc />
-    public bool IsPossibleForSpouse(NPC spouse) => Game1.getFarm().Objects.Values.Any(@object => @object is Fence fence && fence.getHealth() < fence.maxHealth.Value);
+    public bool IsPossibleForSpouse(NPC spouse) =>
+        Game1
+            .getFarm()
+            .Objects.Values.Any(@object => @object is Fence fence && fence.getHealth() < fence.maxHealth.Value);
 
     /// <inheritdoc />
     public bool TryPerformChore(NPC spouse)

@@ -10,19 +10,18 @@ internal sealed class CjbItemSpawner : IActionIntegration
 
     /// <summary>Initializes a new instance of the <see cref="CjbItemSpawner" /> class.</summary>
     /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
-    public CjbItemSpawner(IReflectionHelper reflectionHelper) =>
-        this.reflectionHelper = reflectionHelper;
+    public CjbItemSpawner(IReflectionHelper reflectionHelper) => this.reflectionHelper = reflectionHelper;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public string ModId => "CJBok.ItemSpawner";
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public int Index => 5;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public string HoverText => I18n.Button_ItemSpawner();
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public Action? GetAction(IMod mod)
     {
         var buildMenu = this.reflectionHelper.GetMethod(mod, "BuildMenu", false);

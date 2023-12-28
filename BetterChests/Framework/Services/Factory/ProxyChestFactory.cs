@@ -79,7 +79,7 @@ internal sealed class ProxyChestFactory : BaseService
             return false;
         }
 
-        var id = chest.GlobalInventoryId ?? GenerateGlobalInventoryId();
+        var id = chest.GlobalInventoryId ?? ProxyChestFactory.GenerateGlobalInventoryId();
         var globalInventory = Game1.player.team.GetOrCreateGlobalInventory(id);
         var item = ItemRegistry.Create(chest.QualifiedItemId);
 
@@ -90,7 +90,8 @@ internal sealed class ProxyChestFactory : BaseService
         {
             var c = chest.playerChoiceColor.Value;
             var color = (c.R << 0) | (c.G << 8) | (c.B << 16);
-            item.modData[ProxyChestFactory.Prefix + ProxyChestFactory.ColorKey] = color.ToString(CultureInfo.InvariantCulture);
+            item.modData[ProxyChestFactory.Prefix + ProxyChestFactory.ColorKey] =
+                color.ToString(CultureInfo.InvariantCulture);
         }
 
         foreach (var (key, value) in chest.modData.Pairs)

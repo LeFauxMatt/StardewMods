@@ -26,7 +26,11 @@ internal sealed class WaterTheCrops : IChore
             return false;
         }
 
-        var spots = new HashSet<Vector2>(farm.terrainFeatures.Pairs.Where(spot => spot.Value is HoeDirt hoeDirt && hoeDirt.needsWatering()).Select(spot => spot.Key));
+        var spots = new HashSet<Vector2>(
+            farm
+                .terrainFeatures.Pairs.Where(spot => spot.Value is HoeDirt hoeDirt && hoeDirt.needsWatering())
+                .Select(spot => spot.Key));
+
         if (!spots.Any())
         {
             return false;
@@ -39,7 +43,11 @@ internal sealed class WaterTheCrops : IChore
 
         foreach (var sprinkler in farm.Objects.Values.Where(@object => @object.IsSprinkler()))
         {
-            var sprinklerTiles = sprinkler.GetSprinklerTiles().Where(tile => farm.doesTileHavePropertyNoNull((int)tile.X, (int)tile.Y, "NoSprinklers", "Back") != "T");
+            var sprinklerTiles = sprinkler
+                .GetSprinklerTiles()
+                .Where(
+                    tile => farm.doesTileHavePropertyNoNull((int)tile.X, (int)tile.Y, "NoSprinklers", "Back") != "T");
+
             foreach (var tile in sprinklerTiles)
             {
                 spots.Remove(tile);

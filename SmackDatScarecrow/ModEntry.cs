@@ -36,7 +36,15 @@ public sealed class ModEntry : Mod
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void GameLocation_damageMonster_postfix(GameLocation __instance, ref bool __result, Rectangle areaOfEffect, int minDamage, int maxDamage, float critChance, float critMultiplier, Farmer who)
+    private static void GameLocation_damageMonster_postfix(
+        GameLocation __instance,
+        ref bool __result,
+        Rectangle areaOfEffect,
+        int minDamage,
+        int maxDamage,
+        float critChance,
+        float critMultiplier,
+        Farmer who)
     {
         if (__result || __instance is not Farm farm)
         {
@@ -95,7 +103,12 @@ public sealed class ModEntry : Mod
                     damageAmount *= 2;
                 }
 
-                var debris = new Debris(damageAmount, new Vector2(monsterBox.Center.X + 16, monsterBox.Center.Y), crit ? Color.Yellow : new Color(255, 130, 0), crit ? 1f + (damageAmount / 300f) : 1f, Game1.player);
+                var debris = new Debris(
+                    damageAmount,
+                    new Vector2(monsterBox.Center.X + 16, monsterBox.Center.Y),
+                    crit ? Color.Yellow : new Color(255, 130, 0),
+                    crit ? 1f + (damageAmount / 300f) : 1f,
+                    Game1.player);
 
                 debris.Chunks[0].scale = Math.Min(2f, Math.Max(1f, crit ? 1f + (damageAmount / 300f) : 1f));
                 debris.Chunks[0].xVelocity.Value = Game1.random.Next(-1, 2);
@@ -106,9 +119,19 @@ public sealed class ModEntry : Mod
                 damageAmount = -2;
             }
 
-            if (who.CurrentTool is not null && who.CurrentTool.Name.Equals("Galaxy Sword", StringComparison.OrdinalIgnoreCase))
+            if (who.CurrentTool is not null
+                && who.CurrentTool.Name.Equals("Galaxy Sword", StringComparison.OrdinalIgnoreCase))
             {
-                ModEntry.Multiplayer.broadcastSprites(farm, new TemporaryAnimatedSprite(362, Game1.random.Next(50, 120), 6, 1, new Vector2(monsterBox.Center.X - 32, monsterBox.Center.Y - 32), false, false));
+                ModEntry.Multiplayer.broadcastSprites(
+                    farm,
+                    new TemporaryAnimatedSprite(
+                        362,
+                        Game1.random.Next(50, 120),
+                        6,
+                        1,
+                        new Vector2(monsterBox.Center.X - 32, monsterBox.Center.Y - 32),
+                        false,
+                        false));
             }
 
             if (damageAmount > 0 && crit is true and true)
@@ -116,7 +139,14 @@ public sealed class ModEntry : Mod
                 var standPos = new Vector2(monsterBox.Center.X, monsterBox.Center.Y);
                 ModEntry.Multiplayer.broadcastSprites(
                     farm,
-                    new TemporaryAnimatedSprite(362, Game1.random.Next(15, 50), 6, 1, standPos - new Vector2(32f, 32f), false, Game1.random.NextDouble() < 0.5)
+                    new TemporaryAnimatedSprite(
+                        362,
+                        Game1.random.Next(15, 50),
+                        6,
+                        1,
+                        standPos - new Vector2(32f, 32f),
+                        false,
+                        Game1.random.NextDouble() < 0.5)
                     {
                         scale = 0.75f,
                         alpha = crit ? 0.75f : 0.5f,
@@ -124,7 +154,14 @@ public sealed class ModEntry : Mod
 
                 ModEntry.Multiplayer.broadcastSprites(
                     farm,
-                    new TemporaryAnimatedSprite(362, Game1.random.Next(15, 50), 6, 1, standPos - new Vector2(32 + Game1.random.Next(-21, 21) + 32, 32 + Game1.random.Next(-21, 21)), false, Game1.random.NextDouble() < 0.5)
+                    new TemporaryAnimatedSprite(
+                        362,
+                        Game1.random.Next(15, 50),
+                        6,
+                        1,
+                        standPos - new Vector2(32 + Game1.random.Next(-21, 21) + 32, 32 + Game1.random.Next(-21, 21)),
+                        false,
+                        Game1.random.NextDouble() < 0.5)
                     {
                         scale = 0.5f,
                         delayBeforeAnimationStart = 50,
@@ -133,7 +170,14 @@ public sealed class ModEntry : Mod
 
                 ModEntry.Multiplayer.broadcastSprites(
                     farm,
-                    new TemporaryAnimatedSprite(362, Game1.random.Next(15, 50), 6, 1, standPos - new Vector2(32 + Game1.random.Next(-21, 21) - 32, 32 + Game1.random.Next(-21, 21)), false, Game1.random.NextDouble() < 0.5)
+                    new TemporaryAnimatedSprite(
+                        362,
+                        Game1.random.Next(15, 50),
+                        6,
+                        1,
+                        standPos - new Vector2(32 + Game1.random.Next(-21, 21) - 32, 32 + Game1.random.Next(-21, 21)),
+                        false,
+                        Game1.random.NextDouble() < 0.5)
                     {
                         scale = 0.5f,
                         delayBeforeAnimationStart = 100,
@@ -142,7 +186,14 @@ public sealed class ModEntry : Mod
 
                 ModEntry.Multiplayer.broadcastSprites(
                     farm,
-                    new TemporaryAnimatedSprite(362, Game1.random.Next(15, 50), 6, 1, standPos - new Vector2(32 + Game1.random.Next(-21, 21) + 32, 32 + Game1.random.Next(-21, 21)), false, Game1.random.NextDouble() < 0.5)
+                    new TemporaryAnimatedSprite(
+                        362,
+                        Game1.random.Next(15, 50),
+                        6,
+                        1,
+                        standPos - new Vector2(32 + Game1.random.Next(-21, 21) + 32, 32 + Game1.random.Next(-21, 21)),
+                        false,
+                        Game1.random.NextDouble() < 0.5)
                     {
                         scale = 0.5f,
                         delayBeforeAnimationStart = 150,
@@ -151,7 +202,14 @@ public sealed class ModEntry : Mod
 
                 ModEntry.Multiplayer.broadcastSprites(
                     farm,
-                    new TemporaryAnimatedSprite(362, Game1.random.Next(15, 50), 6, 1, standPos - new Vector2(32 + Game1.random.Next(-21, 21) - 32, 32 + Game1.random.Next(-21, 21)), false, Game1.random.NextDouble() < 0.5)
+                    new TemporaryAnimatedSprite(
+                        362,
+                        Game1.random.Next(15, 50),
+                        6,
+                        1,
+                        standPos - new Vector2(32 + Game1.random.Next(-21, 21) - 32, 32 + Game1.random.Next(-21, 21)),
+                        false,
+                        Game1.random.NextDouble() < 0.5)
                     {
                         scale = 0.5f,
                         delayBeforeAnimationStart = 200,
@@ -163,5 +221,6 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) => this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer");
+    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) =>
+        this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer");
 }

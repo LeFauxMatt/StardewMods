@@ -105,9 +105,21 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
 
     private ClickableTextureComponent DownArrow { get; }
 
-    private string HoverText { get; set; } = string.Empty;
-
     private List<ToolbarIcon> Icons { get; }
+
+    private int MaxItems { get; }
+
+    private ClickableTextureComponent OkButton { get; }
+
+    private ClickableTextureComponent ScrollBar { get; }
+
+    private Rectangle ScrollBarRunner { get; }
+
+    private float TextHeight { get; }
+
+    private ClickableTextureComponent UpArrow { get; }
+
+    private string HoverText { get; set; } = string.Empty;
 
     private int Index
     {
@@ -132,19 +144,7 @@ internal sealed class ToolbarIconsMenu : IClickableMenu
         }
     }
 
-    private int MaxItems { get; }
-
-    private ClickableTextureComponent OkButton { get; }
-
-    private ClickableTextureComponent ScrollBar { get; }
-
-    private Rectangle ScrollBarRunner { get; }
-
     private bool Scrolling { get; set; }
-
-    private float TextHeight { get; }
-
-    private ClickableTextureComponent UpArrow { get; }
 
     /// <inheritdoc />
     public override void draw(SpriteBatch b)

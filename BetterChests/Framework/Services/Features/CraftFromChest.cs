@@ -237,8 +237,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
     private bool WorkbenchPredicate(IContainer container) =>
         container.Options.CraftFromChest is not RangeOption.Disabled
         && container.Items.Count > 0
-        && !CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains(
-            Game1.player.currentLocation.Name)
+        && !CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
         && !(CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains("UndergroundMine")
             && Game1.player.currentLocation is MineShaft mineShaft
             && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))

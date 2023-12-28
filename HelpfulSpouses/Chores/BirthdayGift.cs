@@ -9,7 +9,11 @@ internal sealed class BirthdayGift : IChore
     private static readonly Lazy<List<Item>> Items = new(
         delegate
         {
-            return ItemRegistry.GetObjectTypeDefinition().GetAllIds().Select(localId => ItemRegistry.Create(ItemRegistry.type_object + localId)).ToList();
+            return ItemRegistry
+                .GetObjectTypeDefinition()
+                .GetAllIds()
+                .Select(localId => ItemRegistry.Create(ItemRegistry.type_object + localId))
+                .ToList();
         });
 
     private readonly Config config;
@@ -62,7 +66,10 @@ internal sealed class BirthdayGift : IChore
             return false;
         }
 
-        var rnd = Utility.CreateRandom(Game1.stats.DaysPlayed, Game1.uniqueIDForThisGame, Game1.player.UniqueMultiplayerID);
+        var rnd = Utility.CreateRandom(
+            Game1.stats.DaysPlayed,
+            Game1.uniqueIDForThisGame,
+            Game1.player.UniqueMultiplayerID);
 
         foreach (var item in BirthdayGift.Items.Value.Shuffle())
         {

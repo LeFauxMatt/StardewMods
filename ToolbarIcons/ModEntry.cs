@@ -7,7 +7,6 @@ using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.ToolbarIcons.Framework;
 using StardewMods.ToolbarIcons.Framework.Interfaces;
 using StardewMods.ToolbarIcons.Framework.Services;
-using StardewMods.ToolbarIcons.Framework.Services.Integrations;
 using StardewMods.ToolbarIcons.Framework.Services.Integrations.Modded;
 using StardewMods.ToolbarIcons.Framework.Services.Integrations.Vanilla;
 using StardewValley.Menus;

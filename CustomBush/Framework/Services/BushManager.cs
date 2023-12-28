@@ -40,29 +40,49 @@ internal sealed class BushManager
         this.assets = assets;
         this.gameContent = gameContent;
         this.logging = logging;
-        this.checkItemPlantRules = typeof(GameLocation).GetMethod("CheckItemPlantRules", BindingFlags.NonPublic | BindingFlags.Instance) ?? throw new MethodAccessException("Unable to access CheckItemPlantRules");
+        this.checkItemPlantRules =
+            typeof(GameLocation).GetMethod("CheckItemPlantRules", BindingFlags.NonPublic | BindingFlags.Instance)
+            ?? throw new MethodAccessException("Unable to access CheckItemPlantRules");
 
-        harmony.Patch(AccessTools.DeclaredMethod(typeof(Bush), nameof(Bush.draw), new[] { typeof(SpriteBatch) }), new HarmonyMethod(typeof(BushManager), nameof(BushManager.Bush_draw_prefix)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Bush), nameof(Bush.draw), [typeof(SpriteBatch)]),
+            new HarmonyMethod(typeof(BushManager), nameof(BushManager.Bush_draw_prefix)));
 
-        harmony.Patch(AccessTools.DeclaredMethod(typeof(Bush), nameof(Bush.inBloom)), postfix: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Bush_inBloom_postfix)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Bush), nameof(Bush.inBloom)),
+            postfix: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Bush_inBloom_postfix)));
 
-        harmony.Patch(AccessTools.DeclaredMethod(typeof(Bush), nameof(Bush.setUpSourceRect)), postfix: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Bush_setUpSourceRect_postfix)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Bush), nameof(Bush.setUpSourceRect)),
+            postfix: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Bush_setUpSourceRect_postfix)));
 
-        harmony.Patch(AccessTools.DeclaredMethod(typeof(Bush), nameof(Bush.shake)), transpiler: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Bush_shake_transpiler)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Bush), nameof(Bush.shake)),
+            transpiler: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Bush_shake_transpiler)));
 
         harmony.Patch(
             typeof(GameLocation).GetMethod("CheckItemPlantRules", BindingFlags.Public | BindingFlags.Instance),
-            postfix: new HarmonyMethod(typeof(BushManager), nameof(BushManager.GameLocation_CheckItemPlantRules_postfix)));
+            postfix: new HarmonyMethod(
+                typeof(BushManager),
+                nameof(BushManager.GameLocation_CheckItemPlantRules_postfix)));
 
-        harmony.Patch(AccessTools.DeclaredMethod(typeof(HoeDirt), nameof(HoeDirt.canPlantThisSeedHere)), postfix: new HarmonyMethod(typeof(BushManager), nameof(BushManager.HoeDirt_canPlantThisSeedHere_postfix)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(HoeDirt), nameof(HoeDirt.canPlantThisSeedHere)),
+            postfix: new HarmonyMethod(typeof(BushManager), nameof(BushManager.HoeDirt_canPlantThisSeedHere_postfix)));
 
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(IndoorPot), nameof(IndoorPot.performObjectDropInAction)),
-            postfix: new HarmonyMethod(typeof(BushManager), nameof(BushManager.IndoorPot_performObjectDropInAction_postfix)));
+            postfix: new HarmonyMethod(
+                typeof(BushManager),
+                nameof(BushManager.IndoorPot_performObjectDropInAction_postfix)));
 
-        harmony.Patch(AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.IsTeaSapling)), postfix: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Object_IsTeaSapling_postfix)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.IsTeaSapling)),
+            postfix: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Object_IsTeaSapling_postfix)));
 
-        harmony.Patch(AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.placementAction)), transpiler: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Object_placementAction_transpiler)));
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.placementAction)),
+            transpiler: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Object_placementAction_transpiler)));
     }
 
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
@@ -80,9 +100,15 @@ internal sealed class BushManager
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Bush_draw_prefix(Bush __instance, SpriteBatch spriteBatch, float ___shakeRotation, NetRectangle ___sourceRect, float ___yDrawOffset)
+    private static bool Bush_draw_prefix(
+        Bush __instance,
+        SpriteBatch spriteBatch,
+        float ___shakeRotation,
+        NetRectangle ___sourceRect,
+        float ___yDrawOffset)
     {
-        if (!__instance.modData.TryGetValue(BushManager.ModDataId, out var id) || !BushManager.instance.assets.Data.TryGetValue(id, out var bushModel))
+        if (!__instance.modData.TryGetValue(BushManager.ModDataId, out var id)
+            || !BushManager.instance.assets.Data.TryGetValue(id, out var bushModel))
         {
             return true;
         }
@@ -129,13 +155,15 @@ internal sealed class BushManager
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Bush_inBloom_postfix(Bush __instance, ref bool __result)
     {
-        if (__instance.modData.TryGetValue(BushManager.ModDataItem, out var itemId) && !string.IsNullOrWhiteSpace(itemId))
+        if (__instance.modData.TryGetValue(BushManager.ModDataItem, out var itemId)
+            && !string.IsNullOrWhiteSpace(itemId))
         {
             __result = true;
             return;
         }
 
-        if (!__instance.modData.TryGetValue(BushManager.ModDataId, out var id) || !BushManager.instance.assets.Data.TryGetValue(id, out var bushModel))
+        if (!__instance.modData.TryGetValue(BushManager.ModDataId, out var id)
+            || !BushManager.instance.assets.Data.TryGetValue(id, out var bushModel))
         {
             return;
         }
@@ -162,7 +190,10 @@ internal sealed class BushManager
         // Fails default season conditions
         if (!bushModel.Seasons.Any() && season == Season.Winter && !__instance.IsSheltered())
         {
-            BushManager.instance.logging.Trace("{0} will not produce. Season: {1} and plant is outdoors.", id, season.ToString());
+            BushManager.instance.logging.Trace(
+                "{0} will not produce. Season: {1} and plant is outdoors.",
+                id,
+                season.ToString());
 
             __result = false;
             return;
@@ -171,7 +202,10 @@ internal sealed class BushManager
         // Fails custom season conditions
         if (bushModel.Seasons.Any() && !bushModel.Seasons.Contains(season) && !__instance.IsSheltered())
         {
-            BushManager.instance.logging.Trace("{0} will not produce. Season: {1} and plant is outdoors.", id, season.ToString());
+            BushManager.instance.logging.Trace(
+                "{0} will not produce. Season: {1} and plant is outdoors.",
+                id,
+                season.ToString());
 
             __result = false;
             return;
@@ -195,7 +229,8 @@ internal sealed class BushManager
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Bush_setUpSourceRect_postfix(Bush __instance, NetRectangle ___sourceRect)
     {
-        if (!__instance.modData.TryGetValue(BushManager.ModDataId, out var id) || !BushManager.instance.assets.Data.TryGetValue(id, out var bushModel))
+        if (!__instance.modData.TryGetValue(BushManager.ModDataId, out var id)
+            || !BushManager.instance.assets.Data.TryGetValue(id, out var bushModel))
         {
             return;
         }
@@ -225,10 +260,17 @@ internal sealed class BushManager
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void GameLocation_CheckItemPlantRules_postfix(GameLocation __instance, ref bool __result, string itemId, bool isGardenPot, bool defaultAllowed, ref string deniedMessage)
+    private static void GameLocation_CheckItemPlantRules_postfix(
+        GameLocation __instance,
+        ref bool __result,
+        string itemId,
+        bool isGardenPot,
+        bool defaultAllowed,
+        ref string deniedMessage)
     {
         var metadata = ItemRegistry.GetMetadata(itemId);
-        if (metadata is null || !BushManager.instance.assets.Data.TryGetValue(metadata.QualifiedItemId, out var bushModel))
+        if (metadata is null
+            || !BushManager.instance.assets.Data.TryGetValue(metadata.QualifiedItemId, out var bushModel))
         {
             return;
         }
@@ -249,7 +291,9 @@ internal sealed class BushManager
             return itemId;
         }
 
-        if (!bush.modData.TryGetValue(BushManager.ModDataId, out var id) || !BushManager.instance.assets.Data.TryGetValue(id, out var bushModel) || !BushManager.instance.TryToProduceRandomItem(bush, bushModel, out itemId))
+        if (!bush.modData.TryGetValue(BushManager.ModDataId, out var id)
+            || !BushManager.instance.assets.Data.TryGetValue(id, out var bushModel)
+            || !BushManager.instance.TryToProduceRandomItem(bush, bushModel, out itemId))
         {
             return "(O)815";
         }
@@ -273,9 +317,14 @@ internal sealed class BushManager
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void IndoorPot_performObjectDropInAction_postfix(IndoorPot __instance, Item dropInItem, bool probe, ref bool __result)
+    private static void IndoorPot_performObjectDropInAction_postfix(
+        IndoorPot __instance,
+        Item dropInItem,
+        bool probe,
+        ref bool __result)
     {
-        if (!BushManager.instance.assets.Data.ContainsKey(dropInItem.QualifiedItemId) || __instance.hoeDirt.Value.crop != null)
+        if (!BushManager.instance.assets.Data.ContainsKey(dropInItem.QualifiedItemId)
+            || __instance.hoeDirt.Value.crop != null)
         {
             return;
         }
@@ -312,11 +361,16 @@ internal sealed class BushManager
         }
     }
 
-    private static IEnumerable<CodeInstruction> Object_placementAction_transpiler(IEnumerable<CodeInstruction> instructions)
+    private static IEnumerable<CodeInstruction> Object_placementAction_transpiler(
+        IEnumerable<CodeInstruction> instructions)
     {
         foreach (var instruction in instructions)
         {
-            if (instruction.Is(OpCodes.Newobj, AccessTools.Constructor(typeof(Bush), new[] { typeof(Vector2), typeof(int), typeof(GameLocation), typeof(int) })))
+            if (instruction.Is(
+                OpCodes.Newobj,
+                AccessTools.Constructor(
+                    typeof(Bush),
+                    new[] { typeof(Vector2), typeof(int), typeof(GameLocation), typeof(int) })))
             {
                 yield return instruction;
                 yield return new CodeInstruction(OpCodes.Ldarg_0);
@@ -355,16 +409,34 @@ internal sealed class BushManager
             return null;
         }
 
-        if (drop.Condition != null && !GameStateQuery.CheckConditions(drop.Condition, bush.Location, null, null, null, null, bush.Location.SeedsIgnoreSeasonsHere() ? GameStateQuery.SeasonQueryKeys : null))
+        if (drop.Condition != null
+            && !GameStateQuery.CheckConditions(
+                drop.Condition,
+                bush.Location,
+                null,
+                null,
+                null,
+                null,
+                bush.Location.SeedsIgnoreSeasonsHere() ? GameStateQuery.SeasonQueryKeys : null))
         {
-            BushManager.instance.logging.Trace("{0} did not select {1}. Failed: {2}", bush.modData[BushManager.ModDataId], drop.Id, drop.Condition);
+            BushManager.instance.logging.Trace(
+                "{0} did not select {1}. Failed: {2}",
+                bush.modData[BushManager.ModDataId],
+                drop.Id,
+                drop.Condition);
 
             return null;
         }
 
-        if (drop.Season.HasValue && bush.Location.SeedsIgnoreSeasonsHere() && drop.Season != Game1.GetSeasonForLocation(bush.Location))
+        if (drop.Season.HasValue
+            && bush.Location.SeedsIgnoreSeasonsHere()
+            && drop.Season != Game1.GetSeasonForLocation(bush.Location))
         {
-            BushManager.instance.logging.Trace("{0} did not select {1}. Failed: {2}", bush.modData[BushManager.ModDataId], drop.Id, drop.Season.ToString());
+            BushManager.instance.logging.Trace(
+                "{0} did not select {1}. Failed: {2}",
+                bush.modData[BushManager.ModDataId],
+                drop.Id,
+                drop.Season.ToString());
 
             return null;
         }
@@ -378,7 +450,12 @@ internal sealed class BushManager
             null,
             delegate(string query, string error)
             {
-                this.logging.Error("{0} failed parsing item query {1} for item {2}: {3}", bush.modData[BushManager.ModDataId], query, drop.Id, error);
+                this.logging.Error(
+                    "{0} failed parsing item query {1} for item {2}: {3}",
+                    bush.modData[BushManager.ModDataId],
+                    query,
+                    drop.Id,
+                    error);
             });
 
         return item;

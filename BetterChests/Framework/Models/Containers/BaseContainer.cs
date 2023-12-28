@@ -62,7 +62,7 @@ internal abstract class BaseContainer : IContainer
     /// <inheritdoc />
     public abstract ModDataDictionary ModData { get; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public abstract NetMutex? Mutex { get; }
 
     /// <inheritdoc />

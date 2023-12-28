@@ -61,7 +61,11 @@ internal sealed class ToolbarManager
         eventsManager.ToolbarIconsChanged += this.OnToolbarIconsChanged;
     }
 
-    private static bool ShowToolbar => Game1.displayHUD && Context.IsPlayerFree && Game1.activeClickableMenu is null && Game1.onScreenMenus.OfType<Toolbar>().Any();
+    private static bool ShowToolbar =>
+        Game1.displayHUD
+        && Context.IsPlayerFree
+        && Game1.activeClickableMenu is null
+        && Game1.onScreenMenus.OfType<Toolbar>().Any();
 
     /// <summary>Adds an icon next to the <see cref="Toolbar" />.</summary>
     /// <param name="id">A unique identifier for the icon.</param>
@@ -85,7 +89,11 @@ internal sealed class ToolbarManager
         this.log.Trace("Adding icon: {0}", id);
         this.components.Add(
             id,
-            new ClickableTextureComponent(new Rectangle(0, 0, 32, 32), this.gameContentHelper.Load<Texture2D>(texturePath), sourceRect ?? new Rectangle(0, 0, 16, 16), 2f)
+            new ClickableTextureComponent(
+                new Rectangle(0, 0, 32, 32),
+                this.gameContentHelper.Load<Texture2D>(texturePath),
+                sourceRect ?? new Rectangle(0, 0, 16, 16),
+                2f)
             {
                 hoverText = hoverText,
                 name = id,
@@ -97,7 +105,9 @@ internal sealed class ToolbarManager
     /// <param name="id">A unique identifier for the icon.</param>
     public void RemoveToolbarIcon(string id)
     {
-        var toolbarIcon = this.modConfig.Icons.FirstOrDefault(toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        var toolbarIcon = this.modConfig.Icons.FirstOrDefault(
+            toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+
         if (toolbarIcon is null)
         {
             return;
@@ -136,13 +146,15 @@ internal sealed class ToolbarManager
             return;
         }
 
-        if (e.Button is not (SButton.MouseLeft or SButton.MouseRight) && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
+        if (e.Button is not (SButton.MouseLeft or SButton.MouseRight)
+            && !(e.Button.IsActionButton() || e.Button.IsUseToolButton()))
         {
             return;
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        var component = this.components.Values.FirstOrDefault(component => component.visible && component.containsPoint(x, y));
+        var component =
+            this.components.Values.FirstOrDefault(component => component.visible && component.containsPoint(x, y));
 
         if (component is null)
         {
@@ -279,7 +291,10 @@ internal sealed class ToolbarManager
         }
 
         var firstComponent = this.components.Values.First(component => component.visible);
-        if (!this.lastArea.IsActiveForScreen() || area != this.lastArea.Value || firstComponent.bounds.X != x || firstComponent.bounds.Y != y)
+        if (!this.lastArea.IsActiveForScreen()
+            || area != this.lastArea.Value
+            || firstComponent.bounds.X != x
+            || firstComponent.bounds.Y != y)
         {
             this.ReorientComponents(area, x, y);
         }

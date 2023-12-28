@@ -7,7 +7,7 @@ using StardewMods.BetterChests.Framework.Interfaces;
 /// <summary>Overlay which points to an object on the map.</summary>
 internal sealed class Pointer
 {
-    /// <summary>Initializes a new instance of the <see cref="Pointer"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="Pointer" /> class.</summary>
     /// <param name="container">The container that the pointer points to.</param>
     public Pointer(IContainer container) => this.Container = container;
 

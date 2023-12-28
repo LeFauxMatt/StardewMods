@@ -33,7 +33,9 @@ public sealed class ModEntry : Mod
         this.chores[ChoreOption.WaterTheSlimes] = new WaterTheSlimes(this.config.WaterTheSlimesOptions);
 
         // Update spouse chores
-        var spouseData = this.Helper.ModContent.Load<Dictionary<string, Dictionary<ChoreOption, double>>>("assets/spouseRules.json");
+        var spouseData =
+            this.Helper.ModContent.Load<Dictionary<string, Dictionary<ChoreOption, double>>>("assets/spouseRules.json");
+
         foreach (var (spouse, choreOptions) in spouseData)
         {
             this.spouseRules.Add(spouse, choreOptions);
@@ -51,7 +53,11 @@ public sealed class ModEntry : Mod
             return;
         }
 
-        var rnd = Utility.CreateRandom(Game1.stats.DaysPlayed, Game1.uniqueIDForThisGame, Game1.player.UniqueMultiplayerID);
+        var rnd = Utility.CreateRandom(
+            Game1.stats.DaysPlayed,
+            Game1.uniqueIDForThisGame,
+            Game1.player.UniqueMultiplayerID);
+
         if (!rnd.NextBool(this.config.GlobalChance))
         {
             return;
@@ -60,7 +66,8 @@ public sealed class ModEntry : Mod
         var spouses = new HashSet<NPC>();
         foreach (var (name, friendshipData) in Game1.player.friendshipData.Pairs)
         {
-            if (!(friendshipData.IsMarried() || friendshipData.IsRoommate()) || (this.config.HeartsNeeded > 0 && friendshipData.Points / 250 < this.config.HeartsNeeded))
+            if (!(friendshipData.IsMarried() || friendshipData.IsRoommate())
+                || (this.config.HeartsNeeded > 0 && friendshipData.Points / 250 < this.config.HeartsNeeded))
             {
                 continue;
             }
@@ -85,7 +92,11 @@ public sealed class ModEntry : Mod
             // Randomly choose spouse chores
             foreach (var (choreOption, chance) in choreOptions.Shuffle())
             {
-                if (selectedChores.Contains(choreOption) || !rnd.NextBool(chance) || !this.chores.TryGetValue(choreOption, out var chore) || !chore.IsPossibleForSpouse(spouse) || !chore.TryPerformChore(spouse))
+                if (selectedChores.Contains(choreOption)
+                    || !rnd.NextBool(chance)
+                    || !this.chores.TryGetValue(choreOption, out var chore)
+                    || !chore.IsPossibleForSpouse(spouse)
+                    || !chore.TryPerformChore(spouse))
                 {
                     continue;
                 }

@@ -16,7 +16,13 @@ internal sealed class FeedTheAnimals : IChore
     /// <inheritdoc />
     public void AddTokens(Dictionary<string, object> tokens)
     {
-        var animals = Game1.getFarm().getAllFarmAnimals().Where(animal => !animal.currentLocation.HasMapPropertyWithValue("AutoFeed")).ToList();
+        var animals =
+            Game1
+                .getFarm()
+                .getAllFarmAnimals()
+                .Where(animal => !animal.currentLocation.HasMapPropertyWithValue("AutoFeed"))
+                .ToList();
+
         var animal = Game1.random.ChooseFrom(animals);
         if (animal is not null)
         {
@@ -30,13 +36,17 @@ internal sealed class FeedTheAnimals : IChore
         var farm = Game1.getFarm();
         foreach (var building in farm.buildings)
         {
-            if (building.isUnderConstruction() || building.GetIndoors() is not AnimalHouse animalHouse || animalHouse.characters.Count == 0 || animalHouse.HasMapPropertyWithValue("AutoFeed"))
+            if (building.isUnderConstruction()
+                || building.GetIndoors() is not AnimalHouse animalHouse
+                || animalHouse.characters.Count == 0
+                || animalHouse.HasMapPropertyWithValue("AutoFeed"))
             {
                 continue;
             }
 
             var data = building.GetData();
-            if (data.ValidOccupantTypes is null || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
+            if (data.ValidOccupantTypes is null
+                || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
             {
                 continue;
             }
@@ -54,13 +64,17 @@ internal sealed class FeedTheAnimals : IChore
         var farm = Game1.getFarm();
         foreach (var building in farm.buildings)
         {
-            if (building.isUnderConstruction() || building.GetIndoors() is not AnimalHouse animalHouse || animalHouse.characters.Count == 0 || animalHouse.HasMapPropertyWithValue("AutoFeed"))
+            if (building.isUnderConstruction()
+                || building.GetIndoors() is not AnimalHouse animalHouse
+                || animalHouse.characters.Count == 0
+                || animalHouse.HasMapPropertyWithValue("AutoFeed"))
             {
                 continue;
             }
 
             var data = building.GetData();
-            if (data.ValidOccupantTypes is null || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
+            if (data.ValidOccupantTypes is null
+                || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
             {
                 continue;
             }

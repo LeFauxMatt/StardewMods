@@ -11,11 +11,11 @@ internal sealed class ItemTransferringEventArgs(IContainer from, IContainer to, 
     /// <summary>Gets the destination container to which the item was sent.</summary>
     public IContainer To { get; } = to;
 
-    /// <summary>Gets a value indicating whether the the transfer is prevented.</summary>
-    public bool IsPrevented { get; private set; }
-
     /// <summary>Gets the item that was transferred.</summary>
     public Item Item { get; } = item;
+
+    /// <summary>Gets a value indicating whether the the transfer is prevented.</summary>
+    public bool IsPrevented { get; private set; }
 
     /// <summary>Prevent the transfer.</summary>
     public void PreventTransfer() => this.IsPrevented = true;

@@ -22,12 +22,16 @@ internal sealed class WaterTheSlimes : IChore
         var farm = Game1.getFarm();
         foreach (var building in farm.buildings)
         {
-            if (building.isUnderConstruction() || building.GetIndoors() is not SlimeHutch slimeHutch || slimeHutch.characters.Count == 0)
+            if (building.isUnderConstruction()
+                || building.GetIndoors() is not SlimeHutch slimeHutch
+                || slimeHutch.characters.Count == 0)
             {
                 continue;
             }
 
-            var spots = new HashSet<Vector2>(Enumerable.Range(0, slimeHutch.waterSpots.Count).Select(i => new Vector2(16f, 6 + i)).ToList());
+            var spots = new HashSet<Vector2>(
+                Enumerable.Range(0, slimeHutch.waterSpots.Count).Select(i => new Vector2(16f, 6 + i)).ToList());
+
             foreach (var sprinkler in slimeHutch.Objects.Values.Where(@object => @object.IsSprinkler()))
             {
                 foreach (var tile in sprinkler.GetSprinklerTiles())

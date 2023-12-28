@@ -42,7 +42,7 @@ internal class ObjectContainer : BaseContainer<SObject>
     /// <inheritdoc />
     public override ModDataDictionary ModData => this.Object.modData;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public override NetMutex Mutex => this.chest.GetMutex();
 
     /// <inheritdoc />

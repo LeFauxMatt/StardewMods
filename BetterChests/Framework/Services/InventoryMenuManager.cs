@@ -36,14 +36,8 @@ internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
             Game1.pixelZoom) { myID = 5318009 };
     }
 
-    /// <summary>Gets or sets the method used to highlight an item in the inventory menu.</summary>
-    public InventoryMenu.highlightThisItem OriginalHighlightMethod { get; set; } = InventoryMenu.highlightAllItems;
-
     /// <inheritdoc />
     public InventoryMenu? Menu => this.source.TryGetTarget(out var target) ? target : null;
-
-    /// <inheritdoc />
-    public IContainer? Container { get; set; }
 
     /// <inheritdoc />
     public int Capacity => this.Menu?.capacity switch { null => 36, > 70 => 70, _ => this.Menu.capacity };
@@ -53,6 +47,12 @@ internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
 
     /// <inheritdoc />
     public int Columns => this.Capacity / this.Rows;
+
+    /// <summary>Gets or sets the method used to highlight an item in the inventory menu.</summary>
+    public InventoryMenu.highlightThisItem OriginalHighlightMethod { get; set; } = InventoryMenu.highlightAllItems;
+
+    /// <inheritdoc />
+    public IContainer? Container { get; set; }
 
     /// <inheritdoc />
     public int Scrolled { get; set; }
@@ -137,7 +137,10 @@ internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
         return false;
     }
 
-    /// <summary>Resets the state of the menu, clearing all operations, cached items, and setting new arrow positions and neighbor IDs.</summary>
+    /// <summary>
+    /// Resets the state of the menu, clearing all operations, cached items, and setting new arrow positions and
+    /// neighbor IDs.
+    /// </summary>
     /// <param name="parent">The parent ItemGrabMenu, if any.</param>
     /// <param name="current">The current InventoryMenu, if any.</param>
     public void Reset(ItemGrabMenu? parent, InventoryMenu? current)
