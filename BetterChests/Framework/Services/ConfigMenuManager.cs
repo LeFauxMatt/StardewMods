@@ -21,7 +21,7 @@ internal sealed class ConfigMenuManager : BaseService
     private readonly IManifest manifest;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigMenuManager" /> class.</summary>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
+    /// <param name="configManager">Dependency used for managing config data.</param>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="localizedTextManager">Dependency used for formatting and translating text.</param>

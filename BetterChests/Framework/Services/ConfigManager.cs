@@ -3,29 +3,37 @@ namespace StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
+using StardewMods.Common.Extensions;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IModConfig" />
 internal sealed class ConfigManager : BaseService, IModConfig
 {
-    private readonly FeatureManager featureManager;
     private readonly IModHelper modHelper;
 
+    private EventHandler<ConfigChangedEventArgs>? configChanged;
+    private bool initialized;
     private IModConfig modConfig;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigManager" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
-    /// <param name="featureManager">Dependency used for managing features.</param>
-    public ConfigManager(ILog log, IManifest manifest, IModHelper modHelper, FeatureManager featureManager)
+    public ConfigManager(ILog log, IManifest manifest, IModHelper modHelper)
         : base(log, manifest)
     {
         this.modHelper = modHelper;
-        this.featureManager = featureManager;
         this.modConfig = this.modHelper.ReadConfig<DefaultConfig>();
+    }
+
+    /// <summary>Event raised when the configuration has been changed.</summary>
+    public event EventHandler<ConfigChangedEventArgs> ConfigChanged
+    {
+        add => this.configChanged += value;
+        remove => this.configChanged -= value;
     }
 
     /// <inheritdoc />
@@ -88,12 +96,28 @@ internal sealed class ConfigManager : BaseService, IModConfig
     /// <inheritdoc />
     public bool StashToChestStacks => this.modConfig.StashToChestStacks;
 
+    /// <summary>Perform initialization routine.</summary>
+    public void Init()
+    {
+        if (this.initialized)
+        {
+            return;
+        }
+
+        this.initialized = true;
+        this.configChanged?.InvokeAll(this, new ConfigChangedEventArgs());
+    }
+
     /// <summary>Returns a new instance of IModConfig by reading the DefaultConfig from the mod helper.</summary>
     /// <returns>The new instance of IModConfig.</returns>
     public DefaultConfig GetNew() => this.modHelper.ReadConfig<DefaultConfig>();
 
     /// <summary>Resets the configuration by reassigning to <see cref="DefaultConfig" />.</summary>
-    public void Reset() => this.modConfig = new DefaultConfig();
+    public void Reset()
+    {
+        this.modConfig = new DefaultConfig();
+        this.configChanged?.InvokeAll(this, new ConfigChangedEventArgs());
+    }
 
     /// <summary>Saves the provided config.</summary>
     /// <param name="config">The config object to be saved.</param>
@@ -101,6 +125,6 @@ internal sealed class ConfigManager : BaseService, IModConfig
     {
         this.modHelper.WriteConfig(config);
         this.modConfig = config;
-        this.featureManager.Activate();
+        this.configChanged?.InvokeAll(this, new ConfigChangedEventArgs());
     }
 }

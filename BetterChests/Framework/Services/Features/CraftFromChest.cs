@@ -31,25 +31,25 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
 
     /// <summary>Initializes a new instance of the <see cref="CraftFromChest" /> class.</summary>
     /// <param name="assetHandler">Dependency used for handling assets.</param>
+    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public CraftFromChest(
         AssetHandler assetHandler,
+        ConfigManager configManager,
         ContainerFactory containerFactory,
         Harmony harmony,
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
-        IModConfig modConfig,
         IModEvents modEvents,
         ToolbarIconsIntegration toolbarIconsIntegration)
-        : base(log, manifest, modConfig)
+        : base(log, manifest, configManager)
     {
         CraftFromChest.instance = this;
         this.assetHandler = assetHandler;

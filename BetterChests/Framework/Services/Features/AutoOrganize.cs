@@ -14,20 +14,20 @@ internal sealed class AutoOrganize : BaseFeature<AutoOrganize>
     private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="AutoOrganize" /> class.</summary>
+    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public AutoOrganize(
+        ConfigManager configManager,
         ContainerFactory containerFactory,
         ContainerOperations containerOperations,
         ILog log,
         IManifest manifest,
-        IModConfig modConfig,
         IModEvents modEvents)
-        : base(log, manifest, modConfig)
+        : base(log, manifest, configManager)
     {
         this.containerOperations = containerOperations;
         this.modEvents = modEvents;

@@ -23,25 +23,25 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
 
     /// <summary>Initializes a new instance of the <see cref="StashToChest" /> class.</summary>
     /// <param name="assetHandler">Dependency used for handling assets.</param>
+    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public StashToChest(
         AssetHandler assetHandler,
+        ConfigManager configManager,
         ContainerFactory containerFactory,
         ContainerOperations containerOperations,
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
-        IModConfig modConfig,
         IModEvents modEvents,
         ToolbarIconsIntegration toolbarIconsIntegration)
-        : base(log, manifest, modConfig)
+        : base(log, manifest, configManager)
     {
         this.assetHandler = assetHandler;
         this.containerFactory = containerFactory;

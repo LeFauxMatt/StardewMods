@@ -6,7 +6,6 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -31,6 +30,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
 
     /// <summary>Initializes a new instance of the <see cref="ConfigureChest" /> class.</summary>
     /// <param name="assetHandler">Dependency used for handling assets.</param>
+    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
@@ -39,10 +39,10 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public ConfigureChest(
         AssetHandler assetHandler,
+        ConfigManager configManager,
         ContainerFactory containerFactory,
         IGameContentHelper gameContentHelper,
         GenericModConfigMenuIntegration genericModConfigMenuIntegration,
@@ -51,9 +51,8 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         ItemGrabMenuManager itemGrabMenuManager,
         ILog log,
         IManifest manifest,
-        IModConfig modConfig,
         IModEvents modEvents)
-        : base(log, manifest, modConfig)
+        : base(log, manifest, configManager)
     {
         ConfigureChest.instance = this;
         this.containerFactory = containerFactory;

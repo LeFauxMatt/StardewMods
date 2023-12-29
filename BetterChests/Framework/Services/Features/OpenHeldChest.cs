@@ -3,7 +3,6 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
@@ -20,24 +19,24 @@ internal sealed class OpenHeldChest : BaseFeature<OpenHeldChest>
     private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="OpenHeldChest" /> class.</summary>
+    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public OpenHeldChest(
+        ConfigManager configManager,
         ContainerFactory containerFactory,
         Harmony harmony,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         ILog log,
         IManifest manifest,
-        IModConfig modConfig,
         IModEvents modEvents)
-        : base(log, manifest, modConfig)
+        : base(log, manifest, configManager)
     {
         this.containerFactory = containerFactory;
         this.harmony = harmony;

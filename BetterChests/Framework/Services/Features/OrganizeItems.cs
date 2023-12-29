@@ -4,7 +4,6 @@ using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
@@ -26,24 +25,24 @@ internal sealed class OrganizeItems : BaseFeature<OrganizeItems>
     private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="OrganizeItems" /> class.</summary>
+    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public OrganizeItems(
+        ConfigManager configManager,
         ContainerOperations containerOperations,
         Harmony harmony,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         ILog log,
         IManifest manifest,
-        IModConfig modConfig,
         IModEvents modEvents)
-        : base(log, manifest, modConfig)
+        : base(log, manifest, configManager)
     {
         OrganizeItems.instance = this;
         this.containerOperations = containerOperations;

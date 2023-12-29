@@ -55,7 +55,6 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<ConfigMenuManager>();
         this.container.RegisterSingleton<ContainerFactory>();
         this.container.RegisterSingleton<ContainerOperations>();
-        this.container.RegisterSingleton<FeatureManager>();
         this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<InventoryTabFactory>();
@@ -98,7 +97,7 @@ public sealed class ModEntry : Mod
         // Verify
         this.container.Verify();
 
-        var featureManager = this.container.GetInstance<FeatureManager>();
-        featureManager.Activate();
+        var configManager = this.container.GetInstance<ConfigManager>();
+        configManager.Init();
     }
 }

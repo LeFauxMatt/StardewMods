@@ -25,22 +25,22 @@ internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
     private readonly PerScreen<bool> resetCache = new(() => true);
 
     /// <summary>Initializes a new instance of the <see cref="InventoryTabs" /> class.</summary>
+    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="inventoryTabFactory">Dependency used for managing inventory tabs.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public InventoryTabs(
+        ConfigManager configManager,
         IInputHelper inputHelper,
         InventoryTabFactory inventoryTabFactory,
         ItemGrabMenuManager itemGrabMenuManager,
         ILog log,
         IManifest manifest,
-        IModConfig modConfig,
         IModEvents modEvents)
-        : base(log, manifest, modConfig)
+        : base(log, manifest, configManager)
     {
         this.inputHelper = inputHelper;
         this.inventoryTabFactory = inventoryTabFactory;
