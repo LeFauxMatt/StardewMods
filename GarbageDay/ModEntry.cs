@@ -18,11 +18,6 @@ public sealed class ModEntry : Mod
     private readonly PerScreen<GarbageCan?> perScreenGarbageCan = new();
     private readonly PerScreen<NPC?> perScreenNpc = new();
 
-#nullable disable
-    private ModConfig config;
-    private Multiplayer multiplayer;
-#nullable enable
-
     private IEnumerable<GarbageCan> GarbageCans =>
         this.garbageCans.Values.Select(garbageCan => garbageCan.Value).OfType<GarbageCan>();
 
@@ -370,4 +365,8 @@ public sealed class ModEntry : Mod
             location.Objects.Remove(tile);
         }
     }
+
+#nullable disable
+    private ModConfig config;
+    private Multiplayer multiplayer;
 }

@@ -30,26 +30,30 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
     private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigureChest" /> class.</summary>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    /// <param name="assetHandler">Dependency used for handling assets.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public ConfigureChest(
-        ILog log,
-        IModConfig modConfig,
+        AssetHandler assetHandler,
         ContainerFactory containerFactory,
         IGameContentHelper gameContentHelper,
         GenericModConfigMenuIntegration genericModConfigMenuIntegration,
         Harmony harmony,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
+        ILog log,
+        IManifest manifest,
+        IModConfig modConfig,
         IModEvents modEvents)
-        : base(log, modConfig)
+        : base(log, manifest, modConfig)
     {
         ConfigureChest.instance = this;
         this.containerFactory = containerFactory;
@@ -61,7 +65,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         this.configButton = new PerScreen<ClickableTextureComponent>(
             () => new ClickableTextureComponent(
                 new Rectangle(0, 0, Game1.tileSize, Game1.tileSize),
-                gameContentHelper.Load<Texture2D>(AssetHandler.IconTexturePath),
+                gameContentHelper.Load<Texture2D>(assetHandler.IconTexturePath),
                 new Rectangle(0, 0, 16, 16),
                 Game1.pixelZoom)
             {

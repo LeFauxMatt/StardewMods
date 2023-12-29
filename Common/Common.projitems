@@ -11,14 +11,12 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Enums\ComponentArea.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\SimpleLogLevel.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Enums\Quality.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\CommonHelpers.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ReflectionHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\BaseService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\IConfigWithLogLevel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\BaseThemeHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\Automate\AutomateIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\Automate\IAutomatable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\Automate\IAutomateApi.cs" />
@@ -32,6 +30,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\IFuryCoreApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\ILog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\ITheming.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\LogService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\ThemingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\GenericModConfigMenuIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\IGenericModConfigMenuApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ModIntegration.cs" />

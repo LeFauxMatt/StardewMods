@@ -18,12 +18,18 @@ internal sealed class ResizeChest : BaseFeature<ResizeChest>
     private readonly Harmony harmony;
 
     /// <summary>Initializes a new instance of the <see cref="ResizeChest" /> class.</summary>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
-    public ResizeChest(ILog log, IModConfig modConfig, ContainerFactory containerFactory, Harmony harmony)
-        : base(log, modConfig)
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    public ResizeChest(
+        ContainerFactory containerFactory,
+        Harmony harmony,
+        ILog log,
+        IManifest manifest,
+        IModConfig modConfig)
+        : base(log, manifest, modConfig)
     {
         ResizeChest.instance = this;
         this.containerFactory = containerFactory;

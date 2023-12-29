@@ -14,18 +14,20 @@ internal sealed class AutoOrganize : BaseFeature<AutoOrganize>
     private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="AutoOrganize" /> class.</summary>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    /// <param name="modEvents">Dependency used for managing access to events.</param>
     public AutoOrganize(
-        ILog log,
-        IModConfig modConfig,
+        ContainerFactory containerFactory,
         ContainerOperations containerOperations,
-        IModEvents modEvents,
-        ContainerFactory containerFactory)
-        : base(log, modConfig)
+        ILog log,
+        IManifest manifest,
+        IModConfig modConfig,
+        IModEvents modEvents)
+        : base(log, manifest, modConfig)
     {
         this.containerOperations = containerOperations;
         this.modEvents = modEvents;
@@ -96,11 +98,7 @@ internal sealed class AutoOrganize : BaseFeature<AutoOrganize>
                             {
                                 this.Log.Trace(
                                     "{0}: {{ Item: {1}, Quantity: {2}, From: {3}, To: {4} }}",
-                                    this.Id,
-                                    name,
-                                    amount,
-                                    containerFrom,
-                                    containerTo);
+                                    [this.Id, name, amount, containerFrom, containerTo]);
                             }
                         }
                     }

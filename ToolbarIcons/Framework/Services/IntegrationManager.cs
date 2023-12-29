@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.ToolbarIcons.Framework.Enums;
 using StardewMods.ToolbarIcons.Framework.Interfaces;
@@ -13,6 +14,7 @@ using StardewValley.Menus;
 /// <summary>Base class for adding toolbar icons for integrated mods.</summary>
 internal sealed class IntegrationManager : BaseService
 {
+    private readonly AssetHandler assetHandler;
     private readonly IEnumerable<ICustomIntegration> customIntegrations;
     private readonly EventsManager eventsManager;
     private readonly IGameContentHelper gameContentHelper;
@@ -25,26 +27,31 @@ internal sealed class IntegrationManager : BaseService
     private bool isLoaded;
 
     /// <summary>Initializes a new instance of the <see cref="IntegrationManager" /> class.</summary>
+    /// <param name="assetHandler">Dependency used for handling assets.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="customIntegrations">Integrations directly supported by the mod.</param>
     /// <param name="eventsManager">Dependency used for custom events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="modRegistry">Dependency for fetching metadata about loaded mods.</param>
     /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
     /// <param name="toolbarManager">API to add icons above or below the toolbar.</param>
     public IntegrationManager(
+        AssetHandler assetHandler,
         ILog log,
         IEnumerable<ICustomIntegration> customIntegrations,
         EventsManager eventsManager,
         IGameContentHelper gameContentHelper,
+        IManifest manifest,
         IModEvents modEvents,
         IModRegistry modRegistry,
         IReflectionHelper reflectionHelper,
         ToolbarManager toolbarManager)
-        : base(log)
+        : base(log, manifest)
     {
         // Init
+        this.assetHandler = assetHandler;
         this.customIntegrations = customIntegrations;
         this.eventsManager = eventsManager;
         this.gameContentHelper = gameContentHelper;
@@ -64,7 +71,7 @@ internal sealed class IntegrationManager : BaseService
     /// <param name="hoverText">The text to display.</param>
     /// <param name="action">Function which returns the action to perform.</param>
     private void AddCustomAction(int index, string hoverText, Action action) =>
-        this.AddIcon(string.Empty, index, hoverText, action, AssetHandler.IconPath);
+        this.AddIcon(string.Empty, index, hoverText, action, this.assetHandler.IconPath);
 
     /// <summary>Adds a complex mod integration.</summary>
     /// <param name="modId">The id of the mod.</param>
@@ -84,7 +91,7 @@ internal sealed class IntegrationManager : BaseService
             return;
         }
 
-        this.AddIcon(modId, index, hoverText, () => action.Invoke(), AssetHandler.IconPath);
+        this.AddIcon(modId, index, hoverText, () => action.Invoke(), this.assetHandler.IconPath);
     }
 
     /// <summary>Adds a toolbar icon for an integrated mod.</summary>
@@ -215,7 +222,7 @@ internal sealed class IntegrationManager : BaseService
             return;
         }
 
-        this.AddIcon(modId, index, hoverText, () => action.Invoke(arguments), AssetHandler.IconPath);
+        this.AddIcon(modId, index, hoverText, () => action.Invoke(arguments), this.assetHandler.IconPath);
     }
 
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
@@ -259,7 +266,7 @@ internal sealed class IntegrationManager : BaseService
 
         // Load Data Integrations
         foreach (var (_, data) in this.gameContentHelper.Load<Dictionary<string, ToolbarIconData>>(
-            AssetHandler.DataPath))
+            this.assetHandler.DataPath))
         {
             switch (data.Type)
             {

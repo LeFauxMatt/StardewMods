@@ -16,6 +16,7 @@ using StardewValley.Menus;
 /// <summary>Search for which chests have the item you're looking for.</summary>
 internal sealed class ChestFinder : BaseFeature<ChestFinder>
 {
+    private readonly AssetHandler assetHandler;
     private readonly ContainerFactory containerFactory;
     private readonly PerScreen<int> currentIndex = new();
     private readonly IInputHelper inputHelper;
@@ -29,23 +30,28 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
     private readonly ToolbarIconsIntegration toolbarIconsIntegration;
 
     /// <summary>Initializes a new instance of the <see cref="ChestFinder" /> class.</summary>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    /// <param name="assetHandler">Dependency used for handling assets.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemMatcherFactory">Dependency used for getting an ItemMatcher.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public ChestFinder(
-        ILog log,
-        IModConfig modConfig,
+        AssetHandler assetHandler,
         ContainerFactory containerFactory,
         IInputHelper inputHelper,
         ItemMatcherFactory itemMatcherFactory,
+        ILog log,
+        IManifest manifest,
+        IModConfig modConfig,
         IModEvents modEvents,
         ToolbarIconsIntegration toolbarIconsIntegration)
-        : base(log, modConfig)
+        : base(log, manifest, modConfig)
     {
+        this.assetHandler = assetHandler;
         this.containerFactory = containerFactory;
         this.inputHelper = inputHelper;
         this.modEvents = modEvents;
@@ -56,7 +62,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
                 () => this.itemMatcher.Value.SearchText,
                 value =>
                 {
-                    this.Log.Trace("{0}: Searching for {1}", this.Id, value);
+                    this.Log.Trace("{0}: Searching for {1}", [this.Id, value]);
                     this.itemMatcher.Value.SearchText = value;
                     this.resetCache.Value = true;
                 }));
@@ -86,7 +92,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
 
         this.toolbarIconsIntegration.Api.AddToolbarIcon(
             this.Id,
-            AssetHandler.IconTexturePath,
+            this.assetHandler.IconTexturePath,
             new Rectangle(48, 0, 16, 16),
             I18n.Button_FindChest_Name());
 
@@ -281,7 +287,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
             }
         }
 
-        this.Log.Trace("{0}: Found {1} chests", this.Id, this.pointers.Value.Count);
+        this.Log.Trace("{0}: Found {1} chests", [this.Id, this.pointers.Value.Count]);
         this.currentIndex.Value = 0;
     }
 }

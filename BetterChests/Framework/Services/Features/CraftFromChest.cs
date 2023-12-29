@@ -22,6 +22,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
     private static CraftFromChest instance;
 #nullable enable
 
+    private readonly AssetHandler assetHandler;
     private readonly ContainerFactory containerFactory;
     private readonly Harmony harmony;
     private readonly IInputHelper inputHelper;
@@ -29,24 +30,29 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
     private readonly ToolbarIconsIntegration toolbarIconsIntegration;
 
     /// <summary>Initializes a new instance of the <see cref="CraftFromChest" /> class.</summary>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    /// <param name="assetHandler">Dependency used for handling assets.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public CraftFromChest(
-        ILog log,
-        IModConfig modConfig,
+        AssetHandler assetHandler,
         ContainerFactory containerFactory,
         Harmony harmony,
         IInputHelper inputHelper,
+        ILog log,
+        IManifest manifest,
+        IModConfig modConfig,
         IModEvents modEvents,
         ToolbarIconsIntegration toolbarIconsIntegration)
-        : base(log, modConfig)
+        : base(log, manifest, modConfig)
     {
         CraftFromChest.instance = this;
+        this.assetHandler = assetHandler;
         this.containerFactory = containerFactory;
         this.harmony = harmony;
         this.inputHelper = inputHelper;
@@ -79,7 +85,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
 
         this.toolbarIconsIntegration.Api.AddToolbarIcon(
             this.Id,
-            AssetHandler.IconTexturePath,
+            this.assetHandler.IconTexturePath,
             new Rectangle(32, 0, 16, 16),
             I18n.Button_CraftFromChest_Name());
 

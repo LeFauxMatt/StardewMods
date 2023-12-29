@@ -3,6 +3,7 @@ namespace StardewMods.BetterChests.Framework.Services;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
@@ -20,8 +21,9 @@ internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
 
     /// <summary>Initializes a new instance of the <see cref="InventoryMenuManager" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
-    public InventoryMenuManager(ILog log)
-        : base(log)
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    public InventoryMenuManager(ILog log, IManifest manifest)
+        : base(log, manifest)
     {
         this.upArrow = new ClickableTextureComponent(
             new Rectangle(0, 0, 11 * Game1.pixelZoom, 12 * Game1.pixelZoom),

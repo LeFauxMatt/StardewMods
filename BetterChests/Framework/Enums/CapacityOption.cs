@@ -1,7 +1,3 @@
-// <copyright file="CapacityOption.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-
 namespace StardewMods.BetterChests.Framework.Enums;
 
 using NetEscapades.EnumGenerators;

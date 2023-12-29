@@ -8,7 +8,7 @@ using StardewMods.ToolbarIcons.Framework.UI;
 using StardewValley.Menus;
 
 /// <summary>Handles generic mod config menu.</summary>
-internal sealed class ConfigMenuManager
+internal sealed class ConfigManager
 {
     private readonly Dictionary<string, ClickableTextureComponent> components;
     private readonly ModConfig modConfig;
@@ -17,14 +17,14 @@ internal sealed class ConfigMenuManager
     private readonly IModHelper modHelper;
     private readonly IManifest manifest;
 
-    /// <summary>Initializes a new instance of the <see cref="ConfigMenuManager" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ConfigManager" /> class.</summary>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="components">Dependency used for the toolbar icon components.</param>
     /// <param name="eventsManager">Dependency used for custom events.</param>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    public ConfigMenuManager(
+    public ConfigManager(
         IModHelper modHelper,
         ModConfig modConfig,
         Dictionary<string, ClickableTextureComponent> components,

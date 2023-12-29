@@ -1,4 +1,4 @@
-﻿namespace StardewMods.EasyAccess;
+﻿namespace StardewMods.EasyAccess.Framework.Models;
 
 using StardewModdingAPI.Utilities;
 

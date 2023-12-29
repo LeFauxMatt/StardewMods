@@ -36,7 +36,7 @@ public sealed class ModEntry : Mod
         this.container = new Container();
 
         // Configuration
-        this.container.Register(() => new Harmony(this.ModManifest.UniqueID), Lifestyle.Singleton);
+        this.container.RegisterSingleton(() => new Harmony(this.ModManifest.UniqueID));
         this.container.RegisterInstance(this.Helper);
         this.container.RegisterInstance(this.ModManifest);
         this.container.RegisterInstance(this.Monitor);
@@ -48,22 +48,28 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.ModRegistry);
         this.container.RegisterInstance(this.Helper.Reflection);
         this.container.RegisterInstance(this.Helper.Translation);
-        this.container.RegisterSingleton<AutomateIntegration>();
-        this.container.RegisterSingleton<FuryCoreIntegration>();
-        this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
-        this.container.RegisterSingleton<ToolbarIconsIntegration>();
         this.container.RegisterSingleton<AssetHandler>();
+        this.container.RegisterSingleton<AutomateIntegration>();
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
         this.container.RegisterSingleton<ConfigManager, ConfigManager>();
         this.container.RegisterSingleton<ConfigMenuManager>();
         this.container.RegisterSingleton<ContainerFactory>();
         this.container.RegisterSingleton<ContainerOperations>();
         this.container.RegisterSingleton<FeatureManager>();
+        this.container.RegisterSingleton<FuryCoreIntegration>();
+        this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<InventoryTabFactory>();
         this.container.RegisterSingleton<ItemGrabMenuManager>();
+        this.container.RegisterSingleton<ItemMatcherFactory>();
         this.container.RegisterSingleton<LocalizedTextManager>();
+        this.container.RegisterSingleton<ILog, LogService>();
         this.container.RegisterSingleton<ProxyChestFactory>();
         this.container.RegisterSingleton<StatusEffectManager>();
+        this.container.RegisterSingleton<ITheming, ThemingService>();
+        this.container.RegisterSingleton<ToolbarIconsIntegration>();
+        this.container.Register<ItemMatcher>();
+        this.container.Register<Func<ItemMatcher>>(() => this.container.GetInstance<ItemMatcher>);
+
         this.container.Collection.Register<IFeature>(
             new[]
             {
@@ -89,29 +95,7 @@ public sealed class ModEntry : Mod
             },
             Lifestyle.Singleton);
 
-        this.container.RegisterSingleton(
-            () =>
-            {
-                var furyCore = this.container.GetInstance<FuryCoreIntegration>();
-                var monitor = this.container.GetInstance<IMonitor>();
-                return furyCore.Api!.CreateLogService(monitor);
-            });
-
-        this.container.RegisterSingleton(
-            () =>
-            {
-                var furyCore = this.container.GetInstance<FuryCoreIntegration>();
-                return furyCore.Api!.CreateThemingService();
-            });
-
-        this.container.Register<ItemMatcher>(Lifestyle.Transient);
-        this.container.RegisterSingleton(
-            () =>
-            {
-                var log = this.container.GetInstance<ILog>();
-                return new ItemMatcherFactory(log, this.container.GetInstance<ItemMatcher>);
-            });
-
+        // Verify
         this.container.Verify();
 
         var featureManager = this.container.GetInstance<FeatureManager>();

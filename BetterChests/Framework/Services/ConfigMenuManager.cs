@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewValley.Menus;
@@ -33,7 +34,7 @@ internal sealed class ConfigMenuManager : BaseService
         LocalizedTextManager localizedTextManager,
         ILog log,
         IManifest manifest)
-        : base(log)
+        : base(log, manifest)
     {
         this.configManager = configManager;
         this.inputHelper = inputHelper;
@@ -62,7 +63,7 @@ internal sealed class ConfigMenuManager : BaseService
             this.genericModConfigMenuIntegration.Unregister(this.manifest);
         }
 
-        this.genericModConfigMenuIntegration.Register(this.manifest, this.configManager.Reload, SaveConfig);
+        this.genericModConfigMenuIntegration.Register(this.manifest, this.configManager.Reset, SaveConfig);
 
         gmcm.AddPageLink(this.manifest, "Main", I18n.Section_Main_Name);
         gmcm.AddParagraph(this.manifest, I18n.Section_Main_Description);

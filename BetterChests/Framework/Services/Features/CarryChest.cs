@@ -26,24 +26,26 @@ internal sealed class CarryChest : BaseFeature<CarryChest>
     private readonly StatusEffectManager statusEffectManager;
 
     /// <summary>Initializes a new instance of the <see cref="CarryChest" /> class.</summary>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="proxyChestFactory">Dependency used for creating virtualized chests.</param>
     /// <param name="statusEffectManager">Dependency used for adding and removing custom buffs.</param>
     public CarryChest(
-        ILog log,
-        IModConfig modConfig,
         ContainerFactory containerFactory,
         Harmony harmony,
         IInputHelper inputHelper,
+        ILog log,
+        IManifest manifest,
+        IModConfig modConfig,
         IModEvents modEvents,
         ProxyChestFactory proxyChestFactory,
         StatusEffectManager statusEffectManager)
-        : base(log, modConfig)
+        : base(log, manifest, modConfig)
     {
         CarryChest.instance = this;
         this.modEvents = modEvents;
@@ -181,10 +183,7 @@ internal sealed class CarryChest : BaseFeature<CarryChest>
         // Remove chest from world
         this.Log.Trace(
             "{0}: Grabbed chest from {1} at ({2}, {3})",
-            this.Id,
-            Game1.player.currentLocation.Name,
-            pos.X,
-            pos.Y);
+            [this.Id, Game1.player.currentLocation.Name, pos.X, pos.Y]);
 
         request.Confirm();
         Game1.currentLocation.Objects.Remove(pos);

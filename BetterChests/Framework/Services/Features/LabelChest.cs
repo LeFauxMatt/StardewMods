@@ -16,12 +16,18 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
     private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="LabelChest" /> class.</summary>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
-    public LabelChest(ILog log, IModConfig modConfig, ContainerFactory containerFactory, IModEvents modEvents)
-        : base(log, modConfig)
+    public LabelChest(
+        ContainerFactory containerFactory,
+        ILog log,
+        IManifest manifest,
+        IModConfig modConfig,
+        IModEvents modEvents)
+        : base(log, manifest, modConfig)
     {
         this.containerFactory = containerFactory;
         this.modEvents = modEvents;

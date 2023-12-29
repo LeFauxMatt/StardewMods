@@ -6,30 +6,30 @@ public interface ILog
     /// <summary>Logs a trace message to the console.</summary>
     /// <param name="message">The message to send.</param>
     /// <param name="args">The arguments to parse in a formatted string.</param>
-    public void Trace(string message, params object?[]? args);
+    public void Trace(string message, object?[]? args = null);
 
     /// <summary>Logs a debug message to the console.</summary>
     /// <param name="message">The message to send.</param>
     /// <param name="args">The arguments to parse in a formatted string.</param>
-    public void Debug(string message, params object?[]? args);
+    public void Debug(string message, object?[]? args = null);
 
     /// <summary>Logs an info message to the console.</summary>
     /// <param name="message">The message to send.</param>
     /// <param name="args">The arguments to parse in a formatted string.</param>
-    public void Info(string message, params object?[]? args);
+    public void Info(string message, object?[]? args = null);
 
     /// <summary>Logs a warn message to the console.</summary>
     /// <param name="message">The message to send.</param>
     /// <param name="args">The arguments to parse in a formatted string.</param>
-    public void Warn(string message, params object?[]? args);
+    public void Warn(string message, object?[]? args = null);
 
     /// <summary>Logs an error message to the console.</summary>
     /// <param name="message">The message to send.</param>
     /// <param name="args">The arguments to parse in a formatted string.</param>
-    public void Error(string message, params object?[]? args);
+    public void Error(string message, object?[]? args = null);
 
     /// <summary>Logs an alert message to the console.</summary>
     /// <param name="message">The message to send.</param>
     /// <param name="args">The arguments to parse in a formatted string.</param>
-    public void Alert(string message, params object?[]? args);
+    public void Alert(string message, object?[]? args = null);
 }

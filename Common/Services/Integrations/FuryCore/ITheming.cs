@@ -5,5 +5,5 @@ public interface ITheming
 {
     /// <summary>Adds the specified asset names to the existing set of asset names.</summary>
     /// <param name="assetNames">The asset names to add.</param>
-    public void AddAssets(params string[] assetNames);
+    public void AddAssets(string[] assetNames);
 }

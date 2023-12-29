@@ -14,6 +14,7 @@ using StardewValley.Objects;
 /// <summary>Stash items into placed chests and chests in the farmer's inventory.</summary>
 internal sealed class StashToChest : BaseFeature<StashToChest>
 {
+    private readonly AssetHandler assetHandler;
     private readonly ContainerFactory containerFactory;
     private readonly ContainerOperations containerOperations;
     private readonly IInputHelper inputHelper;
@@ -21,23 +22,28 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
     private readonly ToolbarIconsIntegration toolbarIconsIntegration;
 
     /// <summary>Initializes a new instance of the <see cref="StashToChest" /> class.</summary>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    /// <param name="assetHandler">Dependency used for handling assets.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public StashToChest(
-        ILog log,
-        IModConfig modConfig,
+        AssetHandler assetHandler,
         ContainerFactory containerFactory,
         ContainerOperations containerOperations,
         IInputHelper inputHelper,
+        ILog log,
+        IManifest manifest,
+        IModConfig modConfig,
         IModEvents modEvents,
         ToolbarIconsIntegration toolbarIconsIntegration)
-        : base(log, modConfig)
+        : base(log, manifest, modConfig)
     {
+        this.assetHandler = assetHandler;
         this.containerFactory = containerFactory;
         this.containerOperations = containerOperations;
         this.inputHelper = inputHelper;
@@ -63,7 +69,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
 
         this.toolbarIconsIntegration.Api.AddToolbarIcon(
             this.Id,
-            AssetHandler.IconTexturePath,
+            this.assetHandler.IconTexturePath,
             new Rectangle(16, 0, 16, 16),
             I18n.Button_StashToChest_Name());
 
@@ -193,11 +199,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
                     stashedAny = true;
                     this.Log.Trace(
                         "{0}: {{ Item: {1}, Quantity: {2}, From: {3}, To: {4} }}",
-                        this.Id,
-                        name,
-                        amount,
-                        containerFrom,
-                        containerTo);
+                        [this.Id, name, amount, containerFrom, containerTo]);
                 }
             }
 
@@ -247,11 +249,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
             {
                 this.Log.Trace(
                     "{0}: {{ Item: {1}, Quantity: {2}, From: {3}, To: {4} }}",
-                    this.Id,
-                    name,
-                    amount,
-                    containerFrom,
-                    containerTo);
+                    [this.Id, name, amount, containerFrom, containerTo]);
             }
         }
     }

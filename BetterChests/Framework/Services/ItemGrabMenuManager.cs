@@ -10,6 +10,7 @@ using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Extensions;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -32,6 +33,7 @@ internal sealed class ItemGrabMenuManager : BaseService
 
     /// <summary>Initializes a new instance of the <see cref="ItemGrabMenuManager" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
@@ -39,20 +41,21 @@ internal sealed class ItemGrabMenuManager : BaseService
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     public ItemGrabMenuManager(
         ILog log,
+        IManifest manifest,
         IModConfig modConfig,
         IModEvents modEvents,
         Harmony harmony,
         IInputHelper inputHelper,
         ContainerFactory containerFactory)
-        : base(log)
+        : base(log, manifest)
     {
         // Init
         ItemGrabMenuManager.instance = this;
         this.modConfig = modConfig;
         this.inputHelper = inputHelper;
         this.containerFactory = containerFactory;
-        this.topMenu = new PerScreen<InventoryMenuManager>(() => new InventoryMenuManager(log));
-        this.bottomMenu = new PerScreen<InventoryMenuManager>(() => new InventoryMenuManager(log));
+        this.topMenu = new PerScreen<InventoryMenuManager>(() => new InventoryMenuManager(log, manifest));
+        this.bottomMenu = new PerScreen<InventoryMenuManager>(() => new InventoryMenuManager(log, manifest));
 
         // Events
         modEvents.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;

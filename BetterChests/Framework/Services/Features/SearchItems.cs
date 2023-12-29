@@ -22,20 +22,22 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
     private readonly PerScreen<SearchBar> searchBar;
 
     /// <summary>Initializes a new instance of the <see cref="SearchItems" /> class.</summary>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="itemMatcherFactory">Dependency used for getting an ItemMatcher.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public SearchItems(
-        ILog log,
-        IModConfig modConfig,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         ItemMatcherFactory itemMatcherFactory,
+        ILog log,
+        IManifest manifest,
+        IModConfig modConfig,
         IModEvents modEvents)
-        : base(log, modConfig)
+        : base(log, manifest, modConfig)
     {
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
@@ -49,7 +51,7 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
                 {
                     if (!string.IsNullOrWhiteSpace(value))
                     {
-                        this.Log.Trace("{0}: Searching for {1}", this.Id, value);
+                        this.Log.Trace("{0}: Searching for {1}", [this.Id, value]);
                     }
 
                     this.itemMatcher.Value.SearchText = value;

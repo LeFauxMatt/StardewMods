@@ -32,28 +32,30 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
     private MethodBase? storeMethod;
 
     /// <summary>Initializes a new instance of the <see cref="CategorizeChest" /> class.</summary>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="automateIntegration">Dependency for integration with Automate.</param>
     /// <param name="containerFactory">Dependency for handling storages.</param>
     /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="itemMatcherFactory">Dependency used for getting an ItemMatcher.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modRegistry">Dependency used for fetching metadata about loaded mods.</param>
     /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
     public CategorizeChest(
-        ILog log,
-        IModConfig modConfig,
         AutomateIntegration automateIntegration,
         ContainerFactory containerFactory,
         ContainerOperations containerOperations,
         Harmony harmony,
         ItemGrabMenuManager itemGrabMenuManager,
         ItemMatcherFactory itemMatcherFactory,
+        ILog log,
+        IManifest manifest,
+        IModConfig modConfig,
         IModRegistry modRegistry,
         IReflectionHelper reflectionHelper)
-        : base(log, modConfig)
+        : base(log, manifest, modConfig)
     {
         CategorizeChest.instance = this;
         this.automateIntegration = automateIntegration;

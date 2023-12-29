@@ -1,10 +1,10 @@
-namespace StardewMods.FuryCore;
+namespace StardewMods.FuryCore.Framework.Models;
 
 using StardewMods.Common.Enums;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.FuryCore.Framework.Interfaces;
 
 /// <summary>Mod config data for FuryCore.</summary>
-internal sealed class ModConfig : IConfigWithLogLevel
+internal sealed class DefaultConfig : IModConfig
 {
     /// <inheritdoc />
     public SimpleLogLevel LogLevel { get; set; } = SimpleLogLevel.Less;

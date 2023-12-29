@@ -2,6 +2,7 @@ namespace StardewMods.BetterChests.Framework.Services;
 
 using System.Globalization;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Helper methods to convert between different text formats.</summary>
@@ -12,8 +13,9 @@ internal sealed class LocalizedTextManager : BaseService
     /// <summary>Initializes a new instance of the <see cref="LocalizedTextManager" /> class.</summary>
     /// <param name="translations">Dependency used for accessing translations.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
-    public LocalizedTextManager(ILog log, ITranslationHelper translations)
-        : base(log) =>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    public LocalizedTextManager(ILog log, IManifest manifest, ITranslationHelper translations)
+        : base(log, manifest) =>
         this.translations = translations;
 
     public string CarryChestLimit(int value) =>

@@ -4,6 +4,9 @@ using SimpleInjector;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
+using StardewMods.FuryCore.Framework;
+using StardewMods.FuryCore.Framework.Interfaces;
+using StardewMods.FuryCore.Framework.Models;
 using StardewMods.FuryCore.Framework.Services;
 
 /// <inheritdoc />
@@ -26,20 +29,19 @@ public sealed class ModEntry : Mod
     /// <inheritdoc />
     public override object GetApi(IModInfo mod)
     {
-        var apiFactory = this.container.GetInstance<ApiFactory>();
-        return apiFactory.CreateApi(mod);
+        var config = this.container.GetInstance<IConfigWithLogLevel>();
+        var theming = this.container.GetInstance<ITheming>();
+        return new FuryCoreApi(mod, config, theming);
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        var config = this.Helper.ReadConfig<ModConfig>();
+        var config = this.Helper.ReadConfig<DefaultConfig>();
 
         // Init
         this.container = new Container();
-        this.container.RegisterInstance(config);
-        this.container.RegisterInstance<IConfigWithLogLevel>(config);
 
-        // SMAPI
+        // Configuration
         this.container.RegisterInstance(this.Helper);
         this.container.RegisterInstance(this.ModManifest);
         this.container.RegisterInstance(this.Monitor);
@@ -51,15 +53,14 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.ModRegistry);
         this.container.RegisterInstance(this.Helper.Reflection);
         this.container.RegisterInstance(this.Helper.Translation);
+        this.container.RegisterSingleton<IConfigWithLogLevel, ConfigManager>();
+        this.container.RegisterSingleton<IModConfig, ConfigManager>();
+        this.container.RegisterSingleton<ConfigManager, ConfigManager>();
+        this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
+        this.container.RegisterSingleton<ILog, Log>();
+        this.container.RegisterSingleton<ITheming, Theming>();
 
-        // Integrations
-        this.container.Register<GenericModConfigMenuIntegration>(Lifestyle.Transient);
-
-        // Services
-        this.container.Register<ILog, Log>(Lifestyle.Singleton);
-        this.container.Register<ITheming, Theming>(Lifestyle.Singleton);
-        this.container.Register<ApiFactory>(Lifestyle.Singleton);
-
+        // Verify
         this.container.Verify();
     }
 }

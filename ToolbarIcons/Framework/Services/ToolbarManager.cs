@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.ToolbarIcons.Framework.Models;
 using StardewValley.Menus;
@@ -12,7 +13,7 @@ using StardewValley.Menus;
 // TODO: Center Toolbar Icons
 
 /// <summary>Service for handling the toolbar icons on the screen.</summary>
-internal sealed class ToolbarManager
+internal sealed class ToolbarManager : BaseService
 {
     private readonly Dictionary<string, ClickableTextureComponent> components;
     private readonly ModConfig modConfig;
@@ -24,36 +25,43 @@ internal sealed class ToolbarManager
     private readonly PerScreen<ComponentArea> lastArea = new(() => ComponentArea.Custom);
     private readonly PerScreen<ClickableComponent> lastButton = new();
     private readonly PerScreen<Toolbar> lastToolbar = new();
+    private readonly AssetHandler assetHandler;
     private readonly ILog log;
     private readonly IReflectionHelper reflectionHelper;
 
     /// <summary>Initializes a new instance of the <see cref="ToolbarManager" /> class.</summary>
-    /// <param name="log">Dependency used for monitoring and logging.</param>
+    /// <param name="assetHandler">Dependency used for handling assets.</param>
     /// <param name="components">Dependency used for the toolbar icon components.</param>
     /// <param name="eventsManager">Dependency used for custom events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
+    /// <param name="log">Dependency used for monitoring and logging.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
     public ToolbarManager(
-        ILog log,
+        AssetHandler assetHandler,
         Dictionary<string, ClickableTextureComponent> components,
         EventsManager eventsManager,
         IGameContentHelper gameContentHelper,
         IInputHelper inputHelper,
+        ILog log,
+        IManifest manifest,
         ModConfig modConfig,
         IModEvents modEvents,
         IReflectionHelper reflectionHelper)
+        : base(log, manifest)
     {
         // Init
-        this.log = log;
+        this.assetHandler = assetHandler;
         this.components = components;
-        this.modConfig = modConfig;
         this.eventsManager = eventsManager;
-        this.modEvents = modEvents;
         this.gameContentHelper = gameContentHelper;
         this.inputHelper = inputHelper;
+        this.log = log;
+        this.modConfig = modConfig;
+        this.modEvents = modEvents;
         this.reflectionHelper = reflectionHelper;
 
         // Events
@@ -86,7 +94,7 @@ internal sealed class ToolbarManager
             return;
         }
 
-        this.log.Trace("Adding icon: {0}", id);
+        this.log.Trace("Adding icon: {0}", [id]);
         this.components.Add(
             id,
             new ClickableTextureComponent(
@@ -113,7 +121,7 @@ internal sealed class ToolbarManager
             return;
         }
 
-        this.log.Trace("Removing icon: {0}", id);
+        this.log.Trace("Removing icon: {0}", [id]);
         this.modConfig.Icons.Remove(toolbarIcon);
         this.components.Remove(id);
     }
@@ -210,7 +218,7 @@ internal sealed class ToolbarManager
         foreach (var component in this.components.Values.Where(component => component.visible))
         {
             e.SpriteBatch.Draw(
-                this.gameContentHelper.Load<Texture2D>(AssetHandler.IconPath),
+                this.gameContentHelper.Load<Texture2D>(this.assetHandler.IconPath),
                 new Vector2(component.bounds.X, component.bounds.Y),
                 new Rectangle(0, 0, 16, 16),
                 Color.White,

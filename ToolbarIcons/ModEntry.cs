@@ -55,13 +55,16 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.Translation);
         this.container.RegisterInstance(this.Helper.ReadConfig<ModConfig>());
         this.container.RegisterInstance(new Dictionary<string, ClickableTextureComponent>());
+        this.container.RegisterSingleton<AssetHandler>();
         this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
-        this.container.RegisterSingleton<AssetHandler>();
-        this.container.RegisterSingleton<ConfigMenuManager>();
+        this.container.RegisterSingleton<ConfigManager>();
         this.container.RegisterSingleton<EventsManager>();
         this.container.RegisterSingleton<IntegrationManager>();
+        this.container.RegisterSingleton<ILog, LogService>();
+        this.container.RegisterSingleton<ITheming, ThemingService>();
         this.container.RegisterSingleton<ToolbarManager>();
+
         this.container.Collection.Register<ICustomIntegration>(
             typeof(AlwaysScrollMap),
             typeof(CjbCheatsMenu),
@@ -73,21 +76,7 @@ public sealed class ModEntry : Mod
             typeof(StardewAquarium),
             typeof(ToDew));
 
-        this.container.RegisterSingleton(
-            () =>
-            {
-                var furyCore = this.container.GetInstance<FuryCoreIntegration>();
-                var monitor = this.container.GetInstance<IMonitor>();
-                return furyCore.Api!.CreateLogService(monitor);
-            });
-
-        this.container.RegisterSingleton(
-            () =>
-            {
-                var furyCore = this.container.GetInstance<FuryCoreIntegration>();
-                return furyCore.Api!.CreateThemingService();
-            });
-
+        // Verify
         this.container.Verify();
     }
 }

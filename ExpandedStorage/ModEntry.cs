@@ -6,6 +6,8 @@ using StardewModdingAPI.Events;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
+using StardewMods.Common.Services.Integrations.ToolbarIcons;
+using StardewMods.ExpandedStorage.Framework.Interfaces;
 using StardewMods.ExpandedStorage.Framework.Services;
 
 /// <inheritdoc />
@@ -29,10 +31,9 @@ public sealed class ModEntry : Mod
     {
         // Init
         this.container = new Container();
-        this.container.Register(this.Helper.ReadConfig<ModConfig>, Lifestyle.Singleton);
-        this.container.Register(() => new Harmony(this.ModManifest.UniqueID), Lifestyle.Singleton);
 
-        // SMAPI
+        // Configuration
+        this.container.RegisterSingleton(() => new Harmony(this.ModManifest.UniqueID));
         this.container.RegisterInstance(this.Helper);
         this.container.RegisterInstance(this.ModManifest);
         this.container.RegisterInstance(this.Monitor);
@@ -44,26 +45,17 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.ModRegistry);
         this.container.RegisterInstance(this.Helper.Reflection);
         this.container.RegisterInstance(this.Helper.Translation);
+        this.container.RegisterSingleton<IModConfig, ConfigManager>();
+        this.container.RegisterSingleton<ConfigManager, ConfigManager>();
+        this.container.RegisterSingleton<ContentPatcherIntegration>();
+        this.container.RegisterSingleton<ILog, LogService>();
+        this.container.RegisterSingleton<StorageManager>();
+        this.container.RegisterSingleton<ModPatches>();
+        this.container.RegisterSingleton<FuryCoreIntegration>();
+        this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
+        this.container.RegisterSingleton<ToolbarIconsIntegration>();
 
-        // Integrations
-        this.container.Register<FuryCoreIntegration>(Lifestyle.Singleton);
-        this.container.Register<GenericModConfigMenuIntegration>(Lifestyle.Singleton);
-        this.container.Register<ContentPatcherIntegration>(Lifestyle.Singleton);
-
-        // Services
-        this.container.Register(
-            () =>
-            {
-                var furyCore = this.container.GetInstance<FuryCoreIntegration>();
-                var monitor = this.container.GetInstance<IMonitor>();
-                return furyCore.Api!.CreateLogService(monitor);
-            },
-            Lifestyle.Singleton);
-
-        this.container.Register<ConfigMenu>(Lifestyle.Singleton);
-        this.container.Register<ManagedStorages>(Lifestyle.Singleton);
-        this.container.Register<ModPatches>(Lifestyle.Singleton);
-
+        // Verify
         this.container.Verify();
     }
 }

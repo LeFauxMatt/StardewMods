@@ -25,6 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.20231228" required="true"/>
+    <SMAPIDependency Include="furyx639.ToolbarIcons" Version="2.6.0-alpha.20231228" required="false"/>
     <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
   </ItemGroup>
 </Project>

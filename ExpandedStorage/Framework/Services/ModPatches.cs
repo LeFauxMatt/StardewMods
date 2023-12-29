@@ -4,12 +4,14 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>Harmony Patches for Expanded Storage.</summary>
-internal sealed class ModPatches
+internal sealed class ModPatches : BaseService
 {
     private const string ChestOpenSound = "openChest";
     private const string LidOpenSound = "doorCreak";
@@ -19,16 +21,19 @@ internal sealed class ModPatches
     private static ModPatches instance;
 #nullable enable
 
-    private readonly ManagedStorages storages;
+    private readonly StorageManager storageManager;
 
     /// <summary>Initializes a new instance of the <see cref="ModPatches" /> class.</summary>
     /// <param name="harmony">Dependency used to patch external code.</param>
-    /// <param name="storages">Dependency used to handle the objects which should be managed by Expanded Storages.</param>
-    public ModPatches(Harmony harmony, ManagedStorages storages)
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="storageManager">Dependency used to handle the objects which should be managed by Expanded Storages.</param>
+    public ModPatches(Harmony harmony, ILog log, IManifest manifest, StorageManager storageManager)
+        : base(log, manifest)
     {
         // Init
         ModPatches.instance = this;
-        this.storages = storages;
+        this.storageManager = storageManager;
 
         harmony.Patch(
             AccessTools.Method(typeof(Chest), nameof(Chest.checkForAction)),
@@ -111,7 +116,7 @@ internal sealed class ModPatches
     {
         if (justCheckingForActivity
             || !__instance.playerChest.Value
-            || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
+            || !ModPatches.instance.storageManager.Data.TryGetValue(__instance.ItemId, out var storage))
         {
             return true;
         }
@@ -180,7 +185,7 @@ internal sealed class ModPatches
         float alpha)
     {
         if (!__instance.playerChest.Value
-            || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
+            || !ModPatches.instance.storageManager.Data.TryGetValue(__instance.ItemId, out var storage))
         {
             return true;
         }
@@ -268,7 +273,7 @@ internal sealed class ModPatches
         bool local)
     {
         if (!__instance.playerChest.Value
-            || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
+            || !ModPatches.instance.storageManager.Data.TryGetValue(__instance.ItemId, out var storage))
         {
             return true;
         }
@@ -323,7 +328,7 @@ internal sealed class ModPatches
     private static void Chest_getLastLidFrame_postfix(Chest __instance, ref int __result)
     {
         if (!__instance.playerChest.Value
-            || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
+            || !ModPatches.instance.storageManager.Data.TryGetValue(__instance.ItemId, out var storage))
         {
             return;
         }
@@ -360,7 +365,7 @@ internal sealed class ModPatches
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     private static string GetSound(Chest chest, string sound)
     {
-        if (!ModPatches.instance.storages.Data.TryGetValue(chest.ItemId, out var storage))
+        if (!ModPatches.instance.storageManager.Data.TryGetValue(chest.ItemId, out var storage))
         {
             return sound;
         }
@@ -384,7 +389,7 @@ internal sealed class ModPatches
     {
         if (!__instance.playerChest.Value
             || __instance.Location is null
-            || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage)
+            || !ModPatches.instance.storageManager.Data.TryGetValue(__instance.ItemId, out var storage)
             || !storage.OpenNearby)
         {
             return;
@@ -444,7 +449,7 @@ internal sealed class ModPatches
         int x,
         int y)
     {
-        if (!__result || !ModPatches.instance.storages.Data.TryGetValue(__instance.ItemId, out var storage))
+        if (!__result || !ModPatches.instance.storageManager.Data.TryGetValue(__instance.ItemId, out var storage))
         {
             return;
         }
@@ -470,7 +475,7 @@ internal sealed class ModPatches
     private static void UpdateColorPicker(ItemGrabMenu itemGrabMenu, Item sourceItem)
     {
         if (sourceItem is not Chest chest
-            || !ModPatches.instance.storages.Data.TryGetValue(chest.ItemId, out var storage))
+            || !ModPatches.instance.storageManager.Data.TryGetValue(chest.ItemId, out var storage))
         {
             return;
         }

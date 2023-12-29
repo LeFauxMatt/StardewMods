@@ -4,6 +4,7 @@ using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IModConfig" />
@@ -16,10 +17,11 @@ internal sealed class ConfigManager : BaseService, IModConfig
 
     /// <summary>Initializes a new instance of the <see cref="ConfigManager" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
     /// <param name="featureManager">Dependency used for managing features.</param>
-    public ConfigManager(ILog log, IModHelper modHelper, FeatureManager featureManager)
-        : base(log)
+    public ConfigManager(ILog log, IManifest manifest, IModHelper modHelper, FeatureManager featureManager)
+        : base(log, manifest)
     {
         this.modHelper = modHelper;
         this.featureManager = featureManager;
@@ -90,8 +92,8 @@ internal sealed class ConfigManager : BaseService, IModConfig
     /// <returns>The new instance of IModConfig.</returns>
     public DefaultConfig GetNew() => this.modHelper.ReadConfig<DefaultConfig>();
 
-    /// <summary>Reloads the configuration by reading the updated configuration file.</summary>
-    public void Reload() => this.modConfig = this.modHelper.ReadConfig<DefaultConfig>();
+    /// <summary>Resets the configuration by reassigning to <see cref="DefaultConfig" />.</summary>
+    public void Reset() => this.modConfig = new DefaultConfig();
 
     /// <summary>Saves the provided config.</summary>
     /// <param name="config">The config object to be saved.</param>

@@ -259,7 +259,7 @@ internal sealed class BushManager
                         typeof(int),
                         typeof(int),
                         typeof(float),
-                        typeof(GameLocation)
+                        typeof(GameLocation),
                     ])))
             {
                 yield return new CodeInstruction(OpCodes.Ldarg_0);
@@ -297,7 +297,15 @@ internal sealed class BushManager
     }
 
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
-    private static void CreateObjectDebris(string id, int xTile, int yTile, int groundLevel, int itemQuality, float velocityMultiplier, GameLocation? location, Bush bush)
+    private static void CreateObjectDebris(
+        string id,
+        int xTile,
+        int yTile,
+        int groundLevel,
+        int itemQuality,
+        float velocityMultiplier,
+        GameLocation? location,
+        Bush bush)
     {
         if (bush.modData.TryGetValue(BushManager.ModDataItem, out var itemId)
             && !string.IsNullOrWhiteSpace(itemId)
@@ -317,7 +325,14 @@ internal sealed class BushManager
             return;
         }
 
-        Game1.createObjectDebris(item.QualifiedItemId, xTile, yTile, groundLevel, item.Quality, velocityMultiplier, location);
+        Game1.createObjectDebris(
+            item.QualifiedItemId,
+            xTile,
+            yTile,
+            groundLevel,
+            item.Quality,
+            velocityMultiplier,
+            location);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]

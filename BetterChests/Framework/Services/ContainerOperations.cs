@@ -4,6 +4,7 @@ using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.Common.Extensions;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
@@ -15,8 +16,9 @@ internal sealed class ContainerOperations : BaseService
 
     /// <summary>Initializes a new instance of the <see cref="ContainerOperations" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
-    public ContainerOperations(ILog log)
-        : base(log) { }
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    public ContainerOperations(ILog log, IManifest manifest)
+        : base(log, manifest) { }
 
     /// <summary>Represents an event that is raised after an item is transferred.</summary>
     public event EventHandler<ItemTransferredEventArgs> ItemTransferred

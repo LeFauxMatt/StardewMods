@@ -3,13 +3,14 @@ namespace StardewMods.FuryCore.Framework.Services;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
-/// <inheritdoc />
-internal sealed class Theming : ITheming
+/// <inheritdoc cref="StardewMods.Common.Services.Integrations.FuryCore.ITheming" />
+internal sealed class Theming : BaseService, ITheming
 {
     private readonly Dictionary<IAssetName, Texture2D> cachedTextures = new();
-    private readonly IGameContentHelper gameContent;
+    private readonly IGameContentHelper gameContentHelper;
     private readonly Dictionary<Color, Color> paletteSwap = new();
     private readonly HashSet<string> trackedAssets = [];
 
@@ -26,19 +27,22 @@ internal sealed class Theming : ITheming
     private bool initialize;
 
     /// <summary>Initializes a new instance of the <see cref="Theming" /> class.</summary>
-    /// <param name="events">Dependency used for managing access to events.</param>
-    /// <param name="gameContent">Dependency used for loading game assets.</param>
-    public Theming(IModEvents events, IGameContentHelper gameContent)
+    /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    public Theming(IGameContentHelper gameContentHelper, ILog log, IManifest manifest, IModEvents modEvents)
+        : base(log, manifest)
     {
-        this.gameContent = gameContent;
-        events.Content.AssetReady += this.OnAssetReady;
-        events.Content.AssetRequested += this.OnAssetRequested;
-        events.Content.AssetsInvalidated += this.OnAssetsInvalidated;
-        events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+        this.gameContentHelper = gameContentHelper;
+        modEvents.Content.AssetReady += this.OnAssetReady;
+        modEvents.Content.AssetRequested += this.OnAssetRequested;
+        modEvents.Content.AssetsInvalidated += this.OnAssetsInvalidated;
+        modEvents.GameLoop.SaveLoaded += this.OnSaveLoaded;
     }
 
     /// <inheritdoc />
-    public void AddAssets(params string[] assetNames) => this.trackedAssets.UnionWith(assetNames);
+    public void AddAssets(string[] assetNames) => this.trackedAssets.UnionWith(assetNames);
 
     private void Edit(IAssetData asset)
     {
@@ -72,7 +76,7 @@ internal sealed class Theming : ITheming
 
         foreach (var assetName in this.trackedAssets)
         {
-            this.gameContent.InvalidateCache(assetName);
+            this.gameContentHelper.InvalidateCache(assetName);
         }
     }
 
