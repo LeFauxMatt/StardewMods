@@ -8,9 +8,6 @@
     <UpdateKeys>Nexus:11026@SMAPI</UpdateKeys>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FuryCore\FuryCore.csproj" Private="false"/>
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
     <PackageReference Include="SimpleInjector">
       <HintPath>$(GameModsPath)\FuryCore\SimpleInjector.dll</HintPath>
@@ -19,7 +16,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
     <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.20231228" required="true"/>
+    <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
   </ItemGroup>
 </Project>

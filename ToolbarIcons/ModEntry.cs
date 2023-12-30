@@ -6,7 +6,6 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.ToolbarIcons.Framework;
 using StardewMods.ToolbarIcons.Framework.Interfaces;
-using StardewMods.ToolbarIcons.Framework.Models;
 using StardewMods.ToolbarIcons.Framework.Services;
 using StardewMods.ToolbarIcons.Framework.Services.Integrations.Modded;
 using StardewMods.ToolbarIcons.Framework.Services.Integrations.Vanilla;
@@ -59,7 +58,6 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
-        this.container.RegisterSingleton<ConfigManager, ConfigManager>();
         this.container.RegisterSingleton<EventsManager>();
         this.container.RegisterSingleton<IntegrationManager>();
         this.container.RegisterSingleton<ILog, LogService>();
