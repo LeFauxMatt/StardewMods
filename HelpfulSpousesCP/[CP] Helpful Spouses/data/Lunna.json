@@ -1,0 +1,46 @@
+{
+  "Changes": [
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Lunna": {
+        "furyx639.HelpfulSpouses/FeedThePet": 0.6,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.8,
+        "furyx639.HelpfulSpouses/RepairTheFences": 0.2
+      }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Bianka": {
+        "furyx639.HelpfulSpouses/FeedTheAnimals": 0.5,
+        "furyx639.HelpfulSpouses/FeedThePet": 0.4,
+        "furyx639.HelpfulSpouses/RepairTheFences": 0.5
+      }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Raphael": {
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.5,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.2,
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.6
+      }
+    }
+  ]
+}

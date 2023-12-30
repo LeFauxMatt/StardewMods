@@ -1,0 +1,199 @@
+{
+  "Changes": [
+    {
+      "LogName": "Load Alex Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Alex",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/LoveThePets": "1.0",
+        "furyx639.HelpfulSpouses/FeedTheAnimals": "0.6",
+        "furyx639.HelpfulSpouses/PetTheAnimals": "0.6"
+      }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/BirthdayGift": 0.6,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.7,
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.6
+      }
+    },
+    {
+      "LogName": "Load Harvey Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Harvey",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/LoveThePets": 0.8,
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.6,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.6
+      }
+    },
+    {
+      "LogName": "Load Sam Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Sam",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/BirthdayGift": 0.4,
+        "furyx639.HelpfulSpouses/LoveThePets": 0.6,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.5
+      }
+    },
+    {
+      "LogName": "Load Sebastian Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Sebastian",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/BirthdayGift": 0.4,
+        "furyx639.HelpfulSpouses/LoveThePets": 0.6,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.6
+      }
+    },
+    {
+      "LogName": "Load Shane Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Shane",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/FeedTheAnimals": 0.8,
+        "furyx639.HelpfulSpouses/LoveThePets": 1.0,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.8
+      }
+    },
+    {
+      "LogName": "Load Abigail Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Abigail",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/BirthdayGift": 0.5,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.7,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.6
+      }
+    },
+    {
+      "LogName": "Load Emily Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Emily",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/BirthdayGift": 0.8,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.8,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.8
+      }
+    },
+    {
+      "LogName": "Load Haley Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Haley",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/BirthdayGift": 1.0,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.5,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.6
+      }
+    },
+    {
+      "LogName": "Load Leah Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Leah",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/BirthdayGift": 0.7,
+        "furyx639.HelpfulSpouses/RepairTheFences": 0.5,
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.6
+      }
+    },
+    {
+      "LogName": "Load Maru Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Maru",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/BirthdayGift": 0.7,
+        "furyx639.HelpfulSpouses/RepairTheFences": 0.8,
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.6
+      }
+    },
+    {
+      "LogName": "Load Penny Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Penny",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/LoveThePets": 0.9,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.7,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.8
+      }
+    },
+    {
+      "LogName": "Load Krobus Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Krobus",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.7,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 1.0
+      }
+    },
+    {
+      "LogName": "Load Wizard Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Wizard",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/BirthdayGift": 0.8,
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.4,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.7
+      }
+    }
+  ]
+}

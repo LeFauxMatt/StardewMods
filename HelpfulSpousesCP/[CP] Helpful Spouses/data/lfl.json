@@ -1,0 +1,118 @@
+{
+  "Changes": [
+
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      //Looking For Love
+      "Clint": {
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.4,
+        "furyx639.HelpfulSpouses/FeedThePet": 0.7,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.4
+      }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Gus": {
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.5,
+        "furyx639.HelpfulSpouses/FeedThePet": 0.1,
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.4
+      }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Lewis": {
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.7,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.2,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.4
+      }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Linus": {
+        "furyx639.HelpfulSpouses/RepairTheFences": 0.3,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.4,
+        "furyx639.HelpfulSpouses/FeedThePet": 0.9
+      }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Marnie": {
+        "furyx639.HelpfulSpouses/WaterTheCrops": 1.0,
+        "furyx639.HelpfulSpouses/FeedThePet": 0.4,
+        "furyx639.HelpfulSpouses/RepairTheFences": 0.7
+      }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Pam": {
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.3,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.9,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.3
+      }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Sandy": {
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.1,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.7,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.8
+      }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Willy": {
+        "furyx639.HelpfulSpouses/FeedThePet": 0.6,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.2,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.7
+      }
+    }
+  ]
+}
