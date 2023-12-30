@@ -4,19 +4,22 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.TooManyAnimals.Framework.Interfaces;
 using StardewValley.Menus;
 
 /// <summary>Handles interactions with the Animals Menu.</summary>
-internal sealed class AnimalsMenuHandler
+internal sealed class AnimalsMenuHandler : BaseService
 {
 #nullable disable
     private static AnimalsMenuHandler instance;
 #nullable enable
 
-    private readonly ModConfig modConfig;
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<List<SObject>?> completeStock = new();
     private readonly PerScreen<int> currentPage = new();
+    private readonly IModConfig modConfig;
 
     private readonly PerScreen<ClickableTextureComponent> nextPage = new(
         () => new ClickableTextureComponent(
@@ -39,11 +42,20 @@ internal sealed class AnimalsMenuHandler
         });
 
     /// <summary>Initializes a new instance of the <see cref="AnimalsMenuHandler" /> class.</summary>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
-    public AnimalsMenuHandler(ModConfig modConfig, Harmony harmony, IInputHelper inputHelper, IModEvents modEvents)
+    public AnimalsMenuHandler(
+        Harmony harmony,
+        IInputHelper inputHelper,
+        ILog log,
+        IManifest manifest,
+        IModConfig modConfig,
+        IModEvents modEvents)
+        : base(log, manifest)
     {
         // Init
         AnimalsMenuHandler.instance = this;
@@ -52,7 +64,7 @@ internal sealed class AnimalsMenuHandler
 
         // Patches
         harmony.Patch(
-            AccessTools.Constructor(typeof(PurchaseAnimalsMenu), new[] { typeof(List<SObject>), typeof(GameLocation) }),
+            AccessTools.DeclaredConstructor(typeof(PurchaseAnimalsMenu), [typeof(List<SObject>), typeof(GameLocation)]),
             new HarmonyMethod(
                 typeof(AnimalsMenuHandler),
                 nameof(AnimalsMenuHandler.PurchaseAnimalsMenu_constructor_prefix)));

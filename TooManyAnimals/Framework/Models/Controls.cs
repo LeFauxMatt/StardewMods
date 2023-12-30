@@ -1,4 +1,4 @@
-﻿namespace StardewMods.TooManyAnimals;
+﻿namespace StardewMods.TooManyAnimals.Framework.Models;
 
 using StardewModdingAPI.Utilities;
 

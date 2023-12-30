@@ -1,16 +1,18 @@
 namespace StardewMods.TooManyAnimals;
 
 using HarmonyLib;
+using SimpleInjector;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
+using StardewMods.TooManyAnimals.Framework.Interfaces;
 using StardewMods.TooManyAnimals.Framework.Services;
 
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
 #nullable disable
-    private ModConfig config;
-    private Logging logging;
+    private Container container;
 #nullable enable
 
     /// <inheritdoc />
@@ -18,8 +20,6 @@ public sealed class ModEntry : Mod
     {
         // Init
         I18n.Init(this.Helper.Translation);
-        this.config = this.Helper.ReadConfig<ModConfig>();
-        this.logging = new Logging(this.config, this.Monitor);
 
         // Events
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
@@ -27,8 +27,29 @@ public sealed class ModEntry : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        var harmony = new Harmony(this.ModManifest.UniqueID);
-        _ = new ConfigMenu(this.config, this.Helper, this.ModManifest);
-        _ = new AnimalsMenuHandler(this.config, harmony, this.Helper.Input, this.Helper.Events);
+        // Init
+        this.container = new Container();
+
+        // Configuration
+        this.container.RegisterSingleton(() => new Harmony(this.ModManifest.UniqueID));
+        this.container.RegisterInstance(this.Helper);
+        this.container.RegisterInstance(this.ModManifest);
+        this.container.RegisterInstance(this.Monitor);
+        this.container.RegisterInstance(this.Helper.Data);
+        this.container.RegisterInstance(this.Helper.Events);
+        this.container.RegisterInstance(this.Helper.GameContent);
+        this.container.RegisterInstance(this.Helper.Input);
+        this.container.RegisterInstance(this.Helper.ModContent);
+        this.container.RegisterInstance(this.Helper.ModRegistry);
+        this.container.RegisterInstance(this.Helper.Reflection);
+        this.container.RegisterInstance(this.Helper.Translation);
+        this.container.RegisterSingleton<AnimalsMenuHandler>();
+        this.container.RegisterSingleton<IModConfig, ConfigManager>();
+        this.container.RegisterSingleton<FuryCoreIntegration>();
+        this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
+        this.container.RegisterSingleton<ILog, LogService>();
+
+        // Verify
+        this.container.Verify();
     }
 }
