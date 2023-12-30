@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.CustomBush.Framework.Models;
 using StardewValley.Extensions;
 using StardewValley.Internal;
@@ -15,32 +16,39 @@ using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
 
 /// <summary>Responsible for handling tea logic.</summary>
-internal sealed class BushManager
+internal sealed class BushManager : BaseService
 {
-    private const string ModDataId = "furyx639.CustomBush/Id";
-    private const string ModDataItem = "furyx639.CustomBush/ShakeOff";
-    private const string ModDataQuality = "furyx639.CustomBush/Quality";
-
 #nullable disable
     private static BushManager instance;
 #nullable enable
 
-    private readonly AssetHandler assets;
+    private readonly IGameContentHelper gameContentHelper;
     private readonly MethodInfo checkItemPlantRules;
-    private readonly IGameContentHelper gameContent;
-    private readonly Logging logging;
+    private readonly Lazy<Dictionary<string, BushModel>> data;
+    private readonly string modDataId;
+    private readonly string modDataItem;
+    private readonly string modDataQuality;
 
     /// <summary>Initializes a new instance of the <see cref="BushManager" /> class.</summary>
-    /// <param name="assets">Dependency used for managing assets.</param>
-    /// <param name="gameContent">Dependency used for loading game assets.</param>
+    /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
+    /// <param name="getBushModels">Function which returns the bush model data.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
-    /// <param name="logging">Dependency used for logging debug information to the console.</param>
-    public BushManager(AssetHandler assets, IGameContentHelper gameContent, Harmony harmony, Logging logging)
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    public BushManager(
+        IGameContentHelper gameContentHelper,
+        Func<Dictionary<string, BushModel>> getBushModels,
+        Harmony harmony,
+        ILog log,
+        IManifest manifest)
+        : base(log, manifest)
     {
         BushManager.instance = this;
-        this.assets = assets;
-        this.gameContent = gameContent;
-        this.logging = logging;
+        this.modDataId = this.ModId + "/Id";
+        this.modDataItem = this.ModId + "/ShakeOff";
+        this.modDataQuality = this.ModId + "/Quality";
+        this.gameContentHelper = gameContentHelper;
+        this.data = new Lazy<Dictionary<string, BushModel>>(getBushModels);
         this.checkItemPlantRules =
             typeof(GameLocation).GetMethod("CheckItemPlantRules", BindingFlags.NonPublic | BindingFlags.Instance)
             ?? throw new MethodAccessException("Unable to access CheckItemPlantRules");
@@ -89,12 +97,12 @@ internal sealed class BushManager
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     private static Bush AddModData(Bush bush, SObject obj)
     {
-        if (!BushManager.instance.assets.Data.ContainsKey(obj.QualifiedItemId))
+        if (!BushManager.instance.data.Value.ContainsKey(obj.QualifiedItemId))
         {
             return bush;
         }
 
-        bush.modData[BushManager.ModDataId] = obj.QualifiedItemId;
+        bush.modData[BushManager.instance.modDataId] = obj.QualifiedItemId;
         bush.setUpSourceRect();
         return bush;
     }
@@ -108,8 +116,8 @@ internal sealed class BushManager
         NetRectangle ___sourceRect,
         float ___yDrawOffset)
     {
-        if (!__instance.modData.TryGetValue(BushManager.ModDataId, out var id)
-            || !BushManager.instance.assets.Data.TryGetValue(id, out var bushModel))
+        if (!__instance.modData.TryGetValue(BushManager.instance.modDataId, out var id)
+            || !BushManager.instance.data.Value.TryGetValue(id, out var bushModel))
         {
             return true;
         }
@@ -136,7 +144,7 @@ internal sealed class BushManager
                 ? bushModel.IndoorTexture
                 : bushModel.Texture;
 
-        var texture = BushManager.instance.gameContent.Load<Texture2D>(path);
+        var texture = BushManager.instance.gameContentHelper.Load<Texture2D>(path);
 
         spriteBatch.Draw(
             texture,
@@ -156,15 +164,15 @@ internal sealed class BushManager
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Bush_inBloom_postfix(Bush __instance, ref bool __result)
     {
-        if (__instance.modData.TryGetValue(BushManager.ModDataItem, out var itemId)
+        if (__instance.modData.TryGetValue(BushManager.instance.modDataItem, out var itemId)
             && !string.IsNullOrWhiteSpace(itemId))
         {
             __result = true;
             return;
         }
 
-        if (!__instance.modData.TryGetValue(BushManager.ModDataId, out var id)
-            || !BushManager.instance.assets.Data.TryGetValue(id, out var bushModel))
+        if (!__instance.modData.TryGetValue(BushManager.instance.modDataId, out var id)
+            || !BushManager.instance.data.Value.TryGetValue(id, out var bushModel))
         {
             return;
         }
@@ -176,13 +184,15 @@ internal sealed class BushManager
         // Fails basic conditions
         if (age < bushModel.AgeToProduce || dayOfMonth < bushModel.DayToBeginProducing)
         {
-            BushManager.instance.logging.Trace(
+            BushManager.instance.Log.Trace(
                 "{0} will not produce. Age: {1} < {2} , Day: {3} < {4}",
-                id,
-                age.ToString(CultureInfo.InvariantCulture),
-                bushModel.AgeToProduce.ToString(CultureInfo.InvariantCulture),
-                dayOfMonth.ToString(CultureInfo.InvariantCulture),
-                bushModel.DayToBeginProducing.ToString(CultureInfo.InvariantCulture));
+                [
+                    id,
+                    age.ToString(CultureInfo.InvariantCulture),
+                    bushModel.AgeToProduce.ToString(CultureInfo.InvariantCulture),
+                    dayOfMonth.ToString(CultureInfo.InvariantCulture),
+                    bushModel.DayToBeginProducing.ToString(CultureInfo.InvariantCulture),
+                ]);
 
             __result = false;
             return;
@@ -191,10 +201,9 @@ internal sealed class BushManager
         // Fails default season conditions
         if (!bushModel.Seasons.Any() && season == Season.Winter && !__instance.IsSheltered())
         {
-            BushManager.instance.logging.Trace(
+            BushManager.instance.Log.Trace(
                 "{0} will not produce. Season: {1} and plant is outdoors.",
-                id,
-                season.ToString());
+                [id, season.ToString()]);
 
             __result = false;
             return;
@@ -203,36 +212,35 @@ internal sealed class BushManager
         // Fails custom season conditions
         if (bushModel.Seasons.Any() && !bushModel.Seasons.Contains(season) && !__instance.IsSheltered())
         {
-            BushManager.instance.logging.Trace(
+            BushManager.instance.Log.Trace(
                 "{0} will not produce. Season: {1} and plant is outdoors.",
-                id,
-                season.ToString());
+                [id, season.ToString()]);
 
             __result = false;
             return;
         }
 
         // Try to produce item
-        BushManager.instance.logging.Trace("{0} attempting to produce random item.", id);
+        BushManager.instance.Log.Trace("{0} attempting to produce random item.", [id]);
         if (!BushManager.instance.TryToProduceRandomItem(__instance, bushModel, out var item))
         {
-            BushManager.instance.logging.Trace("{0} will not produce. No item was produced.", id);
+            BushManager.instance.Log.Trace("{0} will not produce. No item was produced.", [id]);
             __result = false;
             return;
         }
 
-        BushManager.instance.logging.Trace("{0} selected {1} to grow.", id, item.QualifiedItemId);
+        BushManager.instance.Log.Trace("{0} selected {1} to grow.", [id, item.QualifiedItemId]);
         __result = true;
-        __instance.modData[BushManager.ModDataItem] = item.QualifiedItemId;
-        __instance.modData[BushManager.ModDataQuality] = item.Quality.ToString(CultureInfo.InvariantCulture);
+        __instance.modData[BushManager.instance.modDataItem] = item.QualifiedItemId;
+        __instance.modData[BushManager.instance.modDataQuality] = item.Quality.ToString(CultureInfo.InvariantCulture);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Bush_setUpSourceRect_postfix(Bush __instance, NetRectangle ___sourceRect)
     {
-        if (!__instance.modData.TryGetValue(BushManager.ModDataId, out var id)
-            || !BushManager.instance.assets.Data.TryGetValue(id, out var bushModel))
+        if (!__instance.modData.TryGetValue(BushManager.instance.modDataId, out var id)
+            || !BushManager.instance.data.Value.TryGetValue(id, out var bushModel))
         {
             return;
         }
@@ -284,7 +292,7 @@ internal sealed class BushManager
     {
         var metadata = ItemRegistry.GetMetadata(itemId);
         if (metadata is null
-            || !BushManager.instance.assets.Data.TryGetValue(metadata.QualifiedItemId, out var bushModel))
+            || !BushManager.instance.data.Value.TryGetValue(metadata.QualifiedItemId, out var bushModel))
         {
             return;
         }
@@ -307,18 +315,18 @@ internal sealed class BushManager
         GameLocation? location,
         Bush bush)
     {
-        if (bush.modData.TryGetValue(BushManager.ModDataItem, out var itemId)
+        if (bush.modData.TryGetValue(BushManager.instance.modDataItem, out var itemId)
             && !string.IsNullOrWhiteSpace(itemId)
-            && bush.modData.TryGetValue(BushManager.ModDataQuality, out var quality)
+            && bush.modData.TryGetValue(BushManager.instance.modDataQuality, out var quality)
             && int.TryParse(quality, out itemQuality))
         {
-            bush.modData.Remove(BushManager.ModDataItem);
+            bush.modData.Remove(BushManager.instance.modDataItem);
             Game1.createObjectDebris(itemId, xTile, yTile, groundLevel, itemQuality, velocityMultiplier, location);
             return;
         }
 
-        if (!bush.modData.TryGetValue(BushManager.ModDataId, out var bushId)
-            || !BushManager.instance.assets.Data.TryGetValue(bushId, out var bushModel)
+        if (!bush.modData.TryGetValue(BushManager.instance.modDataId, out var bushId)
+            || !BushManager.instance.data.Value.TryGetValue(bushId, out var bushModel)
             || !BushManager.instance.TryToProduceRandomItem(bush, bushModel, out var item))
         {
             Game1.createObjectDebris(id, xTile, yTile, groundLevel, itemQuality, velocityMultiplier, location);
@@ -340,7 +348,7 @@ internal sealed class BushManager
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void HoeDirt_canPlantThisSeedHere_postfix(string itemId, ref bool __result)
     {
-        if (!__result || !BushManager.instance.assets.Data.ContainsKey($"(O){itemId}"))
+        if (!__result || !BushManager.instance.data.Value.ContainsKey($"(O){itemId}"))
         {
             return;
         }
@@ -357,7 +365,7 @@ internal sealed class BushManager
         bool probe,
         ref bool __result)
     {
-        if (!BushManager.instance.assets.Data.ContainsKey(dropInItem.QualifiedItemId)
+        if (!BushManager.instance.data.Value.ContainsKey(dropInItem.QualifiedItemId)
             || __instance.hoeDirt.Value.crop != null)
         {
             return;
@@ -365,8 +373,14 @@ internal sealed class BushManager
 
         if (!probe)
         {
-            __instance.bush.Value = new Bush(__instance.TileLocation, 3, __instance.Location);
-            __instance.bush.Value.modData[BushManager.ModDataId] = dropInItem.QualifiedItemId;
+            __instance.bush.Value = new Bush(__instance.TileLocation, 3, __instance.Location)
+            {
+                modData =
+                {
+                    [BushManager.instance.modDataId] = dropInItem.QualifiedItemId,
+                },
+            };
+
             if (!__instance.Location.IsOutdoors)
             {
                 __instance.bush.Value.inPot.Value = true;
@@ -389,7 +403,7 @@ internal sealed class BushManager
             return;
         }
 
-        if (BushManager.instance.assets.Data.ContainsKey(__instance.QualifiedItemId))
+        if (BushManager.instance.data.Value.ContainsKey(__instance.QualifiedItemId))
         {
             __result = true;
         }
@@ -452,11 +466,9 @@ internal sealed class BushManager
                 null,
                 bush.Location.SeedsIgnoreSeasonsHere() ? GameStateQuery.SeasonQueryKeys : null))
         {
-            BushManager.instance.logging.Trace(
+            BushManager.instance.Log.Trace(
                 "{0} did not select {1}. Failed: {2}",
-                bush.modData[BushManager.ModDataId],
-                drop.Id,
-                drop.Condition);
+                [bush.modData[BushManager.instance.modDataId], drop.Id, drop.Condition]);
 
             return null;
         }
@@ -465,11 +477,9 @@ internal sealed class BushManager
             && bush.Location.SeedsIgnoreSeasonsHere()
             && drop.Season != Game1.GetSeasonForLocation(bush.Location))
         {
-            BushManager.instance.logging.Trace(
+            BushManager.instance.Log.Trace(
                 "{0} did not select {1}. Failed: {2}",
-                bush.modData[BushManager.ModDataId],
-                drop.Id,
-                drop.Season.ToString());
+                [bush.modData[BushManager.instance.modDataId], drop.Id, drop.Season.ToString()]);
 
             return null;
         }
@@ -483,12 +493,9 @@ internal sealed class BushManager
             null,
             delegate(string query, string error)
             {
-                this.logging.Error(
+                this.Log.Error(
                     "{0} failed parsing item query {1} for item {2}: {3}",
-                    bush.modData[BushManager.ModDataId],
-                    query,
-                    drop.Id,
-                    error);
+                    [bush.modData[BushManager.instance.modDataId], query, drop.Id, error]);
             });
 
         return item;
