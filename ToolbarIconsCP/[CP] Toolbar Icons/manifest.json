@@ -16,5 +16,6 @@
       "IsRequired": true,
       "MinimumVersion": "2.6.0-alpha.20231228"
     }
-  ]
+  ],
+  "$schema": "https://smapi.io/schemas/manifest.json"
 }
