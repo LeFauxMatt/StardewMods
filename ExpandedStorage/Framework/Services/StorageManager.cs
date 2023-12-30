@@ -1,12 +1,12 @@
 namespace StardewMods.ExpandedStorage.Framework.Services;
 
-using System.ComponentModel;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.ExpandedStorage.Framework.Enums;
 using StardewMods.ExpandedStorage.Framework.Models;
+using StardewValley.GameData.BigCraftables;
 
 /// <summary>Responsible for managing expanded storage objects.</summary>
 internal sealed class StorageManager : BaseService
@@ -27,81 +27,92 @@ internal sealed class StorageManager : BaseService
         IModEvents modEvents)
         : base(log, manifest)
     {
-        // Init
-
-        // Events
-        modEvents.Content.AssetReady += this.OnAssetReady;
+        modEvents.Content.AssetsInvalidated += this.OnAssetsInvalidated;
         contentPatcherIntegration.ConditionsApiReady += this.OnConditionsApiReady;
     }
 
-    /// <summary>Gets the Storage Data for Expanded Storage objects.</summary>
-    public IReadOnlyDictionary<string, StorageData> Data => this.data;
-
-    private void OnAssetReady(object? sender, AssetReadyEventArgs e)
+    /// <summary>Tries to retrieve the storage data associated with the specified item.</summary>
+    /// <param name="item">The item for which to retrieve the data.</param>
+    /// <param name="storageData">
+    /// When this method returns, contains the data associated with the specified item, if the
+    /// retrieval succeeds; otherwise, null. This parameter is passed uninitialized.
+    /// </param>
+    /// <returns>true if the data was successfully retrieved; otherwise, false.</returns>
+    public bool TryGetData(Item item, [NotNullWhen(true)] out StorageData? storageData)
     {
-        if (!e.Name.IsEquivalentTo(StorageManager.AssetPath))
+        // Return from cache
+        if (this.data.TryGetValue(item.QualifiedItemId, out storageData))
         {
-            return;
+            return true;
         }
 
-        this.data.Clear();
-        foreach (var (itemId, bigCraftableData) in Game1.bigCraftableData)
+        // Check if enabled
+        if (ItemRegistry.GetData(item.QualifiedItemId)?.RawData is not BigCraftableData bigCraftableData
+            || !bigCraftableData.CustomFields.TryGetValue(this.ModId + "/Enabled", out var enabled)
+            || !bool.TryParse(enabled, out var isEnabled)
+            || !isEnabled)
         {
-            if (!bigCraftableData.CustomFields.TryGetValue(this.ModId + "/Enabled", out var enabled)
-                || !bool.TryParse(enabled, out var isEnabled)
-                || !isEnabled)
+            storageData = null;
+            return false;
+        }
+
+        // Load storage data
+        this.Log.Trace("Loading managed storage: {0}", [item.QualifiedItemId]);
+        storageData = new StorageData();
+        this.data.Add(item.QualifiedItemId, storageData);
+
+        foreach (var (customFieldKey, customFieldValue) in bigCraftableData.CustomFields)
+        {
+            var keyParts = customFieldKey.Split('/');
+            if (keyParts.Length != 2
+                || !keyParts[0].Equals(this.ModId, StringComparison.OrdinalIgnoreCase)
+                || !CustomFieldKeysExtensions.TryParse(keyParts[1], out var storageAttribute))
             {
                 continue;
             }
 
-            this.Log.Trace("Found managed storage: {0}", [itemId]);
-            if (!this.data.TryGetValue(itemId, out var storage))
+            switch (storageAttribute)
             {
-                storage = new StorageData();
-                this.data.Add(itemId, storage);
+                case CustomFieldKeys.CloseNearbySound:
+                    storageData.CloseNearbySound = customFieldValue;
+                    break;
+                case CustomFieldKeys.Frames:
+                    storageData.Frames = int.TryParse(customFieldValue, out var frames) ? frames : 1;
+                    break;
+                case CustomFieldKeys.IsFridge:
+                    storageData.IsFridge = bool.TryParse(customFieldValue, out var isFridge) && isFridge;
+                    break;
+                case CustomFieldKeys.OpenNearby:
+                    storageData.OpenNearby = bool.TryParse(customFieldValue, out var openNearby) && openNearby;
+                    break;
+                case CustomFieldKeys.OpenNearbySound:
+                    storageData.OpenNearbySound = customFieldValue;
+                    break;
+                case CustomFieldKeys.OpenSound:
+                    storageData.OpenSound = customFieldValue;
+                    break;
+                case CustomFieldKeys.PlaceSound:
+                    storageData.PlaceSound = customFieldValue;
+                    break;
+                case CustomFieldKeys.PlayerColor:
+                    storageData.PlayerColor = bool.TryParse(customFieldValue, out var playerColor) && playerColor;
+                    break;
+                default:
+                    this.Log.Warn("{0} is not a supported attribute", [keyParts[2]]);
+                    break;
             }
+        }
 
-            foreach (var (customFieldKey, customFieldValue) in bigCraftableData.CustomFields)
-            {
-                var keyParts = customFieldKey.Split('/');
-                if (keyParts.Length != 2
-                    || !keyParts[0].Equals(this.ModId, StringComparison.OrdinalIgnoreCase)
-                    || !CustomFieldKeysExtensions.TryParse(keyParts[1], out var storageAttribute))
-                {
-                    continue;
-                }
+        return true;
+    }
 
-                switch (storageAttribute)
-                {
-                    case CustomFieldKeys.CloseNearbySound:
-                        storage.CloseNearbySound = customFieldValue;
-                        break;
-                    case CustomFieldKeys.Frames:
-                        storage.Frames = int.TryParse(customFieldValue, out var frames) ? frames : 1;
-                        break;
-                    case CustomFieldKeys.IsFridge:
-                        storage.IsFridge = bool.TryParse(customFieldValue, out var isFridge) && isFridge;
-                        break;
-                    case CustomFieldKeys.OpenNearby:
-                        storage.OpenNearby = bool.TryParse(customFieldValue, out var openNearby) && openNearby;
-                        break;
-                    case CustomFieldKeys.OpenNearbySound:
-                        storage.OpenNearbySound = customFieldValue;
-                        break;
-                    case CustomFieldKeys.OpenSound:
-                        storage.OpenSound = customFieldValue;
-                        break;
-                    case CustomFieldKeys.PlaceSound:
-                        storage.PlaceSound = customFieldValue;
-                        break;
-                    case CustomFieldKeys.PlayerColor:
-                        storage.PlayerColor = bool.TryParse(customFieldValue, out var playerColor) && playerColor;
-                        break;
-                    default: throw new InvalidEnumArgumentException($"{keyParts[2]} is not a supported attribute");
-                }
-            }
+    private void OnAssetsInvalidated(object? sender, AssetsInvalidatedEventArgs e)
+    {
+        if (e.Names.Any(assetName => assetName.IsEquivalentTo(StorageManager.AssetPath)))
+        {
+            this.data.Clear();
         }
     }
 
-    private void OnConditionsApiReady(object? sender, EventArgs args) => _ = DataLoader.BigCraftables(Game1.content);
+    private void OnConditionsApiReady(object? sender, EventArgs args) => this.data.Clear();
 }

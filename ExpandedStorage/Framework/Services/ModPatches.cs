@@ -116,7 +116,7 @@ internal sealed class ModPatches : BaseService
     {
         if (justCheckingForActivity
             || !__instance.playerChest.Value
-            || !ModPatches.instance.storageManager.Data.TryGetValue(__instance.ItemId, out var storage))
+            || !ModPatches.instance.storageManager.TryGetData(__instance, out var storage))
         {
             return true;
         }
@@ -185,7 +185,7 @@ internal sealed class ModPatches : BaseService
         float alpha)
     {
         if (!__instance.playerChest.Value
-            || !ModPatches.instance.storageManager.Data.TryGetValue(__instance.ItemId, out var storage))
+            || !ModPatches.instance.storageManager.TryGetData(__instance, out var storage))
         {
             return true;
         }
@@ -273,7 +273,7 @@ internal sealed class ModPatches : BaseService
         bool local)
     {
         if (!__instance.playerChest.Value
-            || !ModPatches.instance.storageManager.Data.TryGetValue(__instance.ItemId, out var storage))
+            || !ModPatches.instance.storageManager.TryGetData(__instance, out var storage))
         {
             return true;
         }
@@ -328,7 +328,7 @@ internal sealed class ModPatches : BaseService
     private static void Chest_getLastLidFrame_postfix(Chest __instance, ref int __result)
     {
         if (!__instance.playerChest.Value
-            || !ModPatches.instance.storageManager.Data.TryGetValue(__instance.ItemId, out var storage))
+            || !ModPatches.instance.storageManager.TryGetData(__instance, out var storage))
         {
             return;
         }
@@ -365,7 +365,7 @@ internal sealed class ModPatches : BaseService
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
     private static string GetSound(Chest chest, string sound)
     {
-        if (!ModPatches.instance.storageManager.Data.TryGetValue(chest.ItemId, out var storage))
+        if (!ModPatches.instance.storageManager.TryGetData(chest, out var storage))
         {
             return sound;
         }
@@ -389,7 +389,7 @@ internal sealed class ModPatches : BaseService
     {
         if (!__instance.playerChest.Value
             || __instance.Location is null
-            || !ModPatches.instance.storageManager.Data.TryGetValue(__instance.ItemId, out var storage)
+            || !ModPatches.instance.storageManager.TryGetData(__instance, out var storage)
             || !storage.OpenNearby)
         {
             return;
@@ -449,7 +449,7 @@ internal sealed class ModPatches : BaseService
         int x,
         int y)
     {
-        if (!__result || !ModPatches.instance.storageManager.Data.TryGetValue(__instance.ItemId, out var storage))
+        if (!__result || !ModPatches.instance.storageManager.TryGetData(__instance, out var storage))
         {
             return;
         }
@@ -474,8 +474,7 @@ internal sealed class ModPatches : BaseService
 
     private static void UpdateColorPicker(ItemGrabMenu itemGrabMenu, Item sourceItem)
     {
-        if (sourceItem is not Chest chest
-            || !ModPatches.instance.storageManager.Data.TryGetValue(chest.ItemId, out var storage))
+        if (sourceItem is not Chest chest || !ModPatches.instance.storageManager.TryGetData(chest, out var storage))
         {
             return;
         }
