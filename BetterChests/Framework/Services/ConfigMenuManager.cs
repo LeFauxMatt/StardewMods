@@ -63,7 +63,10 @@ internal sealed class ConfigMenuManager : BaseService
             this.genericModConfigMenuIntegration.Unregister(this.manifest);
         }
 
-        this.genericModConfigMenuIntegration.Register(this.manifest, this.configManager.Reset, SaveConfig);
+        this.genericModConfigMenuIntegration.Register(
+            this.manifest,
+            this.configManager.Reset,
+            () => this.configManager.Save(config));
 
         gmcm.AddPageLink(this.manifest, "Main", I18n.Section_Main_Name);
         gmcm.AddParagraph(this.manifest, I18n.Section_Main_Description);
@@ -89,10 +92,6 @@ internal sealed class ConfigMenuManager : BaseService
         gmcm.AddPage(this.manifest, "Storages", I18n.Section_Storages_Name);
         gmcm.AddSectionTitle(this.manifest, I18n.Storage_Default_Name);
         gmcm.AddParagraph(this.manifest, I18n.Storage_Default_Tooltip);
-
-        return;
-
-        void SaveConfig() => this.configManager.Save(config);
     }
 
     /// <summary>Shows the config menu.</summary>
