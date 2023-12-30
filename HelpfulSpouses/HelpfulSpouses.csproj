@@ -6,7 +6,7 @@
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.HelpfulSpouses</RootNamespace>
     <UniqueId>furyx639.HelpfulSpouses</UniqueId>
-    <UpdateKeys>Nexus:5175</UpdateKeys>
+    <UpdateKeys>Nexus:5175@SMAPI</UpdateKeys>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SimpleInjector">

@@ -14,7 +14,7 @@ internal sealed class DefaultConfig : IModConfig
     public int DailyLimit { get; set; } = 1;
 
     /// <inheritdoc />
-    public CharacterOptions DefaultChance { get; set; } = new()
+    public CharacterOptions DefaultOptions { get; set; } = new()
     {
         [ChoreOption.BirthdayGift] = 0,
         [ChoreOption.FeedTheAnimals] = 0,

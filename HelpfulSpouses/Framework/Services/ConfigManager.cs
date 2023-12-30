@@ -20,7 +20,7 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
     public int DailyLimit => this.Config.DailyLimit;
 
     /// <inheritdoc />
-    public CharacterOptions DefaultChance => this.Config.DefaultChance;
+    public CharacterOptions DefaultOptions => this.Config.DefaultOptions;
 
     /// <inheritdoc />
     public FeedTheAnimalsOptions FeedTheAnimals => this.Config.FeedTheAnimals;

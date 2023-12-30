@@ -3,6 +3,8 @@
 using HarmonyLib;
 using SimpleInjector;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Services.Integrations.ProjectFluent;
 using StardewMods.HelpfulSpouses.Framework.Interfaces;
 using StardewMods.HelpfulSpouses.Framework.Services;
@@ -16,14 +18,7 @@ public sealed class ModEntry : Mod
 #nullable enable
 
     /// <inheritdoc />
-    public override void Entry(IModHelper helper)
-    {
-        // Init
-        ModPatches.Init(this.ModManifest);
-
-        // Events
-        this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
-    }
+    public override void Entry(IModHelper helper) => this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
@@ -43,8 +38,12 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.ModRegistry);
         this.container.RegisterInstance(this.Helper.Reflection);
         this.container.RegisterInstance(this.Helper.Translation);
-        this.container.RegisterSingleton<ProjectFluentIntegration>();
+        this.container.RegisterSingleton<ChoreManager>();
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
+        this.container.RegisterSingleton<ILog, LogService>();
+        this.container.RegisterSingleton<FuryCoreIntegration>();
+        this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
+        this.container.RegisterSingleton<ProjectFluentIntegration>();
 
         this.container.Collection.Register<IChore>(
             new[]

@@ -13,7 +13,7 @@ internal sealed class LoveThePets : BaseChore<LoveThePets>
     private int petsFed;
     private int petsPetted;
 
-    /// <summary>Initializes a new instance of the <see cref="LoveThePets" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="furyx638.HelpfulSpouses/LoveThePets" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
