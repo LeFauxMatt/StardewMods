@@ -1,23 +1,30 @@
-namespace StardewMods.HelpfulSpouses.Chores;
+namespace StardewMods.HelpfulSpouses.Framework.Services.Chores;
 
 using Microsoft.Xna.Framework;
+using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.HelpfulSpouses.Framework.Enums;
+using StardewMods.HelpfulSpouses.Framework.Interfaces;
 
-/// <inheritdoc />
-internal sealed class WaterTheSlimes : IChore
+/// <inheritdoc cref="StardewMods.HelpfulSpouses.Framework.Interfaces.IChore" />
+internal sealed class WaterTheSlimes : BaseChore<WaterTheSlimes>
 {
-    private readonly Config config;
-
     private int slimesWatered;
 
     /// <summary>Initializes a new instance of the <see cref="WaterTheSlimes" /> class.</summary>
-    /// <param name="config">Config data for <see cref="WaterTheSlimes" />.</param>
-    public WaterTheSlimes(Config config) => this.config = config;
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    public WaterTheSlimes(ILog log, IManifest manifest, IModConfig modConfig)
+        : base(log, manifest, modConfig) { }
 
     /// <inheritdoc />
-    public void AddTokens(Dictionary<string, object> tokens) => tokens["SlimesWatered"] = this.slimesWatered;
+    public override ChoreOption Option => ChoreOption.WaterTheSlimes;
 
     /// <inheritdoc />
-    public bool IsPossibleForSpouse(NPC spouse)
+    public override void AddTokens(Dictionary<string, object> tokens) => tokens["SlimesWatered"] = this.slimesWatered;
+
+    /// <inheritdoc />
+    public override bool IsPossibleForSpouse(NPC spouse)
     {
         var farm = Game1.getFarm();
         foreach (var building in farm.buildings)
@@ -52,7 +59,7 @@ internal sealed class WaterTheSlimes : IChore
     }
 
     /// <inheritdoc />
-    public bool TryPerformChore(NPC spouse)
+    public override bool TryPerformChore(NPC spouse)
     {
         this.slimesWatered = 0;
         var farm = Game1.getFarm();
@@ -68,7 +75,8 @@ internal sealed class WaterTheSlimes : IChore
             {
                 slimeHutch.waterSpots[i] = true;
                 this.slimesWatered++;
-                if (this.config.SlimeLimit > 0 && this.slimesWatered >= this.config.SlimeLimit)
+                if (this.Config.WaterTheSlimes.SlimeLimit > 0
+                    && this.slimesWatered >= this.Config.WaterTheSlimes.SlimeLimit)
                 {
                     return true;
                 }
@@ -76,12 +84,5 @@ internal sealed class WaterTheSlimes : IChore
         }
 
         return this.slimesWatered > 0;
-    }
-
-    /// <summary>Config data for <see cref="WaterTheSlimes" />.</summary>
-    public sealed class Config
-    {
-        /// <summary>Gets or sets the limit to the number of slimes that will be watered.</summary>
-        public int SlimeLimit { get; set; }
     }
 }

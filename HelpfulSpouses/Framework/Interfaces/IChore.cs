@@ -1,8 +1,13 @@
-namespace StardewMods.HelpfulSpouses.Chores;
+namespace StardewMods.HelpfulSpouses.Framework.Interfaces;
+
+using StardewMods.HelpfulSpouses.Framework.Enums;
 
 /// <summary>Defines a chore that can be done.</summary>
 internal interface IChore
 {
+    /// <summary>Gets the Chore option.</summary>
+    ChoreOption Option { get; }
+
     /// <summary>Adds dialogue tokens for chore.</summary>
     /// <param name="tokens">The dictionary to add tokens to.</param>
     void AddTokens(Dictionary<string, object> tokens);

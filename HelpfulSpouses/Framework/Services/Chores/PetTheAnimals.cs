@@ -1,20 +1,27 @@
-namespace StardewMods.HelpfulSpouses.Chores;
+namespace StardewMods.HelpfulSpouses.Framework.Services.Chores;
 
+using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.HelpfulSpouses.Framework.Enums;
+using StardewMods.HelpfulSpouses.Framework.Interfaces;
 using StardewValley.Extensions;
 
-/// <inheritdoc />
-internal sealed class PetTheAnimals : IChore
+/// <inheritdoc cref="StardewMods.HelpfulSpouses.Framework.Interfaces.IChore" />
+internal sealed class PetTheAnimals : BaseChore<PetTheAnimals>
 {
-    private readonly Config config;
-
     private int animalsPetted;
 
     /// <summary>Initializes a new instance of the <see cref="PetTheAnimals" /> class.</summary>
-    /// <param name="config">Config data for <see cref="PetTheAnimals" />.</param>
-    public PetTheAnimals(Config config) => this.config = config;
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    public PetTheAnimals(ILog log, IManifest manifest, IModConfig modConfig)
+        : base(log, manifest, modConfig) { }
 
     /// <inheritdoc />
-    public void AddTokens(Dictionary<string, object> tokens)
+    public override ChoreOption Option => ChoreOption.PetTheAnimals;
+
+    /// <inheritdoc />
+    public override void AddTokens(Dictionary<string, object> tokens)
     {
         var animals = Game1.getFarm().getAllFarmAnimals().Where(animal => !animal.wasAutoPet.Value).ToList();
         var animal = Game1.random.ChooseFrom(animals);
@@ -27,7 +34,7 @@ internal sealed class PetTheAnimals : IChore
     }
 
     /// <inheritdoc />
-    public bool IsPossibleForSpouse(NPC spouse)
+    public override bool IsPossibleForSpouse(NPC spouse)
     {
         var farm = Game1.getFarm();
         foreach (var building in farm.buildings)
@@ -41,7 +48,7 @@ internal sealed class PetTheAnimals : IChore
 
             var data = building.GetData();
             if (data.ValidOccupantTypes is null
-                || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
+                || !data.ValidOccupantTypes.Any(this.Config.PetTheAnimals.ValidOccupantTypes.Contains))
             {
                 continue;
             }
@@ -58,7 +65,7 @@ internal sealed class PetTheAnimals : IChore
     }
 
     /// <inheritdoc />
-    public bool TryPerformChore(NPC spouse)
+    public override bool TryPerformChore(NPC spouse)
     {
         this.animalsPetted = 0;
         var farm = Game1.getFarm();
@@ -71,7 +78,7 @@ internal sealed class PetTheAnimals : IChore
 
             var data = building.GetData();
             if (data.ValidOccupantTypes is null
-                || !data.ValidOccupantTypes.Any(this.config.ValidOccupantTypes.Contains))
+                || !data.ValidOccupantTypes.Any(this.Config.PetTheAnimals.ValidOccupantTypes.Contains))
             {
                 continue;
             }
@@ -85,7 +92,8 @@ internal sealed class PetTheAnimals : IChore
             {
                 animal.pet(Game1.player);
                 this.animalsPetted++;
-                if (this.config.AnimalLimit > 0 && this.animalsPetted >= this.config.AnimalLimit)
+                if (this.Config.PetTheAnimals.AnimalLimit > 0
+                    && this.animalsPetted >= this.Config.PetTheAnimals.AnimalLimit)
                 {
                     return true;
                 }
@@ -93,19 +101,5 @@ internal sealed class PetTheAnimals : IChore
         }
 
         return this.animalsPetted > 0;
-    }
-
-    /// <summary>Config data for <see cref="PetTheAnimals" />.</summary>
-    public sealed class Config
-    {
-        /// <summary>Gets or sets the limit to the number of animals that will be pet.</summary>
-        public int AnimalLimit { get; set; } = 0;
-
-        /// <summary>Gets or sets the occupant types.</summary>
-        public List<string> ValidOccupantTypes { get; set; } = new()
-        {
-            "Barn",
-            "Coop",
-        };
     }
 }

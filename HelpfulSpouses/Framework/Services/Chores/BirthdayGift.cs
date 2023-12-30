@@ -1,10 +1,13 @@
-namespace StardewMods.HelpfulSpouses.Chores;
+namespace StardewMods.HelpfulSpouses.Framework.Services.Chores;
 
 using StardewMods.Common.Extensions;
+using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.HelpfulSpouses.Framework.Enums;
+using StardewMods.HelpfulSpouses.Framework.Interfaces;
 using StardewValley.Extensions;
 
-/// <inheritdoc />
-internal sealed class BirthdayGift : IChore
+/// <inheritdoc cref="StardewMods.HelpfulSpouses.Framework.Interfaces.IChore" />
+internal sealed class BirthdayGift : BaseChore<BirthdayGift>
 {
     private static readonly Lazy<List<Item>> Items = new(
         delegate
@@ -16,17 +19,21 @@ internal sealed class BirthdayGift : IChore
                 .ToList();
         });
 
-    private readonly Config config;
-
     private Item? birthdayGift;
     private NPC? birthdayNpc;
 
     /// <summary>Initializes a new instance of the <see cref="BirthdayGift" /> class.</summary>
-    /// <param name="config">Config data for <see cref="BirthdayGift" />.</param>
-    public BirthdayGift(Config config) => this.config = config;
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    public BirthdayGift(ILog log, IManifest manifest, IModConfig modConfig)
+        : base(log, manifest, modConfig) { }
 
     /// <inheritdoc />
-    public void AddTokens(Dictionary<string, object> tokens)
+    public override ChoreOption Option => ChoreOption.BirthdayGift;
+
+    /// <inheritdoc />
+    public override void AddTokens(Dictionary<string, object> tokens)
     {
         if (this.birthdayNpc is null || this.birthdayGift is null)
         {
@@ -40,7 +47,7 @@ internal sealed class BirthdayGift : IChore
     }
 
     /// <inheritdoc />
-    public bool IsPossibleForSpouse(NPC spouse)
+    public override bool IsPossibleForSpouse(NPC spouse)
     {
         this.birthdayNpc = null;
         Utility.ForEachVillager(
@@ -59,7 +66,7 @@ internal sealed class BirthdayGift : IChore
     }
 
     /// <inheritdoc />
-    public bool TryPerformChore(NPC spouse)
+    public override bool TryPerformChore(NPC spouse)
     {
         if (this.birthdayNpc is null)
         {
@@ -77,51 +84,32 @@ internal sealed class BirthdayGift : IChore
             switch (taste)
             {
                 // Loved item
-                case 0 when rnd.NextBool(this.config.ChanceForLove):
+                case 0 when rnd.NextBool(this.Config.BirthdayGift.ChanceForLove):
                     this.birthdayGift = item;
                     return true;
 
                 // Liked item
-                case 2 when rnd.NextBool(this.config.ChanceForLike):
+                case 2 when rnd.NextBool(this.Config.BirthdayGift.ChanceForLike):
                     this.birthdayGift = item;
                     return true;
 
                 // Disliked item
-                case 4 when rnd.NextBool(this.config.ChanceForDislike):
+                case 4 when rnd.NextBool(this.Config.BirthdayGift.ChanceForDislike):
                     this.birthdayGift = item;
                     return true;
 
                 // Hated item
-                case 6 when rnd.NextBool(this.config.ChanceForHate):
+                case 6 when rnd.NextBool(this.Config.BirthdayGift.ChanceForHate):
                     this.birthdayGift = item;
                     return true;
 
                 // Neutral item
-                case 8 when rnd.NextBool(this.config.ChanceForNeutral):
+                case 8 when rnd.NextBool(this.Config.BirthdayGift.ChanceForNeutral):
                     this.birthdayGift = item;
                     return true;
             }
         }
 
         return false;
-    }
-
-    /// <summary>Config data for <see cref="BirthdayGift" />.</summary>
-    public sealed class Config
-    {
-        /// <summary>Gets or sets the chance that a disliked item will be given.</summary>
-        public double ChanceForDislike { get; set; }
-
-        /// <summary>Gets or sets the chance that a hated item will be given.</summary>
-        public double ChanceForHate { get; set; }
-
-        /// <summary>Gets or sets the chance that a liked item will be given.</summary>
-        public double ChanceForLike { get; set; } = 0.5;
-
-        /// <summary>Gets or sets the chance that a loved item will be given.</summary>
-        public double ChanceForLove { get; set; } = 0.2;
-
-        /// <summary>Gets or sets the chance that a neutral item will be given.</summary>
-        public double ChanceForNeutral { get; set; } = 0.1;
     }
 }

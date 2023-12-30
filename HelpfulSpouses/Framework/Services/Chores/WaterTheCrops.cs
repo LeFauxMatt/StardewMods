@@ -1,24 +1,31 @@
-namespace StardewMods.HelpfulSpouses.Chores;
+namespace StardewMods.HelpfulSpouses.Framework.Services.Chores;
 
 using Microsoft.Xna.Framework;
+using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.HelpfulSpouses.Framework.Enums;
+using StardewMods.HelpfulSpouses.Framework.Interfaces;
 using StardewValley.TerrainFeatures;
 
-/// <inheritdoc />
-internal sealed class WaterTheCrops : IChore
+/// <inheritdoc cref="StardewMods.HelpfulSpouses.Framework.Interfaces.IChore" />
+internal sealed class WaterTheCrops : BaseChore<WaterTheCrops>
 {
-    private readonly Config config;
-
     private int cropsWatered;
 
     /// <summary>Initializes a new instance of the <see cref="WaterTheCrops" /> class.</summary>
-    /// <param name="config">Config data for <see cref="WaterTheCrops" />.</param>
-    public WaterTheCrops(Config config) => this.config = config;
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    public WaterTheCrops(ILog log, IManifest manifest, IModConfig modConfig)
+        : base(log, manifest, modConfig) { }
 
     /// <inheritdoc />
-    public void AddTokens(Dictionary<string, object> tokens) => tokens["CropsWatered"] = this.cropsWatered;
+    public override ChoreOption Option => ChoreOption.WaterTheCrops;
 
     /// <inheritdoc />
-    public bool IsPossibleForSpouse(NPC spouse)
+    public override void AddTokens(Dictionary<string, object> tokens) => tokens["CropsWatered"] = this.cropsWatered;
+
+    /// <inheritdoc />
+    public override bool IsPossibleForSpouse(NPC spouse)
     {
         var farm = Game1.getFarm();
         if (farm.IsRainingHere() || Game1.GetSeasonForLocation(farm) == Season.Winter)
@@ -58,7 +65,7 @@ internal sealed class WaterTheCrops : IChore
     }
 
     /// <inheritdoc />
-    public bool TryPerformChore(NPC spouse)
+    public override bool TryPerformChore(NPC spouse)
     {
         this.cropsWatered = 0;
         var farm = Game1.getFarm();
@@ -69,19 +76,12 @@ internal sealed class WaterTheCrops : IChore
         {
             spot.state.Value = HoeDirt.watered;
             this.cropsWatered++;
-            if (this.config.CropLimit > 0 && this.cropsWatered >= this.config.CropLimit)
+            if (this.Config.WaterTheCrops.CropLimit > 0 && this.cropsWatered >= this.Config.WaterTheCrops.CropLimit)
             {
                 return true;
             }
         }
 
         return this.cropsWatered > 0;
-    }
-
-    /// <summary>Config data for <see cref="WaterTheCrops" />.</summary>
-    public sealed class Config
-    {
-        /// <summary>Gets or sets the limit to the number of crops that will be watered.</summary>
-        public int CropLimit { get; set; }
     }
 }

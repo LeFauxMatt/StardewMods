@@ -1,23 +1,30 @@
-namespace StardewMods.HelpfulSpouses.Chores;
+namespace StardewMods.HelpfulSpouses.Framework.Services.Chores;
 
+using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.HelpfulSpouses.Framework.Enums;
+using StardewMods.HelpfulSpouses.Framework.Interfaces;
 using StardewValley.Buildings;
 using StardewValley.Characters;
 using StardewValley.Extensions;
 
-/// <inheritdoc />
-internal sealed class LoveThePets : IChore
+/// <inheritdoc cref="StardewMods.HelpfulSpouses.Framework.Interfaces.IChore" />
+internal sealed class LoveThePets : BaseChore<LoveThePets>
 {
-    private readonly Config config;
-
     private int petsFed;
     private int petsPetted;
 
     /// <summary>Initializes a new instance of the <see cref="LoveThePets" /> class.</summary>
-    /// <param name="config">Config data for <see cref="LoveThePets" />.</param>
-    public LoveThePets(Config config) => this.config = config;
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    public LoveThePets(ILog log, IManifest manifest, IModConfig modConfig)
+        : base(log, manifest, modConfig) { }
 
     /// <inheritdoc />
-    public void AddTokens(Dictionary<string, object> tokens)
+    public override ChoreOption Option => ChoreOption.LoveThePets;
+
+    /// <inheritdoc />
+    public override void AddTokens(Dictionary<string, object> tokens)
     {
         var pet = Game1.random.ChooseFrom(Game1.getFarm().characters.OfType<Pet>().ToList());
         tokens["PetName"] = pet.Name;
@@ -26,17 +33,18 @@ internal sealed class LoveThePets : IChore
     }
 
     /// <inheritdoc />
-    public bool IsPossibleForSpouse(NPC spouse) =>
-        (this.config.FillWaterBowl || this.config.EnablePetting) && Game1.getFarm().characters.OfType<Pet>().Any();
+    public override bool IsPossibleForSpouse(NPC spouse) =>
+        (this.Config.LoveThePets.FillWaterBowl || this.Config.LoveThePets.EnablePetting)
+        && Game1.getFarm().characters.OfType<Pet>().Any();
 
     /// <inheritdoc />
-    public bool TryPerformChore(NPC spouse)
+    public override bool TryPerformChore(NPC spouse)
     {
         this.petsFed = 0;
         this.petsPetted = 0;
         var farm = Game1.getFarm();
 
-        if (this.config.FillWaterBowl)
+        if (this.Config.LoveThePets.FillWaterBowl)
         {
             foreach (var petBowl in farm.buildings.OfType<PetBowl>())
             {
@@ -45,7 +53,7 @@ internal sealed class LoveThePets : IChore
             }
         }
 
-        if (!this.config.EnablePetting)
+        if (!this.Config.LoveThePets.EnablePetting)
         {
             return this.petsFed > 0;
         }
@@ -75,15 +83,5 @@ internal sealed class LoveThePets : IChore
         }
 
         return this.petsFed > 0 || this.petsPetted > 0;
-    }
-
-    /// <summary>Config data for <see cref="LoveThePets" />.</summary>
-    public sealed class Config
-    {
-        /// <summary>Gets or sets a value indicating whether petting will be enabled.</summary>
-        public bool EnablePetting { get; set; } = true;
-
-        /// <summary>Gets or sets a value indicating whether the water bowl will be filled.</summary>
-        public bool FillWaterBowl { get; set; } = true;
     }
 }

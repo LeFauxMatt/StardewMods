@@ -9,6 +9,18 @@
     <UpdateKeys>Nexus:5175</UpdateKeys>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="SimpleInjector">
+      <HintPath>$(GameModsPath)\FuryCore\SimpleInjector.dll</HintPath>
+      <Version>5.4.2</Version>
+      <Private>false</Private>
+    </PackageReference>
+    <Reference Include="HarmonyLib">
+      <HintPath>$(GamePath)\smapi-internal\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.20231228" required="true"/>
     <SMAPIDependency Include="Shockah.ProjectFluent" Version="2.0.0-alpha.20230814" required="true"/>
     <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
   </ItemGroup>
