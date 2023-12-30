@@ -7,32 +7,27 @@ using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.ExpandedStorage.Framework.Enums;
 using StardewMods.ExpandedStorage.Framework.Models;
-using StardewValley.GameData.BigCraftables;
 
-/// <summary>Handles the objects which should be managed by Expanded Storages.</summary>
+/// <summary>Responsible for managing expanded storage objects.</summary>
 internal sealed class StorageManager : BaseService
 {
     private const string AssetPath = "Data/BigCraftables";
 
     private readonly Dictionary<string, StorageData> data = new();
-    private readonly IGameContentHelper gameContentHelper;
 
     /// <summary>Initializes a new instance of the <see cref="StorageManager" /> class.</summary>
     /// <param name="contentPatcherIntegration">Dependency for Content Patcher integration.</param>
-    /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public StorageManager(
         ContentPatcherIntegration contentPatcherIntegration,
-        IGameContentHelper gameContentHelper,
         ILog log,
         IManifest manifest,
         IModEvents modEvents)
         : base(log, manifest)
     {
         // Init
-        this.gameContentHelper = gameContentHelper;
 
         // Events
         modEvents.Content.AssetReady += this.OnAssetReady;
@@ -108,6 +103,5 @@ internal sealed class StorageManager : BaseService
         }
     }
 
-    private void OnConditionsApiReady(object? sender, EventArgs args) =>
-        _ = this.gameContentHelper.Load<Dictionary<string, BigCraftableData>>(StorageManager.AssetPath);
+    private void OnConditionsApiReady(object? sender, EventArgs args) => _ = DataLoader.BigCraftables(Game1.content);
 }
