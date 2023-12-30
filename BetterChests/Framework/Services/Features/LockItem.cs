@@ -11,14 +11,14 @@ using StardewValley.Menus;
 /// <summary>Locks items in inventory so they cannot be stashed.</summary>
 internal sealed class LockItem : BaseFeature<LockItem>
 {
-    private readonly ContainerOperations containerOperations;
+    private readonly ContainerHandler containerHandler;
     private readonly IInputHelper inputHelper;
     private readonly ItemGrabMenuManager itemGrabMenuManager;
     private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="LockItem" /> class.</summary>
     /// <param name="configManager">Dependency used for accessing config data.</param>
-    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
+    /// <param name="containerHandler">Dependency used for handling operations between containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
@@ -26,7 +26,7 @@ internal sealed class LockItem : BaseFeature<LockItem>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public LockItem(
         ConfigManager configManager,
-        ContainerOperations containerOperations,
+        ContainerHandler containerHandler,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         ILog log,
@@ -34,7 +34,7 @@ internal sealed class LockItem : BaseFeature<LockItem>
         IModEvents modEvents)
         : base(log, manifest, configManager)
     {
-        this.containerOperations = containerOperations;
+        this.containerHandler = containerHandler;
         this.modEvents = modEvents;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
@@ -50,7 +50,7 @@ internal sealed class LockItem : BaseFeature<LockItem>
         this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
         this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.containerOperations.ItemTransferring += this.OnItemTransferring;
+        this.containerHandler.ItemTransferring += this.OnItemTransferring;
         this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
     }
 
@@ -61,7 +61,7 @@ internal sealed class LockItem : BaseFeature<LockItem>
         this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
         this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
         this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.containerOperations.ItemTransferring -= this.OnItemTransferring;
+        this.containerHandler.ItemTransferring -= this.OnItemTransferring;
         this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
     }
 

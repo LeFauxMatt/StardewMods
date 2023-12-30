@@ -2,36 +2,28 @@ namespace StardewMods.FuryCore.Framework.Services;
 
 using StardewMods.Common.Enums;
 using StardewMods.Common.Services;
-using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.FuryCore.Framework.Interfaces;
 using StardewMods.FuryCore.Framework.Models;
 
 /// <summary>Handles the config menu.</summary>
-internal sealed class ConfigManager : BaseService, IModConfig
+internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
 {
     private readonly GenericModConfigMenuIntegration genericModConfigMenuIntegration;
-    private readonly IModHelper modHelper;
     private readonly IManifest manifest;
-
-    private IModConfig modConfig;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigManager" /> class.</summary>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
     public ConfigManager(
         GenericModConfigMenuIntegration genericModConfigMenuIntegration,
-        ILog log,
         IManifest manifest,
         IModHelper modHelper)
-        : base(log, manifest)
+        : base(modHelper)
     {
         this.genericModConfigMenuIntegration = genericModConfigMenuIntegration;
-        this.modHelper = modHelper;
         this.manifest = manifest;
-        this.modConfig = this.modHelper.ReadConfig<DefaultConfig>();
 
         if (this.genericModConfigMenuIntegration.IsLoaded)
         {
@@ -40,15 +32,7 @@ internal sealed class ConfigManager : BaseService, IModConfig
     }
 
     /// <inheritdoc />
-    public SimpleLogLevel LogLevel => this.modConfig.LogLevel;
-
-    private void Reset() => this.modConfig = new DefaultConfig();
-
-    private void Save(DefaultConfig config)
-    {
-        this.modHelper.WriteConfig(config);
-        this.modConfig = config;
-    }
+    public SimpleLogLevel LogLevel => this.Config.LogLevel;
 
     private void SetupModConfigMenu()
     {
@@ -58,7 +42,7 @@ internal sealed class ConfigManager : BaseService, IModConfig
         }
 
         var gmcm = this.genericModConfigMenuIntegration.Api;
-        var config = this.modHelper.ReadConfig<DefaultConfig>();
+        var config = this.GetNew();
 
         // Register mod configuration
         this.genericModConfigMenuIntegration.Register(this.manifest, this.Reset, () => this.Save(config));

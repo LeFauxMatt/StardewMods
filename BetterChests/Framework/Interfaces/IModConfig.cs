@@ -72,4 +72,7 @@ internal interface IModConfig
 
     /// <summary>Gets a value indicating whether stashing into the chest will fill existing item stacks.</summary>
     public bool StashToChestStacks { get; }
+
+    /// <summary>Gets a value indicating whether chests will swap out with unloaded chests.</summary>
+    public bool UnloadChestSwap { get; }
 }

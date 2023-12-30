@@ -17,7 +17,7 @@ internal class ChestContainer : BaseContainer<Chest>
         : base(baseOptions) =>
         this.Source = new WeakReference<Chest>(chest);
 
-    /// <summary>Gets the chest container of the storage.</summary>
+    /// <summary>Gets the source chest of the container.</summary>
     public Chest Chest =>
         this.Source.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(ChestContainer));
 

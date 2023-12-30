@@ -3,43 +3,58 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
+using StardewMods.ToolbarIcons.Framework.Interfaces;
+using StardewMods.ToolbarIcons.Framework.Models;
 using StardewMods.ToolbarIcons.Framework.UI;
 using StardewValley.Menus;
 
 /// <summary>Handles generic mod config menu.</summary>
-internal sealed class ConfigManager
+internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
 {
     private readonly Dictionary<string, ClickableTextureComponent> components;
-    private readonly ModConfig modConfig;
     private readonly EventsManager eventsManager;
     private readonly GenericModConfigMenuIntegration genericModConfigMenuIntegration;
-    private readonly IModHelper modHelper;
     private readonly IManifest manifest;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigManager" /> class.</summary>
-    /// <param name="modHelper">Dependency for events, input, and content.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="components">Dependency used for the toolbar icon components.</param>
     /// <param name="eventsManager">Dependency used for custom events.</param>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modHelper">Dependency for events, input, and content.</param>
     public ConfigManager(
-        IModHelper modHelper,
-        ModConfig modConfig,
         Dictionary<string, ClickableTextureComponent> components,
         EventsManager eventsManager,
         GenericModConfigMenuIntegration genericModConfigMenuIntegration,
-        IManifest manifest)
+        IManifest manifest,
+        IModHelper modHelper)
+        : base(modHelper)
     {
-        this.modHelper = modHelper;
         this.manifest = manifest;
-        this.modConfig = modConfig;
         this.components = components;
         this.eventsManager = eventsManager;
         this.genericModConfigMenuIntegration = genericModConfigMenuIntegration;
 
         eventsManager.ToolbarIconsLoaded += this.OnToolbarIconsLoaded;
+    }
+
+    /// <inheritdoc />
+    public List<ToolbarIcon> Icons => this.Config.Icons;
+
+    /// <inheritdoc />
+    public float Scale => this.Config.Scale;
+
+    /// <inheritdoc />
+    public override DefaultConfig GetDefault()
+    {
+        var defaultConfig = base.GetDefault();
+
+        // Add icons to config with default sorting
+        defaultConfig.Icons.Sort((i1, i2) => string.Compare(i1.Id, i2.Id, StringComparison.OrdinalIgnoreCase));
+
+        return defaultConfig;
     }
 
     private void DrawButton(SpriteBatch b, Vector2 pos)
@@ -54,7 +69,7 @@ internal sealed class ConfigManager
                 && Mouse.GetState().LeftButton == ButtonState.Pressed
                 && bounds.Contains(point))
             {
-                Game1.activeClickableMenu.SetChildMenu(new ToolbarIconsMenu(this.modConfig.Icons, this.components));
+                Game1.activeClickableMenu.SetChildMenu(new ToolbarIconsMenu(this.Config.Icons, this.components));
                 return;
             }
         }
@@ -92,32 +107,17 @@ internal sealed class ConfigManager
             return;
         }
 
-        // Register mod configuration
-        this.genericModConfigMenuIntegration.Api.Register(this.manifest, this.ResetConfig, this.SaveConfig);
+        var gmcm = this.genericModConfigMenuIntegration.Api;
+        var config = this.GetNew();
 
-        this.genericModConfigMenuIntegration.Api.AddComplexOption(
+        // Register mod configuration
+        this.genericModConfigMenuIntegration.Register(this.manifest, this.Reset, () => this.Save(config));
+
+        gmcm.AddComplexOption(
             this.manifest,
             I18n.Config_CustomizeToolbar_Name,
             this.DrawButton,
             I18n.Config_CustomizeToolbar_Tooltip,
             height: () => 64);
-    }
-
-    private void ResetConfig()
-    {
-        this.modConfig.Scale = 2;
-        foreach (var icon in this.modConfig.Icons)
-        {
-            icon.Enabled = true;
-        }
-
-        this.modConfig.Icons.Sort((i1, i2) => string.Compare(i1.Id, i2.Id, StringComparison.OrdinalIgnoreCase));
-        this.eventsManager.InvokeToolbarIconsChanged();
-    }
-
-    private void SaveConfig()
-    {
-        this.modHelper.WriteConfig(this.modConfig);
-        this.eventsManager.InvokeToolbarIconsChanged();
     }
 }

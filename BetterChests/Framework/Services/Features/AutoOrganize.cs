@@ -10,26 +10,26 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 internal sealed class AutoOrganize : BaseFeature<AutoOrganize>
 {
     private readonly ContainerFactory containerFactory;
-    private readonly ContainerOperations containerOperations;
+    private readonly ContainerHandler containerHandler;
     private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="AutoOrganize" /> class.</summary>
     /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
-    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
+    /// <param name="containerHandler">Dependency used for handling operations between containers.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public AutoOrganize(
         ConfigManager configManager,
         ContainerFactory containerFactory,
-        ContainerOperations containerOperations,
+        ContainerHandler containerHandler,
         ILog log,
         IManifest manifest,
         IModEvents modEvents)
         : base(log, manifest, configManager)
     {
-        this.containerOperations = containerOperations;
+        this.containerHandler = containerHandler;
         this.modEvents = modEvents;
         this.containerFactory = containerFactory;
     }
@@ -86,7 +86,7 @@ internal sealed class AutoOrganize : BaseFeature<AutoOrganize>
                         }
 
                         var containerFrom = containersFrom[indexFrom];
-                        if (!this.containerOperations.Transfer(containerFrom, containerTo, out var amounts))
+                        if (!this.containerHandler.Transfer(containerFrom, containerTo, out var amounts))
                         {
                             containersFrom.RemoveAt(indexFrom);
                             continue;
@@ -103,7 +103,7 @@ internal sealed class AutoOrganize : BaseFeature<AutoOrganize>
                         }
                     }
 
-                    this.containerOperations.OrganizeItems(containerTo);
+                    this.containerHandler.OrganizeItems(containerTo);
                 }
             }
         }

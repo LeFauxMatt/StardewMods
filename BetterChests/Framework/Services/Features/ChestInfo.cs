@@ -8,7 +8,6 @@ using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <summary>Show stats to the side of a chest.</summary>
 internal sealed class ChestInfo : BaseFeature<ChestInfo>
@@ -149,11 +148,7 @@ internal sealed class ChestInfo : BaseFeature<ChestInfo>
     private void RefreshInfo()
     {
         this.cachedInfo.Value.Clear();
-        if (Game1.activeClickableMenu is not ItemGrabMenu
-            {
-                context: Chest chest,
-            }
-            || !this.containerFactory.TryGetOne(chest, out var container)
+        if (!this.containerFactory.TryGetOneFromMenu(out var container)
             || container.Options.ChestInfo != Option.Enabled)
         {
             return;

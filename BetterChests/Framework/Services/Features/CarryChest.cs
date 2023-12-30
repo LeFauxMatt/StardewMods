@@ -151,7 +151,7 @@ internal sealed class CarryChest : BaseFeature<CarryChest>
         if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
             || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
             || obj is not Chest chest
-            || !this.containerFactory.TryGetOne(obj, out var container)
+            || !this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, pos, out var container)
             || container.Options.CarryChest != Option.Enabled)
         {
             return;

@@ -75,6 +75,7 @@ internal sealed class OpenHeldChest : BaseFeature<OpenHeldChest>
     }
 
     // TODO: Recursive check
+
     /// <summary>Prevent adding chest into itself.</summary>
     [HarmonyPriority(Priority.High)]
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -95,8 +96,7 @@ internal sealed class OpenHeldChest : BaseFeature<OpenHeldChest>
     {
         if (!Context.IsPlayerFree
             || !e.Button.IsActionButton()
-            || Game1.player.CurrentItem is null
-            || !this.containerFactory.TryGetOne(Game1.player.CurrentItem, out var container)
+            || !this.containerFactory.TryGetOneFromPlayer(Game1.player, out var container)
             || container.Options.OpenHeldChest != Option.Enabled)
         {
             return;

@@ -82,7 +82,7 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
 
         var id = chest.GlobalInventoryId ?? this.GenerateGlobalInventoryId();
         var globalInventory = Game1.player.team.GetOrCreateGlobalInventory(id);
-        var item = ItemRegistry.Create(chest.QualifiedItemId);
+        var item = (SObject)ItemRegistry.Create(chest.QualifiedItemId);
 
         item.Name = chest.Name;
         item.modData[this.Prefix + ProxyChestFactory.GlobalInventoryIdKey] = id;
@@ -99,16 +99,26 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
             item.modData[key] = value;
         }
 
-        this.proxyChests[id] = chest;
+        this.proxyChests[id] = new Chest(true, Vector2.Zero, chest.ItemId)
+        {
+            Name = chest.Name,
+            playerChoiceColor = { Value = chest.playerChoiceColor.Value },
+        };
+
+        foreach (var (key, value) in chest.modData.Pairs)
+        {
+            this.proxyChests[id].modData[key] = value;
+        }
+
         request = new ProxyChestRequest(item, Confirm, Cancel);
         return true;
 
         // Move Items to global inventory
         void Confirm()
         {
-            chest.GlobalInventoryId = id;
             globalInventory.OverwriteWith(chest.Items);
-            chest.Items.Clear();
+            this.proxyChests[id].GlobalInventoryId = id;
+            this.proxyChests[id].Items.Clear();
         }
 
         // Clear global inventory

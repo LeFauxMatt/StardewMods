@@ -16,7 +16,7 @@ using StardewValley.Menus;
 internal sealed class ToolbarManager : BaseService
 {
     private readonly Dictionary<string, ClickableTextureComponent> components;
-    private readonly ModConfig modConfig;
+    private readonly DefaultConfig defaultConfig;
     private readonly PerScreen<string> currentHoverText = new();
     private readonly EventsManager eventsManager;
     private readonly IModEvents modEvents;
@@ -37,7 +37,7 @@ internal sealed class ToolbarManager : BaseService
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for monitoring and logging.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    /// <param name="defaultConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
     public ToolbarManager(
@@ -48,7 +48,7 @@ internal sealed class ToolbarManager : BaseService
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
-        ModConfig modConfig,
+        DefaultConfig defaultConfig,
         IModEvents modEvents,
         IReflectionHelper reflectionHelper)
         : base(log, manifest)
@@ -60,7 +60,7 @@ internal sealed class ToolbarManager : BaseService
         this.gameContentHelper = gameContentHelper;
         this.inputHelper = inputHelper;
         this.log = log;
-        this.modConfig = modConfig;
+        this.defaultConfig = defaultConfig;
         this.modEvents = modEvents;
         this.reflectionHelper = reflectionHelper;
 
@@ -82,11 +82,13 @@ internal sealed class ToolbarManager : BaseService
     /// <param name="hoverText">Text to appear when hovering over the icon.</param>
     public void AddToolbarIcon(string id, string texturePath, Rectangle? sourceRect, string? hoverText)
     {
-        var icon = this.modConfig.Icons.FirstOrDefault(icon => icon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        var icon = this.defaultConfig.Icons.FirstOrDefault(
+            icon => icon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+
         if (icon is null)
         {
             icon = new ToolbarIcon(id);
-            this.modConfig.Icons.Add(icon);
+            this.defaultConfig.Icons.Add(icon);
         }
 
         if (this.components.ContainsKey(id))
@@ -113,7 +115,7 @@ internal sealed class ToolbarManager : BaseService
     /// <param name="id">A unique identifier for the icon.</param>
     public void RemoveToolbarIcon(string id)
     {
-        var toolbarIcon = this.modConfig.Icons.FirstOrDefault(
+        var toolbarIcon = this.defaultConfig.Icons.FirstOrDefault(
             toolbarIcon => toolbarIcon.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
 
         if (toolbarIcon is null)
@@ -122,7 +124,7 @@ internal sealed class ToolbarManager : BaseService
         }
 
         this.log.Trace("Removing icon: {0}", [id]);
-        this.modConfig.Icons.Remove(toolbarIcon);
+        this.defaultConfig.Icons.Remove(toolbarIcon);
         this.components.Remove(id);
     }
 
@@ -234,7 +236,7 @@ internal sealed class ToolbarManager : BaseService
 
     private void OnToolbarIconsChanged(object? sender, EventArgs e)
     {
-        foreach (var icon in this.modConfig.Icons)
+        foreach (var icon in this.defaultConfig.Icons)
         {
             if (this.components.TryGetValue(icon.Id, out var component))
             {
@@ -311,7 +313,7 @@ internal sealed class ToolbarManager : BaseService
     private void ReorientComponents(ComponentArea area, int x, int y)
     {
         this.lastArea.Value = area;
-        foreach (var icon in this.modConfig.Icons)
+        foreach (var icon in this.defaultConfig.Icons)
         {
             if (this.components.TryGetValue(icon.Id, out var component))
             {

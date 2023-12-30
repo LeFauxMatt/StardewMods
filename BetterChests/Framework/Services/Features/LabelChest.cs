@@ -6,7 +6,6 @@ using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <summary>Draw chest label to the screen.</summary>
 internal sealed class LabelChest : BaseFeature<LabelChest>
@@ -53,11 +52,7 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
     {
-        if (Game1.activeClickableMenu is not ItemGrabMenu
-            {
-                context: Chest chest,
-            }
-            || !this.containerFactory.TryGetOne(chest, out var container)
+        if (!this.containerFactory.TryGetOneFromMenu(out var container)
             || string.IsNullOrWhiteSpace(container.Options.ChestLabel))
         {
             return;
@@ -83,14 +78,16 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
         }
 
         var pos = CommonHelpers.GetCursorTile();
-        if ((!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-                && !Game1.currentLocation.Objects.TryGetValue(pos - new Vector2(0, -1), out obj))
-            || !this.containerFactory.TryGetOne(obj, out var storage)
-            || string.IsNullOrWhiteSpace(storage.Options.ChestLabel))
+        if ((!this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, pos, out var container)
+                && !this.containerFactory.TryGetOneFromLocation(
+                    Game1.currentLocation,
+                    pos - new Vector2(0, -1),
+                    out container))
+            || string.IsNullOrWhiteSpace(container.Options.ChestLabel))
         {
             return;
         }
 
-        IClickableMenu.drawHoverText(e.SpriteBatch, storage.Options.ChestLabel, Game1.smallFont);
+        IClickableMenu.drawHoverText(e.SpriteBatch, container.Options.ChestLabel, Game1.smallFont);
     }
 }

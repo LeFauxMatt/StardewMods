@@ -54,11 +54,12 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<ConfigManager, ConfigManager>();
         this.container.RegisterSingleton<ConfigMenuManager>();
         this.container.RegisterSingleton<ContainerFactory>();
-        this.container.RegisterSingleton<ContainerOperations>();
+        this.container.RegisterSingleton<ContainerHandler>();
         this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<InventoryTabFactory>();
         this.container.RegisterSingleton<ItemGrabMenuManager>();
+        this.container.RegisterSingleton<Func<ItemMatcher>>(() => this.container.GetInstance<ItemMatcher>);
         this.container.RegisterSingleton<ItemMatcherFactory>();
         this.container.RegisterSingleton<LocalizedTextManager>();
         this.container.RegisterSingleton<ILog, LogService>();
@@ -67,7 +68,6 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<ITheming, ThemingService>();
         this.container.RegisterSingleton<ToolbarIconsIntegration>();
         this.container.Register<ItemMatcher>();
-        this.container.Register<Func<ItemMatcher>>(() => this.container.GetInstance<ItemMatcher>);
 
         this.container.Collection.Register<IFeature>(
             new[]

@@ -93,5 +93,5 @@ internal abstract class BaseContainer : IContainer
 
     /// <inheritdoc />
     public override string ToString() =>
-        $"{this.DisplayName} at {this.Location.DisplayName} ({this.TileLocation.X:n0}, {this.TileLocation.Y:n0})";
+        $"{this.DisplayName} at {this.Location?.DisplayName ?? "Unknown"} ({this.TileLocation.X:n0}, {this.TileLocation.Y:n0})";
 }

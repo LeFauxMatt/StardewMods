@@ -16,56 +16,6 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     private readonly Dictionary<string, CachedValue<Option>> cachedOption = new();
     private readonly Dictionary<string, CachedValue<RangeOption>> cachedRangeOption = new();
 
-#pragma warning disable SA1600
-#pragma warning disable SA1602
-    [EnumExtensions]
-    internal enum HashSetKey
-    {
-        FilterItemsList,
-        InventoryTabList,
-    }
-
-    [EnumExtensions]
-    internal enum IntegerKey
-    {
-        StashToChestPriority,
-    }
-
-    [EnumExtensions]
-    internal enum OptionKey
-    {
-        AutoOrganize,
-        CarryChest,
-        CategorizeChest,
-        ChestFinder,
-        ChestInfo,
-        CollectItems,
-        ConfigureChest,
-        HslColorPicker,
-        InventoryTabs,
-        OpenHeldChest,
-        OrganizeItems,
-        SearchItems,
-        TransferItems,
-        UnloadChest,
-    }
-
-    [EnumExtensions]
-    internal enum RangeOptionKey
-    {
-        CraftFromChest,
-        StashToChest,
-    }
-
-    [EnumExtensions]
-    internal enum StringKey
-    {
-        ChestLabel,
-        ResizeChest,
-    }
-#pragma warning restore SA1602
-#pragma warning restore SA1600
-
     /// <inheritdoc />
     public Option AutoOrganize
     {
@@ -372,4 +322,54 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
 
         public string OriginalValue { get; } = originalValue;
     }
+
+#pragma warning disable SA1600
+#pragma warning disable SA1602
+    [EnumExtensions]
+    internal enum HashSetKey
+    {
+        FilterItemsList,
+        InventoryTabList,
+    }
+
+    [EnumExtensions]
+    internal enum IntegerKey
+    {
+        StashToChestPriority,
+    }
+
+    [EnumExtensions]
+    internal enum OptionKey
+    {
+        AutoOrganize,
+        CarryChest,
+        CategorizeChest,
+        ChestFinder,
+        ChestInfo,
+        CollectItems,
+        ConfigureChest,
+        HslColorPicker,
+        InventoryTabs,
+        OpenHeldChest,
+        OrganizeItems,
+        SearchItems,
+        TransferItems,
+        UnloadChest,
+    }
+
+    [EnumExtensions]
+    internal enum RangeOptionKey
+    {
+        CraftFromChest,
+        StashToChest,
+    }
+
+    [EnumExtensions]
+    internal enum StringKey
+    {
+        ChestLabel,
+        ResizeChest,
+    }
+#pragma warning restore SA1602
+#pragma warning restore SA1600
 }

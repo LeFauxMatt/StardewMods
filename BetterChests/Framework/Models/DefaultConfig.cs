@@ -8,6 +8,9 @@ using StardewMods.BetterChests.Framework.Models.StorageOptions;
 internal sealed class DefaultConfig : IModConfig
 {
     /// <inheritdoc />
+    public bool UnloadChestSwap { get; } = true;
+
+    /// <inheritdoc />
     public DefaultStorageOptions DefaultOptions { get; set; } = new();
 
     /// <inheritdoc />

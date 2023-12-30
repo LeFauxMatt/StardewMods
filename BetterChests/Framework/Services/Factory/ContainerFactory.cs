@@ -1,6 +1,7 @@
 namespace StardewMods.BetterChests.Framework.Services.Factory;
 
 using System.Runtime.CompilerServices;
+using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
@@ -8,6 +9,7 @@ using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Buildings;
 using StardewValley.GameData.BigCraftables;
+using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>Provides access to all known storages for other services.</summary>
@@ -67,7 +69,7 @@ internal sealed class ContainerFactory : BaseService
     {
         foreach (var item in parentContainer.Items)
         {
-            if (item is null || !this.TryGetOne(item, out var childContainer))
+            if (item is null || !this.TryGetAny(item, out var childContainer))
             {
                 continue;
             }
@@ -81,7 +83,7 @@ internal sealed class ContainerFactory : BaseService
     }
 
     /// <summary>Retrieves all containers from the specified game location that match the optional predicate.</summary>
-    /// <param name="location">The game location where the container items will be retrieved.</param>
+    /// <param name="location">The game location where the container will be retrieved.</param>
     /// <param name="predicate">The predicate to filter the containers.</param>
     /// <returns>An enumerable collection of containers that match the predicate.</returns>
     public IEnumerable<IContainer> GetAllFromLocation(
@@ -91,7 +93,7 @@ internal sealed class ContainerFactory : BaseService
         // Search for containers from placed objects
         foreach (var obj in location.Objects.Values)
         {
-            if (!this.TryGetOne(obj, out var container))
+            if (!this.TryGetAny(obj, out var container))
             {
                 continue;
             }
@@ -176,7 +178,7 @@ internal sealed class ContainerFactory : BaseService
         // Search for containers from farmer inventory
         foreach (var item in farmer.Items)
         {
-            if (item is null || !this.TryGetOne(item, out var childContainer))
+            if (item is null || !this.TryGetAny(item, out var childContainer))
             {
                 continue;
             }
@@ -189,42 +191,80 @@ internal sealed class ContainerFactory : BaseService
         }
     }
 
-    /// <summary>Tries to get a container from the specified object.</summary>
-    /// <param name="item">The item to get a container from.</param>
+    /// <summary>Tries to retrieve a container from the specified game location at the specified position.</summary>
+    /// <param name="location">The game location where the container will be retrieved.</param>
+    /// <param name="pos">The position of the game location where the container will be retrieved.</param>
     /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
     /// <returns><c>true</c> if a container is found; otherwise, <c>false</c>.</returns>
-    public bool TryGetOne(Item item, [NotNullWhen(true)] out IContainer? container)
+    public bool TryGetOneFromLocation(GameLocation location, Vector2 pos, [NotNullWhen(true)] out IContainer? container)
     {
-        if (this.cachedContainers.TryGetValue(item, out container))
-        {
-            return true;
-        }
-
-        var chest = item as Chest ?? (item as SObject)?.heldObject.Value as Chest;
-        if (chest is null && !this.proxyChestFactory.TryGetProxy(item, out chest))
+        if (!location.Objects.TryGetValue(pos, out var obj))
         {
             container = null;
             return false;
         }
 
-        if (!this.storageOptions.TryGetValue(item.QualifiedItemId, out var storageOption))
+        if (this.cachedContainers.TryGetValue(obj, out container) || this.TryGetAny(obj, out container))
         {
-            var data =
-                ItemRegistry.GetData(item.QualifiedItemId)?.RawData as BigCraftableData ?? new BigCraftableData();
-
-            storageOption = new BigCraftableStorageOptions(this.modConfig.DefaultOptions, data);
-            this.storageOptions.Add(item.QualifiedItemId, storageOption);
+            return true;
         }
 
-        container = item switch
-        {
-            Chest => new ChestContainer(storageOption, chest),
-            SObject obj => new ObjectContainer(storageOption, obj, chest),
-            _ => new ChestContainer(storageOption, chest),
-        };
+        container = null;
+        return false;
+    }
 
+    /// <summary>Tries to retrieve a container from the active menu.</summary>
+    /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
+    /// <returns><c>true</c> if a container is found; otherwise, <c>false</c>.</returns>
+    public bool TryGetOneFromMenu([NotNullWhen(true)] out IContainer? container)
+    {
+        if ((Game1.activeClickableMenu as ItemGrabMenu)?.context is not Chest chest)
+        {
+            container = null;
+            return false;
+        }
+
+        if (chest.Location is not null && this.TryGetOneFromLocation(chest.Location, chest.TileLocation, out container))
+        {
+            return true;
+        }
+
+        if (chest == Game1.player.ActiveObject && this.TryGetOneFromPlayer(Game1.player, out container))
+        {
+            return true;
+        }
+
+        container = null;
+        return false;
+    }
+
+    /// <summary>Tries to get a container from the specified farmer.</summary>
+    /// <param name="farmer">The player whose container will be retrieved.</param>
+    /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
+    /// <param name="index">The index of the player's inventory. Defaults to the active item.</param>
+    /// <returns><c>true</c> if a container is found; otherwise, <c>false</c>.</returns>
+    public bool TryGetOneFromPlayer(Farmer farmer, [NotNullWhen(true)] out IContainer? container, int index = -1)
+    {
+        var item = farmer.Items.ElementAtOrDefault(index) ?? farmer.ActiveObject;
+        if (item is null || !this.TryGetOne(farmer, out var farmerContainer))
+        {
+            container = null;
+            return false;
+        }
+
+        if (this.cachedContainers.TryGetValue(item, out container))
+        {
+            return true;
+        }
+
+        if (!this.TryGetAny(item, out var childContainer))
+        {
+            container = null;
+            return false;
+        }
+
+        container = new ChildContainer(farmerContainer, childContainer);
         this.cachedContainers.AddOrUpdate(item, container);
-        this.cachedContainers.AddOrUpdate(chest, container);
         return true;
     }
 
@@ -242,6 +282,29 @@ internal sealed class ContainerFactory : BaseService
         container = new FarmerContainer(this.modConfig.DefaultOptions, farmer);
         this.cachedContainers.AddOrUpdate(farmer, container);
         return true;
+    }
+
+    /// <summary>Tries to get a container from the specified object.</summary>
+    /// <param name="item">The item to get a container from.</param>
+    /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
+    /// <returns><c>true</c> if a container is found; otherwise, <c>false</c>.</returns>
+    public bool TryGetOne(Item item, [NotNullWhen(true)] out IContainer? container)
+    {
+        if (this.cachedContainers.TryGetValue(item, out container))
+        {
+            return true;
+        }
+
+        container = this.GetAll(Predicate).FirstOrDefault();
+        return container is not null;
+
+        bool Predicate(IContainer container) =>
+            container switch
+            {
+                ChestContainer chestContainer => chestContainer.Chest == item,
+                ObjectContainer objectContainer => objectContainer.Object.heldObject.Value == item,
+                _ => false,
+            };
     }
 
     private IEnumerable<IContainer> GetAllFromPlayers(
@@ -323,5 +386,40 @@ internal sealed class ContainerFactory : BaseService
                 yield return childContainer;
             }
         }
+    }
+
+    private bool TryGetAny(Item item, [NotNullWhen(true)] out IContainer? container)
+    {
+        if (this.cachedContainers.TryGetValue(item, out container))
+        {
+            return true;
+        }
+
+        var chest = item as Chest ?? (item as SObject)?.heldObject.Value as Chest;
+        if (chest is null && !this.proxyChestFactory.TryGetProxy(item, out chest))
+        {
+            container = null;
+            return false;
+        }
+
+        if (!this.storageOptions.TryGetValue(item.QualifiedItemId, out var storageOption))
+        {
+            var data =
+                ItemRegistry.GetData(item.QualifiedItemId)?.RawData as BigCraftableData ?? new BigCraftableData();
+
+            storageOption = new BigCraftableStorageOptions(this.modConfig.DefaultOptions, data);
+            this.storageOptions.Add(item.QualifiedItemId, storageOption);
+        }
+
+        container = item switch
+        {
+            Chest => new ChestContainer(storageOption, chest),
+            SObject obj => new ObjectContainer(storageOption, obj, chest),
+            _ => new ChestContainer(storageOption, chest),
+        };
+
+        this.cachedContainers.AddOrUpdate(item, container);
+        this.cachedContainers.AddOrUpdate(chest, container);
+        return true;
     }
 }

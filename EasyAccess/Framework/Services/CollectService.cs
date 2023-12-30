@@ -164,7 +164,7 @@ internal sealed class CollectService : BaseService<CollectService>
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!Context.IsPlayerFree || this.modConfig.ControlScheme.CollectItems.JustPressed())
+        if (!Context.IsPlayerFree || !this.modConfig.ControlScheme.CollectItems.JustPressed())
         {
             return;
         }

@@ -19,7 +19,7 @@ internal sealed class BuildingContainer : ChestContainer
         : base(baseOptions, chest) =>
         this.building = new WeakReference<Building>(building);
 
-    /// <summary>Gets the building container of the storage.</summary>
+    /// <summary>Gets the source building of the container.</summary>
     public Building Building =>
         this.building.TryGetTarget(out var target)
             ? target

@@ -2,14 +2,14 @@ namespace StardewMods.BetterChests.Framework.Models.Events;
 
 using StardewMods.BetterChests.Framework.Interfaces;
 
-/// <summary>The event arguments before an item is transferred.</summary>
-internal sealed class ItemTransferringEventArgs(IContainer from, IContainer to, Item item) : EventArgs
+/// <summary>The event arguments before an item is transferred into a container.</summary>
+internal sealed class ItemTransferringEventArgs(IContainer into, Item item, bool force) : EventArgs
 {
-    /// <summary>Gets the source container from which the item was retrieved.</summary>
-    public IContainer From { get; } = from;
+    /// <summary>Gets a value indicating whether the transfer is being forced.</summary>
+    public bool IsForced { get; } = force;
 
     /// <summary>Gets the destination container to which the item was sent.</summary>
-    public IContainer To { get; } = to;
+    public IContainer Into { get; } = into;
 
     /// <summary>Gets the item that was transferred.</summary>
     public Item Item { get; } = item;

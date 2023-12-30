@@ -197,9 +197,8 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
 
         if (!Context.IsPlayerFree
             || !this.Config.Controls.ConfigureChest.JustPressed()
-            || Game1.player.CurrentItem is null
-            || !this.containerFactory.TryGetOne(Game1.player.CurrentItem, out var container)
-            || container.Options.ConfigureChest == Option.Disabled)
+            || !this.containerFactory.TryGetOneFromPlayer(Game1.player, out var container)
+            || container.Options.ConfigureChest != Option.Enabled)
         {
             return;
         }

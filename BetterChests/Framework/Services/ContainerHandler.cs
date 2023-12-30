@@ -1,24 +1,74 @@
 namespace StardewMods.BetterChests.Framework.Services;
 
+using System.Reflection;
+using HarmonyLib;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
+using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.Automate;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
+using StardewValley.Objects;
 
-/// <summary>Responsible for handling operations between containers.</summary>
-internal sealed class ContainerOperations : BaseService
+/// <summary>Responsible for handling containers.</summary>
+internal sealed class ContainerHandler : BaseService
 {
+#nullable disable
+    private static ContainerHandler instance;
+#nullable enable
+
+    private readonly ContainerFactory containerFactory;
+    private readonly IReflectionHelper reflectionHelper;
     private EventHandler<ItemTransferredEventArgs>? itemTransferred;
     private EventHandler<ItemTransferringEventArgs>? itemTransferring;
 
-    /// <summary>Initializes a new instance of the <see cref="ContainerOperations" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ContainerHandler" /> class.</summary>
+    /// <param name="automateIntegration">Dependency for integration with Automate.</param>
+    /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    public ContainerOperations(ILog log, IManifest manifest)
-        : base(log, manifest) { }
+    /// <param name="modRegistry">Dependency used for fetching metadata about loaded mods.</param>
+    /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
+    public ContainerHandler(
+        AutomateIntegration automateIntegration,
+        ContainerFactory containerFactory,
+        Harmony harmony,
+        ILog log,
+        IManifest manifest,
+        IModRegistry modRegistry,
+        IReflectionHelper reflectionHelper)
+        : base(log, manifest)
+    {
+        ContainerHandler.instance = this;
+        this.containerFactory = containerFactory;
+        this.reflectionHelper = reflectionHelper;
+
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.addItem)),
+            new HarmonyMethod(typeof(ContainerHandler), nameof(ContainerHandler.Chest_addItem_prefix)));
+
+        if (!automateIntegration.IsLoaded)
+        {
+            return;
+        }
+
+        var storeMethod = modRegistry
+            .Get(automateIntegration.UniqueId)
+            ?.GetType()
+            .Assembly.GetType("Pathoschild.Stardew.Automate.Framework.Storage.ChestContainer")
+            ?.GetMethod("Store", BindingFlags.Public | BindingFlags.Instance);
+
+        if (storeMethod is not null)
+        {
+            harmony.Patch(
+                storeMethod,
+                new HarmonyMethod(typeof(ContainerHandler), nameof(ContainerHandler.Automate_Store_prefix)));
+        }
+    }
 
     /// <summary>Represents an event that is raised after an item is transferred.</summary>
     public event EventHandler<ItemTransferredEventArgs> ItemTransferred
@@ -125,8 +175,13 @@ internal sealed class ContainerOperations : BaseService
     /// <param name="from">The container to transfer items from.</param>
     /// <param name="to">The container to transfer items to.</param>
     /// <param name="amounts">Output parameter that contains the transferred item amounts.</param>
+    /// <param name="force">Indicates whether to attempt to force the transfer.</param>
     /// <returns>True if the transfer was successful and at least one item was transferred, otherwise False.</returns>
-    public bool Transfer(IContainer from, IContainer to, [NotNullWhen(true)] out Dictionary<string, int>? amounts)
+    public bool Transfer(
+        IContainer from,
+        IContainer to,
+        [NotNullWhen(true)] out Dictionary<string, int>? amounts,
+        bool force = false)
     {
         var items = new Dictionary<string, int>();
         from.ForEachItem(
@@ -138,7 +193,7 @@ internal sealed class ContainerOperations : BaseService
                     return false;
                 }
 
-                var itemTransferringEventArgs = new ItemTransferringEventArgs(from, to, item);
+                var itemTransferringEventArgs = new ItemTransferringEventArgs(to, item, force);
                 this.itemTransferring?.InvokeAll(this, itemTransferringEventArgs);
                 if (itemTransferringEventArgs.IsPrevented)
                 {
@@ -167,5 +222,48 @@ internal sealed class ContainerOperations : BaseService
 
         amounts = null;
         return false;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static bool Automate_Store_prefix(object stack, Chest ___Chest)
+    {
+        var item = ContainerHandler.instance.reflectionHelper.GetProperty<Item>(stack, "Sample").GetValue();
+        return !ContainerHandler.instance.containerFactory.TryGetOne(___Chest, out var container)
+            || ContainerHandler.instance.CanAddItem(container, item);
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    [HarmonyPriority(Priority.High)]
+    private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
+    {
+        if (!ContainerHandler.instance.containerFactory.TryGetOne(__instance, out var container)
+            || ContainerHandler.instance.CanAddItem(container, item))
+        {
+            return true;
+        }
+
+        __result = item;
+        return false;
+    }
+
+    /// <summary>Checks if an item is allowed to be added to a container.</summary>
+    /// <param name="to">The container to add the item to.</param>
+    /// <param name="item">The item to add.</param>
+    /// <param name="force">Indicates whether it should be a forced attempt.</param>
+    /// <returns>True if the item can be added, otherwise False.</returns>
+    private bool CanAddItem(IContainer to, Item item, bool force = false)
+    {
+        if (to.Items.CountItemStacks() >= to.Capacity)
+        {
+            return false;
+        }
+
+        var itemTransferringEventArgs = new ItemTransferringEventArgs(to, item, force);
+        this.itemTransferring?.InvokeAll(this, itemTransferringEventArgs);
+        return !itemTransferringEventArgs.IsPrevented;
     }
 }

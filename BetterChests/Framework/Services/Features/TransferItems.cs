@@ -13,7 +13,7 @@ using StardewValley.Menus;
 /// <summary>Transfer all items into or out from a chest.</summary>
 internal sealed class TransferItems : BaseFeature<TransferItems>
 {
-    private readonly ContainerOperations containerOperations;
+    private readonly ContainerHandler containerHandler;
     private readonly PerScreen<ClickableTextureComponent> downArrow;
     private readonly IInputHelper inputHelper;
     private readonly ItemGrabMenuManager itemGrabMenuManager;
@@ -23,7 +23,7 @@ internal sealed class TransferItems : BaseFeature<TransferItems>
     /// <summary>Initializes a new instance of the <see cref="TransferItems" /> class.</summary>
     /// <param name="assetHandler">Dependency used for handling assets.</param>
     /// <param name="configManager">Dependency used for accessing config data.</param>
-    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
+    /// <param name="containerHandler">Dependency used for handling operations between containers.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
@@ -33,7 +33,7 @@ internal sealed class TransferItems : BaseFeature<TransferItems>
     public TransferItems(
         AssetHandler assetHandler,
         ConfigManager configManager,
-        ContainerOperations containerOperations,
+        ContainerHandler containerHandler,
         IGameContentHelper gameContentHelper,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
@@ -42,7 +42,7 @@ internal sealed class TransferItems : BaseFeature<TransferItems>
         IModEvents modEvents)
         : base(log, manifest, configManager)
     {
-        this.containerOperations = containerOperations;
+        this.containerHandler = containerHandler;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
         this.modEvents = modEvents;
@@ -93,7 +93,7 @@ internal sealed class TransferItems : BaseFeature<TransferItems>
 
     private void Transfer(IContainer containerFrom, IContainer containerTo)
     {
-        if (!this.containerOperations.Transfer(containerFrom, containerTo, out var amounts))
+        if (!this.containerHandler.Transfer(containerFrom, containerTo, out var amounts))
         {
             return;
         }

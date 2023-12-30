@@ -15,7 +15,7 @@ internal sealed class ProxyChestRequest
     /// <param name="item">The item that represents a proxy chest.</param>
     /// <param name="confirm">The action to perform when the request has been confirmed.</param>
     /// <param name="cancel">The action to perform when the request has been cancelled.</param>
-    public ProxyChestRequest(Item item, Action confirm, Action cancel)
+    public ProxyChestRequest(SObject item, Action confirm, Action cancel)
     {
         this.Item = item;
         this.confirm = confirm;
@@ -23,7 +23,7 @@ internal sealed class ProxyChestRequest
     }
 
     /// <summary>Gets the item that represents a proxy chest.</summary>
-    public Item Item { get; }
+    public SObject Item { get; }
 
     /// <summary>Confirm a proxy chest request.</summary>
     public void Confirm()

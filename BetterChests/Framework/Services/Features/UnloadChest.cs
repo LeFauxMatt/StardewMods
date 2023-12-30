@@ -5,37 +5,42 @@ using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Helpers;
 using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewValley.Objects;
 
 /// <summary>Unload a held chest's contents into another chest.</summary>
 internal sealed class UnloadChest : BaseFeature<UnloadChest>
 {
     private readonly ContainerFactory containerFactory;
-    private readonly ContainerOperations containerOperations;
+    private readonly ContainerHandler containerHandler;
     private readonly IInputHelper inputHelper;
     private readonly IModEvents modEvents;
+    private readonly ProxyChestFactory proxyChestFactory;
 
     /// <summary>Initializes a new instance of the <see cref="UnloadChest" /> class.</summary>
     /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
-    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
+    /// <param name="containerHandler">Dependency used for handling operations between containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="proxyChestFactory">Dependency used for creating virtualized chests.</param>
     public UnloadChest(
         ConfigManager configManager,
         ContainerFactory containerFactory,
-        ContainerOperations containerOperations,
+        ContainerHandler containerHandler,
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents)
+        IModEvents modEvents,
+        ProxyChestFactory proxyChestFactory)
         : base(log, manifest, configManager)
     {
         this.containerFactory = containerFactory;
-        this.containerOperations = containerOperations;
+        this.containerHandler = containerHandler;
         this.inputHelper = inputHelper;
         this.modEvents = modEvents;
+        this.proxyChestFactory = proxyChestFactory;
     }
 
     /// <inheritdoc />
@@ -53,8 +58,7 @@ internal sealed class UnloadChest : BaseFeature<UnloadChest>
         if (!Context.IsPlayerFree
             || !e.Button.IsUseToolButton()
             || this.inputHelper.IsSuppressed(e.Button)
-            || Game1.player.CurrentItem is null
-            || !this.containerFactory.TryGetOne(Game1.player.CurrentItem, out var containerFrom)
+            || !this.containerFactory.TryGetOneFromPlayer(Game1.player, out var containerFrom)
             || containerFrom.Options.UnloadChest != Option.Enabled)
         {
             return;
@@ -62,15 +66,47 @@ internal sealed class UnloadChest : BaseFeature<UnloadChest>
 
         var pos = CommonHelpers.GetCursorTile(1, false);
         if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
-            || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-            || !this.containerFactory.TryGetOne(obj, out var containerTo)
+            || !this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, pos, out var containerTo)
             || containerTo.Options.UnloadChest != Option.Enabled)
         {
             return;
         }
 
         this.inputHelper.Suppress(e.Button);
-        if (!this.containerOperations.Transfer(containerFrom, containerTo, out var amounts))
+
+        if (this.Config.UnloadChestSwap)
+        {
+            if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+                || obj is not Chest chest
+                || !this.proxyChestFactory.TryCreateRequest(chest, out var request))
+            {
+                return;
+            }
+
+            Game1.currentLocation.Objects.Remove(pos);
+            if (!Utility.tryToPlaceItem(
+                Game1.currentLocation,
+                Game1.player.ActiveObject,
+                (int)pos.X * Game1.tileSize,
+                (int)pos.Y * Game1.tileSize))
+            {
+                Game1.currentLocation.Objects.Add(pos, obj);
+                request.Cancel();
+                return;
+            }
+
+            Game1.player.ActiveObject = request.Item;
+            request.Confirm();
+
+            // Swap container from and to
+            if (!this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, pos, out containerTo)
+                || !this.containerFactory.TryGetOneFromPlayer(Game1.player, out containerFrom))
+            {
+                return;
+            }
+        }
+
+        if (!this.containerHandler.Transfer(containerFrom, containerTo, out var amounts, true))
         {
             return;
         }

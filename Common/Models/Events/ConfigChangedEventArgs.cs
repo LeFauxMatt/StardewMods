@@ -1,4 +1,4 @@
-namespace StardewMods.BetterChests.Framework.Models.Events;
+namespace StardewMods.Common.Models.Events;
 
 /// <summary>Represents the event arguments for a configuration changes.</summary>
 internal sealed class ConfigChangedEventArgs : EventArgs

@@ -23,9 +23,9 @@ internal class ObjectContainer : BaseContainer<SObject>
         this.chest = chest;
     }
 
-    /// <summary>Gets the chest container of the storage.</summary>
+    /// <summary>Gets the source object of the container.</summary>
     public SObject Object =>
-        this.Source.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(ChestContainer));
+        this.Source.TryGetTarget(out var target) ? target : throw new ObjectDisposedException(nameof(ObjectContainer));
 
     /// <inheritdoc />
     public override int Capacity => this.chest.GetActualCapacity();

@@ -221,7 +221,7 @@ internal sealed class ItemGrabMenuManager : BaseService
 
         // Update top menu
         this.topMenu.Value.Reset(itemGrabMenu, itemGrabMenu.ItemsToGrabMenu);
-        if (itemGrabMenu.context is not Chest chest || !this.containerFactory.TryGetOne(chest, out var topContainer))
+        if (!this.containerFactory.TryGetOneFromMenu(out var topContainer))
         {
             topContainer = null;
         }

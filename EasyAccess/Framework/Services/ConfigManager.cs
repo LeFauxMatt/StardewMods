@@ -1,36 +1,28 @@
 namespace StardewMods.EasyAccess.Framework.Services;
 
 using StardewMods.Common.Services;
-using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.EasyAccess.Framework.Interfaces;
 using StardewMods.EasyAccess.Framework.Models;
 
 /// <inheritdoc cref="StardewMods.EasyAccess.Framework.Interfaces.IModConfig" />
-internal sealed class ConfigManager : BaseService, IModConfig
+internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
 {
     private readonly IManifest manifest;
-    private readonly IModHelper modHelper;
     private readonly GenericModConfigMenuIntegration genericModConfigMenuIntegration;
-
-    private IModConfig modConfig;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigManager" /> class.</summary>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
     public ConfigManager(
         GenericModConfigMenuIntegration genericModConfigMenuIntegration,
-        ILog log,
         IManifest manifest,
         IModHelper modHelper)
-        : base(log, manifest)
+        : base(modHelper)
     {
         this.genericModConfigMenuIntegration = genericModConfigMenuIntegration;
         this.manifest = manifest;
-        this.modHelper = modHelper;
-        this.modConfig = this.modHelper.ReadConfig<DefaultConfig>();
 
         if (this.genericModConfigMenuIntegration.IsLoaded)
         {
@@ -39,33 +31,25 @@ internal sealed class ConfigManager : BaseService, IModConfig
     }
 
     /// <inheritdoc />
-    public int CollectOutputDistance => this.modConfig.CollectOutputDistance;
+    public int CollectOutputDistance => this.Config.CollectOutputDistance;
 
     /// <inheritdoc />
-    public Controls ControlScheme => this.modConfig.ControlScheme;
+    public Controls ControlScheme => this.Config.ControlScheme;
 
     /// <inheritdoc />
-    public int DispenseInputDistance => this.modConfig.DispenseInputDistance;
+    public int DispenseInputDistance => this.Config.DispenseInputDistance;
 
     /// <inheritdoc />
-    public bool DoDigSpots => this.modConfig.DoDigSpots;
+    public bool DoDigSpots => this.Config.DoDigSpots;
 
     /// <inheritdoc />
-    public bool DoForage => this.modConfig.DoForage;
+    public bool DoForage => this.Config.DoForage;
 
     /// <inheritdoc />
-    public bool DoMachines => this.modConfig.DoMachines;
+    public bool DoMachines => this.Config.DoMachines;
 
     /// <inheritdoc />
-    public bool DoTerrain => this.modConfig.DoTerrain;
-
-    private void Reset() => this.modConfig = new DefaultConfig();
-
-    private void Save(DefaultConfig config)
-    {
-        this.modHelper.WriteConfig(config);
-        this.modConfig = config;
-    }
+    public bool DoTerrain => this.Config.DoTerrain;
 
     private void SetupModConfigMenu()
     {
@@ -75,7 +59,7 @@ internal sealed class ConfigManager : BaseService, IModConfig
         }
 
         var gmcm = this.genericModConfigMenuIntegration.Api;
-        var config = this.modHelper.ReadConfig<DefaultConfig>();
+        var config = this.GetNew();
 
         // Register mod configuration
         this.genericModConfigMenuIntegration.Register(this.manifest, this.Reset, () => this.Save(config));

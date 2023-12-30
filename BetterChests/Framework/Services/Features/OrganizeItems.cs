@@ -17,7 +17,7 @@ internal sealed class OrganizeItems : BaseFeature<OrganizeItems>
     private static OrganizeItems instance;
 #nullable enable
 
-    private readonly ContainerOperations containerOperations;
+    private readonly ContainerHandler containerHandler;
     private readonly Harmony harmony;
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<bool> isActive = new();
@@ -26,7 +26,7 @@ internal sealed class OrganizeItems : BaseFeature<OrganizeItems>
 
     /// <summary>Initializes a new instance of the <see cref="OrganizeItems" /> class.</summary>
     /// <param name="configManager">Dependency used for accessing config data.</param>
-    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
+    /// <param name="containerHandler">Dependency used for handling operations between containers.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
@@ -35,7 +35,7 @@ internal sealed class OrganizeItems : BaseFeature<OrganizeItems>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     public OrganizeItems(
         ConfigManager configManager,
-        ContainerOperations containerOperations,
+        ContainerHandler containerHandler,
         Harmony harmony,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
@@ -45,7 +45,7 @@ internal sealed class OrganizeItems : BaseFeature<OrganizeItems>
         : base(log, manifest, configManager)
     {
         OrganizeItems.instance = this;
-        this.containerOperations = containerOperations;
+        this.containerHandler = containerHandler;
         this.harmony = harmony;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
@@ -100,7 +100,7 @@ internal sealed class OrganizeItems : BaseFeature<OrganizeItems>
             return true;
         }
 
-        OrganizeItems.instance.containerOperations.OrganizeItems(container);
+        OrganizeItems.instance.containerHandler.OrganizeItems(container);
         return false;
     }
 
@@ -122,7 +122,7 @@ internal sealed class OrganizeItems : BaseFeature<OrganizeItems>
 
         this.inputHelper.Suppress(e.Button);
         Game1.playSound("Ship");
-        this.containerOperations.OrganizeItems(this.itemGrabMenuManager.Top.Container, e.Button == SButton.MouseRight);
+        this.containerHandler.OrganizeItems(this.itemGrabMenuManager.Top.Container, e.Button == SButton.MouseRight);
     }
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)

@@ -94,7 +94,7 @@ internal sealed class DispenseService : BaseService<DispenseService>
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (!Context.IsPlayerFree || this.modConfig.ControlScheme.DispenseItems.JustPressed())
+        if (!Context.IsPlayerFree || !this.modConfig.ControlScheme.DispenseItems.JustPressed())
         {
             return;
         }

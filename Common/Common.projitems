@@ -13,7 +13,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Enums\SimpleLogLevel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\CommonHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Events\ConfigChangedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\BaseService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ConfigManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\IConfigWithLogLevel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />

@@ -9,14 +9,13 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewValley.Locations;
 using StardewValley.Menus;
-using StardewValley.Objects;
 
 /// <summary>Stash items into placed chests and chests in the farmer's inventory.</summary>
 internal sealed class StashToChest : BaseFeature<StashToChest>
 {
     private readonly AssetHandler assetHandler;
     private readonly ContainerFactory containerFactory;
-    private readonly ContainerOperations containerOperations;
+    private readonly ContainerHandler containerHandler;
     private readonly IInputHelper inputHelper;
     private readonly IModEvents modEvents;
     private readonly ToolbarIconsIntegration toolbarIconsIntegration;
@@ -25,7 +24,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
     /// <param name="assetHandler">Dependency used for handling assets.</param>
     /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
-    /// <param name="containerOperations">Dependency used for handling operations between containers.</param>
+    /// <param name="containerHandler">Dependency used for handling operations between containers.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
@@ -35,7 +34,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
         AssetHandler assetHandler,
         ConfigManager configManager,
         ContainerFactory containerFactory,
-        ContainerOperations containerOperations,
+        ContainerHandler containerHandler,
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
@@ -45,7 +44,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
     {
         this.assetHandler = assetHandler;
         this.containerFactory = containerFactory;
-        this.containerOperations = containerOperations;
+        this.containerHandler = containerHandler;
         this.inputHelper = inputHelper;
         this.modEvents = modEvents;
         this.toolbarIconsIntegration = toolbarIconsIntegration;
@@ -96,18 +95,14 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
         if (e.Button is not SButton.MouseLeft
-            || Game1.activeClickableMenu is not ItemGrabMenu
-            {
-                context: Chest chest,
-            } itemGrabMenu
-            || !this.containerFactory.TryGetOne(chest, out var container)
+            || !this.containerFactory.TryGetOneFromMenu(out var container)
             || container.Options.StashToChest is RangeOption.Disabled or RangeOption.Default)
         {
             return;
         }
 
         var (x, y) = Game1.getMousePosition(true);
-        if (itemGrabMenu.fillStacksButton?.containsPoint(x, y) != true)
+        if ((Game1.activeClickableMenu as ItemGrabMenu)?.fillStacksButton?.containsPoint(x, y) != true)
         {
             return;
         }
@@ -132,11 +127,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
             return;
         }
 
-        if (Game1.activeClickableMenu is not ItemGrabMenu
-            {
-                context: Chest chest,
-            }
-            || !this.containerFactory.TryGetOne(chest, out var container)
+        if (!this.containerFactory.TryGetOneFromMenu(out var container)
             || container.Options.StashToChest is RangeOption.Disabled or RangeOption.Default)
         {
             return;
@@ -183,7 +174,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
             var noneEligible = false;
             foreach (var containerTo in containersTo)
             {
-                if (!this.containerOperations.Transfer(containerFrom, containerTo, out var amounts))
+                if (!this.containerHandler.Transfer(containerFrom, containerTo, out var amounts))
                 {
                     noneEligible = true;
                     break;
@@ -238,7 +229,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
             return;
         }
 
-        if (!this.containerOperations.Transfer(containerFrom, containerTo, out var amounts))
+        if (!this.containerHandler.Transfer(containerFrom, containerTo, out var amounts))
         {
             return;
         }
