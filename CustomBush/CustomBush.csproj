@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Custom Bush</Name>
     <Description>Custom Bush is a framework which allows custom bushes to be added to the game which work like the tea sapling.</Description>
-    <Version>1.0.0-alpha.20231228</Version>
+    <Version>1.0.0-alpha.20231231</Version>
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.CustomBush</RootNamespace>
     <UniqueId>furyx639.CustomBush</UniqueId>
@@ -20,7 +20,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.20231228" required="true"/>
+    <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.20231231" required="true"/>
     <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
   </ItemGroup>
 </Project>

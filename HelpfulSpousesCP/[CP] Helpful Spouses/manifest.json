@@ -1,18 +1,18 @@
 {
-  "Name": "[CP] Toolbar Icons",
+  "Name": "[CP] Helpful Spouses",
   "Author": "furyx639",
   "Version": "2.6.0-alpha.20231231",
-  "Description": "Adds toolbar icons as shortcuts to other popular mods.",
-  "UniqueID": "furyx639.ToolbarIconsCP",
+  "Description": "Adds individual chore chances and dialogue to spouses.",
+  "UniqueID": "furyx639.HelpfulSpousesCP",
   "UpdateKeys": [
-    "Nexus:11026@CP"
+    "Nexus:5175@CP"
   ],
   "ContentPackFor": {
     "UniqueID": "Pathoschild.ContentPatcher"
   },
   "Dependencies": [
     {
-      "UniqueID": "furyx639.ToolbarIcons",
+      "UniqueID": "furyx639.HelpfulSpouses",
       "IsRequired": true,
       "MinimumVersion": "2.6.0-alpha.20231231"
     }

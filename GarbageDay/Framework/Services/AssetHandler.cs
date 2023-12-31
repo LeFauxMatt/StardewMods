@@ -14,6 +14,7 @@ internal sealed class AssetHandler : BaseService
     private const string AssetPath = "Data/BigCraftables";
 
     private readonly GarbageCanManager garbageCanManager;
+    private readonly string texturePath;
 
     /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
     /// <param name="garbageCanManager">Dependency used for managing garbage cans.</param>
@@ -24,20 +25,17 @@ internal sealed class AssetHandler : BaseService
         : base(log, manifest)
     {
         // Init
-        this.TexturePath = this.ModId + "/Texture";
+        this.texturePath = this.ModId + "/Texture";
         this.garbageCanManager = garbageCanManager;
 
         // Events
         modEvents.Content.AssetRequested += this.OnAssetRequested;
     }
 
-    /// <summary>Gets the path to the Garbage Can texture.</summary>
-    public string TexturePath { get; }
-
     private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
         // Load Garbage Can Texture
-        if (e.NameWithoutLocale.IsEquivalentTo(this.TexturePath))
+        if (e.NameWithoutLocale.IsEquivalentTo(this.texturePath))
         {
             e.LoadFromModFile<Texture2D>("assets/GarbageCan.png", AssetLoadPriority.Exclusive);
             return;
@@ -57,13 +55,15 @@ internal sealed class AssetHandler : BaseService
                         Description = I18n.GarbageCan_Description(),
                         Fragility = 2,
                         IsLamp = false,
-                        Texture = this.TexturePath,
+                        Texture = this.texturePath,
                         CustomFields = new Dictionary<string, string>
                         {
                             { "furyx639.ExpandedStorage/Enabled", "true" },
                             { "furyx639.ExpandedStorage/Frames", "3" },
+                            { "furyx639.ExpandedStorage/CloseNearbySound", "trashcanlid" },
                             { "furyx639.ExpandedStorage/OpenNearby", "true" },
                             { "furyx639.ExpandedStorage/OpenNearbySound", "trashcanlid" },
+                            { "furyx639.ExpandedStorage/OpenSound", "trashcan" },
                             { "furyx639.ExpandedStorage/PlayerColor", "true" },
                         },
                     };

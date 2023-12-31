@@ -83,9 +83,8 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
             return false;
         }
 
-        if (!this.modConfig.OnByDefault
-            && (!DataLoader.GarbageCans(Game1.content).GarbageCans.TryGetValue(whichCan, out var garbageCanData)
-                || !garbageCanData.CustomFields.GetBool(this.ModId + "/Enabled")))
+        if (!DataLoader.GarbageCans(Game1.content).GarbageCans.TryGetValue(whichCan, out var garbageCanData)
+            || !garbageCanData.CustomFields.GetBool(this.ModId + "/Enabled", this.modConfig.OnByDefault))
         {
             return false;
         }

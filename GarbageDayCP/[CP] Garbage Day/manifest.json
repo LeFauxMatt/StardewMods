@@ -1,18 +1,18 @@
 {
-  "Name": "[CP] Toolbar Icons",
+  "Name": "[CP] Garbage Day",
   "Author": "furyx639",
   "Version": "2.6.0-alpha.20231231",
-  "Description": "Adds toolbar icons as shortcuts to other popular mods.",
-  "UniqueID": "furyx639.ToolbarIconsCP",
+  "Description": "Adds data to each vanilla garbage so that they will be converted into Garbage Day chests.",
+  "UniqueID": "furyx639.GarbageDayCP",
   "UpdateKeys": [
-    "Nexus:11026@CP"
+    "Nexus:8204@CP"
   ],
   "ContentPackFor": {
     "UniqueID": "Pathoschild.ContentPatcher"
   },
   "Dependencies": [
     {
-      "UniqueID": "furyx639.ToolbarIcons",
+      "UniqueID": "furyx639.GarbageDay",
       "IsRequired": true,
       "MinimumVersion": "2.6.0-alpha.20231231"
     }
