@@ -1,6 +1,7 @@
 namespace StardewMods.ExpandedStorage.Framework.Services;
 
 using StardewModdingAPI.Events;
+using StardewMods.Common.Extensions;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -48,9 +49,7 @@ internal sealed class StorageManager : BaseService
 
         // Check if enabled
         if (ItemRegistry.GetData(item.QualifiedItemId)?.RawData is not BigCraftableData bigCraftableData
-            || !bigCraftableData.CustomFields.TryGetValue(this.ModId + "/Enabled", out var enabled)
-            || !bool.TryParse(enabled, out var isEnabled)
-            || !isEnabled)
+            || !bigCraftableData.CustomFields.GetBool(this.ModId + "/Enabled"))
         {
             storageData = null;
             return false;
@@ -77,13 +76,13 @@ internal sealed class StorageManager : BaseService
                     storageData.CloseNearbySound = customFieldValue;
                     break;
                 case CustomFieldKeys.Frames:
-                    storageData.Frames = int.TryParse(customFieldValue, out var frames) ? frames : 1;
+                    storageData.Frames = customFieldValue.GetInt(1);
                     break;
                 case CustomFieldKeys.IsFridge:
-                    storageData.IsFridge = bool.TryParse(customFieldValue, out var isFridge) && isFridge;
+                    storageData.IsFridge = customFieldValue.GetBool();
                     break;
                 case CustomFieldKeys.OpenNearby:
-                    storageData.OpenNearby = bool.TryParse(customFieldValue, out var openNearby) && openNearby;
+                    storageData.OpenNearby = customFieldValue.GetBool();
                     break;
                 case CustomFieldKeys.OpenNearbySound:
                     storageData.OpenNearbySound = customFieldValue;
@@ -95,7 +94,7 @@ internal sealed class StorageManager : BaseService
                     storageData.PlaceSound = customFieldValue;
                     break;
                 case CustomFieldKeys.PlayerColor:
-                    storageData.PlayerColor = bool.TryParse(customFieldValue, out var playerColor) && playerColor;
+                    storageData.PlayerColor = customFieldValue.GetBool();
                     break;
                 default:
                     this.Log.Warn("{0} is not a supported attribute", [keyParts[2]]);

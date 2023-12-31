@@ -195,7 +195,7 @@ internal sealed class ContainerFactory : BaseService
     /// <param name="location">The game location where the container will be retrieved.</param>
     /// <param name="pos">The position of the game location where the container will be retrieved.</param>
     /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
-    /// <returns><c>true</c> if a container is found; otherwise, <c>false</c>.</returns>
+    /// <returns>true if a container is found; otherwise, false.</returns>
     public bool TryGetOneFromLocation(GameLocation location, Vector2 pos, [NotNullWhen(true)] out IContainer? container)
     {
         if (!location.Objects.TryGetValue(pos, out var obj))
@@ -215,7 +215,7 @@ internal sealed class ContainerFactory : BaseService
 
     /// <summary>Tries to retrieve a container from the active menu.</summary>
     /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
-    /// <returns><c>true</c> if a container is found; otherwise, <c>false</c>.</returns>
+    /// <returns>true if a container is found; otherwise, false.</returns>
     public bool TryGetOneFromMenu([NotNullWhen(true)] out IContainer? container)
     {
         if ((Game1.activeClickableMenu as ItemGrabMenu)?.context is not Chest chest)
@@ -242,7 +242,7 @@ internal sealed class ContainerFactory : BaseService
     /// <param name="farmer">The player whose container will be retrieved.</param>
     /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
     /// <param name="index">The index of the player's inventory. Defaults to the active item.</param>
-    /// <returns><c>true</c> if a container is found; otherwise, <c>false</c>.</returns>
+    /// <returns>true if a container is found; otherwise, false.</returns>
     public bool TryGetOneFromPlayer(Farmer farmer, [NotNullWhen(true)] out IContainer? container, int index = -1)
     {
         var item = farmer.Items.ElementAtOrDefault(index) ?? farmer.ActiveObject;
@@ -271,7 +271,7 @@ internal sealed class ContainerFactory : BaseService
     /// <summary>Tries to retrieve a container from the specified farmer.</summary>
     /// <param name="farmer">The farmer to get a container from.</param>
     /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
-    /// <returns><c>true</c> if a container is found; otherwise, <c>false</c>.</returns>
+    /// <returns>true if a container is found; otherwise, false.</returns>
     public bool TryGetOne(Farmer farmer, [NotNullWhen(true)] out IContainer? container)
     {
         if (this.cachedContainers.TryGetValue(farmer, out container))
@@ -287,7 +287,7 @@ internal sealed class ContainerFactory : BaseService
     /// <summary>Tries to get a container from the specified object.</summary>
     /// <param name="item">The item to get a container from.</param>
     /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
-    /// <returns><c>true</c> if a container is found; otherwise, <c>false</c>.</returns>
+    /// <returns>true if a container is found; otherwise, false.</returns>
     public bool TryGetOne(Item item, [NotNullWhen(true)] out IContainer? container)
     {
         if (this.cachedContainers.TryGetValue(item, out container))

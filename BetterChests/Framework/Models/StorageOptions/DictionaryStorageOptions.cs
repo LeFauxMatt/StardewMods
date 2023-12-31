@@ -4,6 +4,7 @@ using System.Globalization;
 using NetEscapades.EnumGenerators;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.Common.Extensions;
 
 /// <inheritdoc />
 internal abstract class DictionaryStorageOptions : IStorageOptions
@@ -267,7 +268,7 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
         }
 
         // Save to cache
-        var newValue = string.IsNullOrWhiteSpace(value) || !int.TryParse(value, out var result) ? 0 : result;
+        var newValue = value.GetInt();
         this.cachedInt[key] = new CachedValue<int>(value, newValue);
         return newValue;
     }

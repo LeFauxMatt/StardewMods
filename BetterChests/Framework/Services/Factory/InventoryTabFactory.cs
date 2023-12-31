@@ -42,7 +42,7 @@ internal sealed class InventoryTabFactory : BaseService
     /// <summary>Tries to get an inventory tab with the specified name.</summary>
     /// <param name="name">The name of the tab.</param>
     /// <param name="tab">When this method returns, contains the tab with the specified name, if found; otherwise, null.</param>
-    /// <returns><c>true</c> if a tab with the specified name is found; otherwise, <c>false</c>.</returns>
+    /// <returns>true if a tab with the specified name is found; otherwise, false.</returns>
     public bool TryGetOne(string name, [NotNullWhen(true)] out InventoryTab? tab)
     {
         if (this.tabs.Value.TryGetValue(name, out tab))

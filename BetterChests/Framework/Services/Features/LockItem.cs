@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Events;
+using StardewMods.Common.Extensions;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
@@ -107,7 +108,8 @@ internal sealed class LockItem : BaseFeature<LockItem>
     {
         foreach (var slot in inventoryMenu.inventory)
         {
-            if (!int.TryParse(slot.name, out var index))
+            var index = slot.name.GetInt(-1);
+            if (index == -1)
             {
                 continue;
             }
@@ -147,7 +149,8 @@ internal sealed class LockItem : BaseFeature<LockItem>
         }
 
         var slot = inventoryMenu.inventory.FirstOrDefault(slot => slot.containsPoint(mouseX, mouseY));
-        if (slot is null || !int.TryParse(slot.name, out var index))
+        var index = slot?.name.GetInt(-1) ?? -1;
+        if (index == -1)
         {
             return;
         }
@@ -176,7 +179,8 @@ internal sealed class LockItem : BaseFeature<LockItem>
         }
 
         var slot = inventoryMenu.inventory.FirstOrDefault(slot => slot.containsPoint(mouseX, mouseY));
-        if (slot is null || !int.TryParse(slot.name, out var index))
+        var index = slot?.name.GetInt(-1) ?? -1;
+        if (index == -1)
         {
             return;
         }

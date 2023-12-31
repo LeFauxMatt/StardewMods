@@ -5,6 +5,7 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.Common.Extensions;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
@@ -158,8 +159,8 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
         }
 
         var color = Color.Black;
-        if (item.modData.TryGetValue(this.Prefix + ProxyChestFactory.ColorKey, out var colorString)
-            && int.TryParse(colorString, out var colorValue))
+        var colorValue = item.modData.GetInt(this.Prefix + ProxyChestFactory.ColorKey, -1);
+        if (colorValue != -1)
         {
             var r = (byte)(colorValue & 0xFF);
             var g = (byte)((colorValue >> 8) & 0xFF);
