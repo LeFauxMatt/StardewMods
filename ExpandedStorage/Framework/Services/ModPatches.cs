@@ -35,43 +35,49 @@ internal sealed class ModPatches : BaseService
         ModPatches.instance = this;
         this.storageManager = storageManager;
 
+        // Patches
         harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.checkForAction)),
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.actionOnPlayerEntry)),
+            transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_actionOnPlayerEntry_transpiler)));
+
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.checkForAction)),
             transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_checkForAction_transpiler)));
 
         harmony.Patch(
-            AccessTools.Method(
+            AccessTools.DeclaredMethod(
                 typeof(Chest),
                 nameof(Chest.draw),
                 [typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)]),
             new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_draw_prefix)));
 
         harmony.Patch(
-            AccessTools.Method(
+            AccessTools.DeclaredMethod(
                 typeof(Chest),
                 nameof(Chest.draw),
                 [typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool)]),
             new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_drawLocal_prefix)));
 
         harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.getLastLidFrame)),
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.fixLidFrame)),
+            transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_fixLidFrame_transpiler)));
+
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.getLastLidFrame)),
             postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_getLastLidFrame_postfix)));
 
-        // World
         harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.checkForAction)),
-            new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_chestForAction_prefix)));
-
-        harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
             transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_UpdateFarmerNearby_transpiler)));
 
         harmony.Patch(
-            AccessTools.Method(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
-            postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_updateWhenCurrentLocation_postfix)));
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
+            transpiler: new HarmonyMethod(
+                typeof(ModPatches),
+                nameof(ModPatches.Chest_updateWhenCurrentLocation_transpiler)));
 
         harmony.Patch(
-            AccessTools.Constructor(
+            AccessTools.DeclaredConstructor(
                 typeof(ItemGrabMenu),
                 [
                     typeof(IList<Item>),
@@ -96,58 +102,36 @@ internal sealed class ModPatches : BaseService
             postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_constructor_postfix)));
 
         harmony.Patch(
-            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.gameWindowSizeChanged)),
+            AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.gameWindowSizeChanged)),
             postfix: new HarmonyMethod(
                 typeof(ModPatches),
                 nameof(ModPatches.ItemGrabMenu_gameWindowSizeChanged_postfix)));
 
         harmony.Patch(
-            AccessTools.Method(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
+            AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
             postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_setSourceItem_postfix)));
 
         harmony.Patch(
-            AccessTools.Method(typeof(SObject), nameof(SObject.placementAction)),
+            AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.placementAction)),
             postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Object_placementAction_postfix)));
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static bool Chest_chestForAction_prefix(Chest __instance, ref bool __result, bool justCheckingForActivity)
+    private static IEnumerable<CodeInstruction> Chest_actionOnPlayerEntry_transpiler(
+        IEnumerable<CodeInstruction> instructions)
     {
-        if (justCheckingForActivity
-            || !__instance.playerChest.Value
-            || !ModPatches.instance.storageManager.TryGetData(__instance, out var storage))
+        foreach (var instruction in instructions)
         {
-            return true;
+            if (instruction.Calls(AccessTools.DeclaredPropertyGetter(typeof(Chest), nameof(Chest.SpecialChestType))))
+            {
+                yield return instruction;
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSpecialChestType));
+            }
+            else
+            {
+                yield return instruction;
+            }
         }
-
-        if (!Game1.didPlayerJustRightClick(true))
-        {
-            __result = false;
-            return false;
-        }
-
-        __instance
-            .GetMutex()
-            .RequestLock(
-                () =>
-                {
-                    if (storage.OpenNearby)
-                    {
-                        Game1.playSound(storage.OpenSound);
-                        __instance.ShowMenu();
-                    }
-                    else
-                    {
-                        __instance.frameCounter.Value = 5;
-                        Game1.playSound(storage.OpenSound);
-                        Game1.player.Halt();
-                        Game1.player.freezePause = 1000;
-                    }
-                });
-
-        __result = true;
-        return false;
     }
 
     private static IEnumerable<CodeInstruction> Chest_checkForAction_transpiler(
@@ -166,6 +150,13 @@ internal sealed class ModPatches : BaseService
                 yield return new CodeInstruction(OpCodes.Ldarg_0);
                 yield return instruction;
                 yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSound));
+            }
+            else if (instruction.Calls(
+                AccessTools.DeclaredPropertyGetter(typeof(Chest), nameof(Chest.SpecialChestType))))
+            {
+                yield return instruction;
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSpecialChestType));
             }
             else
             {
@@ -323,6 +314,23 @@ internal sealed class ModPatches : BaseService
         return false;
     }
 
+    private static IEnumerable<CodeInstruction> Chest_fixLidFrame_transpiler(IEnumerable<CodeInstruction> instructions)
+    {
+        foreach (var instruction in instructions)
+        {
+            if (instruction.Calls(AccessTools.DeclaredPropertyGetter(typeof(Chest), nameof(Chest.SpecialChestType))))
+            {
+                yield return instruction;
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSpecialChestType));
+            }
+            else
+            {
+                yield return instruction;
+            }
+        }
+    }
+
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Chest_getLastLidFrame_postfix(Chest __instance, ref int __result)
@@ -379,48 +387,33 @@ internal sealed class ModPatches : BaseService
         };
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void Chest_updateWhenCurrentLocation_postfix(
-        Chest __instance,
-        ref int ____shippingBinFrameCounter,
-        ref bool ____farmerNearby,
-        ref int ___currentLidFrame)
+    private static IEnumerable<CodeInstruction> Chest_updateWhenCurrentLocation_transpiler(
+        IEnumerable<CodeInstruction> instructions)
     {
-        if (!__instance.playerChest.Value
-            || __instance.Location is null
-            || !ModPatches.instance.storageManager.TryGetData(__instance, out var storage)
-            || !storage.OpenNearby)
+        foreach (var instruction in instructions)
         {
-            return;
-        }
-
-        __instance.UpdateFarmerNearby();
-        if (____shippingBinFrameCounter > -1)
-        {
-            ____shippingBinFrameCounter--;
-            if (____shippingBinFrameCounter <= 0)
+            if (instruction.Calls(AccessTools.DeclaredPropertyGetter(typeof(Chest), nameof(Chest.SpecialChestType))))
             {
-                ____shippingBinFrameCounter = 5;
-                if (____farmerNearby && ___currentLidFrame < __instance.getLastLidFrame())
-                {
-                    ___currentLidFrame++;
-                }
-                else if (!____farmerNearby && ___currentLidFrame > __instance.startingLidFrame.Value)
-                {
-                    ___currentLidFrame--;
-                }
-                else
-                {
-                    ____shippingBinFrameCounter = -1;
-                }
+                yield return instruction;
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSpecialChestType));
+            }
+            else
+            {
+                yield return instruction;
             }
         }
+    }
 
-        if (Game1.activeClickableMenu == null && __instance.GetMutex().IsLockHeld())
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    private static Chest.SpecialChestTypes GetSpecialChestType(Chest.SpecialChestTypes specialChestType, Chest chest)
+    {
+        if (!ModPatches.instance.storageManager.TryGetData(chest, out var storage) || !storage.OpenNearby)
         {
-            __instance.GetMutex().ReleaseLock();
+            return specialChestType;
         }
+
+        return Chest.SpecialChestTypes.MiniShippingBin;
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
