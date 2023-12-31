@@ -11,13 +11,15 @@ using StardewMods.GarbageDay.Framework.Services;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
+#nullable disable
+    private Container container;
+#nullable enable
+
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
         // Init
         I18n.Init(this.Helper.Translation);
-
-        //ModPatches.Init(this.ModManifest);
 
         // Console Commands
         // TODO: Toolbar Icons
@@ -56,10 +58,5 @@ public sealed class ModEntry : Mod
 
         // Verify
         this.container.Verify();
-
-        this.multiplayer = this.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
     }
-#nullable disable
-    private Container container;
-    private Multiplayer multiplayer;
 }
