@@ -63,6 +63,7 @@ internal sealed class AssetHandler : BaseService
                             { "furyx639.ExpandedStorage/Enabled", "true" },
                             { "furyx639.ExpandedStorage/Frames", "3" },
                             { "furyx639.ExpandedStorage/OpenNearby", "true" },
+                            { "furyx639.ExpandedStorage/OpenNearbySound", "trashcanlid" },
                             { "furyx639.ExpandedStorage/PlayerColor", "true" },
                         },
                     };

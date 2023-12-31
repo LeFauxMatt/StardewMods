@@ -17,7 +17,7 @@ public sealed class ModEntry : Mod
         // Init
         I18n.Init(this.Helper.Translation);
 
-        ModPatches.Init(this.ModManifest);
+        //ModPatches.Init(this.ModManifest);
 
         // Console Commands
         // TODO: Toolbar Icons
