@@ -1,6 +1,7 @@
-namespace StardewMods.GarbageDay;
+namespace StardewMods.GarbageDay.Framework.Models;
 
 using Microsoft.Xna.Framework;
+using StardewValley.Inventories;
 using StardewValley.Mods;
 using StardewValley.Objects;
 
@@ -13,29 +14,22 @@ internal sealed class GarbageCan
     private bool doubleMega;
     private bool dropQiBeans;
     private bool mega;
-    private Random random;
     private Item? specialItem;
 
     /// <summary>Initializes a new instance of the <see cref="GarbageCan" /> class.</summary>
-    /// <param name="location">The name of the Map asset.</param>
     /// <param name="chest">A unique name given to the garbage can for its loot table.</param>
-    public GarbageCan(GameLocation location, Chest chest)
-    {
-        this.Location = location;
-        this.chest = chest;
-        this.random = new Random();
-    }
+    public GarbageCan(Chest chest) => this.chest = chest;
 
     /// <summary>Gets or sets a value indicating whether the next can will drop a hat.</summary>
     public static bool GarbageHat { get; set; }
 
     /// <summary>Gets the Location where the garbage can is placed.</summary>
-    public GameLocation Location { get; }
+    public GameLocation Location => this.chest.Location;
 
     /// <summary>Gets the tile of the Garbage Can.</summary>
     public Vector2 Tile => this.chest.TileLocation;
 
-    private IList<Item> Items => this.chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+    private IInventory Items => this.chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
 
     private ModDataDictionary ModData => this.chest.modData;
 
@@ -59,7 +53,6 @@ internal sealed class GarbageCan
             out var selected,
             out var garbageRandom);
 
-        this.random = garbageRandom;
         if (selected is null)
         {
             return;
@@ -80,7 +73,19 @@ internal sealed class GarbageCan
             return;
         }
 
-        this.AddItem(item);
+        // Add item
+        this.chest.addItem(item);
+
+        // Update color
+        var colors = this.Items.Select(ItemContextTagManager.GetColorFromTags).OfType<Color>().ToList();
+        if (!colors.Any())
+        {
+            this.chest.playerChoiceColor.Value = Color.Gray;
+            return;
+        }
+
+        var index = garbageRandom.Next(colors.Count);
+        this.chest.playerChoiceColor.Value = colors[index];
     }
 
     /// <summary>Called when a player attempts to open the garbage can.</summary>
@@ -139,24 +144,4 @@ internal sealed class GarbageCan
 
     /// <summary>Empties the trash of all items.</summary>
     public void EmptyTrash() => this.Items.Clear();
-
-    private void AddItem(Item item)
-    {
-        this.chest.addItem(item);
-        this.UpdateColor();
-    }
-
-    /// <summary>Updates the Garbage Can to match a color from one of the trashed items.</summary>
-    private void UpdateColor()
-    {
-        var colors = this.Items.Select(ItemContextTagManager.GetColorFromTags).OfType<Color>().ToList();
-        if (!colors.Any())
-        {
-            this.chest.playerChoiceColor.Value = Color.Gray;
-            return;
-        }
-
-        var index = this.random.Next(colors.Count);
-        this.chest.playerChoiceColor.Value = colors[index];
-    }
 }

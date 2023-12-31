@@ -1,0 +1,17 @@
+{
+  "Format": "1.29.0",
+  "ConfigSchema":  {
+
+  },
+  "Changes": [
+    {
+      "LogName": "",
+      "Action": "EditData",
+      "Target": "Data/GarbageCans",
+      "Entries": {
+        
+      }
+    }
+  ],
+  "$schema": "https://smapi.io/schemas/content-patcher.json"
+}
