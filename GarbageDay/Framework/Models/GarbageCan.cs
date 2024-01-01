@@ -29,7 +29,7 @@ internal sealed class GarbageCan
     /// <summary>Gets the tile of the Garbage Can.</summary>
     public Vector2 Tile => this.chest.TileLocation;
 
-    private IInventory Items => this.chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+    private IInventory Items => this.chest.GetItemsForPlayer();
 
     private ModDataDictionary ModData => this.chest.modData;
 
@@ -89,13 +89,13 @@ internal sealed class GarbageCan
     }
 
     /// <summary>Called when a player attempts to open the garbage can.</summary>
+    /// <returns>Returns true if an action was performed.</returns>
     public void CheckAction()
     {
         if (!this.checkedToday)
         {
             this.checkedToday = true;
             Game1.stats.Increment("trashCansChecked");
-            return;
         }
 
         // Drop Item
@@ -120,26 +120,27 @@ internal sealed class GarbageCan
             this.Location.playSound("crit");
         }
 
-        if (this.specialItem is not null)
+        if (this.specialItem is null)
         {
-            if (this.specialItem.ItemId == "(H)66")
-            {
-                GarbageCan.GarbageHat = false;
-                this.chest.playerChoiceColor.Value = Color.Black; // Remove Lid
-            }
+            this
+                .chest.GetMutex()
+                .RequestLock(
+                    () =>
+                    {
+                        Game1.playSound("trashcan");
+                        this.chest.ShowMenu();
+                    });
 
-            Game1.player.addItemByMenuIfNecessary(this.specialItem);
             return;
         }
 
-        this
-            .chest.GetMutex()
-            .RequestLock(
-                () =>
-                {
-                    Game1.playSound("trashcan");
-                    this.chest.ShowMenu();
-                });
+        if (this.specialItem.ItemId == "(H)66")
+        {
+            GarbageCan.GarbageHat = false;
+            this.chest.playerChoiceColor.Value = Color.Black; // Remove Lid
+        }
+
+        Game1.player.addItemByMenuIfNecessary(this.specialItem);
     }
 
     /// <summary>Empties the trash of all items.</summary>

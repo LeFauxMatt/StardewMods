@@ -3,7 +3,7 @@
     <Name>Garbage Day</Name>
     <Description>Turns the town trash cans into chests.</Description>
     <Version>3.1.0-alpha.20231231</Version>
-    <EnableHarmony>true</EnableHarmony>
+    <EnableHarmony>false</EnableHarmony>
     <RootNamespace>StardewMods.GarbageDay</RootNamespace>
     <UniqueId>furyx639.GarbageDay</UniqueId>
     <UpdateKeys>Nexus:8204@SMAPI</UpdateKeys>
@@ -15,10 +15,6 @@
       <Version>5.4.2</Version>
       <Private>false</Private>
     </PackageReference>
-    <Reference Include="HarmonyLib">
-      <HintPath>$(GamePath)\smapi-internal\0Harmony.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.20231231" required="true"/>

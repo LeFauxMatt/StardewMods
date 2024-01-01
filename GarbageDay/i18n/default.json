@@ -2,7 +2,6 @@
   "GarbageCan.name": "Garbage Can",
   "GarbageCan.description":  "Villagers throw their trash in here. You can find some interesting things in here.",
 
-  "command.garbage-fill.description": "Adds loot to all Garbage Cans.",
-  "command.garbage-hat.description": "The next looted can will have a hat.",
-  "command.garbage-clear.description": "Removes all Garbage Cans."
+  "button.garbage-fill.name": "Fill all Garbage Cans.",
+  "button.garbage-hat.name": "Trigger Trash Can Lid event."
 }

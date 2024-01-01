@@ -11,21 +11,25 @@ using xTile.Dimensions;
 /// <summary>Handles modification and manipulation of assets in the game.</summary>
 internal sealed class AssetHandler : BaseService
 {
-    private const string AssetPath = "Data/BigCraftables";
-
+    private readonly Definitions definitions;
     private readonly GarbageCanManager garbageCanManager;
-    private readonly string texturePath;
 
     /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
+    /// <param name="definitions">Dependency used for defining common variables.</param>
     /// <param name="garbageCanManager">Dependency used for managing garbage cans.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
-    public AssetHandler(GarbageCanManager garbageCanManager, ILog log, IManifest manifest, IModEvents modEvents)
+    public AssetHandler(
+        Definitions definitions,
+        GarbageCanManager garbageCanManager,
+        ILog log,
+        IManifest manifest,
+        IModEvents modEvents)
         : base(log, manifest)
     {
         // Init
-        this.texturePath = this.ModId + "/Texture";
+        this.definitions = definitions;
         this.garbageCanManager = garbageCanManager;
 
         // Events
@@ -35,14 +39,20 @@ internal sealed class AssetHandler : BaseService
     private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
     {
         // Load Garbage Can Texture
-        if (e.NameWithoutLocale.IsEquivalentTo(this.texturePath))
+        if (e.NameWithoutLocale.IsEquivalentTo(this.definitions.TexturePath))
         {
             e.LoadFromModFile<Texture2D>("assets/GarbageCan.png", AssetLoadPriority.Exclusive);
             return;
         }
 
+        if (e.Name.IsEquivalentTo(this.definitions.IconTexturePath))
+        {
+            e.LoadFromModFile<Texture2D>("assets/icons.png", AssetLoadPriority.Exclusive);
+            return;
+        }
+
         // Load Garbage Can Object
-        if (e.NameWithoutLocale.IsEquivalentTo(AssetHandler.AssetPath))
+        if (e.NameWithoutLocale.IsEquivalentTo(Definitions.BigCraftablePath))
         {
             e.Edit(
                 asset =>
@@ -55,7 +65,7 @@ internal sealed class AssetHandler : BaseService
                         Description = I18n.GarbageCan_Description(),
                         Fragility = 2,
                         IsLamp = false,
-                        Texture = this.texturePath,
+                        Texture = this.definitions.TexturePath,
                         CustomFields = new Dictionary<string, string>
                         {
                             { "furyx639.ExpandedStorage/Enabled", "true" },
@@ -68,7 +78,7 @@ internal sealed class AssetHandler : BaseService
                         },
                     };
 
-                    data.Add(this.garbageCanManager.ItemId, bigCraftableData);
+                    data.Add(this.definitions.ItemId, bigCraftableData);
                 });
 
             return;

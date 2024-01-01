@@ -4,9 +4,9 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Extensions;
-using StardewMods.Common.Helpers;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewMods.GarbageDay.Framework.Interfaces;
 using StardewMods.GarbageDay.Framework.Models;
 using StardewValley.Characters;
@@ -16,39 +16,44 @@ using StardewValley.Objects;
 /// <summary>Represents a manager for managing garbage cans in a game.</summary>
 internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
 {
-    private const string AssetPath = "Data/GarbageCans";
-
-    private readonly PerScreen<GarbageCan?> currentGarbageCan = new();
     private readonly PerScreen<NPC?> currentNpc = new();
     private readonly Dictionary<string, GarbageCan> garbageCans = [];
+    private readonly PerScreen<GarbageCan?> garbageCanFacing = new();
+    private readonly PerScreen<GarbageCan?> garbageCanOpened = new();
     private readonly Dictionary<string, FoundGarbageCan> foundGarbageCans = [];
     private readonly Dictionary<string, GameLocation?> foundLocations = [];
     private readonly HashSet<string> invalidGarbageCans = [];
+    private readonly Definitions definitions;
     private readonly IInputHelper inputHelper;
     private readonly IModConfig modConfig;
+    private readonly ToolbarIconsIntegration toolbarIconsIntegration;
     private readonly IReflectedField<Multiplayer> multiplayer;
 
     /// <summary>Initializes a new instance of the <see cref="GarbageCanManager" /> class.</summary>
+    /// <param name="definitions">Dependency used for defining common variables.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
+    /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public GarbageCanManager(
+        Definitions definitions,
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
         IModConfig modConfig,
         IModEvents modEvents,
-        IReflectionHelper reflectionHelper)
+        IReflectionHelper reflectionHelper,
+        ToolbarIconsIntegration toolbarIconsIntegration)
         : base(log, manifest)
     {
         // Init
-        this.ItemId = this.ModId + "/GarbageCan";
-        this.QualifiedItemId = "(BC)" + this.ItemId;
+        this.definitions = definitions;
         this.inputHelper = inputHelper;
         this.modConfig = modConfig;
+        this.toolbarIconsIntegration = toolbarIconsIntegration;
         this.multiplayer = reflectionHelper.GetField<Multiplayer>(typeof(Game1), "multiplayer");
 
         // Events
@@ -57,13 +62,8 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         modEvents.Input.ButtonPressed += this.OnButtonPressed;
         modEvents.GameLoop.DayEnding += this.OnDayEnding;
         modEvents.GameLoop.DayStarted += this.OnDayStarted;
+        modEvents.GameLoop.SaveLoaded += this.OnSaveLoaded;
     }
-
-    /// <summary>Gets the item id for the Garbage Can object.</summary>
-    public string ItemId { get; }
-
-    /// <summary>Gets the qualified item id for the Garbage Can object.</summary>
-    public string QualifiedItemId { get; }
 
     /// <summary>Add a new pending garbage can.</summary>
     /// <param name="whichCan">The name of the garbage can.</param>
@@ -95,7 +95,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
 
     private void OnAssetsInvalidated(object? sender, AssetsInvalidatedEventArgs e)
     {
-        if (e.Names.Any(assetName => assetName.IsEquivalentTo(GarbageCanManager.AssetPath)))
+        if (e.Names.Any(assetName => assetName.IsEquivalentTo(Definitions.GarbageCanPath)))
         {
             this.foundGarbageCans.Clear();
         }
@@ -103,13 +103,13 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        if (!Context.IsPlayerFree || !e.Button.IsActionButton())
+        this.garbageCanFacing.Value = null;
+        if (!Context.IsPlayerFree)
         {
             return;
         }
 
-        var pos = CommonHelpers.GetCursorTile(1);
-        if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+        if (!Game1.currentLocation.Objects.TryGetValue(e.Cursor.GrabTile, out var obj)
             || obj is not Chest chest
             || !chest.modData.TryGetValue(this.ModId + "/WhichCan", out var whichCan)
             || !this.garbageCans.TryGetValue(whichCan, out var garbageCan))
@@ -117,8 +117,14 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
             return;
         }
 
+        this.garbageCanFacing.Value = garbageCan;
+        if (!e.Button.IsActionButton())
+        {
+            return;
+        }
+
         this.inputHelper.Suppress(e.Button);
-        this.currentGarbageCan.Value = garbageCan;
+        this.garbageCanOpened.Value = garbageCan;
         var character = Utility.isThereAFarmerOrCharacterWithinDistance(garbageCan.Tile, 7, garbageCan.Location);
 
         if (character is not NPC npc || character is Horse)
@@ -133,10 +139,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         if (npc.Name.Equals("Linus", StringComparison.OrdinalIgnoreCase))
         {
             npc.doEmote(32);
-            npc.setNewDialogue(
-                Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Linus"),
-                true,
-                true);
+            npc.setNewDialogue("Data\\ExtraDialogue:Town_DumpsterDiveComment_Linus", true, true);
 
             Game1.player.changeFriendship(5, npc);
             this.multiplayer.GetValue().globalChatInfoMessage("LinusTrashCan");
@@ -147,26 +150,17 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
             {
                 case 2:
                     npc.doEmote(28);
-                    npc.setNewDialogue(
-                        Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Child"),
-                        true,
-                        true);
+                    npc.setNewDialogue("Data\\ExtraDialogue:Town_DumpsterDiveComment_Child", true, true);
 
                     break;
                 case 1:
                     npc.doEmote(8);
-                    npc.setNewDialogue(
-                        Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Teen"),
-                        true,
-                        true);
+                    npc.setNewDialogue("Data\\ExtraDialogue:Town_DumpsterDiveComment_Teen", true, true);
 
                     break;
                 default:
                     npc.doEmote(12);
-                    npc.setNewDialogue(
-                        Game1.content.LoadString("Data\\ExtraDialogue:Town_DumpsterDiveComment_Adult"),
-                        true,
-                        true);
+                    npc.setNewDialogue("Data\\ExtraDialogue:Town_DumpsterDiveComment_Adult", true, true);
 
                     break;
             }
@@ -219,9 +213,17 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         }
     }
 
+    private void OnIconPressed(object? sender, IIconPressedEventArgs e)
+    {
+        if (this.garbageCanFacing.Value != null && e.Id == this.Id)
+        {
+            this.garbageCanFacing.Value.AddLoot();
+        }
+    }
+
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
-        if (e.OldMenu is not ItemGrabMenu || this.currentGarbageCan.Value is null)
+        if (e.OldMenu is not ItemGrabMenu || this.garbageCanOpened.Value is null)
         {
             return;
         }
@@ -233,7 +235,23 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
             this.currentNpc.Value = null;
         }
 
-        this.currentGarbageCan.Value = null;
+        this.garbageCanOpened.Value = null;
+    }
+
+    private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
+    {
+        if (!this.toolbarIconsIntegration.IsLoaded)
+        {
+            return;
+        }
+
+        this.toolbarIconsIntegration.Api.AddToolbarIcon(
+            this.Id,
+            this.definitions.IconTexturePath,
+            new Rectangle(0, 0, 16, 16),
+            I18n.Button_GarbageFill_Name());
+
+        this.toolbarIconsIntegration.Api.IconPressed += this.OnIconPressed;
     }
 
     private bool TryCreateGarbageCan(FoundGarbageCan foundGarbageCan, [NotNullWhen(true)] out GarbageCan? garbageCan)
@@ -259,7 +277,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         }
 
         // Attempt to place item
-        var item = (SObject)ItemRegistry.Create(this.QualifiedItemId);
+        var item = (SObject)ItemRegistry.Create(this.definitions.QualifiedItemId);
         if (!item.placementAction(
                 location,
                 (int)foundGarbageCan.TilePosition.X * Game1.tileSize,
@@ -273,7 +291,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         }
 
         // Update chest
-        chest.GlobalInventoryId = this.Prefix + foundGarbageCan.WhichCan;
+        chest.GlobalInventoryId = this.ModId + "-" + foundGarbageCan.WhichCan;
         chest.playerChoiceColor.Value = Color.DarkGray;
         chest.modData[this.ModId + "/WhichCan"] = foundGarbageCan.WhichCan;
         chest.modData["Pathoschild.ChestsAnywhere/IsIgnored"] = "true";

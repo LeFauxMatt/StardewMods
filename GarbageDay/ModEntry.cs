@@ -4,6 +4,7 @@ using SimpleInjector;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewMods.GarbageDay.Framework.Interfaces;
 using StardewMods.GarbageDay.Framework.Models;
 using StardewMods.GarbageDay.Framework.Services;
@@ -20,11 +21,6 @@ public sealed class ModEntry : Mod
     {
         // Init
         I18n.Init(this.Helper.Translation);
-
-        // Console Commands
-        // TODO: Toolbar Icons
-        //this.Helper.ConsoleCommands.Add("garbage_fill", I18n.Command_GarbageFill_Description(), this.GarbageFill);
-        //this.Helper.ConsoleCommands.Add("garbage_hat", I18n.Command_GarbageHat_Description(), ModEntry.GarbageHat);
 
         // Events
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
@@ -52,9 +48,11 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<AssetHandler>();
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
         this.container.RegisterSingleton<ContentPatcherIntegration>();
+        this.container.RegisterSingleton<Definitions>();
         this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<GarbageCanManager>();
         this.container.RegisterSingleton<ILog, LogService>();
+        this.container.RegisterSingleton<ToolbarIconsIntegration>();
 
         // Verify
         this.container.Verify();
