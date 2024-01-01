@@ -23,6 +23,11 @@ public interface ILog
     /// <param name="args">The arguments to parse in a formatted string.</param>
     public void Warn(string message, object?[]? args = null);
 
+    /// <summary>Logs a warn message to the console only once.</summary>
+    /// <param name="message">The message to send.</param>
+    /// <param name="args">The arguments to parse in a formatted string.</param>
+    public void WarnOnce(string message, object?[]? args = null);
+
     /// <summary>Logs an error message to the console.</summary>
     /// <param name="message">The message to send.</param>
     /// <param name="args">The arguments to parse in a formatted string.</param>

@@ -31,7 +31,7 @@ internal class ObjectContainer : BaseContainer<SObject>
     public override int Capacity => this.chest.GetActualCapacity();
 
     /// <inheritdoc />
-    public override IInventory Items => this.chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+    public override IInventory Items => this.chest.GetItemsForPlayer();
 
     /// <inheritdoc />
     public override GameLocation Location => this.Object.Location;

@@ -93,7 +93,7 @@ internal sealed class TransferItems : BaseFeature<TransferItems>
 
     private void Transfer(IContainer containerFrom, IContainer containerTo)
     {
-        if (!this.containerHandler.Transfer(containerFrom, containerTo, out var amounts))
+        if (!this.containerHandler.Transfer(containerFrom, containerTo, out var amounts, true))
         {
             return;
         }

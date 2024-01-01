@@ -22,24 +22,27 @@ internal sealed class Log : ILog
     }
 
     /// <inheritdoc />
-    public void Trace(string message, object?[]? args = null) => this.Raise(message, LogLevel.Trace, args);
+    public void Trace(string message, object?[]? args = null) => this.Raise(message, LogLevel.Trace, false, args);
 
     /// <inheritdoc />
-    public void Debug(string message, object?[]? args = null) => this.Raise(message, LogLevel.Debug, args);
+    public void Debug(string message, object?[]? args = null) => this.Raise(message, LogLevel.Debug, false, args);
 
     /// <inheritdoc />
-    public void Info(string message, object?[]? args = null) => this.Raise(message, LogLevel.Info, args);
+    public void Info(string message, object?[]? args = null) => this.Raise(message, LogLevel.Info, false, args);
 
     /// <inheritdoc />
-    public void Warn(string message, object?[]? args = null) => this.Raise(message, LogLevel.Warn, args);
+    public void Warn(string message, object?[]? args = null) => this.Raise(message, LogLevel.Warn, false, args);
 
     /// <inheritdoc />
-    public void Error(string message, object?[]? args = null) => this.Raise(message, LogLevel.Error, args);
+    public void WarnOnce(string message, object?[]? args = null) => this.Raise(message, LogLevel.Warn, true, args);
 
     /// <inheritdoc />
-    public void Alert(string message, object?[]? args = null) => this.Raise(message, LogLevel.Alert, args);
+    public void Error(string message, object?[]? args = null) => this.Raise(message, LogLevel.Error, false, args);
 
-    private void Raise(string message, LogLevel level, object?[]? args = null)
+    /// <inheritdoc />
+    public void Alert(string message, object?[]? args = null) => this.Raise(message, LogLevel.Alert, false, args);
+
+    private void Raise(string message, LogLevel level, bool once, object?[]? args = null)
     {
         switch (level)
         {
@@ -55,12 +58,19 @@ internal sealed class Log : ILog
                 }
 
                 // Prevent consecutive duplicate messages
-                if (message != this.lastMessage)
+                if (message == this.lastMessage)
                 {
-                    this.lastMessage = message;
-                    this.monitor.Log(message, level);
+                    break;
                 }
 
+                this.lastMessage = message;
+                if (once)
+                {
+                    this.monitor.LogOnce(message, level);
+                    break;
+                }
+
+                this.monitor.Log(message, level);
                 break;
             default:
                 // Suppress log

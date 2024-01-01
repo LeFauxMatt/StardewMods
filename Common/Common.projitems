@@ -12,7 +12,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Enums\ComponentArea.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\SimpleLogLevel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\CommonHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Events\ConfigChangedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\BaseService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ConfigManager.cs" />
@@ -40,6 +39,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ProjectFluent\IFluent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ProjectFluent\IProjectFluentApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ProjectFluent\ProjectFluentIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ToolbarIcons\IIconPressedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ToolbarIcons\IToolbarIconsApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ToolbarIcons\ToolbarIconsIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Logging.cs" />

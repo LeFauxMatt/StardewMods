@@ -103,7 +103,11 @@ internal sealed class OpenHeldChest : BaseFeature<OpenHeldChest>
         }
 
         this.inputHelper.Suppress(e.Button);
-        container.ShowMenu();
+        container.Mutex?.RequestLock(
+            () =>
+            {
+                container.ShowMenu();
+            });
     }
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)

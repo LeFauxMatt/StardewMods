@@ -25,7 +25,7 @@ internal class ChestContainer : BaseContainer<Chest>
     public override int Capacity => this.Chest.GetActualCapacity();
 
     /// <inheritdoc />
-    public override IInventory Items => this.Chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID);
+    public override IInventory Items => this.Chest.GetItemsForPlayer();
 
     /// <inheritdoc />
     public override GameLocation Location => this.Chest.Location;

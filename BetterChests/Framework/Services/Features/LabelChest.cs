@@ -1,9 +1,9 @@
 ﻿namespace StardewMods.BetterChests.Framework.Services.Features;
 
-using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Helpers;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
@@ -12,6 +12,8 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
 {
     private readonly ContainerFactory containerFactory;
     private readonly IModEvents modEvents;
+
+    private readonly PerScreen<IContainer?> containerFacing = new();
 
     /// <summary>Initializes a new instance of the <see cref="LabelChest" /> class.</summary>
     /// <param name="configManager">Dependency used for accessing config data.</param>
@@ -40,6 +42,7 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
         // Events
         this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this.modEvents.Display.RenderedHud += this.OnRenderedHud;
+        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
     }
 
     /// <inheritdoc />
@@ -48,6 +51,32 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
         // Events
         this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
         this.modEvents.Display.RenderedHud -= this.OnRenderedHud;
+        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
+    }
+
+    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    {
+        this.containerFacing.Value = null;
+
+        if (!Context.IsPlayerFree)
+        {
+            return;
+        }
+
+        if (!this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, e.Cursor.GrabTile, out var container))
+        {
+            if (!this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, e.Cursor.Tile, out container))
+            {
+                return;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(container.Options.ChestLabel))
+        {
+            return;
+        }
+
+        this.containerFacing.Value = container;
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
@@ -72,22 +101,11 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
-        if (!Context.IsPlayerFree)
+        if (!Context.IsPlayerFree || this.containerFacing.Value is null)
         {
             return;
         }
 
-        var pos = CommonHelpers.GetCursorTile();
-        if ((!this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, pos, out var container)
-                && !this.containerFactory.TryGetOneFromLocation(
-                    Game1.currentLocation,
-                    pos - new Vector2(0, -1),
-                    out container))
-            || string.IsNullOrWhiteSpace(container.Options.ChestLabel))
-        {
-            return;
-        }
-
-        IClickableMenu.drawHoverText(e.SpriteBatch, container.Options.ChestLabel, Game1.smallFont);
+        IClickableMenu.drawHoverText(e.SpriteBatch, this.containerFacing.Value.Options.ChestLabel, Game1.smallFont);
     }
 }

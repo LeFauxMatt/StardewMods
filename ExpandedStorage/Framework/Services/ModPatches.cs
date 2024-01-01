@@ -16,6 +16,7 @@ internal sealed class ModPatches : BaseService
     private const string ChestOpenSound = "openChest";
     private const string LidOpenSound = "doorCreak";
     private const string LidCloseSound = "doorCreakReverse";
+    private const string MiniShippingBinOpenSound = "shwip";
 
 #nullable disable
     private static ModPatches instance;
@@ -37,10 +38,6 @@ internal sealed class ModPatches : BaseService
 
         // Patches
         harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.actionOnPlayerEntry)),
-            transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_actionOnPlayerEntry_transpiler)));
-
-        harmony.Patch(
             AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.checkForAction)),
             transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_checkForAction_transpiler)));
 
@@ -59,79 +56,61 @@ internal sealed class ModPatches : BaseService
             new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_drawLocal_prefix)));
 
         harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.fixLidFrame)),
-            transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_fixLidFrame_transpiler)));
-
-        harmony.Patch(
             AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.getLastLidFrame)),
             postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_getLastLidFrame_postfix)));
+
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.OpenMiniShippingMenu)),
+            transpiler: new HarmonyMethod(
+                typeof(ModPatches),
+                nameof(ModPatches.Chest_OpenMiniShippingMenu_transpiler)));
+
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.ShowMenu)),
+            transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_SpecialChestType_transpiler)));
 
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
             transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_UpdateFarmerNearby_transpiler)));
 
         harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.updateWhenCurrentLocation)),
+            AccessTools.GetDeclaredConstructors(typeof(ItemGrabMenu)).First(ctor => ctor.GetParameters().Length >= 10),
+            postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_constructor_postfix)),
             transpiler: new HarmonyMethod(
                 typeof(ModPatches),
-                nameof(ModPatches.Chest_updateWhenCurrentLocation_transpiler)));
+                nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)));
 
         harmony.Patch(
-            AccessTools.DeclaredConstructor(
-                typeof(ItemGrabMenu),
-                [
-                    typeof(IList<Item>),
-                    typeof(bool),
-                    typeof(bool),
-                    typeof(InventoryMenu.highlightThisItem),
-                    typeof(ItemGrabMenu.behaviorOnItemSelect),
-                    typeof(string),
-                    typeof(ItemGrabMenu.behaviorOnItemSelect),
-                    typeof(bool),
-                    typeof(bool),
-                    typeof(bool),
-                    typeof(bool),
-                    typeof(bool),
-                    typeof(int),
-                    typeof(Item),
-                    typeof(int),
-                    typeof(object),
-                    typeof(ItemExitBehavior),
-                    typeof(bool),
-                ]),
-            postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_constructor_postfix)));
+            AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw)),
+            transpiler: new HarmonyMethod(
+                typeof(ModPatches),
+                nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)));
 
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.gameWindowSizeChanged)),
             postfix: new HarmonyMethod(
                 typeof(ModPatches),
-                nameof(ModPatches.ItemGrabMenu_gameWindowSizeChanged_postfix)));
+                nameof(ModPatches.ItemGrabMenu_gameWindowSizeChanged_postfix)),
+            transpiler: new HarmonyMethod(
+                typeof(ModPatches),
+                nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)));
 
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
-            postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_setSourceItem_postfix)));
+            postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_setSourceItem_postfix)),
+            transpiler: new HarmonyMethod(
+                typeof(ModPatches),
+                nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)));
+
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.snapToDefaultClickableComponent)),
+            transpiler: new HarmonyMethod(
+                typeof(ModPatches),
+                nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)));
 
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.placementAction)),
             postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Object_placementAction_postfix)));
-    }
-
-    private static IEnumerable<CodeInstruction> Chest_actionOnPlayerEntry_transpiler(
-        IEnumerable<CodeInstruction> instructions)
-    {
-        foreach (var instruction in instructions)
-        {
-            if (instruction.Calls(AccessTools.DeclaredPropertyGetter(typeof(Chest), nameof(Chest.SpecialChestType))))
-            {
-                yield return instruction;
-                yield return new CodeInstruction(OpCodes.Ldarg_0);
-                yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSpecialChestType));
-            }
-            else
-            {
-                yield return instruction;
-            }
-        }
     }
 
     private static IEnumerable<CodeInstruction> Chest_checkForAction_transpiler(
@@ -150,13 +129,6 @@ internal sealed class ModPatches : BaseService
                 yield return new CodeInstruction(OpCodes.Ldarg_0);
                 yield return instruction;
                 yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSound));
-            }
-            else if (instruction.Calls(
-                AccessTools.DeclaredPropertyGetter(typeof(Chest), nameof(Chest.SpecialChestType))))
-            {
-                yield return instruction;
-                yield return new CodeInstruction(OpCodes.Ldarg_0);
-                yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSpecialChestType));
             }
             else
             {
@@ -314,23 +286,6 @@ internal sealed class ModPatches : BaseService
         return false;
     }
 
-    private static IEnumerable<CodeInstruction> Chest_fixLidFrame_transpiler(IEnumerable<CodeInstruction> instructions)
-    {
-        foreach (var instruction in instructions)
-        {
-            if (instruction.Calls(AccessTools.DeclaredPropertyGetter(typeof(Chest), nameof(Chest.SpecialChestType))))
-            {
-                yield return instruction;
-                yield return new CodeInstruction(OpCodes.Ldarg_0);
-                yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSpecialChestType));
-            }
-            else
-            {
-                yield return instruction;
-            }
-        }
-    }
-
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Chest_getLastLidFrame_postfix(Chest __instance, ref int __result)
@@ -342,6 +297,24 @@ internal sealed class ModPatches : BaseService
         }
 
         __result = __instance.startingLidFrame.Value + storage.Frames - 1;
+    }
+
+    private static IEnumerable<CodeInstruction> Chest_OpenMiniShippingMenu_transpiler(
+        IEnumerable<CodeInstruction> instructions)
+    {
+        foreach (var instruction in instructions)
+        {
+            if (instruction.LoadsConstant(ModPatches.MiniShippingBinOpenSound))
+            {
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return instruction;
+                yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSound));
+            }
+            else
+            {
+                yield return instruction;
+            }
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -380,19 +353,43 @@ internal sealed class ModPatches : BaseService
 
         return sound switch
         {
-            ModPatches.ChestOpenSound => storage.OpenSound,
+            ModPatches.ChestOpenSound or ModPatches.MiniShippingBinOpenSound => storage.OpenSound,
             ModPatches.LidOpenSound => storage.OpenNearbySound,
             ModPatches.LidCloseSound => storage.CloseNearbySound,
             _ => sound,
         };
     }
 
-    private static IEnumerable<CodeInstruction> Chest_updateWhenCurrentLocation_transpiler(
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance, ref Item ___sourceItem) =>
+        ModPatches.UpdateColorPicker(__instance, ___sourceItem);
+
+    private static IEnumerable<CodeInstruction> ItemGrabMenu_SpecialChestType_transpiler(
         IEnumerable<CodeInstruction> instructions)
     {
         foreach (var instruction in instructions)
         {
-            if (instruction.Calls(AccessTools.DeclaredPropertyGetter(typeof(Chest), nameof(Chest.SpecialChestType))))
+            if (instruction.Calls(AccessTools.PropertyGetter(typeof(Chest), nameof(Chest.SpecialChestType))))
+            {
+                yield return instruction;
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return CodeInstruction.LoadField(typeof(ItemGrabMenu), nameof(ItemGrabMenu.sourceItem));
+                yield return CodeInstruction.Call(typeof(ModPatches), nameof(ModPatches.GetSpecialChestType));
+            }
+            else
+            {
+                yield return instruction;
+            }
+        }
+    }
+
+    private static IEnumerable<CodeInstruction> Chest_SpecialChestType_transpiler(
+        IEnumerable<CodeInstruction> instructions)
+    {
+        foreach (var instruction in instructions)
+        {
+            if (instruction.Calls(AccessTools.PropertyGetter(typeof(Chest), nameof(Chest.SpecialChestType))))
             {
                 yield return instruction;
                 yield return new CodeInstruction(OpCodes.Ldarg_0);
@@ -405,21 +402,17 @@ internal sealed class ModPatches : BaseService
         }
     }
 
-    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
-    private static Chest.SpecialChestTypes GetSpecialChestType(Chest.SpecialChestTypes specialChestType, Chest chest)
+    private static Chest.SpecialChestTypes GetSpecialChestType(
+        Chest.SpecialChestTypes specialChestType,
+        Item sourceItem)
     {
-        if (!ModPatches.instance.storageManager.TryGetData(chest, out var storage) || !storage.OpenNearby)
+        if (!ModPatches.instance.storageManager.TryGetData(sourceItem, out var storage) || !storage.OpenNearby)
         {
             return specialChestType;
         }
 
-        return Chest.SpecialChestTypes.MiniShippingBin;
+        return Chest.SpecialChestTypes.None;
     }
-
-    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
-    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
-    private static void ItemGrabMenu_constructor_postfix(ItemGrabMenu __instance, ref Item ___sourceItem) =>
-        ModPatches.UpdateColorPicker(__instance, ___sourceItem);
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
@@ -459,6 +452,8 @@ internal sealed class ModPatches : BaseService
         location.Objects[tile] = new Chest(true, tile, __instance.ItemId)
         {
             shakeTimer = 50,
+            SpecialChestType =
+                storage.OpenNearby ? Chest.SpecialChestTypes.MiniShippingBin : Chest.SpecialChestTypes.None,
         };
 
         __result = true;

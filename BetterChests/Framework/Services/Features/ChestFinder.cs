@@ -263,7 +263,12 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
             this.currentIndex.Value = 0;
         }
 
-        this.pointers.Value[this.currentIndex.Value].Container.ShowMenu();
+        var container = this.pointers.Value[this.currentIndex.Value].Container;
+        container.Mutex?.RequestLock(
+            () =>
+            {
+                container.ShowMenu();
+            });
     }
 
     private void SearchForStorages()

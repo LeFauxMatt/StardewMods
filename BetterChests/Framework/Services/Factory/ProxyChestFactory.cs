@@ -260,7 +260,7 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
         }
 
         // Draw Items count
-        var items = chest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID).Count;
+        var items = chest.GetItemsForPlayer().Count;
         if (items <= 0)
         {
             return;

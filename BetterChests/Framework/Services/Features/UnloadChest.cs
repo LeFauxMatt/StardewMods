@@ -3,7 +3,6 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Helpers;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
 
@@ -64,9 +63,7 @@ internal sealed class UnloadChest : BaseFeature<UnloadChest>
             return;
         }
 
-        var pos = CommonHelpers.GetCursorTile(1, false);
-        if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
-            || !this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, pos, out var containerTo)
+        if (!this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, e.Cursor.GrabTile, out var containerTo)
             || containerTo.Options.UnloadChest != Option.Enabled)
         {
             return;
@@ -76,21 +73,21 @@ internal sealed class UnloadChest : BaseFeature<UnloadChest>
 
         if (this.Config.UnloadChestSwap)
         {
-            if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+            if (!Game1.currentLocation.Objects.TryGetValue(e.Cursor.GrabTile, out var obj)
                 || obj is not Chest chest
                 || !this.proxyChestFactory.TryCreateRequest(chest, out var request))
             {
                 return;
             }
 
-            Game1.currentLocation.Objects.Remove(pos);
+            Game1.currentLocation.Objects.Remove(e.Cursor.GrabTile);
             if (!Utility.tryToPlaceItem(
                 Game1.currentLocation,
                 Game1.player.ActiveObject,
-                (int)pos.X * Game1.tileSize,
-                (int)pos.Y * Game1.tileSize))
+                (int)e.Cursor.GrabTile.X * Game1.tileSize,
+                (int)e.Cursor.GrabTile.Y * Game1.tileSize))
             {
-                Game1.currentLocation.Objects.Add(pos, obj);
+                Game1.currentLocation.Objects.Add(e.Cursor.GrabTile, obj);
                 request.Cancel();
                 return;
             }
@@ -99,7 +96,7 @@ internal sealed class UnloadChest : BaseFeature<UnloadChest>
             request.Confirm();
 
             // Swap container from and to
-            if (!this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, pos, out containerTo)
+            if (!this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, e.Cursor.GrabTile, out containerTo)
                 || !this.containerFactory.TryGetOneFromPlayer(Game1.player, out containerFrom))
             {
                 return;

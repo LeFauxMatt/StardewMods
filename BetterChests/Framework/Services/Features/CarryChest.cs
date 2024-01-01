@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Helpers;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Locations;
 using StardewValley.Objects;
@@ -147,11 +146,9 @@ internal sealed class CarryChest : BaseFeature<CarryChest>
             return;
         }
 
-        var pos = CommonHelpers.GetCursorTile(1, false);
-        if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
-            || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+        if (!Game1.currentLocation.Objects.TryGetValue(e.Cursor.GrabTile, out var obj)
             || obj is not Chest chest
-            || !this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, pos, out var container)
+            || !this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, e.Cursor.GrabTile, out var container)
             || container.Options.CarryChest != Option.Enabled)
         {
             return;
@@ -182,10 +179,10 @@ internal sealed class CarryChest : BaseFeature<CarryChest>
         // Remove chest from world
         this.Log.Trace(
             "{0}: Grabbed chest from {1} at ({2}, {3})",
-            [this.Id, Game1.player.currentLocation.Name, pos.X, pos.Y]);
+            [this.Id, Game1.player.currentLocation.Name, e.Cursor.GrabTile.X, e.Cursor.GrabTile.Y]);
 
         request.Confirm();
-        Game1.currentLocation.Objects.Remove(pos);
+        Game1.currentLocation.Objects.Remove(e.Cursor.GrabTile);
         Game1.playSound("pickUpItem");
         this.inputHelper.Suppress(e.Button);
     }

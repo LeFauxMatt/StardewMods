@@ -8,7 +8,6 @@ using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Helpers;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewValley.Locations;
@@ -89,7 +88,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
             new Rectangle(32, 0, 16, 16),
             I18n.Button_CraftFromChest_Name());
 
-        this.toolbarIconsIntegration.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
+        this.toolbarIconsIntegration.Api.IconPressed += this.OnIconPressed;
     }
 
     /// <inheritdoc />
@@ -111,7 +110,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
         }
 
         this.toolbarIconsIntegration.Api.RemoveToolbarIcon(this.Id);
-        this.toolbarIconsIntegration.Api.ToolbarIconPressed -= this.OnToolbarIconPressed;
+        this.toolbarIconsIntegration.Api.IconPressed -= this.OnIconPressed;
     }
 
     private static IEnumerable<CodeInstruction> GameMenu_constructor_transpiler(
@@ -171,10 +170,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
             return;
         }
 
-        var pos = CommonHelpers.GetCursorTile(1, false);
-        if (!Utility.tileWithinRadiusOfPlayer((int)pos.X, (int)pos.Y, 1, Game1.player)
-            || !Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-            || obj is not Workbench)
+        if (!Game1.currentLocation.Objects.TryGetValue(e.Cursor.GrabTile, out var obj) || obj is not Workbench)
         {
             return;
         }
@@ -193,9 +189,9 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
         this.OpenCraftingMenu(this.DefaultPredicate);
     }
 
-    private void OnToolbarIconPressed(object? sender, string id)
+    private void OnIconPressed(object? sender, IIconPressedEventArgs e)
     {
-        if (id == this.Id)
+        if (e.Id == this.Id)
         {
             this.OpenCraftingMenu(this.DefaultPredicate);
         }

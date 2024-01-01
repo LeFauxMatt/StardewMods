@@ -241,7 +241,7 @@ internal sealed class ContainerHandler : BaseService
     private static bool Chest_addItem_prefix(Chest __instance, ref Item __result, Item item)
     {
         if (!ContainerHandler.instance.containerFactory.TryGetOne(__instance, out var container)
-            || ContainerHandler.instance.CanAddItem(container, item))
+            || ContainerHandler.instance.CanAddItem(container, item, true))
         {
             return true;
         }

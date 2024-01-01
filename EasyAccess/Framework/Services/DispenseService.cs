@@ -49,7 +49,7 @@ internal sealed class DispenseService : BaseService<DispenseService>
             new Rectangle(16, 0, 16, 16),
             I18n.Button_DispenseInputs_Name());
 
-        toolbarIconsIntegration.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
+        toolbarIconsIntegration.Api.IconPressed += this.OnIconPressed;
     }
 
     private void DispenseItems()
@@ -103,9 +103,9 @@ internal sealed class DispenseService : BaseService<DispenseService>
         this.DispenseItems();
     }
 
-    private void OnToolbarIconPressed(object? sender, string id)
+    private void OnIconPressed(object? sender, IIconPressedEventArgs e)
     {
-        if (id == this.UniqueId)
+        if (e.Id == this.UniqueId)
         {
             this.DispenseItems();
         }
