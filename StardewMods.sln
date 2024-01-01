@@ -22,8 +22,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BetterChests", "BetterChest
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyAccess", "EasyAccess\EasyAccess.csproj", "{774ACD31-6138-4707-A747-8C8E35519FC3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TooManyAnimals", "TooManyAnimals\TooManyAnimals.csproj", "{5117CCBA-8EF7-4A6A-8D76-8C254776BBF8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ToolbarIcons", "ToolbarIcons\ToolbarIcons.csproj", "{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmackDatScarecrow", "SmackDatScarecrow\SmackDatScarecrow.csproj", "{66F2B279-351B-499C-826B-A885C2255334}"
@@ -54,10 +52,6 @@ Global
 		{774ACD31-6138-4707-A747-8C8E35519FC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{774ACD31-6138-4707-A747-8C8E35519FC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{774ACD31-6138-4707-A747-8C8E35519FC3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5117CCBA-8EF7-4A6A-8D76-8C254776BBF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5117CCBA-8EF7-4A6A-8D76-8C254776BBF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5117CCBA-8EF7-4A6A-8D76-8C254776BBF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5117CCBA-8EF7-4A6A-8D76-8C254776BBF8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
