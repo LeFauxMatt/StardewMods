@@ -29,12 +29,12 @@ public sealed class ModEntry : Mod
     }
 
     /// <inheritdoc />
-    public override object GetApi(IModInfo mod)
-    {
-        var customEvents = this.container.GetInstance<EventsManager>();
-        var toolbar = this.container.GetInstance<ToolbarManager>();
-        return new ToolbarIconsApi(mod, customEvents, toolbar);
-    }
+    public override object GetApi(IModInfo mod) =>
+        new ToolbarIconsApi(
+            this.container.GetInstance<EventsManager>(),
+            this.container.GetInstance<ILog>(),
+            mod,
+            this.container.GetInstance<ToolbarManager>());
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {

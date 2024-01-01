@@ -172,7 +172,7 @@ internal sealed class ToolbarManager : BaseService
         }
 
         Game1.playSound("drumkit6");
-        this.eventsManager.InvokeToolbarIconPressed(component.name);
+        this.eventsManager.InvokeToolbarIconPressed(component.name, e.Button);
         this.inputHelper.Suppress(e.Button);
     }
 

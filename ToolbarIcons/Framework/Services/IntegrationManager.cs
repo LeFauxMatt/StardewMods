@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewMods.ToolbarIcons.Framework.Enums;
 using StardewMods.ToolbarIcons.Framework.Interfaces;
 using StardewMods.ToolbarIcons.Framework.Models;
@@ -63,7 +64,7 @@ internal sealed class IntegrationManager : BaseService
 
         // Events
         modEvents.GameLoop.SaveLoaded += this.OnSaveLoaded;
-        this.eventsManager.ToolbarIconPressed += this.OnToolbarIconPressed;
+        this.eventsManager.IconPressed += this.OnIconPressed;
     }
 
     /// <summary>Adds a complex integration for vanilla.</summary>
@@ -286,9 +287,9 @@ internal sealed class IntegrationManager : BaseService
         this.eventsManager.InvokeToolbarIconsLoaded();
     }
 
-    private void OnToolbarIconPressed(object? sender, string id)
+    private void OnIconPressed(object? sender, IIconPressedEventArgs e)
     {
-        if (this.icons.TryGetValue(id, out var action))
+        if (this.icons.TryGetValue(e.Id, out var action))
         {
             action.Invoke();
         }
