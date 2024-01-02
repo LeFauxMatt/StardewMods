@@ -449,15 +449,17 @@ internal sealed class ModPatches : BaseService
             return;
         }
 
-        location.Objects[tile] = new Chest(true, tile, __instance.ItemId)
+        var chest = new Chest(true, tile, __instance.ItemId)
         {
             shakeTimer = 50,
             SpecialChestType =
                 storage.OpenNearby ? Chest.SpecialChestTypes.MiniShippingBin : Chest.SpecialChestTypes.None,
         };
 
-        __result = true;
+        location.Objects[tile] = chest;
         location.playSound(storage.PlaceSound);
+        __result = true;
+        ModPatches.instance.storageManager.RaiseChestCreated(chest, location, tile, storage);
     }
 
     private static void UpdateColorPicker(ItemGrabMenu itemGrabMenu, Item sourceItem)
