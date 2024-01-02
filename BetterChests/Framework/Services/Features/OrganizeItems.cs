@@ -3,8 +3,8 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Events;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
@@ -53,7 +53,7 @@ internal sealed class OrganizeItems : BaseFeature<OrganizeItems>
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.DefaultOptions.OrganizeItems != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.OrganizeItems != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -128,7 +128,7 @@ internal sealed class OrganizeItems : BaseFeature<OrganizeItems>
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.CurrentMenu is null
-            || this.itemGrabMenuManager.Top.Container?.Options.OrganizeItems != Option.Enabled)
+            || this.itemGrabMenuManager.Top.Container?.Options.OrganizeItems != FeatureOption.Enabled)
         {
             this.isActive.Value = false;
             return;

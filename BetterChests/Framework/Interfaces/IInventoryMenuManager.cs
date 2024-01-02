@@ -1,5 +1,6 @@
 namespace StardewMods.BetterChests.Framework.Interfaces;
 
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewValley.Menus;
 
 /// <summary>Manages the inventory menu by adding, removing, and filtering item filters.</summary>
@@ -9,7 +10,7 @@ internal interface IInventoryMenuManager
     public InventoryMenu? Menu { get; }
 
     /// <summary>Gets the container associated with the inventory menu.</summary>
-    public IContainer? Container { get; }
+    public IStorageContainer? Container { get; }
 
     /// <summary>Gets the capacity of the inventory menu.</summary>
     public int Capacity { get; }

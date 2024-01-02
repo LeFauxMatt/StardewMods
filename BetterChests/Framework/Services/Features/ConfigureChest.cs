@@ -5,9 +5,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewValley.Menus;
@@ -76,7 +76,8 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
 
     /// <inheritdoc />
     public override bool ShouldBeActive =>
-        this.Config.DefaultOptions.ConfigureChest != Option.Disabled && this.genericModConfigMenuIntegration.IsLoaded;
+        this.Config.DefaultOptions.ConfigureChest != FeatureOption.Disabled
+        && this.genericModConfigMenuIntegration.IsLoaded;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -198,7 +199,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         if (!Context.IsPlayerFree
             || !this.Config.Controls.ConfigureChest.JustPressed()
             || !this.containerFactory.TryGetOneFromPlayer(Game1.player, out var container)
-            || container.Options.ConfigureChest != Option.Enabled)
+            || container.Options.ConfigureChest != FeatureOption.Enabled)
         {
             return;
         }
@@ -211,7 +212,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.CurrentMenu is null
-            || this.itemGrabMenuManager.Top.Container?.Options.ConfigureChest != Option.Enabled)
+            || this.itemGrabMenuManager.Top.Container?.Options.ConfigureChest != FeatureOption.Enabled)
         {
             this.isActive.Value = false;
             return;

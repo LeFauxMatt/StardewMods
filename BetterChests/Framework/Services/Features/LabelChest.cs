@@ -2,8 +2,8 @@
 
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
@@ -13,7 +13,7 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
     private readonly ContainerFactory containerFactory;
     private readonly IModEvents modEvents;
 
-    private readonly PerScreen<IContainer?> containerFacing = new();
+    private readonly PerScreen<IStorageContainer?> containerFacing = new();
 
     /// <summary>Initializes a new instance of the <see cref="LabelChest" /> class.</summary>
     /// <param name="configManager">Dependency used for accessing config data.</param>

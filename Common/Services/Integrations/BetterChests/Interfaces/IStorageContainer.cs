@@ -1,4 +1,4 @@
-namespace StardewMods.BetterChests.Framework.Interfaces;
+namespace StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 
 using Microsoft.Xna.Framework;
 using StardewValley.Inventories;
@@ -6,7 +6,7 @@ using StardewValley.Mods;
 using StardewValley.Network;
 
 /// <summary>An instance of a game object that can store items.</summary>
-internal interface IContainer
+public interface IStorageContainer
 {
     /// <summary>Gets the name of the container.</summary>
     string DisplayName { get; }
@@ -52,16 +52,4 @@ internal interface IContainer
     /// <param name="remaining">When this method returns, contains the remaining item after addition, if any.</param>
     /// <returns>True if the item was successfully given; otherwise, false.</returns>
     public bool TryAdd(Item item, out Item? remaining);
-}
-
-/// <inheritdoc />
-/// <typeparam name="TSource">The source object type.</typeparam>
-internal interface IContainer<TSource> : IContainer
-    where TSource : class
-{
-    /// <summary>Gets a value indicating whether the source object is still alive.</summary>
-    public bool IsAlive { get; }
-
-    /// <summary>Gets a weak reference to the source object.</summary>
-    public WeakReference<TSource> Source { get; }
 }

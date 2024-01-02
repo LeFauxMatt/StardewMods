@@ -2,13 +2,13 @@ namespace StardewMods.BetterChests.Framework.Services;
 
 using System.Reflection;
 using HarmonyLib;
-using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.Automate;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -22,7 +22,6 @@ internal sealed class ContainerHandler : BaseService
 
     private readonly ContainerFactory containerFactory;
     private readonly IReflectionHelper reflectionHelper;
-    private EventHandler<ItemTransferredEventArgs>? itemTransferred;
     private EventHandler<ItemTransferringEventArgs>? itemTransferring;
 
     /// <summary>Initializes a new instance of the <see cref="ContainerHandler" /> class.</summary>
@@ -70,13 +69,6 @@ internal sealed class ContainerHandler : BaseService
         }
     }
 
-    /// <summary>Represents an event that is raised after an item is transferred.</summary>
-    public event EventHandler<ItemTransferredEventArgs> ItemTransferred
-    {
-        add => this.itemTransferred += value;
-        remove => this.itemTransferred -= value;
-    }
-
     /// <summary>Represents an event that is raised before an item is transferred.</summary>
     public event EventHandler<ItemTransferringEventArgs> ItemTransferring
     {
@@ -87,7 +79,7 @@ internal sealed class ContainerHandler : BaseService
     /// <summary>Arranges items in container according to group by and sort by options.</summary>
     /// <param name="container">The container to organize.</param>
     /// <param name="reverse">Whether to sort the items in reverse order.</param>
-    public void OrganizeItems(IContainer container, bool reverse = false)
+    public void OrganizeItems(IStorageContainer container, bool reverse = false)
     {
         if (container.Options is
             {
@@ -178,8 +170,8 @@ internal sealed class ContainerHandler : BaseService
     /// <param name="force">Indicates whether to attempt to force the transfer.</param>
     /// <returns>True if the transfer was successful and at least one item was transferred, otherwise False.</returns>
     public bool Transfer(
-        IContainer from,
-        IContainer to,
+        IStorageContainer from,
+        IStorageContainer to,
         [NotNullWhen(true)] out Dictionary<string, int>? amounts,
         bool force = false)
     {
@@ -209,8 +201,6 @@ internal sealed class ContainerHandler : BaseService
 
                 var amount = stack - (remaining?.Stack ?? 0);
                 items[item.Name] += amount;
-                var itemTransferredEventArgs = new ItemTransferredEventArgs(from, to, item, amount);
-                this.itemTransferred?.InvokeAll(this, itemTransferredEventArgs);
                 return true;
             });
 
@@ -255,7 +245,7 @@ internal sealed class ContainerHandler : BaseService
     /// <param name="item">The item to add.</param>
     /// <param name="force">Indicates whether it should be a forced attempt.</param>
     /// <returns>True if the item can be added, otherwise False.</returns>
-    private bool CanAddItem(IContainer to, Item item, bool force = false)
+    private bool CanAddItem(IStorageContainer to, Item item, bool force = false)
     {
         if (to.Items.CountItemStacks() >= to.Capacity)
         {

@@ -15,7 +15,18 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\Events\ConfigChangedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\BaseService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ConfigManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\IConfigWithLogLevel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\BetterChests\Enums\CapacityOption.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\BetterChests\Enums\GroupBy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\BetterChests\Enums\FeatureOption.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\BetterChests\Enums\RangeOption.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\BetterChests\Enums\SortBy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\BetterChests\IBetterChestsApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\BetterChests\Interfaces\IItemTransferring.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\BetterChests\Interfaces\IStorageContainer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\BetterChests\Interfaces\IStorageOptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ExpandedStorage\ExpandedStorageIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ExpandedStorage\IChestCreatedEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ExpandedStorage\IExpandedStorageApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\Automate\AutomateIntegration.cs" />
@@ -27,6 +38,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ContentPatcher\ContentPatcherIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ContentPatcher\IContentPatcherApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ContentPatcher\IManagedConditions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ExpandedStorage\IStorageData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\FuryCoreIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\IFuryCoreApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\ILog.cs" />
@@ -42,6 +54,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ToolbarIcons\IIconPressedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ToolbarIcons\IToolbarIconsApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ToolbarIcons\ToolbarIconsIntegration.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\Logging.cs" />
   </ItemGroup>
 </Project>

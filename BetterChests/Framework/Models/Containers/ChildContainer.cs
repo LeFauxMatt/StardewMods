@@ -1,32 +1,33 @@
 namespace StardewMods.BetterChests.Framework.Models.Containers;
 
 using Microsoft.Xna.Framework;
-using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewValley.Inventories;
 using StardewValley.Mods;
 using StardewValley.Network;
 
 /// <inheritdoc />
-internal class ChildContainer : IContainer
+internal class ChildContainer : IStorageContainer
 {
-    private readonly IContainer child;
-    private readonly IContainer parent;
+    private readonly IStorageContainer child;
+    private readonly IStorageContainer parent;
 
     /// <summary>Initializes a new instance of the <see cref="ChildContainer" /> class.</summary>
     /// <param name="parent">The parent container.</param>
     /// <param name="child">The child container.</param>
-    public ChildContainer(IContainer parent, IContainer child)
+    public ChildContainer(IStorageContainer parent, IStorageContainer child)
     {
         this.parent = parent;
         this.child = child;
     }
 
     /// <summary>Gets the top-most parent storage.</summary>
-    public IContainer Parent =>
+    public IStorageContainer Parent =>
         this.parent switch { ChildContainer childStorage => childStorage.parent, _ => this.parent };
 
     /// <summary>Gets the bottom-most child storage.</summary>
-    public IContainer Child => this.child switch { ChildContainer childStorage => childStorage.Child, _ => this.child };
+    public IStorageContainer Child =>
+        this.child switch { ChildContainer childStorage => childStorage.Child, _ => this.child };
 
     /// <inheritdoc />
     public string DisplayName => this.child.DisplayName;

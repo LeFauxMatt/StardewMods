@@ -1,11 +1,10 @@
-namespace StardewMods.BetterChests.Framework.Enums;
+namespace StardewMods.Common.Services.Integrations.BetterChests.Enums;
 
 using NetEscapades.EnumGenerators;
-using StardewMods.BetterChests.Framework.Services.Features;
 
-/// <summary>The possible values for <see cref="ResizeChest" />.</summary>
+/// <summary>The possible values for Chest capacity.</summary>
 [EnumExtensions]
-internal enum CapacityOption
+public enum CapacityOption
 {
     /// <summary>Capacity is inherited by a parent config.</summary>
     Default = 0,

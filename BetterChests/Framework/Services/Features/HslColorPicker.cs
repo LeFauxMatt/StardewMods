@@ -5,11 +5,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Models;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -144,7 +144,7 @@ internal sealed class HslColorPicker : BaseFeature<HslColorPicker>
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.DefaultOptions.HslColorPicker != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.HslColorPicker != FeatureOption.Disabled;
 
     private int ColorSelection
     {
@@ -372,7 +372,7 @@ internal sealed class HslColorPicker : BaseFeature<HslColorPicker>
                 itemToDrawColored: Chest chest,
             }
             || this.itemGrabMenuManager.Top.Container is not ChestContainer container
-            || container.Options.HslColorPicker != Option.Enabled)
+            || container.Options.HslColorPicker != FeatureOption.Enabled)
         {
             this.isActive.Value = false;
             return;

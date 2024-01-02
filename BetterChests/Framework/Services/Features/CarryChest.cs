@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Locations;
 using StardewValley.Objects;
@@ -55,7 +56,7 @@ internal sealed class CarryChest : BaseFeature<CarryChest>
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.DefaultOptions.CarryChest != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.CarryChest != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -149,7 +150,7 @@ internal sealed class CarryChest : BaseFeature<CarryChest>
         if (!Game1.currentLocation.Objects.TryGetValue(e.Cursor.GrabTile, out var obj)
             || obj is not Chest chest
             || !this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, e.Cursor.GrabTile, out var container)
-            || container.Options.CarryChest != Option.Enabled)
+            || container.Options.CarryChest != FeatureOption.Enabled)
         {
             return;
         }

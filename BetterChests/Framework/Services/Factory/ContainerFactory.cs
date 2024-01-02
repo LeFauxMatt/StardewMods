@@ -6,6 +6,7 @@ using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
 using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Buildings;
 using StardewValley.GameData.BigCraftables;
@@ -15,7 +16,7 @@ using StardewValley.Objects;
 /// <summary>Provides access to all known storages for other services.</summary>
 internal sealed class ContainerFactory : BaseService
 {
-    private readonly ConditionalWeakTable<object, IContainer> cachedContainers = new();
+    private readonly ConditionalWeakTable<object, IStorageContainer> cachedContainers = new();
     private readonly IModConfig modConfig;
     private readonly ProxyChestFactory proxyChestFactory;
     private readonly Dictionary<string, IStorageOptions> storageOptions = new();
@@ -38,10 +39,10 @@ internal sealed class ContainerFactory : BaseService
     /// </summary>
     /// <param name="predicate">Optional. A function that defines the conditions of the container items to search for.</param>
     /// <returns>An enumerable collection of IContainer items that satisfy the predicate, if provided.</returns>
-    public IEnumerable<IContainer> GetAll(Func<IContainer, bool>? predicate = default)
+    public IEnumerable<IStorageContainer> GetAll(Func<IStorageContainer, bool>? predicate = default)
     {
-        var foundContainers = new HashSet<IContainer>();
-        var containerQueue = new Queue<IContainer>();
+        var foundContainers = new HashSet<IStorageContainer>();
+        var containerQueue = new Queue<IStorageContainer>();
 
         foreach (var container in this.GetAllFromPlayers(foundContainers, containerQueue, predicate))
         {
@@ -63,9 +64,9 @@ internal sealed class ContainerFactory : BaseService
     /// <param name="parentContainer">The container where the container items will be retrieved.</param>
     /// <param name="predicate">The predicate to filter the containers.</param>
     /// <returns>An enumerable collection of containers that match the predicate.</returns>
-    public IEnumerable<IContainer> GetAllFromContainer(
-        IContainer parentContainer,
-        Func<IContainer, bool>? predicate = default)
+    public IEnumerable<IStorageContainer> GetAllFromContainer(
+        IStorageContainer parentContainer,
+        Func<IStorageContainer, bool>? predicate = default)
     {
         foreach (var item in parentContainer.Items)
         {
@@ -86,9 +87,9 @@ internal sealed class ContainerFactory : BaseService
     /// <param name="location">The game location where the container will be retrieved.</param>
     /// <param name="predicate">The predicate to filter the containers.</param>
     /// <returns>An enumerable collection of containers that match the predicate.</returns>
-    public IEnumerable<IContainer> GetAllFromLocation(
+    public IEnumerable<IStorageContainer> GetAllFromLocation(
         GameLocation location,
-        Func<IContainer, bool>? predicate = default)
+        Func<IStorageContainer, bool>? predicate = default)
     {
         // Search for containers from placed objects
         foreach (var obj in location.Objects.Values)
@@ -162,7 +163,9 @@ internal sealed class ContainerFactory : BaseService
     /// <param name="farmer">The player whose container items will be retrieved.</param>
     /// <param name="predicate">The predicate to filter the containers.</param>
     /// <returns>An enumerable collection of containers that match the predicate.</returns>
-    public IEnumerable<IContainer> GetAllFromPlayer(Farmer farmer, Func<IContainer, bool>? predicate = default)
+    public IEnumerable<IStorageContainer> GetAllFromPlayer(
+        Farmer farmer,
+        Func<IStorageContainer, bool>? predicate = default)
     {
         // Get container from farmer backpack
         if (!this.TryGetOne(farmer, out var farmerContainer))
@@ -196,7 +199,10 @@ internal sealed class ContainerFactory : BaseService
     /// <param name="pos">The position of the game location where the container will be retrieved.</param>
     /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
     /// <returns>true if a container is found; otherwise, false.</returns>
-    public bool TryGetOneFromLocation(GameLocation location, Vector2 pos, [NotNullWhen(true)] out IContainer? container)
+    public bool TryGetOneFromLocation(
+        GameLocation location,
+        Vector2 pos,
+        [NotNullWhen(true)] out IStorageContainer? container)
     {
         if (!location.Objects.TryGetValue(pos, out var obj))
         {
@@ -216,7 +222,7 @@ internal sealed class ContainerFactory : BaseService
     /// <summary>Tries to retrieve a container from the active menu.</summary>
     /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
     /// <returns>true if a container is found; otherwise, false.</returns>
-    public bool TryGetOneFromMenu([NotNullWhen(true)] out IContainer? container)
+    public bool TryGetOneFromMenu([NotNullWhen(true)] out IStorageContainer? container)
     {
         if ((Game1.activeClickableMenu as ItemGrabMenu)?.context is not Chest chest)
         {
@@ -243,7 +249,7 @@ internal sealed class ContainerFactory : BaseService
     /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
     /// <param name="index">The index of the player's inventory. Defaults to the active item.</param>
     /// <returns>true if a container is found; otherwise, false.</returns>
-    public bool TryGetOneFromPlayer(Farmer farmer, [NotNullWhen(true)] out IContainer? container, int index = -1)
+    public bool TryGetOneFromPlayer(Farmer farmer, [NotNullWhen(true)] out IStorageContainer? container, int index = -1)
     {
         var item = farmer.Items.ElementAtOrDefault(index) ?? farmer.ActiveObject;
         if (item is null || !this.TryGetOne(farmer, out var farmerContainer))
@@ -272,7 +278,7 @@ internal sealed class ContainerFactory : BaseService
     /// <param name="farmer">The farmer to get a container from.</param>
     /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
     /// <returns>true if a container is found; otherwise, false.</returns>
-    public bool TryGetOne(Farmer farmer, [NotNullWhen(true)] out IContainer? container)
+    public bool TryGetOne(Farmer farmer, [NotNullWhen(true)] out IStorageContainer? container)
     {
         if (this.cachedContainers.TryGetValue(farmer, out container))
         {
@@ -288,7 +294,7 @@ internal sealed class ContainerFactory : BaseService
     /// <param name="item">The item to get a container from.</param>
     /// <param name="container">When this method returns, contains the container if found; otherwise, null.</param>
     /// <returns>true if a container is found; otherwise, false.</returns>
-    public bool TryGetOne(Item item, [NotNullWhen(true)] out IContainer? container)
+    public bool TryGetOne(Item item, [NotNullWhen(true)] out IStorageContainer? container)
     {
         if (this.cachedContainers.TryGetValue(item, out container))
         {
@@ -298,7 +304,7 @@ internal sealed class ContainerFactory : BaseService
         container = this.GetAll(Predicate).FirstOrDefault();
         return container is not null;
 
-        bool Predicate(IContainer container) =>
+        bool Predicate(IStorageContainer container) =>
             container switch
             {
                 ChestContainer chestContainer => chestContainer.Chest == item,
@@ -307,10 +313,10 @@ internal sealed class ContainerFactory : BaseService
             };
     }
 
-    private IEnumerable<IContainer> GetAllFromPlayers(
-        ISet<IContainer> foundContainers,
-        Queue<IContainer> containerQueue,
-        Func<IContainer, bool>? predicate = default)
+    private IEnumerable<IStorageContainer> GetAllFromPlayers(
+        ISet<IStorageContainer> foundContainers,
+        Queue<IStorageContainer> containerQueue,
+        Func<IStorageContainer, bool>? predicate = default)
     {
         foreach (var farmer in Game1.getAllFarmers())
         {
@@ -327,10 +333,10 @@ internal sealed class ContainerFactory : BaseService
         }
     }
 
-    private IEnumerable<IContainer> GetAllFromLocations(
-        ISet<IContainer> foundContainers,
-        Queue<IContainer> containerQueue,
-        Func<IContainer, bool>? predicate = default)
+    private IEnumerable<IStorageContainer> GetAllFromLocations(
+        ISet<IStorageContainer> foundContainers,
+        Queue<IStorageContainer> containerQueue,
+        Func<IStorageContainer, bool>? predicate = default)
     {
         var foundLocations = new HashSet<GameLocation>();
         var locationQueue = new Queue<GameLocation>();
@@ -368,10 +374,10 @@ internal sealed class ContainerFactory : BaseService
         }
     }
 
-    private IEnumerable<IContainer> GetAllFromContainers(
-        ISet<IContainer> foundContainers,
-        Queue<IContainer> containerQueue,
-        Func<IContainer, bool>? predicate = default)
+    private IEnumerable<IStorageContainer> GetAllFromContainers(
+        ISet<IStorageContainer> foundContainers,
+        Queue<IStorageContainer> containerQueue,
+        Func<IStorageContainer, bool>? predicate = default)
     {
         while (containerQueue.TryDequeue(out var container))
         {
@@ -388,7 +394,7 @@ internal sealed class ContainerFactory : BaseService
         }
     }
 
-    private bool TryGetAny(Item item, [NotNullWhen(true)] out IContainer? container)
+    private bool TryGetAny(Item item, [NotNullWhen(true)] out IStorageContainer? container)
     {
         if (this.cachedContainers.TryGetValue(item, out container))
         {

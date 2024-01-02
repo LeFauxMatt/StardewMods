@@ -2,10 +2,10 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using HarmonyLib;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
 
@@ -46,7 +46,7 @@ internal sealed class OpenHeldChest : BaseFeature<OpenHeldChest>
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.DefaultOptions.OpenHeldChest != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.OpenHeldChest != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -97,7 +97,7 @@ internal sealed class OpenHeldChest : BaseFeature<OpenHeldChest>
         if (!Context.IsPlayerFree
             || !e.Button.IsActionButton()
             || !this.containerFactory.TryGetOneFromPlayer(Game1.player, out var container)
-            || container.Options.OpenHeldChest != Option.Enabled)
+            || container.Options.OpenHeldChest != FeatureOption.Enabled)
         {
             return;
         }
@@ -112,7 +112,7 @@ internal sealed class OpenHeldChest : BaseFeature<OpenHeldChest>
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.Top.Container?.Options.OpenHeldChest != Option.Enabled)
+        if (this.itemGrabMenuManager.Top.Container?.Options.OpenHeldChest != FeatureOption.Enabled)
         {
             return;
         }

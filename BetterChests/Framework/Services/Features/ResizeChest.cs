@@ -1,8 +1,8 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using HarmonyLib;
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
 

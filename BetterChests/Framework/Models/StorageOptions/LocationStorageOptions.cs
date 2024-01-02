@@ -1,6 +1,6 @@
 namespace StardewMods.BetterChests.Framework.Models.StorageOptions;
 
-using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewValley.GameData.Locations;
 
 /// <inheritdoc />

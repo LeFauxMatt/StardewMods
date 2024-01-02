@@ -1,10 +1,10 @@
-namespace StardewMods.BetterChests.Framework.Enums;
+namespace StardewMods.Common.Services.Integrations.BetterChests.Enums;
 
 using NetEscapades.EnumGenerators;
 
 /// <summary>Indicates at what range a feature will be enabled.</summary>
 [EnumExtensions]
-internal enum RangeOption
+public enum RangeOption
 {
     /// <summary>Range is inherited from a parent config.</summary>
     Default = 0,

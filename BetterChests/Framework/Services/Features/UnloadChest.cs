@@ -1,8 +1,8 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
 
@@ -43,7 +43,7 @@ internal sealed class UnloadChest : BaseFeature<UnloadChest>
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.DefaultOptions.UnloadChest != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.UnloadChest != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate() => this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
@@ -58,13 +58,13 @@ internal sealed class UnloadChest : BaseFeature<UnloadChest>
             || !e.Button.IsUseToolButton()
             || this.inputHelper.IsSuppressed(e.Button)
             || !this.containerFactory.TryGetOneFromPlayer(Game1.player, out var containerFrom)
-            || containerFrom.Options.UnloadChest != Option.Enabled)
+            || containerFrom.Options.UnloadChest != FeatureOption.Enabled)
         {
             return;
         }
 
         if (!this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, e.Cursor.GrabTile, out var containerTo)
-            || containerTo.Options.UnloadChest != Option.Enabled)
+            || containerTo.Options.UnloadChest != FeatureOption.Enabled)
         {
             return;
         }

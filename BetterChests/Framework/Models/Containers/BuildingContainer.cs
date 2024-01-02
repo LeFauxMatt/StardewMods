@@ -1,7 +1,7 @@
 namespace StardewMods.BetterChests.Framework.Models.Containers;
 
 using Microsoft.Xna.Framework;
-using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewValley.Buildings;
 using StardewValley.Mods;
 using StardewValley.Objects;

@@ -1,10 +1,10 @@
-namespace StardewMods.BetterChests.Framework.Enums;
+namespace StardewMods.Common.Services.Integrations.BetterChests.Enums;
 
 using NetEscapades.EnumGenerators;
 
 /// <summary>Grouping type for items.</summary>
 [EnumExtensions]
-internal enum GroupBy
+public enum GroupBy
 {
     /// <summary>Default grouping.</summary>
     Default = 0,

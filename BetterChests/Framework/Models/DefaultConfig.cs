@@ -3,6 +3,7 @@
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 
 /// <summary>Mod config data for Better Chests.</summary>
 internal sealed class DefaultConfig : IModConfig
@@ -47,7 +48,7 @@ internal sealed class DefaultConfig : IModConfig
     public bool LabelChest { get; set; } = true;
 
     /// <inheritdoc />
-    public Option LockItem { get; set; }
+    public FeatureOption LockItem { get; set; }
 
     /// <inheritdoc />
     public bool LockItemHold { get; set; } = true;

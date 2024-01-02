@@ -3,9 +3,9 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
@@ -45,7 +45,7 @@ internal sealed class ChestInfo : BaseFeature<ChestInfo>
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.DefaultOptions.ChestInfo != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.ChestInfo != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -149,7 +149,7 @@ internal sealed class ChestInfo : BaseFeature<ChestInfo>
     {
         this.cachedInfo.Value.Clear();
         if (!this.containerFactory.TryGetOneFromMenu(out var container)
-            || container.Options.ChestInfo != Option.Enabled)
+            || container.Options.ChestInfo != FeatureOption.Enabled)
         {
             return;
         }

@@ -1,46 +1,46 @@
 namespace StardewMods.BetterChests.Framework.Models.StorageOptions;
 
-using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 
 /// <inheritdoc />
 internal sealed class DefaultStorageOptions : IStorageOptions
 {
     /// <inheritdoc />
-    public Option AutoOrganize { get; set; } = Option.Enabled;
+    public FeatureOption AutoOrganize { get; set; } = FeatureOption.Enabled;
 
     /// <inheritdoc />
-    public Option CarryChest { get; set; } = Option.Enabled;
+    public FeatureOption CarryChest { get; set; } = FeatureOption.Enabled;
 
     /// <inheritdoc />
-    public Option CategorizeChest { get; set; } = Option.Enabled;
+    public FeatureOption CategorizeChest { get; set; } = FeatureOption.Enabled;
 
     /// <inheritdoc />
     public HashSet<string> CategorizeChestTags { get; set; } = [];
 
     /// <inheritdoc />
-    public Option ChestFinder { get; set; } = Option.Enabled;
+    public FeatureOption ChestFinder { get; set; } = FeatureOption.Enabled;
 
     /// <inheritdoc />
-    public Option ChestInfo { get; set; } = Option.Disabled;
+    public FeatureOption ChestInfo { get; set; } = FeatureOption.Disabled;
 
     /// <inheritdoc />
     public string ChestLabel { get; set; } = string.Empty;
 
     /// <inheritdoc />
-    public Option CollectItems { get; set; } = Option.Disabled;
+    public FeatureOption CollectItems { get; set; } = FeatureOption.Disabled;
 
     /// <inheritdoc />
-    public Option ConfigureChest { get; set; } = Option.Enabled;
+    public FeatureOption ConfigureChest { get; set; } = FeatureOption.Enabled;
 
     /// <inheritdoc />
     public RangeOption CraftFromChest { get; set; } = RangeOption.Location;
 
     /// <inheritdoc />
-    public Option HslColorPicker { get; set; } = Option.Enabled;
+    public FeatureOption HslColorPicker { get; set; } = FeatureOption.Enabled;
 
     /// <inheritdoc />
-    public Option InventoryTabs { get; set; } = Option.Enabled;
+    public FeatureOption InventoryTabs { get; set; } = FeatureOption.Enabled;
 
     /// <inheritdoc />
     public HashSet<string> InventoryTabList { get; set; } =
@@ -49,10 +49,10 @@ internal sealed class DefaultStorageOptions : IStorageOptions
     ];
 
     /// <inheritdoc />
-    public Option OpenHeldChest { get; set; } = Option.Enabled;
+    public FeatureOption OpenHeldChest { get; set; } = FeatureOption.Enabled;
 
     /// <inheritdoc />
-    public Option OrganizeItems { get; set; } = Option.Disabled;
+    public FeatureOption OrganizeItems { get; set; } = FeatureOption.Disabled;
 
     /// <inheritdoc />
     public GroupBy OrganizeItemsGroupBy { get; set; } = GroupBy.Default;
@@ -64,7 +64,7 @@ internal sealed class DefaultStorageOptions : IStorageOptions
     public CapacityOption ResizeChest { get; set; } = CapacityOption.Large;
 
     /// <inheritdoc />
-    public Option SearchItems { get; set; } = Option.Enabled;
+    public FeatureOption SearchItems { get; set; } = FeatureOption.Enabled;
 
     /// <inheritdoc />
     public RangeOption StashToChest { get; set; } = RangeOption.Location;
@@ -73,10 +73,10 @@ internal sealed class DefaultStorageOptions : IStorageOptions
     public int StashToChestPriority { get; set; }
 
     /// <inheritdoc />
-    public Option TransferItems { get; set; } = Option.Enabled;
+    public FeatureOption TransferItems { get; set; } = FeatureOption.Enabled;
 
     /// <inheritdoc />
-    public Option UnloadChest { get; set; } = Option.Disabled;
+    public FeatureOption UnloadChest { get; set; } = FeatureOption.Disabled;
 
     /// <inheritdoc />
     public string GetDescription() => I18n.Storage_Other_Tooltip();

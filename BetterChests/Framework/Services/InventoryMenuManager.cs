@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
@@ -54,7 +55,7 @@ internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
     public InventoryMenu.highlightThisItem OriginalHighlightMethod { get; set; } = InventoryMenu.highlightAllItems;
 
     /// <inheritdoc />
-    public IContainer? Container { get; set; }
+    public IStorageContainer? Container { get; set; }
 
     /// <inheritdoc />
     public int Scrolled { get; set; }

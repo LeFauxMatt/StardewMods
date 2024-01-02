@@ -2,9 +2,9 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewValley.Locations;
@@ -209,7 +209,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
         Game1.playSound("Ship");
         return;
 
-        bool Predicate(IContainer container) =>
+        bool Predicate(IStorageContainer container) =>
             container.Options.StashToChest is not (RangeOption.Disabled or RangeOption.Default)
             && container.Items.Count < container.Capacity
             && !this.Config.StashToChestDisableLocations.Contains(Game1.player.currentLocation.Name)
@@ -222,7 +222,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
                 container.TileLocation);
     }
 
-    private void StashIntoContainer(IContainer containerTo)
+    private void StashIntoContainer(IStorageContainer containerTo)
     {
         if (!this.containerFactory.TryGetOne(Game1.player, out var containerFrom))
         {

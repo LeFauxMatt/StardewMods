@@ -7,6 +7,7 @@ using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewMods.BetterChests.Framework.UI;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
@@ -58,7 +59,7 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.DefaultOptions.SearchItems != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.SearchItems != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -124,7 +125,7 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.Top.Container?.Options.SearchItems != Option.Enabled
+        if (this.itemGrabMenuManager.Top.Container?.Options.SearchItems != FeatureOption.Enabled
             || !this.Config.Controls.ToggleSearch.JustPressed())
         {
             return;
@@ -158,7 +159,7 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.Top.Menu is null
-            || this.itemGrabMenuManager.Top.Container?.Options.SearchItems != Option.Enabled)
+            || this.itemGrabMenuManager.Top.Container?.Options.SearchItems != FeatureOption.Enabled)
         {
             this.isActive.Value = false;
             this.searchBar.Value.Clear();

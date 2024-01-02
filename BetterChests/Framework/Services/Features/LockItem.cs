@@ -3,9 +3,9 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.Common.Extensions;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
@@ -42,7 +42,7 @@ internal sealed class LockItem : BaseFeature<LockItem>
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.LockItem != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.LockItem != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()

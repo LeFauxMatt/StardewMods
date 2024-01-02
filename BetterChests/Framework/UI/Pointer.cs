@@ -2,17 +2,17 @@ namespace StardewMods.BetterChests.Framework.UI;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 
 /// <summary>Overlay which points to an object on the map.</summary>
 internal sealed class Pointer
 {
     /// <summary>Initializes a new instance of the <see cref="Pointer" /> class.</summary>
     /// <param name="container">The container that the pointer points to.</param>
-    public Pointer(IContainer container) => this.Container = container;
+    public Pointer(IStorageContainer container) => this.Container = container;
 
     /// <summary>Gets the container that the pointer points to.</summary>
-    public IContainer Container { get; }
+    public IStorageContainer Container { get; }
 
     /// <summary>Draws the sprite representing the object on the screen.</summary>
     /// <param name="spriteBatch">The sprite batch used for drawing.</param>

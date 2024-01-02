@@ -1,7 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Framework;
 
 using Microsoft.Xna.Framework;
-using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 
 /// <summary>Extension methods for Better Chests.</summary>
 internal static class Extensions

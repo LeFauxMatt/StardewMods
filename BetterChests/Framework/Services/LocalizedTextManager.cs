@@ -3,6 +3,7 @@ namespace StardewMods.BetterChests.Framework.Services;
 using System.Globalization;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Helper methods to convert between different text formats.</summary>
@@ -59,54 +60,54 @@ internal sealed class LocalizedTextManager : BaseService
     /// <summary>Formats a method value using localized text when available.</summary>
     /// <param name="value">The method value to format.</param>
     /// <returns>Localized text for the method value.</returns>
-    public string Method(string value) =>
-        (MethodExtensions.TryParse(value, out var method) ? method : Enums.Method.Default) switch
+    public string FormatMethod(string value) =>
+        (MethodExtensions.TryParse(value, out var method) ? method : Method.Default) switch
         {
-            Enums.Method.Sorted => I18n.Method_Sorted_Name(),
-            Enums.Method.GrayedOut => I18n.Method_GrayedOut_Name(),
-            Enums.Method.Hidden => I18n.Method_Hidden_Name(),
+            Method.Sorted => I18n.Method_Sorted_Name(),
+            Method.GrayedOut => I18n.Method_GrayedOut_Name(),
+            Method.Hidden => I18n.Method_Hidden_Name(),
             _ => I18n.Option_Default_Name(),
         };
 
     /// <summary>Formats an option value using localized text when available.</summary>
     /// <param name="value">The option value to format.</param>
     /// <returns>Localized text for the option value.</returns>
-    public string Option(string value) =>
-        (OptionExtensions.TryParse(value, out var option) ? option : Enums.Option.Default) switch
+    public string FormatOption(string value) =>
+        (FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default) switch
         {
-            Enums.Option.Disabled => I18n.Option_Disabled_Name(),
-            Enums.Option.Enabled => I18n.Option_Enabled_Name(),
+            FeatureOption.Disabled => I18n.Option_Disabled_Name(),
+            FeatureOption.Enabled => I18n.Option_Enabled_Name(),
             _ => I18n.Option_Default_Name(),
         };
 
     /// <summary>Formats a group by value using localized text when available.</summary>
     /// <param name="value">The group by value to format.</param>
     /// <returns>Localized text for the group by value.</returns>
-    public string GroupBy(string value) =>
-        (GroupByExtensions.TryParse(value, out var groupBy) ? groupBy : Enums.GroupBy.Default) switch
+    public string FormatGroupBy(string value) =>
+        (GroupByExtensions.TryParse(value, out var groupBy) ? groupBy : GroupBy.Default) switch
         {
-            Enums.GroupBy.Category => I18n.GroupBy_Category_Name(),
-            Enums.GroupBy.Color => I18n.GroupBy_Color_Name(),
-            Enums.GroupBy.Name => I18n.SortBy_Name_Name(),
+            GroupBy.Category => I18n.GroupBy_Category_Name(),
+            GroupBy.Color => I18n.GroupBy_Color_Name(),
+            GroupBy.Name => I18n.SortBy_Name_Name(),
             _ => I18n.Option_Default_Name(),
         };
 
     /// <summary>Formats a sort by value using localized text when available.</summary>
     /// <param name="value">The sort by value to format.</param>
     /// <returns>Localized text for the sort by value.</returns>
-    public string SortBy(string value) =>
-        (SortByExtensions.TryParse(value, out var sortBy) ? sortBy : Enums.SortBy.Default) switch
+    public string FormatSortBy(string value) =>
+        (SortByExtensions.TryParse(value, out var sortBy) ? sortBy : SortBy.Default) switch
         {
-            Enums.SortBy.Type => I18n.SortBy_Type_Name(),
-            Enums.SortBy.Quality => I18n.SortBy_Quality_Name(),
-            Enums.SortBy.Quantity => I18n.SortBy_Quantity_Name(),
+            SortBy.Type => I18n.SortBy_Type_Name(),
+            SortBy.Quality => I18n.SortBy_Quality_Name(),
+            SortBy.Quantity => I18n.SortBy_Quantity_Name(),
             _ => I18n.Option_Default_Name(),
         };
 
     /// <summary>Formats a range value using localized text when available.</summary>
     /// <param name="value">The range value to format.</param>
     /// <returns>Localized text for the range value.</returns>
-    public string Range(string value) =>
+    public string FormatRange(string value) =>
         (RangeOptionExtensions.TryParse(value, out var rangeOption) ? rangeOption : RangeOption.Default) switch
         {
             RangeOption.Disabled => I18n.Option_Disabled_Name(),

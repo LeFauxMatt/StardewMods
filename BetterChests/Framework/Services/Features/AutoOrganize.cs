@@ -1,9 +1,9 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Automatically organizes items between chests during sleep.</summary>
@@ -35,7 +35,7 @@ internal sealed class AutoOrganize : BaseFeature<AutoOrganize>
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.DefaultOptions.AutoOrganize != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.AutoOrganize != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate() => this.modEvents.GameLoop.DayEnding += this.OnDayEnding;
@@ -48,14 +48,14 @@ internal sealed class AutoOrganize : BaseFeature<AutoOrganize>
     private void OrganizeAll()
     {
         var containerGroupsTo = this
-            .containerFactory.GetAll(container => container.Options.AutoOrganize == Option.Enabled)
+            .containerFactory.GetAll(container => container.Options.AutoOrganize == FeatureOption.Enabled)
             .GroupBy(container => container.Options.StashToChestPriority)
             .ToDictionary(containerGroup => containerGroup.Key, group => group.ToList());
 
-        var containerGroupsFrom = new Dictionary<int, List<IContainer>>();
+        var containerGroupsFrom = new Dictionary<int, List<IStorageContainer>>();
         foreach (var (priority, containers) in containerGroupsTo)
         {
-            containerGroupsFrom.Add(priority, new List<IContainer>(containers));
+            containerGroupsFrom.Add(priority, new List<IStorageContainer>(containers));
         }
 
         var topPriority = containerGroupsTo.Keys.Max();

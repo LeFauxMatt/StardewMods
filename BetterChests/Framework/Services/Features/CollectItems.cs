@@ -3,9 +3,9 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Debris such as mined or farmed items can be collected into a Chest in the farmer's inventory.</summary>
@@ -15,7 +15,7 @@ internal sealed class CollectItems : BaseFeature<CollectItems>
     private static CollectItems instance;
 #nullable enable
 
-    private readonly PerScreen<List<IContainer>> cachedContainers = new(() => []);
+    private readonly PerScreen<List<IStorageContainer>> cachedContainers = new(() => []);
     private readonly ContainerFactory containerFactory;
     private readonly Harmony harmony;
     private readonly IInputHelper inputHelper;
@@ -48,7 +48,7 @@ internal sealed class CollectItems : BaseFeature<CollectItems>
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.DefaultOptions.CollectItems != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.CollectItems != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -147,7 +147,7 @@ internal sealed class CollectItems : BaseFeature<CollectItems>
         this.cachedContainers.Value.Clear();
         foreach (var storage in this.containerFactory.GetAllFromPlayer(
             Game1.player,
-            container => container.Options.ChestFinder == Option.Enabled))
+            container => container.Options.ChestFinder == FeatureOption.Enabled))
         {
             this.cachedContainers.Value.Add(storage);
         }

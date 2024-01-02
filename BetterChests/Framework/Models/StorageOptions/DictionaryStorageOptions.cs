@@ -2,9 +2,9 @@ namespace StardewMods.BetterChests.Framework.Models.StorageOptions;
 
 using System.Globalization;
 using NetEscapades.EnumGenerators;
-using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.Common.Extensions;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 
 /// <inheritdoc />
 internal abstract class DictionaryStorageOptions : IStorageOptions
@@ -14,25 +14,25 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     private readonly Dictionary<string, CachedValue<HashSet<string>>> cachedHashSet = new();
     private readonly Dictionary<string, CachedValue<int>> cachedInt = new();
 
-    private readonly Dictionary<string, CachedValue<Option>> cachedOption = new();
+    private readonly Dictionary<string, CachedValue<FeatureOption>> cachedOption = new();
     private readonly Dictionary<string, CachedValue<RangeOption>> cachedRangeOption = new();
 
     /// <inheritdoc />
-    public Option AutoOrganize
+    public FeatureOption AutoOrganize
     {
         get => this.Get(OptionKey.AutoOrganize);
         set => this.Set(OptionKey.AutoOrganize, value);
     }
 
     /// <inheritdoc />
-    public Option CarryChest
+    public FeatureOption CarryChest
     {
         get => this.Get(OptionKey.CarryChest);
         set => this.Set(OptionKey.CarryChest, value);
     }
 
     /// <inheritdoc />
-    public Option CategorizeChest
+    public FeatureOption CategorizeChest
     {
         get => this.Get(OptionKey.CategorizeChest);
         set => this.Set(OptionKey.CategorizeChest, value);
@@ -46,14 +46,14 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public Option ChestFinder
+    public FeatureOption ChestFinder
     {
         get => this.Get(OptionKey.ChestFinder);
         set => this.Set(OptionKey.ChestFinder, value);
     }
 
     /// <inheritdoc />
-    public Option ChestInfo
+    public FeatureOption ChestInfo
     {
         get => this.Get(OptionKey.ChestInfo);
         set => this.Set(OptionKey.ChestInfo, value);
@@ -67,14 +67,14 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public Option CollectItems
+    public FeatureOption CollectItems
     {
         get => this.Get(OptionKey.CollectItems);
         set => this.Set(OptionKey.CollectItems, value);
     }
 
     /// <inheritdoc />
-    public Option ConfigureChest
+    public FeatureOption ConfigureChest
     {
         get => this.Get(OptionKey.ConfigureChest);
         set => this.Set(OptionKey.ConfigureChest, value);
@@ -88,14 +88,14 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public Option HslColorPicker
+    public FeatureOption HslColorPicker
     {
         get => this.Get(OptionKey.HslColorPicker);
         set => this.Set(OptionKey.HslColorPicker, value);
     }
 
     /// <inheritdoc />
-    public Option InventoryTabs
+    public FeatureOption InventoryTabs
     {
         get => this.Get(OptionKey.InventoryTabs);
         set => this.Set(OptionKey.InventoryTabs, value);
@@ -109,14 +109,14 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public Option OpenHeldChest
+    public FeatureOption OpenHeldChest
     {
         get => this.Get(OptionKey.OpenHeldChest);
         set => this.Set(OptionKey.OpenHeldChest, value);
     }
 
     /// <inheritdoc />
-    public Option OrganizeItems
+    public FeatureOption OrganizeItems
     {
         get => this.Get(OptionKey.OrganizeItems);
         set => this.Set(OptionKey.OrganizeItems, value);
@@ -139,7 +139,7 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public Option SearchItems
+    public FeatureOption SearchItems
     {
         get => this.Get(OptionKey.SearchItems);
         set => this.Set(OptionKey.SearchItems, value);
@@ -160,14 +160,14 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public Option TransferItems
+    public FeatureOption TransferItems
     {
         get => this.Get(OptionKey.TransferItems);
         set => this.Set(OptionKey.TransferItems, value);
     }
 
     /// <inheritdoc />
-    public Option UnloadChest
+    public FeatureOption UnloadChest
     {
         get => this.Get(OptionKey.UnloadChest);
         set => this.Set(OptionKey.UnloadChest, value);
@@ -193,12 +193,12 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     /// <param name="value">The value to be set.</param>
     protected abstract void SetValue(string key, string value);
 
-    private Option Get(OptionKey optionKey)
+    private FeatureOption Get(OptionKey optionKey)
     {
         var key = DictionaryStorageOptions.Prefix + optionKey.ToStringFast();
         if (!this.TryGetValue(key, out var value))
         {
-            return Option.Default;
+            return FeatureOption.Default;
         }
 
         // Return from cache
@@ -208,8 +208,8 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
         }
 
         // Save to cache
-        var newValue = OptionExtensions.TryParse(value, out var option) ? option : Option.Default;
-        this.cachedOption[key] = new CachedValue<Option>(value, newValue);
+        var newValue = FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default;
+        this.cachedOption[key] = new CachedValue<FeatureOption>(value, newValue);
         return newValue;
     }
 
@@ -279,11 +279,11 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
         return !this.TryGetValue(key, out var value) ? string.Empty : value;
     }
 
-    private void Set(OptionKey optionKey, Option value)
+    private void Set(OptionKey optionKey, FeatureOption value)
     {
         var key = DictionaryStorageOptions.Prefix + optionKey.ToStringFast();
-        var stringValue = value == Option.Default ? string.Empty : value.ToStringFast();
-        this.cachedOption[key] = new CachedValue<Option>(stringValue, value);
+        var stringValue = value == FeatureOption.Default ? string.Empty : value.ToStringFast();
+        this.cachedOption[key] = new CachedValue<FeatureOption>(stringValue, value);
         this.SetValue(key, stringValue);
     }
 

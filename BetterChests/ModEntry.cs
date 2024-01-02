@@ -52,7 +52,6 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<AutomateIntegration>();
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
         this.container.RegisterSingleton<ConfigManager, ConfigManager>();
-        this.container.RegisterSingleton<ConfigMenuManager>();
         this.container.RegisterSingleton<ContainerFactory>();
         this.container.RegisterSingleton<ContainerHandler>();
         this.container.RegisterSingleton<FuryCoreIntegration>();

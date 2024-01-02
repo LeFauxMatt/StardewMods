@@ -8,6 +8,7 @@ using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
@@ -49,7 +50,7 @@ internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.DefaultOptions.InventoryTabs != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.InventoryTabs != FeatureOption.Disabled;
 
     /// <inheritdoc />
     public bool MatchesFilter(Item item) =>
@@ -234,7 +235,7 @@ internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.Top.Container?.Options.InventoryTabs != Option.Enabled)
+        if (this.itemGrabMenuManager.Top.Container?.Options.InventoryTabs != FeatureOption.Enabled)
         {
             this.isActive.Value = false;
             this.newIndex.Value = -1;
@@ -254,7 +255,7 @@ internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
         if (this.itemGrabMenuManager.CurrentMenu is null
             || this.itemGrabMenuManager.Top.Menu is null
             || this.itemGrabMenuManager.Top.Container is null
-            || this.itemGrabMenuManager.Top.Container.Options.InventoryTabs != Option.Enabled
+            || this.itemGrabMenuManager.Top.Container.Options.InventoryTabs != FeatureOption.Enabled
             || !this.itemGrabMenuManager.Top.Container.Options.InventoryTabList.Any())
         {
             return;

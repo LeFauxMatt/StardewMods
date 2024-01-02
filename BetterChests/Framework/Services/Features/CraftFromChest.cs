@@ -4,10 +4,10 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewValley.Locations;
@@ -145,7 +145,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
         var containers = CraftFromChest.instance.containerFactory.GetAll(Predicate).OfType<ChestContainer>().ToList();
         return containers.Count > 0 ? containers.Select(container => container.Chest).ToList() : null;
 
-        bool Predicate(IContainer container) =>
+        bool Predicate(IStorageContainer container) =>
             container.Options.CraftFromChest is not (RangeOption.Disabled or RangeOption.Default)
             && container.Items.Count > 0
             && !CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains(
@@ -197,7 +197,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
         }
     }
 
-    private void OpenCraftingMenu(Func<IContainer, bool> predicate)
+    private void OpenCraftingMenu(Func<IStorageContainer, bool> predicate)
     {
         var containers = this.containerFactory.GetAll(predicate).ToList();
         if (containers.Count == 0)
@@ -224,7 +224,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
             });
     }
 
-    private bool DefaultPredicate(IContainer container) =>
+    private bool DefaultPredicate(IStorageContainer container) =>
         container.Options.CraftFromChest is not (RangeOption.Disabled or RangeOption.Default)
         && container.Items.Count > 0
         && !this.Config.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
@@ -236,7 +236,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
             container.Location,
             container.TileLocation);
 
-    private bool WorkbenchPredicate(IContainer container) =>
+    private bool WorkbenchPredicate(IStorageContainer container) =>
         container.Options.CraftFromChest is not RangeOption.Disabled
         && container.Items.Count > 0
         && !CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)

@@ -3,6 +3,7 @@ namespace StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 
 /// <summary>Mod config data for Better Chests.</summary>
 internal interface IModConfig
@@ -47,7 +48,7 @@ internal interface IModConfig
     public bool LabelChest { get; }
 
     /// <summary>Gets a value indicating whether the slot lock feature is enabled.</summary>
-    public Option LockItem { get; }
+    public FeatureOption LockItem { get; }
 
     /// <summary>Gets a value indicating whether the slot lock button needs to be held down.</summary>
     public bool LockItemHold { get; }

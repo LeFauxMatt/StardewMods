@@ -1,17 +1,17 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using System.Runtime.CompilerServices;
-using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Transient;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <summary>Restricts what items can be added into a chest.</summary>
 internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
 {
-    private readonly ConditionalWeakTable<IContainer, ItemMatcher> cachedItemMatchers = new();
+    private readonly ConditionalWeakTable<IStorageContainer, ItemMatcher> cachedItemMatchers = new();
     private readonly ContainerHandler containerHandler;
     private readonly ItemGrabMenuManager itemGrabMenuManager;
     private readonly ItemMatcherFactory itemMatcherFactory;
@@ -38,7 +38,7 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.DefaultOptions.CategorizeChest != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.CategorizeChest != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -58,13 +58,13 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
     {
-        if (this.itemGrabMenuManager.Top.Container?.Options.CategorizeChest == Option.Enabled)
+        if (this.itemGrabMenuManager.Top.Container?.Options.CategorizeChest == FeatureOption.Enabled)
         {
             var itemMatcher = this.GetOrCreateItemMatcher(this.itemGrabMenuManager.Top.Container);
             this.itemGrabMenuManager.Bottom.AddHighlightMethod(itemMatcher.MatchesFilter);
         }
 
-        if (this.itemGrabMenuManager.Bottom.Container?.Options.CategorizeChest == Option.Enabled)
+        if (this.itemGrabMenuManager.Bottom.Container?.Options.CategorizeChest == FeatureOption.Enabled)
         {
             var itemMatcher = this.GetOrCreateItemMatcher(this.itemGrabMenuManager.Bottom.Container);
             this.itemGrabMenuManager.Top.AddHighlightMethod(itemMatcher.MatchesFilter);
@@ -73,7 +73,7 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
 
     private void OnItemTransferring(object? sender, ItemTransferringEventArgs e)
     {
-        if (e.Into.Options.CategorizeChest != Option.Enabled)
+        if (e.Into.Options.CategorizeChest != FeatureOption.Enabled)
         {
             return;
         }
@@ -98,7 +98,7 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
         }
     }
 
-    private ItemMatcher GetOrCreateItemMatcher(IContainer container)
+    private ItemMatcher GetOrCreateItemMatcher(IStorageContainer container)
     {
         if (!this.cachedItemMatchers.TryGetValue(container, out var itemMatcher))
         {

@@ -1,54 +1,54 @@
-namespace StardewMods.BetterChests.Framework.Interfaces;
+namespace StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 
-using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 
 /// <summary>Configurable options for a storage container.</summary>
-internal interface IStorageOptions
+public interface IStorageOptions
 {
     /// <summary>Gets or sets a value indicating if the chest can be automatically organized overnight.</summary>
-    public Option AutoOrganize { get; set; }
+    public FeatureOption AutoOrganize { get; set; }
 
     /// <summary>Gets or sets a value indicating if the chest can be carried by the player.</summary>
-    public Option CarryChest { get; set; }
+    public FeatureOption CarryChest { get; set; }
 
     /// <summary>Gets or sets a value indicating if can have categories added to it, and which items can be added.</summary>
-    public Option CategorizeChest { get; set; }
+    public FeatureOption CategorizeChest { get; set; }
 
     /// <summary>Gets or sets a value indicating what categories of items are allowed in the chest.</summary>
     public HashSet<string> CategorizeChestTags { get; set; }
 
     /// <summary>Gets or sets a value indicating whether chests  in the current location can be searched for.</summary>
-    public Option ChestFinder { get; set; }
+    public FeatureOption ChestFinder { get; set; }
 
     /// <summary>Gets or sets a value indicating whether chest info will be displayed next to the chest menu.</summary>
-    public Option ChestInfo { get; set; }
+    public FeatureOption ChestInfo { get; set; }
 
     /// <summary>Gets or sets a value indicating the label for a chest.</summary>
     public string ChestLabel { get; set; }
 
     /// <summary>Gets or sets a value indicating if the chest can collect dropped items.</summary>
-    public Option CollectItems { get; set; }
+    public FeatureOption CollectItems { get; set; }
 
     /// <summary>Gets or sets a value indicating whether chests can be configured.</summary>
-    public Option ConfigureChest { get; set; }
+    public FeatureOption ConfigureChest { get; set; }
 
     /// <summary>Gets or sets a value indicating if the chest can be remotely crafted from.</summary>
     public RangeOption CraftFromChest { get; set; }
 
     /// <summary>Gets or sets a value indicating if the color picker will be replaced by an hsl color picker.</summary>
-    public Option HslColorPicker { get; set; }
+    public FeatureOption HslColorPicker { get; set; }
 
     /// <summary>Gets or sets a value indicating if tabs can be added to the chest menu.</summary>
-    public Option InventoryTabs { get; set; }
+    public FeatureOption InventoryTabs { get; set; }
 
     /// <summary>Gets or sets a value indicating which tabs will be added to the chest menu.</summary>
     public HashSet<string> InventoryTabList { get; set; }
 
     /// <summary>Gets or sets a value indicating if the chest can be opened while it's being carried in the players inventory.</summary>
-    public Option OpenHeldChest { get; set; }
+    public FeatureOption OpenHeldChest { get; set; }
 
     /// <summary>Gets or sets a value indicating if the chest can be organized with custom sorting/grouping.</summary>
-    public Option OrganizeItems { get; set; }
+    public FeatureOption OrganizeItems { get; set; }
 
     /// <summary>Gets or sets a value indicating how items will be grouped when organized.</summary>
     public GroupBy OrganizeItemsGroupBy { get; set; }
@@ -60,7 +60,7 @@ internal interface IStorageOptions
     public CapacityOption ResizeChest { get; set; }
 
     /// <summary>Gets or sets a value indicating if a search bar will be added to the chest menu.</summary>
-    public Option SearchItems { get; set; }
+    public FeatureOption SearchItems { get; set; }
 
     /// <summary>Gets or sets a value indicating if the chest can be remotely stashed into.</summary>
     public RangeOption StashToChest { get; set; }
@@ -69,10 +69,10 @@ internal interface IStorageOptions
     public int StashToChestPriority { get; set; }
 
     /// <summary>Gets or sets a value indicating whether to add button for transferring items to/from a chest.</summary>
-    public Option TransferItems { get; set; }
+    public FeatureOption TransferItems { get; set; }
 
     /// <summary>Gets or sets a value indicating if the chest can have its inventory unloaded into another chest.</summary>
-    public Option UnloadChest { get; set; }
+    public FeatureOption UnloadChest { get; set; }
 
     /// <summary>Gets the name of the storage.</summary>
     /// <returns>Returns the name.</returns>

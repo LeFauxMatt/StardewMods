@@ -1,10 +1,10 @@
-namespace StardewMods.BetterChests.Framework.Enums;
+namespace StardewMods.Common.Services.Integrations.BetterChests.Enums;
 
 using NetEscapades.EnumGenerators;
 
 /// <summary>Sorting type for items.</summary>
 [EnumExtensions]
-internal enum SortBy
+public enum SortBy
 {
     /// <summary>Default sorting.</summary>
     Default = 0,

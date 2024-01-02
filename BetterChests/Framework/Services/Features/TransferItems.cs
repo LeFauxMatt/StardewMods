@@ -4,9 +4,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Enums;
-using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
 
@@ -71,7 +71,7 @@ internal sealed class TransferItems : BaseFeature<TransferItems>
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.DefaultOptions.TransferItems != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.TransferItems != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -91,7 +91,7 @@ internal sealed class TransferItems : BaseFeature<TransferItems>
         this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
     }
 
-    private void Transfer(IContainer containerFrom, IContainer containerTo)
+    private void Transfer(IStorageContainer containerFrom, IStorageContainer containerTo)
     {
         if (!this.containerHandler.Transfer(containerFrom, containerTo, out var amounts, true))
         {
@@ -147,8 +147,8 @@ internal sealed class TransferItems : BaseFeature<TransferItems>
 
         var top = this.itemGrabMenuManager.Top;
         var bottom = this.itemGrabMenuManager.Bottom;
-        this.upArrow.Value.visible = top.Container?.Options.TransferItems == Option.Enabled;
-        this.downArrow.Value.visible = bottom.Container?.Options.TransferItems == Option.Enabled;
+        this.upArrow.Value.visible = top.Container?.Options.TransferItems == FeatureOption.Enabled;
+        this.downArrow.Value.visible = bottom.Container?.Options.TransferItems == FeatureOption.Enabled;
 
         if (this.upArrow.Value.visible)
         {

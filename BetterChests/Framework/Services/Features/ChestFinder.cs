@@ -3,11 +3,11 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewMods.BetterChests.Framework.UI;
+using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewValley.Menus;
@@ -70,7 +70,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
     }
 
     /// <inheritdoc />
-    public override bool ShouldBeActive => this.Config.DefaultOptions.ChestFinder != Option.Disabled;
+    public override bool ShouldBeActive => this.Config.DefaultOptions.ChestFinder != FeatureOption.Disabled;
 
     /// <inheritdoc />
     protected override void Activate()
@@ -282,7 +282,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
         foreach (var container in this
             .containerFactory.GetAllFromLocation(
                 Game1.player.currentLocation,
-                container => container.Options.ChestFinder == Option.Enabled)
+                container => container.Options.ChestFinder == FeatureOption.Enabled)
             .Where(container => container is ChestContainer or ObjectContainer))
         {
             if (container.Items.Any(this.itemMatcher.Value.MatchesFilter))

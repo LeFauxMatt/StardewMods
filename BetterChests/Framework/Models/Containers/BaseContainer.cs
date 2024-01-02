@@ -3,12 +3,13 @@ namespace StardewMods.BetterChests.Framework.Models.Containers;
 using Microsoft.Xna.Framework;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewValley.Inventories;
 using StardewValley.Mods;
 using StardewValley.Network;
 
-/// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IContainer{TSource}" />
-internal abstract class BaseContainer<TSource> : BaseContainer, IContainer<TSource>
+/// <inheritdoc cref="IStorageContainer{TSource}" />
+internal abstract class BaseContainer<TSource> : BaseContainer, IStorageContainer<TSource>
     where TSource : class
 {
     /// <summary>Initializes a new instance of the <see cref="BaseContainer{TSource}" /> class.</summary>
@@ -24,7 +25,7 @@ internal abstract class BaseContainer<TSource> : BaseContainer, IContainer<TSour
 }
 
 /// <inheritdoc />
-internal abstract class BaseContainer : IContainer
+internal abstract class BaseContainer : IStorageContainer
 {
     private readonly IStorageOptions baseOptions;
     private readonly Lazy<IStorageOptions> storageOptions;
