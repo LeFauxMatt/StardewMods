@@ -2,6 +2,7 @@ namespace StardewMods.EasyAccess.Framework.Services;
 
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Extensions;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
@@ -59,36 +60,18 @@ internal sealed class DispenseService : BaseService<DispenseService>
             return;
         }
 
-        var (pX, pY) = Game1.player.Tile;
-        for (var tY = (int)(pY - this.modConfig.DispenseInputDistance);
-            tY <= (int)(pY + this.modConfig.DispenseInputDistance);
-            ++tY)
+        foreach (var pos in Game1.player.Tile.Box(this.modConfig.DispenseInputDistance))
         {
-            for (var tX = (int)(pX - this.modConfig.DispenseInputDistance);
-                tX <= (int)(pX + this.modConfig.DispenseInputDistance);
-                ++tX)
+            if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+                || (obj.Type?.Equals("Crafting", StringComparison.OrdinalIgnoreCase) != true
+                    && obj.Type?.Equals("interactive", StringComparison.OrdinalIgnoreCase) != true)
+                || !obj.performObjectDropInAction(Game1.player.CurrentItem, false, Game1.player))
             {
-                if (Math.Abs(tX - pX) + Math.Abs(tY - pY) > this.modConfig.CollectOutputDistance)
-                {
-                    continue;
-                }
-
-                var pos = new Vector2(tX, tY);
-
-                // Big Craftables
-                if (!Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
-                    || (obj.Type?.Equals("Crafting", StringComparison.OrdinalIgnoreCase) != true
-                        && obj.Type?.Equals("interactive", StringComparison.OrdinalIgnoreCase) != true)
-                    || !obj.performObjectDropInAction(Game1.player.CurrentItem, false, Game1.player))
-                {
-                    continue;
-                }
-
-                Game1.player.reduceActiveItemByOne();
-                this.Log.Info(
-                    "Dispensed {0} into producer {1}.",
-                    [Game1.player.CurrentItem.DisplayName, obj.DisplayName]);
+                continue;
             }
+
+            Game1.player.reduceActiveItemByOne();
+            this.Log.Info("Dispensed {0} into producer {1}.", [Game1.player.CurrentItem.DisplayName, obj.DisplayName]);
         }
     }
 

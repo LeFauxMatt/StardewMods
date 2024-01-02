@@ -3,6 +3,7 @@ namespace StardewMods.FuryCore.Framework.Services;
 using System.Globalization;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.FuryCore.Framework.Interfaces;
 
 /// <inheritdoc />
 internal sealed class Log : ILog

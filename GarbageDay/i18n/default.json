@@ -2,6 +2,6 @@
   "GarbageCan.name": "Garbage Can",
   "GarbageCan.description":  "Villagers throw their trash in here. You can find some interesting things in here.",
 
-  "button.garbage-fill.name": "Fill all Garbage Cans.",
+  "button.garbage-fill.name": "Fill nearby Garbage Can.",
   "button.garbage-hat.name": "Trigger Trash Can Lid event."
 }

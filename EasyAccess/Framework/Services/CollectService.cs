@@ -2,6 +2,7 @@ namespace StardewMods.EasyAccess.Framework.Services;
 
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Extensions;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
@@ -54,111 +55,96 @@ internal sealed class CollectService : BaseService<CollectService>
 
     private void CollectItems()
     {
-        var (pX, pY) = Game1.player.Tile;
-        for (var tY = (int)(pY - this.modConfig.CollectOutputDistance);
-            tY <= (int)(pY + this.modConfig.CollectOutputDistance);
-            ++tY)
+        foreach (var pos in Game1.player.Tile.Box(this.modConfig.CollectOutputDistance))
         {
-            for (var tX = (int)(pX - this.modConfig.CollectOutputDistance);
-                tX <= (int)(pX + this.modConfig.CollectOutputDistance);
-                ++tX)
+            if (Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
             {
-                if (Math.Abs(tX - pX) + Math.Abs(tY - pY) > this.modConfig.CollectOutputDistance)
+                // Dig Spot
+                if (this.modConfig.DoDigSpots && obj.ParentSheetIndex == 590)
                 {
+                    Game1.currentLocation.digUpArtifactSpot((int)pos.X, (int)pos.Y, Game1.player);
+                    if (!Game1.currentLocation.terrainFeatures.ContainsKey(pos))
+                    {
+                        Game1.currentLocation.makeHoeDirt(pos, true);
+                    }
+
+                    Game1.currentLocation.Objects.Remove(pos);
                     continue;
                 }
 
-                var pos = new Vector2(tX, tY);
-
-                if (Game1.currentLocation.Objects.TryGetValue(pos, out var obj))
+                // Big Craftables
+                if (this.modConfig.DoForage && obj.IsSpawnedObject && obj.isForage())
                 {
-                    // Dig Spot
-                    if (this.modConfig.DoDigSpots && obj.ParentSheetIndex == 590)
-                    {
-                        Game1.currentLocation.digUpArtifactSpot(tX, tY, Game1.player);
-                        if (!Game1.currentLocation.terrainFeatures.ContainsKey(pos))
-                        {
-                            Game1.currentLocation.makeHoeDirt(pos, true);
-                        }
+                    // Vanilla Logic
+                    var r = new Random(
+                        ((int)Game1.uniqueIDForThisGame / 2)
+                        + (int)Game1.stats.DaysPlayed
+                        + (int)pos.X
+                        + ((int)pos.Y * 777));
 
-                        Game1.currentLocation.Objects.Remove(pos);
-                        continue;
+                    if (Game1.player.professions.Contains(16))
+                    {
+                        obj.Quality = 4;
+                    }
+                    else if (r.NextDouble() < Game1.player.ForagingLevel / 30f)
+                    {
+                        obj.Quality = 2;
+                    }
+                    else if (r.NextDouble() < Game1.player.ForagingLevel / 15f)
+                    {
+                        obj.Quality = 1;
                     }
 
-                    // Big Craftables
-                    if (this.modConfig.DoForage && obj.IsSpawnedObject && obj.isForage())
+                    ++Game1.stats.ItemsForaged;
+                    if (Game1.currentLocation.isFarmBuildingInterior())
                     {
-                        // Vanilla Logic
-                        var r = new Random(
-                            ((int)Game1.uniqueIDForThisGame / 2)
-                            + (int)Game1.stats.DaysPlayed
-                            + (int)pos.X
-                            + ((int)pos.Y * 777));
-
-                        if (Game1.player.professions.Contains(16))
-                        {
-                            obj.Quality = 4;
-                        }
-                        else if (r.NextDouble() < Game1.player.ForagingLevel / 30f)
-                        {
-                            obj.Quality = 2;
-                        }
-                        else if (r.NextDouble() < Game1.player.ForagingLevel / 15f)
-                        {
-                            obj.Quality = 1;
-                        }
-
-                        ++Game1.stats.ItemsForaged;
-                        if (Game1.currentLocation.isFarmBuildingInterior())
-                        {
-                            Game1.player.gainExperience(0, 5);
-                        }
-                        else
-                        {
-                            Game1.player.gainExperience(2, 7);
-                        }
-
-                        var direction = tY < pY
-                            ? 0
-                            : tX > pX
-                                ? 1
-                                : tY > pY
-                                    ? 2
-                                    : tX < pX
-                                        ? 3
-                                        : -1;
-
-                        Game1.createItemDebris(obj, Game1.tileSize * pos, direction, Game1.currentLocation);
-                        Game1.currentLocation.Objects.Remove(pos);
-                        this.Log.Info("Dropped {0} from forage.", [obj.DisplayName]);
-                        continue;
+                        Game1.player.gainExperience(0, 5);
+                    }
+                    else
+                    {
+                        Game1.player.gainExperience(2, 7);
                     }
 
-                    if (this.modConfig.DoMachines)
-                    {
-                        var item = obj.heldObject.Value;
-                        if (item is not null && obj.checkForAction(Game1.player))
-                        {
-                            this.Log.Info("Collected {0} from producer {1}.", [item.DisplayName, obj.DisplayName]);
-                        }
-                    }
-                }
+                    var direction = pos.Y < Game1.player.Tile.Y
+                        ? 0
+                        : pos.X > Game1.player.Tile.X
+                            ? 1
+                            : pos.Y > Game1.player.Tile.Y
+                                ? 2
+                                : pos.X < Game1.player.Tile.X
+                                    ? 3
+                                    : -1;
 
-                if (!this.modConfig.DoTerrain)
-                {
+                    Game1.createItemDebris(obj, Game1.tileSize * pos, direction, Game1.currentLocation);
+                    Game1.currentLocation.Objects.Remove(pos);
+                    this.Log.Info("Dropped {0} from forage.", [obj.DisplayName]);
                     continue;
                 }
 
-                // Terrain Features
-                if (Game1.currentLocation.terrainFeatures.TryGetValue(pos, out var terrainFeature))
+                if (this.modConfig.DoMachines)
                 {
-                    terrainFeature.performUseAction(pos);
+                    var item = obj.heldObject.Value;
+                    if (item is not null && obj.checkForAction(Game1.player))
+                    {
+                        this.Log.Info("Collected {0} from producer {1}.", [item.DisplayName, obj.DisplayName]);
+                    }
                 }
-
-                // Large Terrain Features
-                terrainFeature = Game1.currentLocation.getLargeTerrainFeatureAt((int)pos.X, (int)pos.Y);
-                terrainFeature?.performUseAction(pos);
             }
+
+            if (!this.modConfig.DoTerrain)
+            {
+                continue;
+            }
+
+            // Terrain Features
+            if (Game1.currentLocation.terrainFeatures.TryGetValue(pos, out var terrainFeature))
+            {
+                terrainFeature.performUseAction(pos);
+            }
+
+            // Large Terrain Features
+            terrainFeature = Game1.currentLocation.getLargeTerrainFeatureAt((int)pos.X, (int)pos.Y);
+            terrainFeature?.performUseAction(pos);
         }
     }
 

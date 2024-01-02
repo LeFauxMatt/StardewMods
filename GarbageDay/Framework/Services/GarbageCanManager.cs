@@ -18,7 +18,6 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
 {
     private readonly PerScreen<NPC?> currentNpc = new();
     private readonly Dictionary<string, GarbageCan> garbageCans = [];
-    private readonly PerScreen<GarbageCan?> garbageCanFacing = new();
     private readonly PerScreen<GarbageCan?> garbageCanOpened = new();
     private readonly Dictionary<string, FoundGarbageCan> foundGarbageCans = [];
     private readonly Dictionary<string, GameLocation?> foundLocations = [];
@@ -103,22 +102,12 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
     {
-        this.garbageCanFacing.Value = null;
-        if (!Context.IsPlayerFree)
-        {
-            return;
-        }
-
-        if (!Game1.currentLocation.Objects.TryGetValue(e.Cursor.GrabTile, out var obj)
+        if (!Context.IsPlayerFree
+            || !e.Button.IsActionButton()
+            || !Game1.currentLocation.Objects.TryGetValue(e.Cursor.GrabTile, out var obj)
             || obj is not Chest chest
             || !chest.modData.TryGetValue(this.ModId + "/WhichCan", out var whichCan)
             || !this.garbageCans.TryGetValue(whichCan, out var garbageCan))
-        {
-            return;
-        }
-
-        this.garbageCanFacing.Value = garbageCan;
-        if (!e.Button.IsActionButton())
         {
             return;
         }
@@ -215,9 +204,20 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
 
     private void OnIconPressed(object? sender, IIconPressedEventArgs e)
     {
-        if (this.garbageCanFacing.Value != null && e.Id == this.Id)
+        if (e.Id != this.Id)
         {
-            this.garbageCanFacing.Value.AddLoot();
+            return;
+        }
+
+        foreach (var pos in Game1.player.Tile.Box(1))
+        {
+            if (Game1.currentLocation.Objects.TryGetValue(pos, out var obj)
+                && obj is Chest chest
+                && chest.modData.TryGetValue(this.ModId + "/WhichCan", out var whichCan)
+                && this.garbageCans.TryGetValue(whichCan, out var garbageCan))
+            {
+                garbageCan.AddLoot();
+            }
         }
     }
 

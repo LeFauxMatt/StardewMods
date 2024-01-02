@@ -1,4 +1,4 @@
-namespace StardewMods.Common.Services.Integrations.FuryCore;
+namespace StardewMods.FuryCore.Framework.Interfaces;
 
 using StardewMods.Common.Enums;
 

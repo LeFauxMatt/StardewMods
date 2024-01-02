@@ -11,7 +11,7 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
 {
     private readonly string prefix;
     private readonly ILog log;
-    private readonly IModInfo mod;
+    private readonly IModInfo modInfo;
     private readonly ToolbarManager toolbarManager;
 
     private EventHandler<IIconPressedEventArgs>? iconPressed;
@@ -20,14 +20,14 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
     /// <summary>Initializes a new instance of the <see cref="ToolbarIconsApi" /> class.</summary>
     /// <param name="eventsManager">Dependency used for custom events.</param>
     /// <param name="log">Dependency used for monitoring and logging.</param>
-    /// <param name="mod">Mod info from the calling mod.</param>
+    /// <param name="modInfo">Mod info from the calling mod.</param>
     /// <param name="toolbarManager">Dependency for managing the toolbar icons.</param>
-    internal ToolbarIconsApi(EventsManager eventsManager, ILog log, IModInfo mod, ToolbarManager toolbarManager)
+    internal ToolbarIconsApi(EventsManager eventsManager, ILog log, IModInfo modInfo, ToolbarManager toolbarManager)
     {
         // Init
         this.log = log;
-        this.mod = mod;
-        this.prefix = this.mod.Manifest.UniqueID + "/";
+        this.modInfo = modInfo;
+        this.prefix = this.modInfo.Manifest.UniqueID + "/";
         this.toolbarManager = toolbarManager;
 
         // Events
@@ -48,7 +48,7 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
         {
             this.log.WarnOnce(
                 "{0} uses deprecated code. {1} event is deprecated. Please use the {2} event instead.",
-                [this.mod.Manifest.Name, nameof(this.ToolbarIconPressed), nameof(this.IconPressed)]);
+                [this.modInfo.Manifest.Name, nameof(this.ToolbarIconPressed), nameof(this.IconPressed)]);
 
             this.toolbarIconPressed += value;
         }
@@ -82,7 +82,7 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
                 {
                     this.log.Error(
                         "{0} failed in {1}: {2}",
-                        [this.mod.Manifest.Name, nameof(this.IconPressed), ex.Message]);
+                        [this.modInfo.Manifest.Name, nameof(this.IconPressed), ex.Message]);
                 }
             }
         }
@@ -99,7 +99,7 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
                 {
                     this.log.Error(
                         "{0} failed in {1}: {2}",
-                        [this.mod.Manifest.Name, nameof(this.IconPressed), ex.Message]);
+                        [this.modInfo.Manifest.Name, nameof(this.IconPressed), ex.Message]);
                 }
             }
         }

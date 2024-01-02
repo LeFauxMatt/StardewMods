@@ -1,11 +1,29 @@
 namespace StardewMods.Common.Extensions;
 
+using Microsoft.Xna.Framework;
 using StardewMods.Common.Models;
 using StardewValley.Mods;
 
 /// <summary>Common extension methods.</summary>
 internal static class CommonExtensions
 {
+    /// <summary>
+    /// Generate a box of coordinates centered at a specified point with a given radius.
+    /// </summary>
+    /// <param name="center">The center point of the box.</param>
+    /// <param name="radius">The radius of the box.</param>
+    /// <returns>An enumerable collection of Vector2 coordinates representing the points in the box.</returns>
+    public static IEnumerable<Vector2> Box(this Vector2 center, int radius)
+    {
+        for (var x = (int)(center.X - radius); x <= center.X + radius; ++x)
+        {
+            for (var y = (int)(center.Y - radius); y <= center.Y + radius; ++y)
+            {
+                yield return new Vector2(x, y);
+            }
+        }
+    }
+
     /// <summary>Invokes all event handlers for an event.</summary>
     /// <param name="eventHandler">The event.</param>
     /// <param name="source">The source.</param>
