@@ -160,6 +160,12 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
                 .GroupBy(container => container.Options.StashToChestPriority)
                 .ToDictionary(group => group.Key, group => group.ToList());
 
+        if (!containerGroups.Any())
+        {
+            Game1.showRedMessage(I18n.Alert_StashToChest_NoEligible());
+            return;
+        }
+
         var topPriority = containerGroups.Keys.Max();
         var bottomPriority = containerGroups.Keys.Min();
         var stashedAny = false;
@@ -217,7 +223,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
                 && Game1.player.currentLocation is MineShaft mineShaft
                 && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
             && container.Options.StashToChest.WithinRange(
-                this.Config.StashToChestDistance,
+                container.Options.StashToChestDistance,
                 container.Location,
                 container.TileLocation);
     }

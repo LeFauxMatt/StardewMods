@@ -1,18 +1,15 @@
 namespace StardewMods.BetterChests.Framework.Services;
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
-using StardewValley.Menus;
 
 /// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IModConfig" />
 internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
@@ -70,9 +67,6 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
     public HashSet<string> CraftFromChestDisableLocations => this.Config.CraftFromChestDisableLocations;
 
     /// <inheritdoc />
-    public int CraftFromChestDistance => this.Config.CraftFromChestDistance;
-
-    /// <inheritdoc />
     public RangeOption CraftFromWorkbench => this.Config.CraftFromWorkbench;
 
     /// <inheritdoc />
@@ -106,24 +100,74 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
     public HashSet<string> StashToChestDisableLocations => this.Config.StashToChestDisableLocations;
 
     /// <inheritdoc />
-    public int StashToChestDistance => this.Config.StashToChestDistance;
-
-    /// <inheritdoc />
     public bool StashToChestStacks => this.Config.StashToChestStacks;
 
     /// <inheritdoc />
     public bool UnloadChestSwap => this.Config.UnloadChestSwap;
 
     /// <summary>Shows the config menu.</summary>
-    /// <param name="modManifest">A manifest to describe the mod.</param>
-    public void ShowMenu(IManifest modManifest)
+    /// <param name="container">The container to configure.</param>
+    public void ShowMenu(IStorageContainer container)
     {
         if (!this.genericModConfigMenuIntegration.IsLoaded)
         {
             return;
         }
 
-        this.genericModConfigMenuIntegration.Api.OpenModMenu(modManifest);
+        var gmcm = this.genericModConfigMenuIntegration.Api;
+        var options = new TemporaryStorageOptions(container.Options);
+        if (this.genericModConfigMenuIntegration.IsRegistered(this.manifest))
+        {
+            this.genericModConfigMenuIntegration.Unregister(this.manifest);
+        }
+
+        this.genericModConfigMenuIntegration.Register(this.manifest, options.Reset, options.Save);
+
+        if (this.LabelChest)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.ChestLabel,
+                value => options.ChestLabel = value,
+                I18n.Config_ChestLabel_Name,
+                I18n.Config_ChestLabel_Tooltip);
+        }
+
+        if (container.Options.StashToChest is not (RangeOption.Disabled or RangeOption.Default))
+        {
+            gmcm.AddNumberOption(
+                this.manifest,
+                () => options.StashToChestPriority,
+                value => options.StashToChestPriority = value,
+                I18n.Config_StashToChestPriority_Name,
+                I18n.Config_StashToChestPriority_Tooltip);
+        }
+
+        gmcm.AddPageLink(this.manifest, "Main", I18n.Section_Main_Name, I18n.Section_Main_Description);
+        gmcm.AddPageLink(
+            this.manifest,
+            "Categories",
+            I18n.Section_Categorize_Name,
+            I18n.Section_Categorize_Description);
+
+        gmcm.AddPage(this.manifest, "Main", I18n.Section_Main_Name);
+        this.AddMain(options);
+
+        gmcm.AddPage(this.manifest, "Categories", I18n.Section_Categorize_Name);
+        if (container is ChestContainer chestContainer)
+        {
+            gmcm.AddComplexOption(
+                this.manifest,
+                I18n.Config_ChestColor_Name,
+                (b, pos) =>
+                {
+                    chestContainer.Chest.draw(b, (int)pos.X, (int)pos.Y, local: true);
+                },
+                I18n.Config_ChestColor_Tooltip,
+                height: () => 120);
+        }
+
+        gmcm.OpenModMenu(this.manifest);
     }
 
     private void SetupMainConfig()
@@ -155,7 +199,7 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
         gmcm.AddParagraph(this.manifest, I18n.Section_Storages_Description);
 
         gmcm.AddPage(this.manifest, "Main", I18n.Section_Main_Name);
-        this.AddMain(config, config.DefaultOptions);
+        this.AddMain(config.DefaultOptions);
 
         gmcm.AddPage(this.manifest, "Controls", I18n.Section_Controls_Name);
         this.AddControls(config.Controls);
@@ -168,7 +212,7 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
         gmcm.AddParagraph(this.manifest, I18n.Storage_Default_Tooltip);
     }
 
-    private void AddMain(DefaultConfig config, IStorageOptions options)
+    private void AddMain(IStorageOptions options)
     {
         if (!this.genericModConfigMenuIntegration.IsLoaded)
         {
@@ -178,260 +222,347 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
         var gmcm = this.genericModConfigMenuIntegration.Api;
 
         // Auto Organize
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.AutoOrganize.ToStringFast(),
-            value => options.AutoOrganize =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_AutoOrganize_Name,
-            I18n.Config_AutoOrganize_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.AutoOrganize != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.AutoOrganize.ToStringFast(),
+                value => options.AutoOrganize = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_AutoOrganize_Name,
+                I18n.Config_AutoOrganize_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+        }
 
         // Carry Chest
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.CarryChest.ToStringFast(),
-            value => options.CarryChest =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_CarryChest_Name,
-            I18n.Config_CarryChest_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.CarryChest != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.CarryChest.ToStringFast(),
+                value => options.CarryChest = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_CarryChest_Name,
+                I18n.Config_CarryChest_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+        }
 
         // Categorize Chest
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.CategorizeChest.ToStringFast(),
-            value => options.CategorizeChest =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_CategorizeChest_Name,
-            I18n.Config_CategorizeChest_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.CategorizeChest != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.CategorizeChest.ToStringFast(),
+                value => options.CategorizeChest = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_CategorizeChest_Name,
+                I18n.Config_CategorizeChest_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+        }
 
         // Chest Finder
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.ChestFinder.ToStringFast(),
-            value => options.ChestFinder =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_ChestFinder_Name,
-            I18n.Config_ChestFinder_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.ChestFinder != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.ChestFinder.ToStringFast(),
+                value => options.ChestFinder = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_ChestFinder_Name,
+                I18n.Config_ChestFinder_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+        }
 
         // Chest Info
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.ChestInfo.ToStringFast(),
-            value => options.ChestInfo =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_ChestInfo_Name,
-            I18n.Config_ChestInfo_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.ChestInfo != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.ChestInfo.ToStringFast(),
+                value => options.ChestInfo = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_ChestInfo_Name,
+                I18n.Config_ChestInfo_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+        }
 
         // Collect Items
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.CollectItems.ToStringFast(),
-            value => options.CollectItems =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_CollectItems_Name,
-            I18n.Config_CollectItems_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.CollectItems != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.CollectItems.ToStringFast(),
+                value => options.CollectItems = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_CollectItems_Name,
+                I18n.Config_CollectItems_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+        }
 
         // Configure Chest
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.ConfigureChest.ToStringFast(),
-            value => options.ConfigureChest =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_ConfigureChest_Name,
-            I18n.Config_ConfigureChest_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.ConfigureChest != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.ConfigureChest.ToStringFast(),
+                value => options.ConfigureChest = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_ConfigureChest_Name,
+                I18n.Config_ConfigureChest_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+        }
 
         // Craft from Chest
-        gmcm.AddNumberOption(
-            this.manifest,
-            () => config.CraftFromChestDistance switch
-            {
-                _ when options.CraftFromChest is RangeOption.Default => (int)RangeOption.Default,
-                _ when options.CraftFromChest is RangeOption.Disabled => (int)RangeOption.Disabled,
-                _ when options.CraftFromChest is RangeOption.Inventory => (int)RangeOption.Inventory,
-                _ when options.CraftFromChest is RangeOption.World => (int)RangeOption.World,
-                >= 2 when options.CraftFromChest is RangeOption.Location => (int)RangeOption.Location
-                    + (int)Math.Ceiling(Math.Log2(config.CraftFromChestDistance))
-                    - 1,
-                _ when options.CraftFromChest is RangeOption.Location => (int)RangeOption.World - 1,
-                _ => (int)RangeOption.Default,
-            },
-            value =>
-            {
-                config.CraftFromChestDistance = value switch
+        if (options == this.DefaultOptions || this.DefaultOptions.CraftFromChest != RangeOption.Disabled)
+        {
+            gmcm.AddNumberOption(
+                this.manifest,
+                () => options.CraftFromChestDistance switch
                 {
-                    (int)RangeOption.Default => 0,
-                    (int)RangeOption.Disabled => 0,
-                    (int)RangeOption.Inventory => 0,
-                    (int)RangeOption.World => 0,
-                    (int)RangeOption.World - 1 => -1,
-                    >= (int)RangeOption.Location => (int)Math.Pow(2, 1 + value - (int)RangeOption.Location),
-                    _ => 0,
-                };
+                    _ when options.CraftFromChest is RangeOption.Default => (int)RangeOption.Default,
+                    _ when options.CraftFromChest is RangeOption.Disabled => (int)RangeOption.Disabled,
+                    _ when options.CraftFromChest is RangeOption.Inventory => (int)RangeOption.Inventory,
+                    _ when options.CraftFromChest is RangeOption.World => (int)RangeOption.World,
+                    >= 2 when options.CraftFromChest is RangeOption.Location => (int)RangeOption.Location
+                        + (int)Math.Ceiling(Math.Log2(options.CraftFromChestDistance))
+                        - 1,
+                    _ when options.CraftFromChest is RangeOption.Location => (int)RangeOption.World - 1,
+                    _ => (int)RangeOption.Default,
+                },
+                value =>
+                {
+                    options.CraftFromChestDistance = value switch
+                    {
+                        (int)RangeOption.Default => 0,
+                        (int)RangeOption.Disabled => 0,
+                        (int)RangeOption.Inventory => 0,
+                        (int)RangeOption.World => 0,
+                        (int)RangeOption.World - 1 => -1,
+                        >= (int)RangeOption.Location => (int)Math.Pow(2, 1 + value - (int)RangeOption.Location),
+                        _ => 0,
+                    };
 
-                options.CraftFromChest = value switch
-                {
-                    (int)RangeOption.Default => RangeOption.Default,
-                    (int)RangeOption.Disabled => RangeOption.Disabled,
-                    (int)RangeOption.Inventory => RangeOption.Inventory,
-                    (int)RangeOption.World => RangeOption.World,
-                    (int)RangeOption.World - 1 => RangeOption.Location,
-                    _ => RangeOption.Location,
-                };
-            },
-            I18n.Config_CraftFromChest_Name,
-            I18n.Config_CraftFromChest_Tooltip,
-            (int)RangeOption.Default,
-            (int)RangeOption.World,
-            1,
-            this.localizedTextManager.Distance);
+                    options.CraftFromChest = value switch
+                    {
+                        (int)RangeOption.Default => RangeOption.Default,
+                        (int)RangeOption.Disabled => RangeOption.Disabled,
+                        (int)RangeOption.Inventory => RangeOption.Inventory,
+                        (int)RangeOption.World => RangeOption.World,
+                        (int)RangeOption.World - 1 => RangeOption.Location,
+                        _ => RangeOption.Location,
+                    };
+                },
+                I18n.Config_CraftFromChest_Name,
+                I18n.Config_CraftFromChest_Tooltip,
+                (int)RangeOption.Default,
+                (int)RangeOption.World,
+                1,
+                this.localizedTextManager.Distance);
+        }
 
         // HSL Color Picker
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.HslColorPicker.ToStringFast(),
-            value => options.HslColorPicker =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_HslColorPicker_Name,
-            I18n.Config_HslColorPicker_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.HslColorPicker != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.HslColorPicker.ToStringFast(),
+                value => options.HslColorPicker = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_HslColorPicker_Name,
+                I18n.Config_HslColorPicker_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+        }
 
         // Inventory Tabs
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.InventoryTabs.ToStringFast(),
-            value => options.InventoryTabs =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_InventoryTabs_Name,
-            I18n.Config_InventoryTabs_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.InventoryTabs != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.InventoryTabs.ToStringFast(),
+                value => options.InventoryTabs = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_InventoryTabs_Name,
+                I18n.Config_InventoryTabs_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+        }
 
         // Open Held Chest
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.OpenHeldChest.ToStringFast(),
-            value => options.OpenHeldChest =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_OpenHeldChest_Name,
-            I18n.Config_OpenHeldChest_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.OpenHeldChest != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.OpenHeldChest.ToStringFast(),
+                value => options.OpenHeldChest = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_OpenHeldChest_Name,
+                I18n.Config_OpenHeldChest_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+        }
 
         // Organize Items
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.OrganizeItems.ToStringFast(),
-            value => options.OrganizeItems =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_OrganizeItems_Name,
-            I18n.Config_OrganizeItems_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.OrganizeItems != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.OrganizeItems.ToStringFast(),
+                value => options.OrganizeItems = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_OrganizeItems_Name,
+                I18n.Config_OrganizeItems_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.OrganizeItemsGroupBy.ToStringFast(),
+                value => options.OrganizeItemsGroupBy = GroupByExtensions.TryParse(value, out var groupBy)
+                    ? groupBy
+                    : GroupBy.Default,
+                I18n.Config_OrganizeItemsGroupBy_Name,
+                I18n.Config_OrganizeItemsGroupBy_Tooltip,
+                GroupByExtensions.GetNames(),
+                this.localizedTextManager.FormatGroupBy);
+
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.OrganizeItemsSortBy.ToStringFast(),
+                value => options.OrganizeItemsSortBy = SortByExtensions.TryParse(value, out var sortBy)
+                    ? sortBy
+                    : SortBy.Default,
+                I18n.Config_OrganizeItemsSortBy_Name,
+                I18n.Config_OrganizeItemsSortBy_Tooltip,
+                SortByExtensions.GetNames(),
+                this.localizedTextManager.FormatSortBy);
+        }
 
         // Resize Chest
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.ResizeChest.ToStringFast(),
-            value => options.ResizeChest = CapacityOptionExtensions.TryParse(value, out var capacity)
-                ? capacity
-                : CapacityOption.Default,
-            I18n.Config_ResizeChest_Name,
-            I18n.Config_ResizeChest_Tooltip,
-            CapacityOptionExtensions.GetNames(),
-            this.localizedTextManager.Capacity);
+        if (options == this.DefaultOptions || this.DefaultOptions.ResizeChest != CapacityOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.ResizeChest.ToStringFast(),
+                value => options.ResizeChest = CapacityOptionExtensions.TryParse(value, out var capacity)
+                    ? capacity
+                    : CapacityOption.Default,
+                I18n.Config_ResizeChest_Name,
+                I18n.Config_ResizeChest_Tooltip,
+                CapacityOptionExtensions.GetNames(),
+                this.localizedTextManager.Capacity);
+        }
 
         // Search Items
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.SearchItems.ToStringFast(),
-            value => options.SearchItems =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_SearchItems_Name,
-            I18n.Config_SearchItems_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.SearchItems != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.SearchItems.ToStringFast(),
+                value => options.SearchItems = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_SearchItems_Name,
+                I18n.Config_SearchItems_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+        }
 
         // Stash to Chest
-        gmcm.AddNumberOption(
-            this.manifest,
-            () => config.StashToChestDistance switch
-            {
-                _ when options.StashToChest is RangeOption.Default => (int)RangeOption.Default,
-                _ when options.StashToChest is RangeOption.Disabled => (int)RangeOption.Disabled,
-                _ when options.StashToChest is RangeOption.Inventory => (int)RangeOption.Inventory,
-                _ when options.StashToChest is RangeOption.World => (int)RangeOption.World,
-                >= 2 when options.StashToChest is RangeOption.Location => (int)RangeOption.Location
-                    + (int)Math.Ceiling(Math.Log2(config.StashToChestDistance))
-                    - 1,
-                _ when options.StashToChest is RangeOption.Location => (int)RangeOption.World - 1,
-                _ => (int)RangeOption.Default,
-            },
-            value =>
-            {
-                config.StashToChestDistance = value switch
+        if (options == this.DefaultOptions || this.DefaultOptions.StashToChest != RangeOption.Disabled)
+        {
+            gmcm.AddNumberOption(
+                this.manifest,
+                () => options.StashToChestDistance switch
                 {
-                    (int)RangeOption.Default => 0,
-                    (int)RangeOption.Disabled => 0,
-                    (int)RangeOption.Inventory => 0,
-                    (int)RangeOption.World => 0,
-                    (int)RangeOption.World - 1 => -1,
-                    >= (int)RangeOption.Location => (int)Math.Pow(2, 1 + value - (int)RangeOption.Location),
-                    _ => 0,
-                };
+                    _ when options.StashToChest is RangeOption.Default => (int)RangeOption.Default,
+                    _ when options.StashToChest is RangeOption.Disabled => (int)RangeOption.Disabled,
+                    _ when options.StashToChest is RangeOption.Inventory => (int)RangeOption.Inventory,
+                    _ when options.StashToChest is RangeOption.World => (int)RangeOption.World,
+                    >= 2 when options.StashToChest is RangeOption.Location => (int)RangeOption.Location
+                        + (int)Math.Ceiling(Math.Log2(options.StashToChestDistance))
+                        - 1,
+                    _ when options.StashToChest is RangeOption.Location => (int)RangeOption.World - 1,
+                    _ => (int)RangeOption.Default,
+                },
+                value =>
+                {
+                    options.StashToChestDistance = value switch
+                    {
+                        (int)RangeOption.Default => 0,
+                        (int)RangeOption.Disabled => 0,
+                        (int)RangeOption.Inventory => 0,
+                        (int)RangeOption.World => 0,
+                        (int)RangeOption.World - 1 => -1,
+                        >= (int)RangeOption.Location => (int)Math.Pow(2, 1 + value - (int)RangeOption.Location),
+                        _ => 0,
+                    };
 
-                options.StashToChest = value switch
-                {
-                    (int)RangeOption.Default => RangeOption.Default,
-                    (int)RangeOption.Disabled => RangeOption.Disabled,
-                    (int)RangeOption.Inventory => RangeOption.Inventory,
-                    (int)RangeOption.World => RangeOption.World,
-                    (int)RangeOption.World - 1 => RangeOption.Location,
-                    _ => RangeOption.Location,
-                };
-            },
-            I18n.Config_StashToChest_Name,
-            I18n.Config_StashToChest_Tooltip,
-            (int)RangeOption.Default,
-            (int)RangeOption.World,
-            1,
-            this.localizedTextManager.Distance);
+                    options.StashToChest = value switch
+                    {
+                        (int)RangeOption.Default => RangeOption.Default,
+                        (int)RangeOption.Disabled => RangeOption.Disabled,
+                        (int)RangeOption.Inventory => RangeOption.Inventory,
+                        (int)RangeOption.World => RangeOption.World,
+                        (int)RangeOption.World - 1 => RangeOption.Location,
+                        _ => RangeOption.Location,
+                    };
+                },
+                I18n.Config_StashToChest_Name,
+                I18n.Config_StashToChest_Tooltip,
+                (int)RangeOption.Default,
+                (int)RangeOption.World,
+                1,
+                this.localizedTextManager.Distance);
+        }
 
         // Transfer Items
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.TransferItems.ToStringFast(),
-            value => options.TransferItems =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_TransferItems_Name,
-            I18n.Config_TransferItems_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.TransferItems != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.TransferItems.ToStringFast(),
+                value => options.TransferItems = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_TransferItems_Name,
+                I18n.Config_TransferItems_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+        }
 
         // Unload Chest
-        gmcm.AddTextOption(
-            this.manifest,
-            () => options.UnloadChest.ToStringFast(),
-            value => options.UnloadChest =
-                FeatureOptionExtensions.TryParse(value, out var option) ? option : FeatureOption.Default,
-            I18n.Config_UnloadChest_Name,
-            I18n.Config_UnloadChest_Tooltip,
-            FeatureOptionExtensions.GetNames(),
-            this.localizedTextManager.FormatOption);
+        if (options == this.DefaultOptions || this.DefaultOptions.UnloadChest != FeatureOption.Disabled)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.UnloadChest.ToStringFast(),
+                value => options.UnloadChest = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_UnloadChest_Name,
+                I18n.Config_UnloadChest_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+        }
     }
 
     private void AddControls(Controls controls)
@@ -720,56 +851,5 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
             value => config.SearchNegationSymbol = string.IsNullOrWhiteSpace(value) ? '#' : value.ToCharArray()[0],
             I18n.Config_SearchNegationSymbol_Name,
             I18n.Config_SearchNegationSymbol_Tooltip);
-    }
-
-    private Action<SpriteBatch, Vector2> DrawButton(IStorageOptions storage, string label)
-    {
-        var dims = Game1.dialogueFont.MeasureString(label);
-        return (b, pos) =>
-        {
-            var bounds = new Rectangle((int)pos.X, (int)pos.Y, (int)dims.X + Game1.tileSize, Game1.tileSize);
-            if (Game1.activeClickableMenu.GetChildMenu() is null)
-            {
-                var point = Game1.getMousePosition();
-                if (Game1.oldMouseState.LeftButton == ButtonState.Released
-                    && Mouse.GetState().LeftButton == ButtonState.Pressed
-                    && bounds.Contains(point))
-                {
-                    // Game1.activeClickableMenu.SetChildMenu(
-                    //     new ItemSelectionMenu(
-                    //         storage,
-                    //         storage.FilterMatcher,
-                    //         this.inputHelper,
-                    //         this.translationHelper));
-
-                    return;
-                }
-            }
-
-            IClickableMenu.drawTextureBox(
-                b,
-                Game1.mouseCursors,
-                new Rectangle(432, 439, 9, 9),
-                bounds.X,
-                bounds.Y,
-                bounds.Width,
-                bounds.Height,
-                Color.White,
-                Game1.pixelZoom,
-                false,
-                1f);
-
-            Utility.drawTextWithShadow(
-                b,
-                label,
-                Game1.dialogueFont,
-                new Vector2(bounds.Left + bounds.Right - dims.X, bounds.Top + bounds.Bottom - dims.Y) / 2f,
-                Game1.textColor,
-                1f,
-                1f,
-                -1,
-                -1,
-                0f);
-        };
     }
 }

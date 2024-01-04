@@ -29,9 +29,6 @@ internal interface IModConfig
     /// </summary>
     public HashSet<string> CraftFromChestDisableLocations { get; }
 
-    /// <summary>Gets a value indicating the distance in tiles that the chest can be remotely crafted from.</summary>
-    public int CraftFromChestDistance { get; }
-
     /// <summary>Gets a value indicating the range which workbenches will craft from.</summary>
     public RangeOption CraftFromWorkbench { get; }
 
@@ -67,9 +64,6 @@ internal interface IModConfig
     /// locations.
     /// </summary>
     public HashSet<string> StashToChestDisableLocations { get; }
-
-    /// <summary>Gets a value indicating the distance in tiles that the chest can be remotely stashed into.</summary>
-    public int StashToChestDistance { get; }
 
     /// <summary>Gets a value indicating whether stashing into the chest will fill existing item stacks.</summary>
     public bool StashToChestStacks { get; }

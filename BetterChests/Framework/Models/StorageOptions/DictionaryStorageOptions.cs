@@ -88,6 +88,13 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
+    public int CraftFromChestDistance
+    {
+        get => this.Get(IntegerKey.CraftFromChestDistance);
+        set => this.Set(IntegerKey.CraftFromChestDistance, value);
+    }
+
+    /// <inheritdoc />
     public FeatureOption HslColorPicker
     {
         get => this.Get(OptionKey.HslColorPicker);
@@ -150,6 +157,13 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     {
         get => this.Get(RangeOptionKey.StashToChest);
         set => this.Set(RangeOptionKey.StashToChest, value);
+    }
+
+    /// <inheritdoc />
+    public int StashToChestDistance
+    {
+        get => this.Get(IntegerKey.StashToChestDistance);
+        set => this.Set(IntegerKey.StashToChestDistance, value);
     }
 
     /// <inheritdoc />
@@ -323,7 +337,7 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
 
         public string OriginalValue { get; } = originalValue;
     }
-
+#pragma warning disable SA1201
 #pragma warning disable SA1600
 #pragma warning disable SA1602
     [EnumExtensions]
@@ -336,6 +350,8 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     [EnumExtensions]
     internal enum IntegerKey
     {
+        CraftFromChestDistance,
+        StashToChestDistance,
         StashToChestPriority,
     }
 
@@ -371,6 +387,4 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
         ChestLabel,
         ResizeChest,
     }
-#pragma warning restore SA1602
-#pragma warning restore SA1600
 }

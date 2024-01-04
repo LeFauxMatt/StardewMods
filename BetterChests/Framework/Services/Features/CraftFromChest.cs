@@ -4,14 +4,15 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
-using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
+using StardewValley.Inventories;
 using StardewValley.Locations;
 using StardewValley.Menus;
+using StardewValley.Network;
 using StardewValley.Objects;
 
 /// <summary>Craft using items from placed chests and chests in the farmer's inventory.</summary>
@@ -140,10 +141,10 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
         }
     }
 
-    private static List<Chest>? GetMaterials()
+    private static List<IInventory>? GetMaterials()
     {
-        var containers = CraftFromChest.instance.containerFactory.GetAll(Predicate).OfType<ChestContainer>().ToList();
-        return containers.Count > 0 ? containers.Select(container => container.Chest).ToList() : null;
+        var containers = CraftFromChest.instance.containerFactory.GetAll(Predicate).ToList();
+        return containers.Count > 0 ? containers.Select(container => container.Items).ToList() : null;
 
         bool Predicate(IStorageContainer container) =>
             container.Options.CraftFromChest is not (RangeOption.Disabled or RangeOption.Default)
@@ -154,7 +155,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
                 && Game1.player.currentLocation is MineShaft mineShaft
                 && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
             && container.Options.CraftFromChest.WithinRange(
-                CraftFromChest.instance.Config.CraftFromChestDistance,
+                container.Options.CraftFromChestDistance,
                 container.Location,
                 container.TileLocation);
     }
@@ -206,7 +207,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
             return;
         }
 
-        var mutexes = containers.Select(container => container.Mutex).ToArray();
+        var mutexes = containers.Select(container => container.Mutex).OfType<NetMutex>().ToArray();
         var inventories = containers.Select(container => container.Items).ToList();
         _ = new MultipleMutexRequest(
             mutexes,
@@ -232,7 +233,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
             && Game1.player.currentLocation is MineShaft mineShaft
             && mineShaft.Name.StartsWith("UndergroundMine", StringComparison.OrdinalIgnoreCase))
         && container.Options.CraftFromChest.WithinRange(
-            this.Config.CraftFromChestDistance,
+            container.Options.CraftFromChestDistance,
             container.Location,
             container.TileLocation);
 

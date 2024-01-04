@@ -30,9 +30,6 @@ internal sealed class DefaultConfig : IModConfig
     public HashSet<string> CraftFromChestDisableLocations { get; set; } = [];
 
     /// <inheritdoc />
-    public int CraftFromChestDistance { get; set; } = -1;
-
-    /// <inheritdoc />
     public RangeOption CraftFromWorkbench { get; set; } = RangeOption.Location;
 
     /// <inheritdoc />
@@ -64,9 +61,6 @@ internal sealed class DefaultConfig : IModConfig
 
     /// <inheritdoc />
     public HashSet<string> StashToChestDisableLocations { get; set; } = [];
-
-    /// <inheritdoc />
-    public int StashToChestDistance { get; set; } = -1;
 
     /// <inheritdoc />
     public bool StashToChestStacks { get; set; } = true;

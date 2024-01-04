@@ -20,6 +20,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
 #nullable enable
 
     private readonly PerScreen<ClickableTextureComponent> configButton;
+    private readonly ConfigManager configManager;
     private readonly ContainerFactory containerFactory;
     private readonly GenericModConfigMenuIntegration genericModConfigMenuIntegration;
     private readonly Harmony harmony;
@@ -55,6 +56,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         : base(log, manifest, configManager)
     {
         ConfigureChest.instance = this;
+        this.configManager = configManager;
         this.containerFactory = containerFactory;
         this.modEvents = modEvents;
         this.genericModConfigMenuIntegration = genericModConfigMenuIntegration;
@@ -173,7 +175,8 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
     {
         if (!this.isActive.Value
             || e.Button is not (SButton.MouseLeft or SButton.ControllerA)
-            || this.itemGrabMenuManager.CurrentMenu is null)
+            || this.itemGrabMenuManager.CurrentMenu is null
+            || this.itemGrabMenuManager.Top.Container is null)
         {
             return;
         }
@@ -185,8 +188,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         }
 
         this.inputHelper.Suppress(e.Button);
-
-        // Show Generic Mod Config Menu
+        this.configManager.ShowMenu(this.itemGrabMenuManager.Top.Container);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
@@ -205,8 +207,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         }
 
         this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.ConfigureChest);
-
-        // Show Generic Mod Config Menu
+        this.configManager.ShowMenu(container);
     }
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)

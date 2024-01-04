@@ -36,6 +36,7 @@ internal sealed class FarmerContainer : BaseContainer<Farmer>
     /// <inheritdoc />
     public override ModDataDictionary ModData => this.Farmer.modData;
 
+    /// <inheritdoc />
     public override NetMutex? Mutex => (Utility.getHomeOfFarmer(this.Farmer) as Cabin)?.inventoryMutex;
 
     /// <inheritdoc />

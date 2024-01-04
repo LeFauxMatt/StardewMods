@@ -35,6 +35,9 @@ public interface IStorageOptions
     /// <summary>Gets or sets a value indicating if the chest can be remotely crafted from.</summary>
     public RangeOption CraftFromChest { get; set; }
 
+    /// <summary>Gets or sets a value indicating the distance in tiles that the chest can be remotely crafted from.</summary>
+    public int CraftFromChestDistance { get; set; }
+
     /// <summary>Gets or sets a value indicating if the color picker will be replaced by an hsl color picker.</summary>
     public FeatureOption HslColorPicker { get; set; }
 
@@ -64,6 +67,9 @@ public interface IStorageOptions
 
     /// <summary>Gets or sets a value indicating if the chest can be remotely stashed into.</summary>
     public RangeOption StashToChest { get; set; }
+
+    /// <summary>Gets or sets a value indicating the distance in tiles that the chest can be remotely stashed into.</summary>
+    public int StashToChestDistance { get; set; }
 
     /// <summary>Gets or sets a value indicating the priority that chests will be stashed into.</summary>
     public int StashToChestPriority { get; set; }

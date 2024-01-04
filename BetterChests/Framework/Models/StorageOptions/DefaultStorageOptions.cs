@@ -4,7 +4,7 @@ using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 
 /// <inheritdoc />
-internal sealed class DefaultStorageOptions : IStorageOptions
+internal class DefaultStorageOptions : IStorageOptions
 {
     /// <inheritdoc />
     public FeatureOption AutoOrganize { get; set; } = FeatureOption.Enabled;
@@ -35,6 +35,9 @@ internal sealed class DefaultStorageOptions : IStorageOptions
 
     /// <inheritdoc />
     public RangeOption CraftFromChest { get; set; } = RangeOption.Location;
+
+    /// <inheritdoc />
+    public int CraftFromChestDistance { get; set; } = -1;
 
     /// <inheritdoc />
     public FeatureOption HslColorPicker { get; set; } = FeatureOption.Enabled;
@@ -70,6 +73,9 @@ internal sealed class DefaultStorageOptions : IStorageOptions
     public RangeOption StashToChest { get; set; } = RangeOption.Location;
 
     /// <inheritdoc />
+    public int StashToChestDistance { get; set; } = -1;
+
+    /// <inheritdoc />
     public int StashToChestPriority { get; set; }
 
     /// <inheritdoc />
@@ -79,8 +85,8 @@ internal sealed class DefaultStorageOptions : IStorageOptions
     public FeatureOption UnloadChest { get; set; } = FeatureOption.Disabled;
 
     /// <inheritdoc />
-    public string GetDescription() => I18n.Storage_Other_Tooltip();
+    public virtual string GetDescription() => I18n.Storage_Other_Tooltip();
 
     /// <inheritdoc />
-    public string GetDisplayName() => I18n.Storage_Other_Name();
+    public virtual string GetDisplayName() => I18n.Storage_Other_Name();
 }

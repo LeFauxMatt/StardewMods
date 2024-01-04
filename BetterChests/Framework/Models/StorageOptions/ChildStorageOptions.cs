@@ -75,6 +75,16 @@ internal class ChildStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
+    public int CraftFromChestDistance
+    {
+        get =>
+            this.child.CraftFromChestDistance == 0
+                ? this.parent.CraftFromChestDistance
+                : this.child.CraftFromChestDistance;
+        set => this.child.CraftFromChestDistance = value;
+    }
+
+    /// <inheritdoc />
     public FeatureOption HslColorPicker
     {
         get => this.Get(storage => storage.HslColorPicker);
@@ -162,6 +172,14 @@ internal class ChildStorageOptions : IStorageOptions
     {
         get => this.Get(storage => storage.StashToChest);
         set => this.child.StashToChest = value;
+    }
+
+    /// <inheritdoc />
+    public int StashToChestDistance
+    {
+        get =>
+            this.child.StashToChestDistance == 0 ? this.parent.StashToChestDistance : this.child.StashToChestDistance;
+        set => this.child.StashToChestDistance = value;
     }
 
     /// <inheritdoc />
