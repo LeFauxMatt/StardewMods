@@ -6,19 +6,22 @@ using StardewValley.Extensions;
 /// <summary>Matches item name/tags against a set of search phrases.</summary>
 internal sealed class ItemMatcher : IItemFilter
 {
-    private readonly IModConfig modConfig;
     private readonly Dictionary<string, ParsedTerm> parsedTerms = new();
     private readonly ITranslationHelper translation;
+    private readonly char searchNegationSymbol;
+    private readonly char searchTagSymbol;
     private string searchText = string.Empty;
 
     private ParsedTerm[] terms = Array.Empty<ParsedTerm>();
 
     /// <summary>Initializes a new instance of the <see cref="ItemMatcher" /> class.</summary>
-    /// <param name="modConfig">Dependency used for accessing config data.</param>
+    /// <param name="searchTagSymbol">The symbol used to denote negative searches.</param>
+    /// <param name="searchNegationSymbol">The symbol used to denote context tags in searches.</param>
     /// <param name="translation">Dependency used for accessing translations.</param>
-    public ItemMatcher(IModConfig modConfig, ITranslationHelper translation)
+    public ItemMatcher(char searchNegationSymbol, char searchTagSymbol, ITranslationHelper translation)
     {
-        this.modConfig = modConfig;
+        this.searchNegationSymbol = searchNegationSymbol;
+        this.searchTagSymbol = searchTagSymbol;
         this.translation = translation;
     }
 
@@ -41,11 +44,11 @@ internal sealed class ItemMatcher : IItemFilter
                     continue;
                 }
 
-                var notMatch = searchTerm[0] == this.modConfig.SearchNegationSymbol;
+                var notMatch = searchTerm[0] == this.searchNegationSymbol;
                 var newValue = notMatch ? searchTerm[1..] : searchTerm;
 
-                var tagMatch = this.OnlyTags || newValue[0] == this.modConfig.SearchTagSymbol;
-                newValue = tagMatch && searchTerm.StartsWith(this.modConfig.SearchTagSymbol) ? newValue[1..] : newValue;
+                var tagMatch = this.OnlyTags || newValue[0] == this.searchTagSymbol;
+                newValue = tagMatch && searchTerm.StartsWith(this.searchTagSymbol) ? newValue[1..] : newValue;
 
                 if (string.IsNullOrWhiteSpace(newValue))
                 {
@@ -123,7 +126,7 @@ internal sealed class ItemMatcher : IItemFilter
             return true;
         }
 
-        return false;
+        return this.terms.All(term => term.NotMatch);
     }
 
     private static bool IsExactMatch(ParsedTerm term, Item item) =>
@@ -138,7 +141,7 @@ internal sealed class ItemMatcher : IItemFilter
         };
 
     private bool IsMatch(ParsedTerm term, Item item) =>
-        (this.AllowPartial ? this.IsPartialMatch(term, item) : ItemMatcher.IsExactMatch(term, item)) != term.NotMatch;
+        this.AllowPartial ? this.IsPartialMatch(term, item) : ItemMatcher.IsExactMatch(term, item);
 
     private bool IsPartialMatch(ParsedTerm term, Item item)
     {

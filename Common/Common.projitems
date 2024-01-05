@@ -45,7 +45,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\ITheming.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\LogService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\ThemingService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\BaseComplexOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\GenericModConfigMenuIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\IComplexOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\IGenericModConfigMenuApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ModIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ProjectFluent\IFluent.cs" />

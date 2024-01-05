@@ -42,7 +42,7 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
         // Events
         this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this.modEvents.Display.RenderedHud += this.OnRenderedHud;
-        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
+        this.modEvents.Input.CursorMoved += this.OnCursorMoved;
     }
 
     /// <inheritdoc />
@@ -51,10 +51,10 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
         // Events
         this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
         this.modEvents.Display.RenderedHud -= this.OnRenderedHud;
-        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
+        this.modEvents.Input.CursorMoved -= this.OnCursorMoved;
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnCursorMoved(object? sender, CursorMovedEventArgs e)
     {
         this.containerFacing.Value = null;
 
@@ -63,9 +63,12 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
             return;
         }
 
-        if (!this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, e.Cursor.GrabTile, out var container))
+        if (!this.containerFactory.TryGetOneFromLocation(
+            Game1.currentLocation,
+            e.NewPosition.GrabTile,
+            out var container))
         {
-            if (!this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, e.Cursor.Tile, out container))
+            if (!this.containerFactory.TryGetOneFromLocation(Game1.currentLocation, e.NewPosition.Tile, out container))
             {
                 return;
             }

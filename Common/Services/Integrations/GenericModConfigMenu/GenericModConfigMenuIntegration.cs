@@ -48,4 +48,21 @@ internal sealed class GenericModConfigMenuIntegration : ModIntegration<IGenericM
         this.Api?.Unregister(mod);
         this.Registered.Remove(mod.UniqueID);
     }
+
+    /// <summary>Adds a complex menu option to the mod's config menu.</summary>
+    /// <param name="mod">The mod's manifest.</param>
+    /// <param name="complexOption">The complex option to add.</param>
+    public void AddComplexOption(IManifest mod, IComplexOption complexOption) =>
+        this.Api?.AddComplexOption(
+            mod,
+            () => complexOption.Name,
+            complexOption.Draw,
+            () => complexOption.Tooltip,
+            complexOption.BeforeMenuOpened,
+            complexOption.BeforeSave,
+            complexOption.AfterSave,
+            complexOption.BeforeReset,
+            complexOption.AfterReset,
+            complexOption.BeforeMenuClosed,
+            () => complexOption.Height);
 }

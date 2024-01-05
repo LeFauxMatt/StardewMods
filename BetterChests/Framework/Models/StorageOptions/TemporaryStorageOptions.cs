@@ -5,15 +5,16 @@ using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 /// <inheritdoc />
 internal sealed class TemporaryStorageOptions : DefaultStorageOptions
 {
-    private static readonly IStorageOptions DefaultOptions = new DefaultStorageOptions();
-
     private readonly IStorageOptions storageOptions;
+    private readonly IStorageOptions defaultOptions;
 
     /// <summary>Initializes a new instance of the <see cref="TemporaryStorageOptions" /> class.</summary>
     /// <param name="storageOptions">The storage options to copy.</param>
-    public TemporaryStorageOptions(IStorageOptions storageOptions)
+    /// <param name="defaultOptions">The default storage options.</param>
+    public TemporaryStorageOptions(IStorageOptions storageOptions, IStorageOptions defaultOptions)
     {
         this.storageOptions = storageOptions;
+        this.defaultOptions = defaultOptions;
         this.AutoOrganize = storageOptions.AutoOrganize;
         this.CarryChest = storageOptions.CarryChest;
         this.CategorizeChest = storageOptions.CategorizeChest;
@@ -50,31 +51,31 @@ internal sealed class TemporaryStorageOptions : DefaultStorageOptions
     /// <summary>Saves the options back to the default.</summary>
     public void Reset()
     {
-        this.AutoOrganize = TemporaryStorageOptions.DefaultOptions.AutoOrganize;
-        this.CarryChest = TemporaryStorageOptions.DefaultOptions.CarryChest;
-        this.CategorizeChest = TemporaryStorageOptions.DefaultOptions.CategorizeChest;
-        this.CategorizeChestTags = [..TemporaryStorageOptions.DefaultOptions.CategorizeChestTags];
-        this.ChestFinder = TemporaryStorageOptions.DefaultOptions.ChestFinder;
-        this.ChestInfo = TemporaryStorageOptions.DefaultOptions.ChestInfo;
-        this.ChestLabel = TemporaryStorageOptions.DefaultOptions.ChestLabel;
-        this.CollectItems = TemporaryStorageOptions.DefaultOptions.CollectItems;
-        this.ConfigureChest = TemporaryStorageOptions.DefaultOptions.ConfigureChest;
-        this.CraftFromChest = TemporaryStorageOptions.DefaultOptions.CraftFromChest;
-        this.CraftFromChestDistance = TemporaryStorageOptions.DefaultOptions.CraftFromChestDistance;
-        this.HslColorPicker = TemporaryStorageOptions.DefaultOptions.HslColorPicker;
-        this.InventoryTabs = TemporaryStorageOptions.DefaultOptions.InventoryTabs;
-        this.InventoryTabList = [..TemporaryStorageOptions.DefaultOptions.InventoryTabList];
-        this.OpenHeldChest = TemporaryStorageOptions.DefaultOptions.OpenHeldChest;
-        this.OrganizeItems = TemporaryStorageOptions.DefaultOptions.OrganizeItems;
-        this.OrganizeItemsGroupBy = TemporaryStorageOptions.DefaultOptions.OrganizeItemsGroupBy;
-        this.OrganizeItemsSortBy = TemporaryStorageOptions.DefaultOptions.OrganizeItemsSortBy;
-        this.ResizeChest = TemporaryStorageOptions.DefaultOptions.ResizeChest;
-        this.SearchItems = TemporaryStorageOptions.DefaultOptions.SearchItems;
-        this.StashToChest = TemporaryStorageOptions.DefaultOptions.StashToChest;
-        this.StashToChestDistance = TemporaryStorageOptions.DefaultOptions.StashToChestDistance;
-        this.StashToChestPriority = TemporaryStorageOptions.DefaultOptions.StashToChestPriority;
-        this.TransferItems = TemporaryStorageOptions.DefaultOptions.TransferItems;
-        this.UnloadChest = TemporaryStorageOptions.DefaultOptions.UnloadChest;
+        this.AutoOrganize = this.defaultOptions.AutoOrganize;
+        this.CarryChest = this.defaultOptions.CarryChest;
+        this.CategorizeChest = this.defaultOptions.CategorizeChest;
+        this.CategorizeChestTags = [..this.defaultOptions.CategorizeChestTags];
+        this.ChestFinder = this.defaultOptions.ChestFinder;
+        this.ChestInfo = this.defaultOptions.ChestInfo;
+        this.ChestLabel = this.defaultOptions.ChestLabel;
+        this.CollectItems = this.defaultOptions.CollectItems;
+        this.ConfigureChest = this.defaultOptions.ConfigureChest;
+        this.CraftFromChest = this.defaultOptions.CraftFromChest;
+        this.CraftFromChestDistance = this.defaultOptions.CraftFromChestDistance;
+        this.HslColorPicker = this.defaultOptions.HslColorPicker;
+        this.InventoryTabs = this.defaultOptions.InventoryTabs;
+        this.InventoryTabList = [..this.defaultOptions.InventoryTabList];
+        this.OpenHeldChest = this.defaultOptions.OpenHeldChest;
+        this.OrganizeItems = this.defaultOptions.OrganizeItems;
+        this.OrganizeItemsGroupBy = this.defaultOptions.OrganizeItemsGroupBy;
+        this.OrganizeItemsSortBy = this.defaultOptions.OrganizeItemsSortBy;
+        this.ResizeChest = this.defaultOptions.ResizeChest;
+        this.SearchItems = this.defaultOptions.SearchItems;
+        this.StashToChest = this.defaultOptions.StashToChest;
+        this.StashToChestDistance = this.defaultOptions.StashToChestDistance;
+        this.StashToChestPriority = this.defaultOptions.StashToChestPriority;
+        this.TransferItems = this.defaultOptions.TransferItems;
+        this.UnloadChest = this.defaultOptions.UnloadChest;
     }
 
     /// <summary>Saves the changes back to storage options.</summary>

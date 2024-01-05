@@ -9,7 +9,6 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 /// <summary>Represents a factory class that creates and manages inventory tabs.</summary>
 internal sealed class InventoryTabFactory : BaseService
 {
-    private readonly AssetHandler assetHandler;
     private readonly IGameContentHelper gameContentHelper;
     private readonly ItemMatcherFactory itemMatcherFactory;
     private readonly Lazy<Dictionary<string, InventoryTabData>> tabData;
@@ -17,26 +16,25 @@ internal sealed class InventoryTabFactory : BaseService
     private readonly ITranslationHelper translationHelper;
 
     /// <summary>Initializes a new instance of the <see cref="InventoryTabFactory" /> class.</summary>
-    /// <param name="assetHandler">Dependency used for handling assets.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
+    /// <param name="getInventoryTabData">Function which returns inventory tab data.</param>
     /// <param name="itemMatcherFactory">Dependency used for getting an ItemMatcher.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="translationHelper">Dependency used for accessing translations.</param>
     public InventoryTabFactory(
-        AssetHandler assetHandler,
         IGameContentHelper gameContentHelper,
+        Func<Dictionary<string, InventoryTabData>> getInventoryTabData,
         ItemMatcherFactory itemMatcherFactory,
         ILog log,
         IManifest manifest,
         ITranslationHelper translationHelper)
         : base(log, manifest)
     {
-        this.assetHandler = assetHandler;
         this.gameContentHelper = gameContentHelper;
         this.itemMatcherFactory = itemMatcherFactory;
         this.translationHelper = translationHelper;
-        this.tabData = new Lazy<Dictionary<string, InventoryTabData>>(this.GetTabData);
+        this.tabData = new Lazy<Dictionary<string, InventoryTabData>>(getInventoryTabData);
     }
 
     /// <summary>Tries to get an inventory tab with the specified name.</summary>
@@ -68,7 +66,4 @@ internal sealed class InventoryTabFactory : BaseService
         this.tabs.Value[name] = tab;
         return true;
     }
-
-    private Dictionary<string, InventoryTabData> GetTabData() =>
-        this.gameContentHelper.Load<Dictionary<string, InventoryTabData>>(this.assetHandler.TabDataPath);
 }

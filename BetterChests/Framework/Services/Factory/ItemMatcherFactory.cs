@@ -1,5 +1,6 @@
 namespace StardewMods.BetterChests.Framework.Services.Factory;
 
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -7,27 +8,38 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 /// <summary>Represents a factory class for creating instances of the ItemMatcher class.</summary>
 internal sealed class ItemMatcherFactory : BaseService
 {
-    private readonly Func<ItemMatcher> getItemMatcher;
+    private readonly Func<IModConfig> getConfig;
+    private readonly ITranslationHelper translationHelper;
 
     /// <summary>Initializes a new instance of the <see cref="ItemMatcherFactory" /> class.</summary>
-    /// <param name="getItemMatcher">Function which returns a new item matcher.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    public ItemMatcherFactory(Func<ItemMatcher> getItemMatcher, ILog log, IManifest manifest)
-        : base(log, manifest) =>
-        this.getItemMatcher = getItemMatcher;
+    /// <param name="getConfig">Dependency used for accessing config data.</param>
+    /// <param name="translationHelper">Dependency used for accessing translations.</param>
+    public ItemMatcherFactory(
+        ILog log,
+        IManifest manifest,
+        Func<IModConfig> getConfig,
+        ITranslationHelper translationHelper)
+        : base(log, manifest)
+    {
+        this.getConfig = getConfig;
+        this.translationHelper = translationHelper;
+    }
 
     /// <summary>Retrieves a single ItemMatcher.</summary>
     /// <returns>The ItemMatcher object.</returns>
-    public ItemMatcher GetDefault() => this.getItemMatcher();
+    public ItemMatcher GetDefault() => new('!', '#', this.translationHelper);
 
     /// <summary>Retrieves a single ItemMatcher for use in search.</summary>
     /// <returns>The ItemMatcher object.</returns>
     public ItemMatcher GetOneForSearch()
     {
-        var itemMatcher = this.getItemMatcher();
-        itemMatcher.AllowPartial = true;
-        itemMatcher.OnlyTags = false;
-        return itemMatcher;
+        var modConfig = this.getConfig();
+        return new ItemMatcher(modConfig.SearchNegationSymbol, modConfig.SearchTagSymbol, this.translationHelper)
+        {
+            AllowPartial = true,
+            OnlyTags = false,
+        };
     }
 }

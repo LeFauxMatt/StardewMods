@@ -4,10 +4,11 @@ using HarmonyLib;
 using SimpleInjector;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Features;
-using StardewMods.BetterChests.Framework.Services.Transient;
+using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Services.Integrations.Automate;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
@@ -48,6 +49,9 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.ModRegistry);
         this.container.RegisterInstance(this.Helper.Reflection);
         this.container.RegisterInstance(this.Helper.Translation);
+        this.container.RegisterInstance<Func<CategorizeOption>>(this.GetCategorizeOption);
+        this.container.RegisterInstance<Func<Dictionary<string, InventoryTabData>>>(this.GetInventoryTabData);
+        this.container.RegisterInstance<Func<IModConfig>>(this.GetModConfig);
         this.container.RegisterSingleton<AssetHandler>();
         this.container.RegisterSingleton<AutomateIntegration>();
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
@@ -58,7 +62,6 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<InventoryTabFactory>();
         this.container.RegisterSingleton<ItemGrabMenuManager>();
-        this.container.RegisterSingleton<Func<ItemMatcher>>(() => this.container.GetInstance<ItemMatcher>);
         this.container.RegisterSingleton<ItemMatcherFactory>();
         this.container.RegisterSingleton<LocalizedTextManager>();
         this.container.RegisterSingleton<ILog, LogService>();
@@ -66,7 +69,7 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<StatusEffectManager>();
         this.container.RegisterSingleton<ITheming, ThemingService>();
         this.container.RegisterSingleton<ToolbarIconsIntegration>();
-        this.container.Register<ItemMatcher>();
+        this.container.Register<CategorizeOption>();
 
         this.container.Collection.Register<IFeature>(
             new[]
@@ -99,4 +102,15 @@ public sealed class ModEntry : Mod
         var configManager = this.container.GetInstance<ConfigManager>();
         configManager.Init();
     }
+
+    private Dictionary<string, InventoryTabData> GetInventoryTabData()
+    {
+        var assetHandler = this.container.GetInstance<AssetHandler>();
+        var gameContentHelper = this.container.GetInstance<IGameContentHelper>();
+        return gameContentHelper.Load<Dictionary<string, InventoryTabData>>(assetHandler.TabDataPath);
+    }
+
+    private IModConfig GetModConfig() => this.container.GetInstance<IModConfig>();
+
+    private CategorizeOption GetCategorizeOption() => this.container.GetInstance<CategorizeOption>();
 }

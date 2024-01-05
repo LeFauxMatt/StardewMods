@@ -3,8 +3,8 @@ namespace StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models;
-using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
+using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
@@ -15,21 +15,21 @@ using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
 {
     private readonly GenericModConfigMenuIntegration genericModConfigMenuIntegration;
-    private readonly IInputHelper inputHelper;
+    private readonly Func<CategorizeOption> getCategorizeOption;
     private readonly LocalizedTextManager localizedTextManager;
     private readonly ILog log;
     private readonly IManifest manifest;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigManager" /> class.</summary>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
-    /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
+    /// <param name="getCategorizeOption">Gets a new instance of <see cref="CategorizeOption" />.</param>
     /// <param name="localizedTextManager">Dependency used for formatting and translating text.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
     public ConfigManager(
         GenericModConfigMenuIntegration genericModConfigMenuIntegration,
-        IInputHelper inputHelper,
+        Func<CategorizeOption> getCategorizeOption,
         LocalizedTextManager localizedTextManager,
         ILog log,
         IManifest manifest,
@@ -37,7 +37,7 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
         : base(modHelper)
     {
         this.genericModConfigMenuIntegration = genericModConfigMenuIntegration;
-        this.inputHelper = inputHelper;
+        this.getCategorizeOption = getCategorizeOption;
         this.localizedTextManager = localizedTextManager;
         this.log = log;
         this.manifest = manifest;
@@ -115,7 +115,8 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
         }
 
         var gmcm = this.genericModConfigMenuIntegration.Api;
-        var options = new TemporaryStorageOptions(container.Options);
+        var defaultOptions = new DefaultStorageOptions();
+        var options = new TemporaryStorageOptions(container.Options, defaultOptions);
         if (this.genericModConfigMenuIntegration.IsRegistered(this.manifest))
         {
             this.genericModConfigMenuIntegration.Unregister(this.manifest);
@@ -154,18 +155,10 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
         this.AddMain(options);
 
         gmcm.AddPage(this.manifest, "Categories", I18n.Section_Categorize_Name);
-        if (container is ChestContainer chestContainer)
-        {
-            gmcm.AddComplexOption(
-                this.manifest,
-                I18n.Config_ChestColor_Name,
-                (b, pos) =>
-                {
-                    chestContainer.Chest.draw(b, (int)pos.X, (int)pos.Y, local: true);
-                },
-                I18n.Config_ChestColor_Tooltip,
-                height: () => 120);
-        }
+
+        var categorizeOption = this.getCategorizeOption();
+        categorizeOption.Init(options.CategorizeChestTags);
+        this.genericModConfigMenuIntegration.AddComplexOption(this.manifest, categorizeOption);
 
         gmcm.OpenModMenu(this.manifest);
     }
