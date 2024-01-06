@@ -20,6 +20,7 @@
   <ItemGroup>
     <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1"/>
     <PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="2.1.0"/>
+    <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
     <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta08"/>
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
       <PrivateAssets>all</PrivateAssets>
@@ -32,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(SolutionDir)\GlobalSuppressions.cs" Link="GlobalSuppressions.cs"/>
+    <Using Include="JetBrains.Annotations"/>
     <Using Include="StardewValley"/>
     <Using Include="StardewModdingAPI"/>
     <Using Include="System.Diagnostics.CodeAnalysis"/>
