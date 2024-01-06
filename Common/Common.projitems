@@ -13,6 +13,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Enums\SimpleLogLevel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Events\ConfigChangedEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\HSLColor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\BaseComplexOption.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\IComplexOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\BaseService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ConfigManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\BetterChests\Enums\CapacityOption.cs" />
@@ -27,8 +31,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ExpandedStorage\ExpandedStorageIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ExpandedStorage\IChestCreatedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ExpandedStorage\IExpandedStorageApi.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Models\HslColor.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\Automate\AutomateIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\Automate\IAutomatable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\Automate\IAutomateApi.cs" />
@@ -45,9 +47,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\ITheming.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\LogService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\ThemingService.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\BaseComplexOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\GenericModConfigMenuIntegration.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\IComplexOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\IGenericModConfigMenuApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ModIntegration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ProjectFluent\IFluent.cs" />

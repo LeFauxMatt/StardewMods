@@ -16,7 +16,7 @@ internal sealed class ContentPatcherIntegration : ModIntegration<IContentPatcher
 
     /// <summary>Initializes a new instance of the <see cref="ContentPatcherIntegration" /> class.</summary>
     /// <param name="modEvents">Dependency used for managing access to events.</param>
-    /// <param name="modRegistry">SMAPI's mod registry.</param>
+    /// <param name="modRegistry">Dependency used for fetching metadata about loaded mods.</param>
     public ContentPatcherIntegration(IModEvents modEvents, IModRegistry modRegistry)
         : base(modRegistry, ContentPatcherIntegration.ModUniqueId, ContentPatcherIntegration.ModVersion)
     {

@@ -5,7 +5,7 @@ internal sealed class ExpandedStorageIntegration : ModIntegration<IExpandedStora
     private const string ModUniqueId = "furyx639.ExpandedStorage";
 
     /// <summary>Initializes a new instance of the <see cref="ExpandedStorageIntegration" /> class.</summary>
-    /// <param name="modRegistry">SMAPI's mod registry.</param>
+    /// <param name="modRegistry">Dependency used for fetching metadata about loaded mods.</param>
     public ExpandedStorageIntegration(IModRegistry modRegistry)
         : base(modRegistry, ExpandedStorageIntegration.ModUniqueId)
     {

@@ -8,7 +8,7 @@ internal abstract class ModIntegration<T>
     private readonly Lazy<T?> modApi;
 
     /// <summary>Initializes a new instance of the <see cref="ModIntegration{T}" /> class.</summary>
-    /// <param name="modRegistry">SMAPI's mod registry.</param>
+    /// <param name="modRegistry">Dependency used for fetching metadata about loaded mods.</param>
     /// <param name="modUniqueId">The unique id of the external mod.</param>
     /// <param name="modVersion">The minimum supported version.</param>
     internal ModIntegration(IModRegistry modRegistry, string modUniqueId, string modVersion = "")
