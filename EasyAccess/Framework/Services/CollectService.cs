@@ -117,7 +117,7 @@ internal sealed class CollectService : BaseService<CollectService>
 
                     Game1.createItemDebris(obj, Game1.tileSize * pos, direction, Game1.currentLocation);
                     Game1.currentLocation.Objects.Remove(pos);
-                    this.Log.Info("Dropped {0} from forage.", [obj.DisplayName]);
+                    this.Log.Info("Dropped {0} from forage.", obj.DisplayName);
                     continue;
                 }
 
@@ -126,7 +126,7 @@ internal sealed class CollectService : BaseService<CollectService>
                     var item = obj.heldObject.Value;
                     if (item is not null && obj.checkForAction(Game1.player))
                     {
-                        this.Log.Info("Collected {0} from producer {1}.", [item.DisplayName, obj.DisplayName]);
+                        this.Log.Info("Collected {0} from producer {1}.", item.DisplayName, obj.DisplayName);
                     }
                 }
             }

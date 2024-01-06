@@ -71,7 +71,7 @@ internal sealed class DispenseService : BaseService<DispenseService>
             }
 
             Game1.player.reduceActiveItemByOne();
-            this.Log.Info("Dispensed {0} into producer {1}.", [Game1.player.CurrentItem.DisplayName, obj.DisplayName]);
+            this.Log.Info("Dispensed {0} into producer {1}.", Game1.player.CurrentItem.DisplayName, obj.DisplayName);
         }
     }
 

@@ -62,7 +62,7 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
         var config = this.GetNew();
 
         // Register mod configuration
-        this.genericModConfigMenuIntegration.Register(this.manifest, this.Reset, () => this.Save(config));
+        this.genericModConfigMenuIntegration.Register(this.Reset, () => this.Save(config));
 
         // Collect Items
         gmcm.AddKeybindList(
