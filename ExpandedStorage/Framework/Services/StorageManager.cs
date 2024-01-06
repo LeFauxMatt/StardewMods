@@ -68,7 +68,7 @@ internal sealed class StorageManager : BaseService
         }
 
         // Load storage data
-        this.Log.Trace("Loading managed storage: {0}", [item.QualifiedItemId]);
+        this.Log.Trace("Loading managed storage: {0}", item.QualifiedItemId);
         storageData = new StorageData();
         this.data.Add(item.QualifiedItemId, storageData);
 
@@ -109,7 +109,7 @@ internal sealed class StorageManager : BaseService
                     storageData.PlayerColor = customFieldValue.GetBool();
                     break;
                 default:
-                    this.Log.Warn("{0} is not a supported attribute", [keyParts[2]]);
+                    this.Log.Warn("{0} is not a supported attribute", keyParts[2]);
                     break;
             }
         }
