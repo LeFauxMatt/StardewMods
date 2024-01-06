@@ -24,7 +24,7 @@ internal sealed class StatusEffectManager : BaseService<StatusEffectManager>
             return;
         }
 
-        this.Log.Trace("Adding effect {0}", [statusEffect.ToStringFast()]);
+        this.Log.Trace("Adding effect {0}", statusEffect.ToStringFast());
         Game1.player.buffs.Apply(buff);
     }
 
@@ -47,7 +47,7 @@ internal sealed class StatusEffectManager : BaseService<StatusEffectManager>
             return;
         }
 
-        this.Log.Trace("Removing effect {0}", [statusEffect.ToStringFast()]);
+        this.Log.Trace("Removing effect {0}", statusEffect.ToStringFast());
         Game1.player.buffs.Remove(id);
     }
 

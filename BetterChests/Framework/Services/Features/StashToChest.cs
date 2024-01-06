@@ -196,7 +196,11 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
                     stashedAny = true;
                     this.Log.Trace(
                         "{0}: {{ Item: {1}, Quantity: {2}, From: {3}, To: {4} }}",
-                        [this.Id, name, amount, containerFrom, containerTo]);
+                        this.Id,
+                        name,
+                        amount,
+                        containerFrom,
+                        containerTo);
                 }
             }
 
@@ -246,7 +250,11 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
             {
                 this.Log.Trace(
                     "{0}: {{ Item: {1}, Quantity: {2}, From: {3}, To: {4} }}",
-                    [this.Id, name, amount, containerFrom, containerTo]);
+                    this.Id,
+                    name,
+                    amount,
+                    containerFrom,
+                    containerTo);
             }
         }
     }

@@ -61,7 +61,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
                 () => this.itemMatcher.Value.SearchText,
                 value =>
                 {
-                    this.Log.Trace("{0}: Searching for {1}", [this.Id, value]);
+                    this.Log.Trace("{0}: Searching for {1}", this.Id, value);
                     this.itemMatcher.Value.SearchText = value;
                     this.resetCache.Value = true;
                 }));
@@ -291,7 +291,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
             }
         }
 
-        this.Log.Trace("{0}: Found {1} chests", [this.Id, this.pointers.Value.Count]);
+        this.Log.Trace("{0}: Found {1} chests", this.Id, this.pointers.Value.Count);
         this.currentIndex.Value = 0;
     }
 }

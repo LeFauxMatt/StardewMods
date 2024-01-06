@@ -76,7 +76,7 @@ internal sealed class ChestInfo : BaseFeature<ChestInfo>
 
         this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.ToggleInfo);
         this.isActive.Value = !this.isActive.Value;
-        this.Log.Trace("{0}: Toggled chest info to {1}", [this.Id, this.isActive.Value]);
+        this.Log.Trace("{0}: Toggled chest info to {1}", this.Id, this.isActive.Value);
     }
 
     private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e) => this.resetCache.Value = true;

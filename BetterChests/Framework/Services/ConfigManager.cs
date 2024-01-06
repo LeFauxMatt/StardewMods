@@ -4,7 +4,6 @@ using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
-using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
@@ -15,21 +14,18 @@ using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
 {
     private readonly GenericModConfigMenuIntegration genericModConfigMenuIntegration;
-    private readonly Func<CategorizeOption> getCategorizeOption;
     private readonly LocalizedTextManager localizedTextManager;
     private readonly ILog log;
     private readonly IManifest manifest;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigManager" /> class.</summary>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
-    /// <param name="getCategorizeOption">Gets a new instance of <see cref="CategorizeOption" />.</param>
     /// <param name="localizedTextManager">Dependency used for formatting and translating text.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
     public ConfigManager(
         GenericModConfigMenuIntegration genericModConfigMenuIntegration,
-        Func<CategorizeOption> getCategorizeOption,
         LocalizedTextManager localizedTextManager,
         ILog log,
         IManifest manifest,
@@ -37,7 +33,6 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
         : base(modHelper)
     {
         this.genericModConfigMenuIntegration = genericModConfigMenuIntegration;
-        this.getCategorizeOption = getCategorizeOption;
         this.localizedTextManager = localizedTextManager;
         this.log = log;
         this.manifest = manifest;
@@ -105,65 +100,8 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
     /// <inheritdoc />
     public bool UnloadChestSwap => this.Config.UnloadChestSwap;
 
-    /// <summary>Shows the config menu.</summary>
-    /// <param name="container">The container to configure.</param>
-    public void ShowMenu(IStorageContainer container)
-    {
-        if (!this.genericModConfigMenuIntegration.IsLoaded)
-        {
-            return;
-        }
-
-        var gmcm = this.genericModConfigMenuIntegration.Api;
-        var defaultOptions = new DefaultStorageOptions();
-        var options = new TemporaryStorageOptions(container.Options, defaultOptions);
-        if (this.genericModConfigMenuIntegration.IsRegistered(this.manifest))
-        {
-            this.genericModConfigMenuIntegration.Unregister(this.manifest);
-        }
-
-        this.genericModConfigMenuIntegration.Register(this.manifest, options.Reset, options.Save);
-
-        if (this.LabelChest)
-        {
-            gmcm.AddTextOption(
-                this.manifest,
-                () => options.ChestLabel,
-                value => options.ChestLabel = value,
-                I18n.Config_ChestLabel_Name,
-                I18n.Config_ChestLabel_Tooltip);
-        }
-
-        if (container.Options.StashToChest is not (RangeOption.Disabled or RangeOption.Default))
-        {
-            gmcm.AddNumberOption(
-                this.manifest,
-                () => options.StashToChestPriority,
-                value => options.StashToChestPriority = value,
-                I18n.Config_StashToChestPriority_Name,
-                I18n.Config_StashToChestPriority_Tooltip);
-        }
-
-        gmcm.AddPageLink(this.manifest, "Main", I18n.Section_Main_Name, I18n.Section_Main_Description);
-        gmcm.AddPageLink(
-            this.manifest,
-            "Categories",
-            I18n.Section_Categorize_Name,
-            I18n.Section_Categorize_Description);
-
-        gmcm.AddPage(this.manifest, "Main", I18n.Section_Main_Name);
-        this.AddMain(options);
-
-        gmcm.AddPage(this.manifest, "Categories", I18n.Section_Categorize_Name);
-
-        var categorizeOption = this.getCategorizeOption();
-        categorizeOption.Init(options.CategorizeChestTags);
-        this.genericModConfigMenuIntegration.AddComplexOption(this.manifest, categorizeOption);
-
-        gmcm.OpenModMenu(this.manifest);
-    }
-
-    private void SetupMainConfig()
+    /// <summary>Setup the main config options.</summary>
+    public void SetupMainConfig()
     {
         if (!this.genericModConfigMenuIntegration.IsLoaded)
         {
@@ -172,12 +110,7 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
 
         var gmcm = this.genericModConfigMenuIntegration.Api;
         var config = this.GetNew();
-        if (this.genericModConfigMenuIntegration.IsRegistered(this.manifest))
-        {
-            this.genericModConfigMenuIntegration.Unregister(this.manifest);
-        }
-
-        this.genericModConfigMenuIntegration.Register(this.manifest, this.Reset, () => this.Save(config));
+        this.genericModConfigMenuIntegration.Register(this.Reset, () => this.Save(config));
 
         gmcm.AddPageLink(this.manifest, "Main", I18n.Section_Main_Name);
         gmcm.AddParagraph(this.manifest, I18n.Section_Main_Description);
@@ -192,7 +125,7 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
         gmcm.AddParagraph(this.manifest, I18n.Section_Storages_Description);
 
         gmcm.AddPage(this.manifest, "Main", I18n.Section_Main_Name);
-        this.AddMain(config.DefaultOptions);
+        this.AddMainOption(config.DefaultOptions);
 
         gmcm.AddPage(this.manifest, "Controls", I18n.Section_Controls_Name);
         this.AddControls(config.Controls);
@@ -205,7 +138,9 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
         gmcm.AddParagraph(this.manifest, I18n.Storage_Default_Tooltip);
     }
 
-    private void AddMain(IStorageOptions options)
+    /// <summary>Adds the main options to the config menu.</summary>
+    /// <param name="options">The storage options to add.</param>
+    public void AddMainOption(IStorageOptions options)
     {
         if (!this.genericModConfigMenuIntegration.IsLoaded)
         {

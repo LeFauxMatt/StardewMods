@@ -51,7 +51,7 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
                 {
                     if (!string.IsNullOrWhiteSpace(value))
                     {
-                        this.Log.Trace("{0}: Searching for {1}", [this.Id, value]);
+                        this.Log.Trace("{0}: Searching for {1}", this.Id, value);
                     }
 
                     this.itemMatcher.Value.SearchText = value;

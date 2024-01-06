@@ -131,12 +131,12 @@ internal sealed class CollectItems : BaseFeature<CollectItems>
             if (disable)
             {
                 Game1.player.modData.Remove(key);
-                this.Log.Trace("{0}: Set collect items on", [this.Id]);
+                this.Log.Trace("{0}: Set collect items on", this.Id);
                 return;
             }
 
             Game1.player.modData[key] = "true";
-            this.Log.Trace("{0}: Set collect items off", [this.Id]);
+            this.Log.Trace("{0}: Set collect items off", this.Id);
         }
     }
 

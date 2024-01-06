@@ -114,7 +114,11 @@ internal sealed class UnloadChest : BaseFeature<UnloadChest>
             {
                 this.Log.Trace(
                     "{0}: {{ Item: {1}, Quantity: {2}, From: {3}, To: {4} }}",
-                    [this.Id, name, amount, containerFrom, containerTo]);
+                    this.Id,
+                    name,
+                    amount,
+                    containerFrom,
+                    containerTo);
             }
         }
     }

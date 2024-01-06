@@ -6,8 +6,11 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Models.Events;
+using StardewMods.BetterChests.Framework.Models.StorageOptions;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
+using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewValley.Menus;
@@ -23,10 +26,13 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
     private readonly ConfigManager configManager;
     private readonly ContainerFactory containerFactory;
     private readonly GenericModConfigMenuIntegration genericModConfigMenuIntegration;
+    private readonly Func<CategorizeOption> getCategorizeOption;
     private readonly Harmony harmony;
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<bool> isActive = new();
     private readonly ItemGrabMenuManager itemGrabMenuManager;
+    private readonly PerScreen<IStorageContainer?> lastContainer = new();
+    private readonly IManifest manifest;
     private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigureChest" /> class.</summary>
@@ -35,6 +41,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
+    /// <param name="getCategorizeOption">Gets a new instance of <see cref="CategorizeOption" />.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
@@ -47,6 +54,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         ContainerFactory containerFactory,
         IGameContentHelper gameContentHelper,
         GenericModConfigMenuIntegration genericModConfigMenuIntegration,
+        Func<CategorizeOption> getCategorizeOption,
         Harmony harmony,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
@@ -60,9 +68,11 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         this.containerFactory = containerFactory;
         this.modEvents = modEvents;
         this.genericModConfigMenuIntegration = genericModConfigMenuIntegration;
+        this.getCategorizeOption = getCategorizeOption;
         this.harmony = harmony;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
+        this.manifest = manifest;
         this.configButton = new PerScreen<ClickableTextureComponent>(
             () => new ClickableTextureComponent(
                 new Rectangle(0, 0, Game1.tileSize, Game1.tileSize),
@@ -85,6 +95,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
     protected override void Activate()
     {
         // Events
+        this.modEvents.Display.MenuChanged += this.OnMenuChanged;
         this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
         this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
@@ -102,6 +113,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
     protected override void Deactivate()
     {
         // Events
+        this.modEvents.Display.MenuChanged -= this.OnMenuChanged;
         this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
         this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
         this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
@@ -188,7 +200,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         }
 
         this.inputHelper.Suppress(e.Button);
-        this.configManager.ShowMenu(this.itemGrabMenuManager.Top.Container);
+        this.ShowMenu(this.itemGrabMenuManager.Top.Container);
     }
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
@@ -207,7 +219,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         }
 
         this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.ConfigureChest);
-        this.configManager.ShowMenu(container);
+        this.ShowMenu(container);
     }
 
     private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
@@ -221,6 +233,25 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
 
         this.isActive.Value = true;
         this.itemGrabMenuManager.CurrentMenu.RepositionSideButtons();
+    }
+
+    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    {
+        if (this.lastContainer.Value is null || e.OldMenu?.GetType().Name != "SpecificModConfigMenu")
+        {
+            return;
+        }
+
+        this.configManager.SetupMainConfig();
+
+        if (e.NewMenu?.GetType().Name != "ModConfigMenu")
+        {
+            this.lastContainer.Value = null;
+            return;
+        }
+
+        this.lastContainer.Value.ShowMenu();
+        this.lastContainer.Value = null;
     }
 
     private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
@@ -250,5 +281,57 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         {
             this.itemGrabMenuManager.CurrentMenu.hoverText = this.configButton.Value.hoverText;
         }
+    }
+
+    private void ShowMenu(IStorageContainer container)
+    {
+        if (!this.genericModConfigMenuIntegration.IsLoaded)
+        {
+            return;
+        }
+
+        var gmcm = this.genericModConfigMenuIntegration.Api;
+        var defaultOptions = new DefaultStorageOptions();
+        var options = new TemporaryStorageOptions(container.Options, defaultOptions);
+        this.genericModConfigMenuIntegration.Register(options.Reset, options.Save);
+
+        if (this.configManager.LabelChest)
+        {
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.ChestLabel,
+                value => options.ChestLabel = value,
+                I18n.Config_ChestLabel_Name,
+                I18n.Config_ChestLabel_Tooltip);
+        }
+
+        if (container.Options.StashToChest is not (RangeOption.Disabled or RangeOption.Default))
+        {
+            gmcm.AddNumberOption(
+                this.manifest,
+                () => options.StashToChestPriority,
+                value => options.StashToChestPriority = value,
+                I18n.Config_StashToChestPriority_Name,
+                I18n.Config_StashToChestPriority_Tooltip);
+        }
+
+        gmcm.AddPageLink(this.manifest, "Main", I18n.Section_Main_Name, I18n.Section_Main_Description);
+        gmcm.AddPageLink(
+            this.manifest,
+            "Categories",
+            I18n.Section_Categorize_Name,
+            I18n.Section_Categorize_Description);
+
+        gmcm.AddPage(this.manifest, "Main", I18n.Section_Main_Name);
+        this.configManager.AddMainOption(options);
+
+        gmcm.AddPage(this.manifest, "Categories", I18n.Section_Categorize_Name);
+
+        var categorizeOption = this.getCategorizeOption();
+        categorizeOption.Init(options.CategorizeChestTags);
+        this.genericModConfigMenuIntegration.AddComplexOption(categorizeOption);
+
+        gmcm.OpenModMenu(this.manifest);
+        this.lastContainer.Value = container;
     }
 }
