@@ -96,7 +96,7 @@ internal sealed class ToolbarManager : BaseService
             return;
         }
 
-        this.log.Trace("Adding icon: {0}", [id]);
+        this.log.Trace("Adding icon: {0}", id);
         this.components.Add(
             id,
             new ClickableTextureComponent(
@@ -123,7 +123,7 @@ internal sealed class ToolbarManager : BaseService
             return;
         }
 
-        this.log.Trace("Removing icon: {0}", [id]);
+        this.log.Trace("Removing icon: {0}", id);
         this.modConfig.Icons.Remove(toolbarIcon);
         this.components.Remove(id);
     }

@@ -48,7 +48,9 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
         {
             this.log.WarnOnce(
                 "{0} uses deprecated code. {1} event is deprecated. Please use the {2} event instead.",
-                [this.modInfo.Manifest.Name, nameof(this.ToolbarIconPressed), nameof(this.IconPressed)]);
+                this.modInfo.Manifest.Name,
+                nameof(this.ToolbarIconPressed),
+                nameof(this.IconPressed));
 
             this.toolbarIconPressed += value;
         }
@@ -82,7 +84,9 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
                 {
                     this.log.Error(
                         "{0} failed in {1}: {2}",
-                        [this.modInfo.Manifest.Name, nameof(this.IconPressed), ex.Message]);
+                        this.modInfo.Manifest.Name,
+                        nameof(this.IconPressed),
+                        ex.Message);
                 }
             }
         }
@@ -99,7 +103,9 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
                 {
                     this.log.Error(
                         "{0} failed in {1}: {2}",
-                        [this.modInfo.Manifest.Name, nameof(this.IconPressed), ex.Message]);
+                        this.modInfo.Manifest.Name,
+                        nameof(this.IconPressed),
+                        ex.Message);
                 }
             }
         }
