@@ -41,7 +41,7 @@ internal sealed class AssetHandler : BaseService
         var gameData = this.gameContentHelper.Load<Dictionary<string, BushModel>>(this.DataPath);
         foreach (var key in gameData.Keys)
         {
-            this.Log.Trace("Custom Bush loaded a data model for {0}.", [key]);
+            this.Log.Trace("Custom Bush loaded a data model for {0}.", key);
         }
 
         return gameData;

@@ -21,18 +21,13 @@ internal sealed class BushModel
     public string IndoorTexture { get; set; } = string.Empty;
 
     /// <summary>Gets or sets the items produced by this custom bush.</summary>
-    public List<DropsModel> ItemsProduced { get; set; } = new();
+    public List<DropsModel> ItemsProduced { get; set; } = [];
 
     /// <summary>Gets or sets the season in which this bush will produce its drops.</summary>
-    public List<Season> Seasons { get; set; } = new()
-    {
-        Season.Spring,
-        Season.Summer,
-        Season.Fall,
-    };
+    public List<Season> Seasons { get; set; } = [];
 
     /// <summary>Gets or sets the rules which override the locations that custom bushes can be planted in.</summary>
-    public List<PlantableRule> PlantableLocationRules { get; set; } = new();
+    public List<PlantableRule> PlantableLocationRules { get; set; } = [];
 
     /// <summary>Gets or sets the texture of the tea bush.</summary>
     public string Texture { get; set; } = string.Empty;

@@ -28,6 +28,7 @@ internal sealed class BushManager : BaseService
     private readonly string modDataId;
     private readonly string modDataItem;
     private readonly string modDataQuality;
+    private readonly string modDataStack;
 
     /// <summary>Initializes a new instance of the <see cref="BushManager" /> class.</summary>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
@@ -47,6 +48,7 @@ internal sealed class BushManager : BaseService
         this.modDataId = this.ModId + "/Id";
         this.modDataItem = this.ModId + "/ShakeOff";
         this.modDataQuality = this.ModId + "/Quality";
+        this.modDataStack = this.ModId + "/Stack";
         this.gameContentHelper = gameContentHelper;
         this.data = new Lazy<Dictionary<string, BushModel>>(getBushModels);
         this.checkItemPlantRules =
@@ -186,53 +188,86 @@ internal sealed class BushManager : BaseService
         {
             BushManager.instance.Log.Trace(
                 "{0} will not produce. Age: {1} < {2} , Day: {3} < {4}",
-                [
-                    id,
-                    age.ToString(CultureInfo.InvariantCulture),
-                    bushModel.AgeToProduce.ToString(CultureInfo.InvariantCulture),
-                    dayOfMonth.ToString(CultureInfo.InvariantCulture),
-                    bushModel.DayToBeginProducing.ToString(CultureInfo.InvariantCulture),
-                ]);
+                id,
+                age.ToString(CultureInfo.InvariantCulture),
+                bushModel.AgeToProduce.ToString(CultureInfo.InvariantCulture),
+                dayOfMonth.ToString(CultureInfo.InvariantCulture),
+                bushModel.DayToBeginProducing.ToString(CultureInfo.InvariantCulture));
 
             __result = false;
             return;
         }
+
+        BushManager.instance.Log.Trace(
+            "{0} passed basic conditions. Age: {1} >= {2} , Day: {3} >= {4}",
+            id,
+            age.ToString(CultureInfo.InvariantCulture),
+            bushModel.AgeToProduce.ToString(CultureInfo.InvariantCulture),
+            dayOfMonth.ToString(CultureInfo.InvariantCulture),
+            bushModel.DayToBeginProducing.ToString(CultureInfo.InvariantCulture));
 
         // Fails default season conditions
         if (!bushModel.Seasons.Any() && season == Season.Winter && !__instance.IsSheltered())
         {
             BushManager.instance.Log.Trace(
                 "{0} will not produce. Season: {1} and plant is outdoors.",
-                [id, season.ToString()]);
+                id,
+                season.ToString());
 
             __result = false;
             return;
+        }
+
+        if (!bushModel.Seasons.Any())
+        {
+            BushManager.instance.Log.Trace(
+                "{0} passed default season condition. Season: {1} or plant is indoors.",
+                id,
+                season.ToString());
         }
 
         // Fails custom season conditions
         if (bushModel.Seasons.Any() && !bushModel.Seasons.Contains(season) && !__instance.IsSheltered())
         {
             BushManager.instance.Log.Trace(
-                "{0} will not produce. Season: {1} and plant is outdoors.",
-                [id, season.ToString()]);
+                "{0} will not produce. Season: {1} not in {2} and plant is outdoors.",
+                id,
+                season.ToString(),
+                string.Join(',', bushModel.Seasons));
 
             __result = false;
             return;
+        }
+
+        if (bushModel.Seasons.Any())
+        {
+            BushManager.instance.Log.Trace(
+                "{0} passed custom season conditions. Season: {1} in {2} or plant is indoors.",
+                id,
+                season.ToString(),
+                string.Join(',', bushModel.Seasons));
         }
 
         // Try to produce item
-        BushManager.instance.Log.Trace("{0} attempting to produce random item.", [id]);
+        BushManager.instance.Log.Trace("{0} attempting to produce random item.", id);
         if (!BushManager.instance.TryToProduceRandomItem(__instance, bushModel, out var item))
         {
-            BushManager.instance.Log.Trace("{0} will not produce. No item was produced.", [id]);
+            BushManager.instance.Log.Trace("{0} will not produce. No item was produced.", id);
             __result = false;
             return;
         }
 
-        BushManager.instance.Log.Trace("{0} selected {1} to grow.", [id, item.QualifiedItemId]);
+        BushManager.instance.Log.Trace(
+            "{0} selected {1} to grow with quality {2} and quantity {3}.",
+            id,
+            item.QualifiedItemId,
+            item.Quality,
+            item.Stack);
+
         __result = true;
         __instance.modData[BushManager.instance.modDataItem] = item.QualifiedItemId;
         __instance.modData[BushManager.instance.modDataQuality] = item.Quality.ToString(CultureInfo.InvariantCulture);
+        __instance.modData[BushManager.instance.modDataStack] = item.Stack.ToString(CultureInfo.InvariantCulture);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -316,14 +351,34 @@ internal sealed class BushManager : BaseService
         Bush bush)
     {
         if (bush.modData.TryGetValue(BushManager.instance.modDataItem, out var itemId)
-            && !string.IsNullOrWhiteSpace(itemId)
-            && bush.modData.TryGetValue(BushManager.instance.modDataQuality, out var quality)
-            && int.TryParse(quality, out itemQuality))
+            && !string.IsNullOrWhiteSpace(itemId))
         {
+            if (!bush.modData.TryGetValue(BushManager.instance.modDataQuality, out var quality)
+                || !int.TryParse(quality, out itemQuality))
+            {
+                itemQuality = 1;
+            }
+
+            if (!bush.modData.TryGetValue(BushManager.instance.modDataStack, out var stack)
+                || !int.TryParse(stack, out var itemStack))
+            {
+                itemStack = 1;
+            }
+
+            for (var i = 0; i < itemStack; i++)
+            {
+                Game1.createObjectDebris(itemId, xTile, yTile, groundLevel, itemQuality, velocityMultiplier, location);
+            }
+
             bush.modData.Remove(BushManager.instance.modDataItem);
-            Game1.createObjectDebris(itemId, xTile, yTile, groundLevel, itemQuality, velocityMultiplier, location);
+            bush.modData.Remove(BushManager.instance.modDataQuality);
+            bush.modData.Remove(BushManager.instance.modDataStack);
             return;
         }
+
+        bush.modData.Remove(BushManager.instance.modDataItem);
+        bush.modData.Remove(BushManager.instance.modDataQuality);
+        bush.modData.Remove(BushManager.instance.modDataStack);
 
         if (!bush.modData.TryGetValue(BushManager.instance.modDataId, out var bushId)
             || !BushManager.instance.data.Value.TryGetValue(bushId, out var bushModel)
@@ -418,7 +473,7 @@ internal sealed class BushManager : BaseService
                 OpCodes.Newobj,
                 AccessTools.Constructor(
                     typeof(Bush),
-                    new[] { typeof(Vector2), typeof(int), typeof(GameLocation), typeof(int) })))
+                    [typeof(Vector2), typeof(int), typeof(GameLocation), typeof(int)])))
             {
                 yield return instruction;
                 yield return new CodeInstruction(OpCodes.Ldarg_0);
@@ -468,7 +523,9 @@ internal sealed class BushManager : BaseService
         {
             BushManager.instance.Log.Trace(
                 "{0} did not select {1}. Failed: {2}",
-                [bush.modData[BushManager.instance.modDataId], drop.Id, drop.Condition]);
+                bush.modData[BushManager.instance.modDataId],
+                drop.Id,
+                drop.Condition);
 
             return null;
         }
@@ -479,7 +536,9 @@ internal sealed class BushManager : BaseService
         {
             BushManager.instance.Log.Trace(
                 "{0} did not select {1}. Failed: {2}",
-                [bush.modData[BushManager.instance.modDataId], drop.Id, drop.Season.ToString()]);
+                bush.modData[BushManager.instance.modDataId],
+                drop.Id,
+                drop.Season.ToString());
 
             return null;
         }
@@ -495,7 +554,10 @@ internal sealed class BushManager : BaseService
             {
                 this.Log.Error(
                     "{0} failed parsing item query {1} for item {2}: {3}",
-                    [bush.modData[BushManager.instance.modDataId], query, drop.Id, error]);
+                    bush.modData[BushManager.instance.modDataId],
+                    query,
+                    drop.Id,
+                    error);
             });
 
         return item;
