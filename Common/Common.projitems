@@ -12,9 +12,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Enums\ComponentArea.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\SimpleLogLevel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IEventPublisher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IEventSubscriber.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\PriorityAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Events\ConfigChangedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HSLColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Range.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\BaseEventManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ContentPatcher\ConditionsApiReadyEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\BaseComplexOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\IComplexOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\BaseService.cs" />
@@ -56,5 +61,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ToolbarIcons\IIconPressedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ToolbarIcons\IToolbarIconsApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\ToolbarIcons\ToolbarIconsIntegration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\EventManager.cs" />
   </ItemGroup>
 </Project>

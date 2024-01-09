@@ -4,8 +4,10 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.ExpandedStorage.Framework.Models;
 using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -22,18 +24,26 @@ internal sealed class ModPatches : BaseService
     private static ModPatches instance;
 #nullable enable
 
+    private readonly IEventPublisher eventPublisher;
     private readonly StorageManager storageManager;
 
     /// <summary>Initializes a new instance of the <see cref="ModPatches" /> class.</summary>
+    /// <param name="eventPublisher">Dependency used for publishing events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="storageManager">Dependency used to handle the objects which should be managed by Expanded Storages.</param>
-    public ModPatches(Harmony harmony, ILog log, IManifest manifest, StorageManager storageManager)
+    public ModPatches(
+        IEventPublisher eventPublisher,
+        Harmony harmony,
+        ILog log,
+        IManifest manifest,
+        StorageManager storageManager)
         : base(log, manifest)
     {
         // Init
         ModPatches.instance = this;
+        this.eventPublisher = eventPublisher;
         this.storageManager = storageManager;
 
         // Patches
@@ -459,7 +469,7 @@ internal sealed class ModPatches : BaseService
         location.Objects[tile] = chest;
         location.playSound(storage.PlaceSound);
         __result = true;
-        ModPatches.instance.storageManager.RaiseChestCreated(chest, location, tile, storage);
+        ModPatches.instance.eventPublisher.Publish(new ChestCreatedEventArgs(chest, location, tile, storage));
     }
 
     private static void UpdateColorPicker(ItemGrabMenu itemGrabMenu, Item sourceItem)

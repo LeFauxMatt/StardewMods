@@ -19,7 +19,6 @@ internal sealed class SearchBar
     /// <summary>Initializes a new instance of the <see cref="SearchBar" /> class.</summary>
     /// <param name="getMethod">The function that gets the current search text.</param>
     /// <param name="setMethod">The action that sets the search text.</param>
-    /// <param name="area">The area in which the search overlay is displayed.</param>
     public SearchBar(Func<string> getMethod, Action<string> setMethod)
     {
         this.previousText = getMethod();

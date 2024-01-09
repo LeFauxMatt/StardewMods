@@ -2,6 +2,8 @@ namespace StardewMods.EasyAccess;
 
 using SimpleInjector;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
@@ -47,6 +49,9 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
         this.container.RegisterSingleton<ConfigManager, ConfigManager>();
         this.container.RegisterSingleton<DispenseService>();
+        this.container.RegisterSingleton<EventManager>();
+        this.container.RegisterSingleton<IEventPublisher, EventManager>();
+        this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<ILog, LogService>();

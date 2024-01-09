@@ -72,7 +72,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
             new Rectangle(16, 0, 16, 16),
             I18n.Button_StashToChest_Name());
 
-        this.toolbarIconsIntegration.Api.IconPressed += this.OnIconPressed;
+        this.toolbarIconsIntegration.Api.Subscribe<IIconPressedEventArgs>(this.OnIconPressed);
     }
 
     /// <inheritdoc />
@@ -89,7 +89,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
         }
 
         this.toolbarIconsIntegration.Api.RemoveToolbarIcon(this.Id);
-        this.toolbarIconsIntegration.Api.IconPressed -= this.OnIconPressed;
+        this.toolbarIconsIntegration.Api.Unsubscribe<IIconPressedEventArgs>(this.OnIconPressed);
     }
 
     private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -139,7 +139,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
         Game1.playSound("Ship");
     }
 
-    private void OnIconPressed(object? sender, IIconPressedEventArgs e)
+    private void OnIconPressed(IIconPressedEventArgs e)
     {
         if (e.Id == this.Id)
         {

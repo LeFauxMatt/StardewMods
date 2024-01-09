@@ -3,6 +3,8 @@
 using HarmonyLib;
 using SimpleInjector;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.CustomBush.Framework.Models;
 using StardewMods.CustomBush.Framework.Services;
@@ -42,19 +44,23 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.ModRegistry);
         this.container.RegisterInstance(this.Helper.Reflection);
         this.container.RegisterInstance(this.Helper.Translation);
+        this.container.RegisterInstance<Func<Dictionary<string, BushModel>>>(this.GetData);
         this.container.RegisterSingleton<AssetHandler>();
         this.container.RegisterSingleton<BushManager>();
+        this.container.RegisterSingleton<EventManager>();
+        this.container.RegisterSingleton<IEventPublisher, EventManager>();
+        this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<ILog, LogService>();
-        this.container.RegisterSingleton<Func<Dictionary<string, BushModel>>>(
-            () =>
-            {
-                var assetHandler = this.container.GetInstance<AssetHandler>();
-                var gameContentHelper = this.container.GetInstance<IGameContentHelper>();
-                return () => gameContentHelper.Load<Dictionary<string, BushModel>>(assetHandler.DataPath);
-            });
 
         // Verify
         this.container.Verify();
+    }
+
+    private Dictionary<string, BushModel> GetData()
+    {
+        var assetHandler = this.container.GetInstance<AssetHandler>();
+        var gameContentHelper = this.container.GetInstance<IGameContentHelper>();
+        return gameContentHelper.Load<Dictionary<string, BushModel>>(assetHandler.DataPath);
     }
 }

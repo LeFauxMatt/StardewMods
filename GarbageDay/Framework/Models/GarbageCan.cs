@@ -89,7 +89,6 @@ internal sealed class GarbageCan
     }
 
     /// <summary>Called when a player attempts to open the garbage can.</summary>
-    /// <returns>Returns true if an action was performed.</returns>
     public void CheckAction()
     {
         if (!this.checkedToday)

@@ -1,5 +1,7 @@
 namespace StardewMods.Common.Services.Integrations.ToolbarIcons;
 
+using StardewMods.Common.Interfaces;
+
 #pragma warning disable CA1711
 
 /// <summary>Represents the event arguments for a toolbar icon being pressed.</summary>

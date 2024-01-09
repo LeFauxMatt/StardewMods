@@ -89,7 +89,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
             new Rectangle(32, 0, 16, 16),
             I18n.Button_CraftFromChest_Name());
 
-        this.toolbarIconsIntegration.Api.IconPressed += this.OnIconPressed;
+        this.toolbarIconsIntegration.Api.Subscribe<IIconPressedEventArgs>(this.OnIconPressed);
     }
 
     /// <inheritdoc />
@@ -111,7 +111,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
         }
 
         this.toolbarIconsIntegration.Api.RemoveToolbarIcon(this.Id);
-        this.toolbarIconsIntegration.Api.IconPressed -= this.OnIconPressed;
+        this.toolbarIconsIntegration.Api.Unsubscribe<IIconPressedEventArgs>(this.OnIconPressed);
     }
 
     private static IEnumerable<CodeInstruction> GameMenu_constructor_transpiler(
@@ -190,7 +190,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
         this.OpenCraftingMenu(this.DefaultPredicate);
     }
 
-    private void OnIconPressed(object? sender, IIconPressedEventArgs e)
+    private void OnIconPressed(IIconPressedEventArgs e)
     {
         if (e.Id == this.Id)
         {

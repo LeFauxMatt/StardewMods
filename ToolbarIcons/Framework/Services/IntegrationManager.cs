@@ -10,6 +10,7 @@ using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewMods.ToolbarIcons.Framework.Enums;
 using StardewMods.ToolbarIcons.Framework.Interfaces;
 using StardewMods.ToolbarIcons.Framework.Models;
+using StardewMods.ToolbarIcons.Framework.Models.Events;
 using StardewValley.Menus;
 
 /// <summary>Base class for adding toolbar icons for integrated mods.</summary>
@@ -17,7 +18,7 @@ internal sealed class IntegrationManager : BaseService
 {
     private readonly AssetHandler assetHandler;
     private readonly IEnumerable<ICustomIntegration> customIntegrations;
-    private readonly EventsManager eventsManager;
+    private readonly EventManager eventManager;
     private readonly IGameContentHelper gameContentHelper;
     private readonly Dictionary<string, Action> icons = new();
     private readonly IModRegistry modRegistry;
@@ -31,10 +32,9 @@ internal sealed class IntegrationManager : BaseService
     /// <param name="assetHandler">Dependency used for handling assets.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="customIntegrations">Integrations directly supported by the mod.</param>
-    /// <param name="eventsManager">Dependency used for custom events.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="modRegistry">Dependency for fetching metadata about loaded mods.</param>
     /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
     /// <param name="toolbarManager">API to add icons above or below the toolbar.</param>
@@ -42,10 +42,9 @@ internal sealed class IntegrationManager : BaseService
         AssetHandler assetHandler,
         ILog log,
         IEnumerable<ICustomIntegration> customIntegrations,
-        EventsManager eventsManager,
+        EventManager eventManager,
         IGameContentHelper gameContentHelper,
         IManifest manifest,
-        IModEvents modEvents,
         IModRegistry modRegistry,
         IReflectionHelper reflectionHelper,
         ToolbarManager toolbarManager)
@@ -54,7 +53,7 @@ internal sealed class IntegrationManager : BaseService
         // Init
         this.assetHandler = assetHandler;
         this.customIntegrations = customIntegrations;
-        this.eventsManager = eventsManager;
+        this.eventManager = eventManager;
         this.gameContentHelper = gameContentHelper;
         this.modRegistry = modRegistry;
         this.reflectionHelper = reflectionHelper;
@@ -63,8 +62,8 @@ internal sealed class IntegrationManager : BaseService
             ?? throw new MethodAccessException("Unable to access OverrideButton");
 
         // Events
-        modEvents.GameLoop.SaveLoaded += this.OnSaveLoaded;
-        this.eventsManager.IconPressed += this.OnIconPressed;
+        eventManager.Subscribe<SaveLoadedEventArgs>(this.OnSaveLoaded);
+        eventManager.Subscribe<IIconPressedEventArgs>(this.OnIconPressed);
     }
 
     /// <summary>Adds a complex integration for vanilla.</summary>
@@ -226,7 +225,7 @@ internal sealed class IntegrationManager : BaseService
         this.AddIcon(modId, index, hoverText, () => action.Invoke(arguments), this.assetHandler.IconPath);
     }
 
-    private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
+    private void OnSaveLoaded(SaveLoadedEventArgs e)
     {
         if (this.isLoaded)
         {
@@ -284,10 +283,10 @@ internal sealed class IntegrationManager : BaseService
         }
 
         this.isLoaded = true;
-        this.eventsManager.InvokeToolbarIconsLoaded();
+        this.eventManager.Publish(new ToolbarIconsLoadedEventArgs());
     }
 
-    private void OnIconPressed(object? sender, IIconPressedEventArgs e)
+    private void OnIconPressed(IIconPressedEventArgs e)
     {
         if (this.icons.TryGetValue(e.Id, out var action))
         {

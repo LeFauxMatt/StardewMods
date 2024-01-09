@@ -3,6 +3,7 @@ namespace StardewMods.EasyAccess.Framework.Services;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Extensions;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
@@ -16,19 +17,19 @@ internal sealed class CollectService : BaseService<CollectService>
 
     /// <summary>Initializes a new instance of the <see cref="CollectService" /> class.</summary>
     /// <param name="assetHandler">Dependency used for handling assets.</param>
+    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public CollectService(
         AssetHandler assetHandler,
+        IEventSubscriber eventSubscriber,
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
         IModConfig modConfig,
-        IModEvents modEvents,
         ToolbarIconsIntegration toolbarIconsIntegration)
         : base(log, manifest)
     {
@@ -37,7 +38,7 @@ internal sealed class CollectService : BaseService<CollectService>
         this.modConfig = modConfig;
 
         // Events
-        modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
+        eventSubscriber.Subscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
 
         if (!toolbarIconsIntegration.IsLoaded)
         {
@@ -50,7 +51,7 @@ internal sealed class CollectService : BaseService<CollectService>
             new Rectangle(0, 0, 16, 16),
             I18n.Button_CollectOutputs_Name());
 
-        toolbarIconsIntegration.Api.IconPressed += this.OnIconPressed;
+        toolbarIconsIntegration.Api.Subscribe<IIconPressedEventArgs>(this.OnIconPressed);
     }
 
     private void CollectItems()
@@ -148,7 +149,7 @@ internal sealed class CollectService : BaseService<CollectService>
         }
     }
 
-    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    private void OnButtonsChanged(ButtonsChangedEventArgs e)
     {
         if (!Context.IsPlayerFree || !this.modConfig.ControlScheme.CollectItems.JustPressed())
         {
@@ -159,7 +160,7 @@ internal sealed class CollectService : BaseService<CollectService>
         this.CollectItems();
     }
 
-    private void OnIconPressed(object? sender, IIconPressedEventArgs e)
+    private void OnIconPressed(IIconPressedEventArgs e)
     {
         if (e.Id == this.UniqueId)
         {

@@ -1,8 +1,8 @@
 namespace StardewMods.ExpandedStorage.Framework.Services;
 
-using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Extensions;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.ExpandedStorage;
@@ -10,7 +10,6 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.ExpandedStorage.Framework.Enums;
 using StardewMods.ExpandedStorage.Framework.Models;
 using StardewValley.GameData.BigCraftables;
-using StardewValley.Objects;
 
 /// <summary>Responsible for managing expanded storage objects.</summary>
 internal sealed class StorageManager : BaseService
@@ -19,29 +18,15 @@ internal sealed class StorageManager : BaseService
 
     private readonly Dictionary<string, IStorageData> data = new();
 
-    private EventHandler<IChestCreatedEventArgs>? chestCreated;
-
     /// <summary>Initializes a new instance of the <see cref="StorageManager" /> class.</summary>
-    /// <param name="contentPatcherIntegration">Dependency for Content Patcher integration.</param>
+    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
-    public StorageManager(
-        ContentPatcherIntegration contentPatcherIntegration,
-        ILog log,
-        IManifest manifest,
-        IModEvents modEvents)
+    public StorageManager(IEventSubscriber eventSubscriber, ILog log, IManifest manifest)
         : base(log, manifest)
     {
-        modEvents.Content.AssetsInvalidated += this.OnAssetsInvalidated;
-        contentPatcherIntegration.ConditionsApiReady += this.OnConditionsApiReady;
-    }
-
-    /// <summary>Event triggered when an expanded storage chest is created.</summary>
-    public event EventHandler<IChestCreatedEventArgs> ChestCreated
-    {
-        add => this.chestCreated += value;
-        remove => this.chestCreated -= value;
+        eventSubscriber.Subscribe<AssetsInvalidatedEventArgs>(this.OnAssetsInvalidated);
+        eventSubscriber.Subscribe<ConditionsApiReadyEventArgs>(this.OnConditionsApiReady);
     }
 
     /// <summary>Tries to retrieve the storage data associated with the specified item.</summary>
@@ -117,16 +102,7 @@ internal sealed class StorageManager : BaseService
         return true;
     }
 
-    /// <summary>Raises the event when a chest is created.</summary>
-    /// <param name="chest">The newly created chest.</param>
-    /// <param name="location">The game location where the chest is created.</param>
-    /// <param name="tileLocation">The tile location of the chest.</param>
-    /// <param name="storageData">The storage data associated with the chest.</param>
-    internal void
-        RaiseChestCreated(Chest chest, GameLocation location, Vector2 tileLocation, IStorageData storageData) =>
-        this.chestCreated?.InvokeAll(this, new ChestCreatedEventArgs(chest, location, tileLocation, storageData));
-
-    private void OnAssetsInvalidated(object? sender, AssetsInvalidatedEventArgs e)
+    private void OnAssetsInvalidated(AssetsInvalidatedEventArgs e)
     {
         if (e.Names.Any(assetName => assetName.IsEquivalentTo(StorageManager.AssetPath)))
         {
@@ -134,5 +110,5 @@ internal sealed class StorageManager : BaseService
         }
     }
 
-    private void OnConditionsApiReady(object? sender, EventArgs args) => this.data.Clear();
+    private void OnConditionsApiReady(ConditionsApiReadyEventArgs args) => this.data.Clear();
 }

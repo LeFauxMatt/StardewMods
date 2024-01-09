@@ -1,44 +1,44 @@
 ﻿namespace StardewMods.ToolbarIcons.Framework;
 
 using Microsoft.Xna.Framework;
+using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
-using StardewMods.ToolbarIcons.Framework.Models;
+using StardewMods.ToolbarIcons.Framework.Models.Events;
 using StardewMods.ToolbarIcons.Framework.Services;
 
 /// <inheritdoc />
 public sealed class ToolbarIconsApi : IToolbarIconsApi
 {
+    private readonly BaseEventManager eventManager;
     private readonly string prefix;
     private readonly ILog log;
     private readonly IModInfo modInfo;
     private readonly ToolbarManager toolbarManager;
 
-    private EventHandler<IIconPressedEventArgs>? iconPressed;
     private EventHandler<string>? toolbarIconPressed;
 
     /// <summary>Initializes a new instance of the <see cref="ToolbarIconsApi" /> class.</summary>
-    /// <param name="eventsManager">Dependency used for custom events.</param>
+    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="log">Dependency used for monitoring and logging.</param>
     /// <param name="modInfo">Mod info from the calling mod.</param>
     /// <param name="toolbarManager">Dependency for managing the toolbar icons.</param>
-    internal ToolbarIconsApi(EventsManager eventsManager, ILog log, IModInfo modInfo, ToolbarManager toolbarManager)
+    internal ToolbarIconsApi(
+        IEventSubscriber eventSubscriber,
+        ILog log,
+        IModInfo modInfo,
+        ToolbarManager toolbarManager)
     {
         // Init
         this.log = log;
         this.modInfo = modInfo;
         this.prefix = this.modInfo.Manifest.UniqueID + "/";
         this.toolbarManager = toolbarManager;
+        this.eventManager = new BaseEventManager(log, modInfo.Manifest);
 
         // Events
-        eventsManager.IconPressed += this.OnIconPressed;
-    }
-
-    /// <inheritdoc />
-    public event EventHandler<IIconPressedEventArgs> IconPressed
-    {
-        add => this.iconPressed += value;
-        remove => this.iconPressed -= value;
+        eventSubscriber.Subscribe<IconPressedEventArgs>(this.OnIconPressed);
     }
 
     /// <inheritdoc />
@@ -47,10 +47,10 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
         add
         {
             this.log.WarnOnce(
-                "{0} uses deprecated code. {1} event is deprecated. Please use the {2} event instead.",
+                "{0} uses deprecated code. {1} event is deprecated. Please subscribe to the {2} event instead.",
                 this.modInfo.Manifest.Name,
                 nameof(this.ToolbarIconPressed),
-                nameof(this.IconPressed));
+                nameof(IIconPressedEventArgs));
 
             this.toolbarIconPressed += value;
         }
@@ -64,7 +64,13 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
     /// <inheritdoc />
     public void RemoveToolbarIcon(string id) => this.toolbarManager.RemoveToolbarIcon($"{this.prefix}{id}");
 
-    private void OnIconPressed(object? sender, IIconPressedEventArgs e)
+    /// <inheritdoc />
+    public void Subscribe<TEventArgs>(Action<TEventArgs> handler) => this.eventManager.Subscribe(handler);
+
+    /// <inheritdoc />
+    public void Unsubscribe<TEventArgs>(Action<TEventArgs> handler) => this.eventManager.Unsubscribe(handler);
+
+    private void OnIconPressed(IconPressedEventArgs e)
     {
         if (!e.Id.StartsWith(this.prefix, StringComparison.OrdinalIgnoreCase))
         {
@@ -72,41 +78,26 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
         }
 
         var id = e.Id[this.prefix.Length..];
-        if (this.iconPressed is not null)
+        this.eventManager.Publish<IIconPressedEventArgs, IconPressedEventArgs>(new IconPressedEventArgs(id, e.Button));
+
+        if (this.toolbarIconPressed is null)
         {
-            foreach (var handler in this.iconPressed.GetInvocationList())
-            {
-                try
-                {
-                    handler.DynamicInvoke(this, new IconPressedEventArgs(id, e.Button));
-                }
-                catch (Exception ex)
-                {
-                    this.log.Error(
-                        "{0} failed in {1}: {2}",
-                        this.modInfo.Manifest.Name,
-                        nameof(this.IconPressed),
-                        ex.Message);
-                }
-            }
+            return;
         }
 
-        if (this.toolbarIconPressed is not null)
+        foreach (var handler in this.toolbarIconPressed.GetInvocationList())
         {
-            foreach (var handler in this.toolbarIconPressed.GetInvocationList())
+            try
             {
-                try
-                {
-                    handler.DynamicInvoke(this, id);
-                }
-                catch (Exception ex)
-                {
-                    this.log.Error(
-                        "{0} failed in {1}: {2}",
-                        this.modInfo.Manifest.Name,
-                        nameof(this.IconPressed),
-                        ex.Message);
-                }
+                handler.DynamicInvoke(this, id);
+            }
+            catch (Exception ex)
+            {
+                this.log.Error(
+                    "{0} failed in {1}: {2}",
+                    this.modInfo.Manifest.Name,
+                    nameof(this.ToolbarIconPressed),
+                    ex.Message);
             }
         }
     }

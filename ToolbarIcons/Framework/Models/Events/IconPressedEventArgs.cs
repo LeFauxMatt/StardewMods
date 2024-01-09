@@ -1,4 +1,4 @@
-namespace StardewMods.ToolbarIcons.Framework.Models;
+namespace StardewMods.ToolbarIcons.Framework.Models.Events;
 
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
 

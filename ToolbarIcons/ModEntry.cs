@@ -2,6 +2,8 @@
 
 using SimpleInjector;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.ToolbarIcons.Framework;
@@ -31,7 +33,7 @@ public sealed class ModEntry : Mod
     /// <inheritdoc />
     public override object GetApi(IModInfo mod) =>
         new ToolbarIconsApi(
-            this.container.GetInstance<EventsManager>(),
+            this.container.GetInstance<EventManager>(),
             this.container.GetInstance<ILog>(),
             mod,
             this.container.GetInstance<ToolbarManager>());
@@ -55,10 +57,12 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.Translation);
         this.container.RegisterInstance(new Dictionary<string, ClickableTextureComponent>());
         this.container.RegisterSingleton<AssetHandler>();
+        this.container.RegisterSingleton<EventManager>();
+        this.container.RegisterSingleton<IEventPublisher, EventManager>();
+        this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
-        this.container.RegisterSingleton<EventsManager>();
         this.container.RegisterSingleton<IntegrationManager>();
         this.container.RegisterSingleton<ILog, LogService>();
         this.container.RegisterSingleton<ITheming, ThemingService>();

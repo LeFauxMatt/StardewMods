@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Extensions;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
@@ -30,20 +31,20 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
 
     /// <summary>Initializes a new instance of the <see cref="GarbageCanManager" /> class.</summary>
     /// <param name="definitions">Dependency used for defining common variables.</param>
+    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public GarbageCanManager(
         Definitions definitions,
+        IEventSubscriber eventSubscriber,
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
         IModConfig modConfig,
-        IModEvents modEvents,
         IReflectionHelper reflectionHelper,
         ToolbarIconsIntegration toolbarIconsIntegration)
         : base(log, manifest)
@@ -56,12 +57,12 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         this.multiplayer = reflectionHelper.GetField<Multiplayer>(typeof(Game1), "multiplayer");
 
         // Events
-        modEvents.Content.AssetsInvalidated += this.OnAssetsInvalidated;
-        modEvents.Display.MenuChanged += this.OnMenuChanged;
-        modEvents.Input.ButtonPressed += this.OnButtonPressed;
-        modEvents.GameLoop.DayEnding += this.OnDayEnding;
-        modEvents.GameLoop.DayStarted += this.OnDayStarted;
-        modEvents.GameLoop.SaveLoaded += this.OnSaveLoaded;
+        eventSubscriber.Subscribe<AssetsInvalidatedEventArgs>(this.OnAssetsInvalidated);
+        eventSubscriber.Subscribe<MenuChangedEventArgs>(this.OnMenuChanged);
+        eventSubscriber.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        eventSubscriber.Subscribe<DayEndingEventArgs>(this.OnDayEnding);
+        eventSubscriber.Subscribe<DayStartedEventArgs>(this.OnDayStarted);
+        eventSubscriber.Subscribe<SaveLoadedEventArgs>(this.OnSaveLoaded);
     }
 
     /// <summary>Add a new pending garbage can.</summary>
@@ -92,7 +93,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         return true;
     }
 
-    private void OnAssetsInvalidated(object? sender, AssetsInvalidatedEventArgs e)
+    private void OnAssetsInvalidated(AssetsInvalidatedEventArgs e)
     {
         if (e.Names.Any(assetName => assetName.IsEquivalentTo(Definitions.GarbageCanPath)))
         {
@@ -100,7 +101,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         }
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (!Context.IsPlayerFree
             || !e.Button.IsActionButton()
@@ -160,7 +161,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         garbageCan.CheckAction();
     }
 
-    private void OnDayEnding(object? sender, DayEndingEventArgs e)
+    private void OnDayEnding(DayEndingEventArgs e)
     {
         // Remove garbage cans
         foreach (var garbageCan in this.garbageCans.Values)
@@ -171,7 +172,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         this.garbageCans.Clear();
     }
 
-    private void OnDayStarted(object? sender, DayStartedEventArgs e)
+    private void OnDayStarted(DayStartedEventArgs e)
     {
         // Add garbage cans
         foreach (var (whichCan, foundGarbageCan) in this.foundGarbageCans)
@@ -202,7 +203,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         }
     }
 
-    private void OnIconPressed(object? sender, IIconPressedEventArgs e)
+    private void OnIconPressed(IIconPressedEventArgs e)
     {
         if (e.Id != this.Id)
         {
@@ -221,7 +222,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         }
     }
 
-    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    private void OnMenuChanged(MenuChangedEventArgs e)
     {
         if (e.OldMenu is not ItemGrabMenu || this.garbageCanOpened.Value is null)
         {
@@ -238,7 +239,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         this.garbageCanOpened.Value = null;
     }
 
-    private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
+    private void OnSaveLoaded(SaveLoadedEventArgs e)
     {
         if (!this.toolbarIconsIntegration.IsLoaded)
         {
@@ -251,7 +252,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
             new Rectangle(0, 0, 16, 16),
             I18n.Button_GarbageFill_Name());
 
-        this.toolbarIconsIntegration.Api.IconPressed += this.OnIconPressed;
+        this.toolbarIconsIntegration.Api.Subscribe<IIconPressedEventArgs>(this.OnIconPressed);
     }
 
     private bool TryCreateGarbageCan(FoundGarbageCan foundGarbageCan, [NotNullWhen(true)] out GarbageCan? garbageCan)

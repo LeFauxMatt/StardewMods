@@ -2,6 +2,7 @@ namespace StardewMods.GarbageDay.Framework.Services;
 
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.GameData.BigCraftables;
@@ -16,16 +17,16 @@ internal sealed class AssetHandler : BaseService
 
     /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
     /// <param name="definitions">Dependency used for defining common variables.</param>
+    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="garbageCanManager">Dependency used for managing garbage cans.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
     public AssetHandler(
         Definitions definitions,
+        IEventSubscriber eventSubscriber,
         GarbageCanManager garbageCanManager,
         ILog log,
-        IManifest manifest,
-        IModEvents modEvents)
+        IManifest manifest)
         : base(log, manifest)
     {
         // Init
@@ -33,10 +34,10 @@ internal sealed class AssetHandler : BaseService
         this.garbageCanManager = garbageCanManager;
 
         // Events
-        modEvents.Content.AssetRequested += this.OnAssetRequested;
+        eventSubscriber.Subscribe<AssetRequestedEventArgs>(this.OnAssetRequested);
     }
 
-    private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+    private void OnAssetRequested(AssetRequestedEventArgs e)
     {
         // Load Garbage Can Texture
         if (e.NameWithoutLocale.IsEquivalentTo(this.definitions.TexturePath))

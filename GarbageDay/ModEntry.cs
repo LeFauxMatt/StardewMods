@@ -2,6 +2,8 @@ namespace StardewMods.GarbageDay;
 
 using SimpleInjector;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
@@ -49,6 +51,9 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
         this.container.RegisterSingleton<ContentPatcherIntegration>();
         this.container.RegisterSingleton<Definitions>();
+        this.container.RegisterSingleton<EventManager>();
+        this.container.RegisterSingleton<IEventPublisher, EventManager>();
+        this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<GarbageCanManager>();
         this.container.RegisterSingleton<ILog, LogService>();

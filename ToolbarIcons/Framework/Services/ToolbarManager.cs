@@ -7,8 +7,10 @@ using StardewModdingAPI.Utilities;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewMods.ToolbarIcons.Framework.Interfaces;
 using StardewMods.ToolbarIcons.Framework.Models;
+using StardewMods.ToolbarIcons.Framework.Models.Events;
 using StardewValley.Menus;
 
 // TODO: Center Toolbar Icons
@@ -17,10 +19,9 @@ using StardewValley.Menus;
 internal sealed class ToolbarManager : BaseService
 {
     private readonly Dictionary<string, ClickableTextureComponent> components;
+    private readonly EventManager eventManager;
     private readonly IModConfig modConfig;
     private readonly PerScreen<string> currentHoverText = new();
-    private readonly EventsManager eventsManager;
-    private readonly IModEvents modEvents;
     private readonly IGameContentHelper gameContentHelper;
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<ComponentArea> lastArea = new(() => ComponentArea.Custom);
@@ -33,41 +34,38 @@ internal sealed class ToolbarManager : BaseService
     /// <summary>Initializes a new instance of the <see cref="ToolbarManager" /> class.</summary>
     /// <param name="assetHandler">Dependency used for handling assets.</param>
     /// <param name="components">Dependency used for the toolbar icon components.</param>
-    /// <param name="eventsManager">Dependency used for custom events.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for monitoring and logging.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
     public ToolbarManager(
         AssetHandler assetHandler,
         Dictionary<string, ClickableTextureComponent> components,
-        EventsManager eventsManager,
+        EventManager eventManager,
         IGameContentHelper gameContentHelper,
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
         IModConfig modConfig,
-        IModEvents modEvents,
         IReflectionHelper reflectionHelper)
         : base(log, manifest)
     {
         // Init
         this.assetHandler = assetHandler;
         this.components = components;
-        this.eventsManager = eventsManager;
+        this.eventManager = eventManager;
         this.gameContentHelper = gameContentHelper;
         this.inputHelper = inputHelper;
         this.log = log;
         this.modConfig = modConfig;
-        this.modEvents = modEvents;
         this.reflectionHelper = reflectionHelper;
 
         // Events
-        eventsManager.ToolbarIconsLoaded += this.OnToolbarIconsLoaded;
-        eventsManager.ToolbarIconsChanged += this.OnToolbarIconsChanged;
+        eventManager.Subscribe<ToolbarIconsLoadedEventArgs>(this.OnToolbarIconsLoaded);
+        eventManager.Subscribe<ToolbarIconsChangedEventArgs>(this.OnToolbarIconsChanged);
     }
 
     private static bool ShowToolbar =>
@@ -149,7 +147,7 @@ internal sealed class ToolbarManager : BaseService
         return true;
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (!ToolbarManager.ShowToolbar || this.inputHelper.IsSuppressed(e.Button))
         {
@@ -172,11 +170,13 @@ internal sealed class ToolbarManager : BaseService
         }
 
         Game1.playSound("drumkit6");
-        this.eventsManager.InvokeToolbarIconPressed(component.name, e.Button);
+        this.eventManager.Publish<IIconPressedEventArgs, IconPressedEventArgs>(
+            new IconPressedEventArgs(component.name, e.Button));
+
         this.inputHelper.Suppress(e.Button);
     }
 
-    private void OnCursorMoved(object? sender, CursorMovedEventArgs e)
+    private void OnCursorMoved(CursorMovedEventArgs e)
     {
         if (!ToolbarManager.ShowToolbar)
         {
@@ -195,7 +195,7 @@ internal sealed class ToolbarManager : BaseService
         }
     }
 
-    private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
+    private void OnRenderedHud(RenderedHudEventArgs e)
     {
         if (!ToolbarManager.ShowToolbar)
         {
@@ -208,7 +208,7 @@ internal sealed class ToolbarManager : BaseService
         }
     }
 
-    private void OnRenderingHud(object? sender, RenderingHudEventArgs e)
+    private void OnRenderingHud(RenderingHudEventArgs e)
     {
         if (!ToolbarManager.ShowToolbar)
         {
@@ -234,7 +234,7 @@ internal sealed class ToolbarManager : BaseService
         }
     }
 
-    private void OnToolbarIconsChanged(object? sender, EventArgs e)
+    private void OnToolbarIconsChanged(ToolbarIconsChangedEventArgs e)
     {
         foreach (var icon in this.modConfig.Icons)
         {
@@ -247,16 +247,16 @@ internal sealed class ToolbarManager : BaseService
         this.ReorientComponents();
     }
 
-    private void OnToolbarIconsLoaded(object? sender, EventArgs e)
+    private void OnToolbarIconsLoaded(ToolbarIconsLoadedEventArgs e)
     {
         // Init
         this.ReorientComponents();
 
         // Events
-        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
-        this.modEvents.Input.CursorMoved += this.OnCursorMoved;
-        this.modEvents.Display.RenderedHud += this.OnRenderedHud;
-        this.modEvents.Display.RenderingHud += this.OnRenderingHud;
+        this.eventManager.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.eventManager.Subscribe<CursorMovedEventArgs>(this.OnCursorMoved);
+        this.eventManager.Subscribe<RenderedHudEventArgs>(this.OnRenderedHud);
+        this.eventManager.Subscribe<RenderingHudEventArgs>(this.OnRenderingHud);
     }
 
     private void ReorientComponents()

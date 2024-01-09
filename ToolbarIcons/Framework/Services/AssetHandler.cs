@@ -2,6 +2,7 @@ namespace StardewMods.ToolbarIcons.Framework.Services;
 
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.ToolbarIcons.Framework.Models;
@@ -10,11 +11,11 @@ using StardewMods.ToolbarIcons.Framework.Models;
 internal sealed class AssetHandler : BaseService<AssetHandler>
 {
     /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
+    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="theming">Dependency used for swapping palettes.</param>
-    public AssetHandler(ILog log, IManifest manifest, IModEvents modEvents, ITheming theming)
+    public AssetHandler(IEventSubscriber eventSubscriber, ILog log, IManifest manifest, ITheming theming)
         : base(log, manifest)
     {
         // Init
@@ -24,7 +25,7 @@ internal sealed class AssetHandler : BaseService<AssetHandler>
         theming.AddAssets([this.IconPath, this.ArrowsPath]);
 
         // Events
-        modEvents.Content.AssetRequested += this.OnAssetRequested;
+        eventSubscriber.Subscribe<AssetRequestedEventArgs>(this.OnAssetRequested);
     }
 
     /// <summary>Gets the game path to Arrows Texture asset.</summary>
@@ -33,10 +34,10 @@ internal sealed class AssetHandler : BaseService<AssetHandler>
     /// <summary>Gets the game path to Icons Texture asset.</summary>
     public string IconPath { get; }
 
-    /// <summary>Getst he game path to Toolbar Data asset.</summary>
+    /// <summary>Gets the game path to Toolbar Data asset.</summary>
     public string DataPath { get; }
 
-    private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+    private void OnAssetRequested(AssetRequestedEventArgs e)
     {
         if (e.Name.IsEquivalentTo(this.IconPath))
         {

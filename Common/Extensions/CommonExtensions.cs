@@ -54,22 +54,23 @@ internal static class CommonExtensions
     /// <typeparam name="T">The event handler type.</typeparam>
     public static void InvokeAll<T>(this EventHandler<T>? eventHandler, object source, T param)
     {
-        if (eventHandler is null)
-        {
-            return;
-        }
+    if (eventHandler is null)
+    {
+        return;
+    }
 
-        foreach (var handler in eventHandler.GetInvocationList())
+    foreach (var @delegate in eventHandler.GetInvocationList())
+    {
+        var handler = (EventHandler<T>)@delegate;
+        try
         {
-            try
-            {
-                handler.DynamicInvoke(source, param);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
+            handler(source, param);
         }
+        catch (Exception)
+        {
+            // ignored
+        }
+    }
     }
 
     /// <summary>Maps a float value from one range to the same proportional value in another integer range.</summary>

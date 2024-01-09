@@ -3,10 +3,12 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.ToolbarIcons.Framework.Interfaces;
 using StardewMods.ToolbarIcons.Framework.Models;
+using StardewMods.ToolbarIcons.Framework.Models.Events;
 using StardewMods.ToolbarIcons.Framework.UI;
 using StardewValley.Menus;
 
@@ -14,19 +16,18 @@ using StardewValley.Menus;
 internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
 {
     private readonly Dictionary<string, ClickableTextureComponent> components;
-    private readonly EventsManager eventsManager;
     private readonly GenericModConfigMenuIntegration genericModConfigMenuIntegration;
     private readonly IManifest manifest;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigManager" /> class.</summary>
     /// <param name="components">Dependency used for the toolbar icon components.</param>
-    /// <param name="eventsManager">Dependency used for custom events.</param>
+    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
     public ConfigManager(
         Dictionary<string, ClickableTextureComponent> components,
-        EventsManager eventsManager,
+        IEventSubscriber eventSubscriber,
         GenericModConfigMenuIntegration genericModConfigMenuIntegration,
         IManifest manifest,
         IModHelper modHelper)
@@ -34,10 +35,9 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
     {
         this.manifest = manifest;
         this.components = components;
-        this.eventsManager = eventsManager;
         this.genericModConfigMenuIntegration = genericModConfigMenuIntegration;
 
-        eventsManager.ToolbarIconsLoaded += this.OnToolbarIconsLoaded;
+        eventSubscriber.Subscribe<ToolbarIconsLoadedEventArgs>(this.OnToolbarIconsLoaded);
     }
 
     /// <inheritdoc />
@@ -100,7 +100,7 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
             0f);
     }
 
-    private void OnToolbarIconsLoaded(object? sender, EventArgs e)
+    private void OnToolbarIconsLoaded(ToolbarIconsLoadedEventArgs e)
     {
         if (!this.genericModConfigMenuIntegration.IsLoaded)
         {

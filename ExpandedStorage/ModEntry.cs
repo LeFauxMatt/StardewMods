@@ -3,6 +3,8 @@
 using HarmonyLib;
 using SimpleInjector;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
@@ -47,6 +49,9 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.Translation);
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
         this.container.RegisterSingleton<ContentPatcherIntegration>();
+        this.container.RegisterSingleton<EventManager>();
+        this.container.RegisterSingleton<IEventPublisher, EventManager>();
+        this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<ILog, LogService>();
         this.container.RegisterSingleton<StorageManager>();
         this.container.RegisterSingleton<ModPatches>();

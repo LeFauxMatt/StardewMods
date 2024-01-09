@@ -3,6 +3,7 @@ namespace StardewMods.FuryCore.Framework.Services;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
@@ -27,18 +28,18 @@ internal sealed class Theming : BaseService, ITheming
     private bool initialize;
 
     /// <summary>Initializes a new instance of the <see cref="Theming" /> class.</summary>
+    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
-    public Theming(IGameContentHelper gameContentHelper, ILog log, IManifest manifest, IModEvents modEvents)
+    public Theming(IEventSubscriber eventSubscriber, IGameContentHelper gameContentHelper, ILog log, IManifest manifest)
         : base(log, manifest)
     {
         this.gameContentHelper = gameContentHelper;
-        modEvents.Content.AssetReady += this.OnAssetReady;
-        modEvents.Content.AssetRequested += this.OnAssetRequested;
-        modEvents.Content.AssetsInvalidated += this.OnAssetsInvalidated;
-        modEvents.GameLoop.SaveLoaded += this.OnSaveLoaded;
+        eventSubscriber.Subscribe<AssetReadyEventArgs>(this.OnAssetReady);
+        eventSubscriber.Subscribe<AssetRequestedEventArgs>(this.OnAssetRequested);
+        eventSubscriber.Subscribe<AssetsInvalidatedEventArgs>(this.OnAssetsInvalidated);
+        eventSubscriber.Subscribe<SaveLoadedEventArgs>(this.OnSaveLoaded);
     }
 
     /// <inheritdoc />
@@ -80,7 +81,7 @@ internal sealed class Theming : BaseService, ITheming
         }
     }
 
-    private void OnAssetReady(object? sender, AssetReadyEventArgs e)
+    private void OnAssetReady(AssetReadyEventArgs e)
     {
         if (!this.initialize || !e.NameWithoutLocale.IsEquivalentTo("LooseSprites/Cursors"))
         {
@@ -91,7 +92,7 @@ internal sealed class Theming : BaseService, ITheming
         this.InitializePalette();
     }
 
-    private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+    private void OnAssetRequested(AssetRequestedEventArgs e)
     {
         if (!this.paletteSwap.Any())
         {
@@ -104,7 +105,7 @@ internal sealed class Theming : BaseService, ITheming
         }
     }
 
-    private void OnAssetsInvalidated(object? sender, AssetsInvalidatedEventArgs e)
+    private void OnAssetsInvalidated(AssetsInvalidatedEventArgs e)
     {
         if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("LooseSprites/Cursors")))
         {
@@ -112,7 +113,7 @@ internal sealed class Theming : BaseService, ITheming
         }
     }
 
-    private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e) => this.InitializePalette();
+    private void OnSaveLoaded(SaveLoadedEventArgs e) => this.InitializePalette();
 
     private Texture2D SwapPalette(Texture2D source)
     {

@@ -2,11 +2,12 @@ namespace StardewMods.FuryCore;
 
 using SimpleInjector;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Interfaces;
+using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.FuryCore.Framework;
 using StardewMods.FuryCore.Framework.Interfaces;
-using StardewMods.FuryCore.Framework.Models;
 using StardewMods.FuryCore.Framework.Services;
 
 /// <inheritdoc />
@@ -27,17 +28,11 @@ public sealed class ModEntry : Mod
     }
 
     /// <inheritdoc />
-    public override object GetApi(IModInfo mod)
-    {
-        var config = this.container.GetInstance<IConfigWithLogLevel>();
-        var theming = this.container.GetInstance<ITheming>();
-        return new FuryCoreApi(mod, config, theming);
-    }
+    public override object GetApi(IModInfo mod) =>
+        new FuryCoreApi(mod, this.container.GetInstance<IConfigWithLogLevel>(), this.container.GetInstance<ITheming>());
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        var config = this.Helper.ReadConfig<DefaultConfig>();
-
         // Init
         this.container = new Container();
 
@@ -56,6 +51,9 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<IConfigWithLogLevel, ConfigManager>();
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
         this.container.RegisterSingleton<ConfigManager, ConfigManager>();
+        this.container.RegisterSingleton<EventManager>();
+        this.container.RegisterSingleton<IEventPublisher, EventManager>();
+        this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<ILog, Log>();
         this.container.RegisterSingleton<ITheming, Theming>();

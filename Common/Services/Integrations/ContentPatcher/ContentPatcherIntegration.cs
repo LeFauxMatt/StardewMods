@@ -1,7 +1,6 @@
 ﻿namespace StardewMods.Common.Services.Integrations.ContentPatcher;
 
 using StardewModdingAPI.Events;
-using StardewMods.Common.Extensions;
 
 /// <inheritdoc />
 internal sealed class ContentPatcherIntegration : ModIntegration<IContentPatcherApi>
@@ -9,38 +8,29 @@ internal sealed class ContentPatcherIntegration : ModIntegration<IContentPatcher
     private const string ModUniqueId = "Pathoschild.ContentPatcher";
     private const string ModVersion = "1.28.0";
 
-    private readonly IModEvents modEvents;
+    private readonly EventManager eventManager;
 
-    private EventHandler? conditionsApiReady;
     private int countDown = 10;
 
     /// <summary>Initializes a new instance of the <see cref="ContentPatcherIntegration" /> class.</summary>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="modRegistry">Dependency used for fetching metadata about loaded mods.</param>
-    public ContentPatcherIntegration(IModEvents modEvents, IModRegistry modRegistry)
+    public ContentPatcherIntegration(EventManager eventManager, IModRegistry modRegistry)
         : base(modRegistry, ContentPatcherIntegration.ModUniqueId, ContentPatcherIntegration.ModVersion)
     {
-        this.modEvents = modEvents;
+        this.eventManager = eventManager;
 
         if (this.IsLoaded)
         {
-            this.modEvents.GameLoop.UpdateTicked += this.OnUpdateTicked;
+            this.eventManager.Subscribe<UpdateTickedEventArgs>(this.OnUpdateTicked);
         }
     }
 
-    /// <summary>Event that is triggered when the conditions API is ready.</summary>
-    /// <remarks>Subscribe to this event to perform certain actions when the conditions API is ready.</remarks>
-    public event EventHandler ConditionsApiReady
-    {
-        add => this.conditionsApiReady += value;
-        remove => this.conditionsApiReady -= value;
-    }
-
-    private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
+    private void OnUpdateTicked(UpdateTickedEventArgs e)
     {
         if (--this.countDown == 0)
         {
-            this.modEvents.GameLoop.UpdateTicked -= this.OnUpdateTicked;
+            this.eventManager.Unsubscribe<UpdateTickedEventArgs>(this.OnUpdateTicked);
         }
 
         if (!this.IsLoaded || !this.Api.IsConditionsApiReady)
@@ -48,6 +38,6 @@ internal sealed class ContentPatcherIntegration : ModIntegration<IContentPatcher
             return;
         }
 
-        this.conditionsApiReady?.InvokeAll(this);
+        this.eventManager.Publish(new ConditionsApiReadyEventArgs());
     }
 }
