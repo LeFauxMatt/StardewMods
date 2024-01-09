@@ -2,6 +2,7 @@ namespace StardewMods.BetterChests.Framework.Models.StorageOptions;
 
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewValley.GameData.Buildings;
+using StardewValley.TokenizableStrings;
 
 /// <inheritdoc />
 internal sealed class BuildingStorageOptions : ChildStorageOptions

@@ -2,6 +2,7 @@ namespace StardewMods.BetterChests.Framework.Models.StorageOptions;
 
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewValley.GameData.BigCraftables;
+using StardewValley.TokenizableStrings;
 
 /// <inheritdoc />
 internal sealed class BigCraftableStorageOptions : ChildStorageOptions
