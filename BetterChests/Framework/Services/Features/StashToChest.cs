@@ -2,7 +2,9 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -17,36 +19,34 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
     private readonly ContainerFactory containerFactory;
     private readonly ContainerHandler containerHandler;
     private readonly IInputHelper inputHelper;
-    private readonly IModEvents modEvents;
     private readonly ToolbarIconsIntegration toolbarIconsIntegration;
 
     /// <summary>Initializes a new instance of the <see cref="StashToChest" /> class.</summary>
     /// <param name="assetHandler">Dependency used for handling assets.</param>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="containerHandler">Dependency used for handling operations between containers.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public StashToChest(
         AssetHandler assetHandler,
-        ConfigManager configManager,
         ContainerFactory containerFactory,
         ContainerHandler containerHandler,
+        IEventManager eventManager,
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents,
+        IModConfig modConfig,
         ToolbarIconsIntegration toolbarIconsIntegration)
-        : base(log, manifest, configManager)
+        : base(eventManager, log, manifest, modConfig)
     {
         this.assetHandler = assetHandler;
         this.containerFactory = containerFactory;
         this.containerHandler = containerHandler;
         this.inputHelper = inputHelper;
-        this.modEvents = modEvents;
         this.toolbarIconsIntegration = toolbarIconsIntegration;
     }
 
@@ -57,8 +57,8 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
     protected override void Activate()
     {
         // Events
-        this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
+        this.Events.Subscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
 
         // Integrations
         if (!this.toolbarIconsIntegration.IsLoaded)
@@ -79,8 +79,8 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
+        this.Events.Unsubscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Unsubscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
 
         // Integrations
         if (!this.toolbarIconsIntegration.IsLoaded)
@@ -92,7 +92,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
         this.toolbarIconsIntegration.Api.Unsubscribe<IIconPressedEventArgs>(this.OnIconPressed);
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (e.Button is not SButton.MouseLeft
             || !this.containerFactory.TryGetOneFromMenu(out var container)
@@ -112,7 +112,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
         Game1.playSound("Ship");
     }
 
-    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    private void OnButtonsChanged(ButtonsChangedEventArgs e)
     {
         if (!this.Config.Controls.StashItems.JustPressed())
         {

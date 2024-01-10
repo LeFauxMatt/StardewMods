@@ -1,7 +1,9 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
@@ -12,33 +14,31 @@ internal sealed class UnloadChest : BaseFeature<UnloadChest>
     private readonly ContainerFactory containerFactory;
     private readonly ContainerHandler containerHandler;
     private readonly IInputHelper inputHelper;
-    private readonly IModEvents modEvents;
     private readonly ProxyChestFactory proxyChestFactory;
 
     /// <summary>Initializes a new instance of the <see cref="UnloadChest" /> class.</summary>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="containerHandler">Dependency used for handling operations between containers.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="proxyChestFactory">Dependency used for creating virtualized chests.</param>
     public UnloadChest(
-        ConfigManager configManager,
         ContainerFactory containerFactory,
         ContainerHandler containerHandler,
+        IEventManager eventManager,
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents,
+        IModConfig modConfig,
         ProxyChestFactory proxyChestFactory)
-        : base(log, manifest, configManager)
+        : base(eventManager, log, manifest, modConfig)
     {
         this.containerFactory = containerFactory;
         this.containerHandler = containerHandler;
         this.inputHelper = inputHelper;
-        this.modEvents = modEvents;
         this.proxyChestFactory = proxyChestFactory;
     }
 
@@ -46,13 +46,13 @@ internal sealed class UnloadChest : BaseFeature<UnloadChest>
     public override bool ShouldBeActive => this.Config.DefaultOptions.UnloadChest != FeatureOption.Disabled;
 
     /// <inheritdoc />
-    protected override void Activate() => this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
+    protected override void Activate() => this.Events.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
 
     /// <inheritdoc />
-    protected override void Deactivate() => this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
+    protected override void Deactivate() => this.Events.Unsubscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
 
     [EventPriority(EventPriority.Normal + 10)]
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (!Context.IsPlayerFree
             || !e.Button.IsUseToolButton()

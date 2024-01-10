@@ -4,7 +4,9 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Locations;
@@ -20,34 +22,32 @@ internal sealed class CarryChest : BaseFeature<CarryChest>
     private readonly ContainerFactory containerFactory;
     private readonly Harmony harmony;
     private readonly IInputHelper inputHelper;
-    private readonly IModEvents modEvents;
     private readonly ProxyChestFactory proxyChestFactory;
     private readonly StatusEffectManager statusEffectManager;
 
     /// <summary>Initializes a new instance of the <see cref="CarryChest" /> class.</summary>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="proxyChestFactory">Dependency used for creating virtualized chests.</param>
     /// <param name="statusEffectManager">Dependency used for adding and removing custom buffs.</param>
     public CarryChest(
-        ConfigManager configManager,
         ContainerFactory containerFactory,
+        IEventManager eventManager,
         Harmony harmony,
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents,
+        IModConfig modConfig,
         ProxyChestFactory proxyChestFactory,
         StatusEffectManager statusEffectManager)
-        : base(log, manifest, configManager)
+        : base(eventManager, log, manifest, modConfig)
     {
         CarryChest.instance = this;
-        this.modEvents = modEvents;
         this.containerFactory = containerFactory;
         this.harmony = harmony;
         this.inputHelper = inputHelper;
@@ -62,8 +62,8 @@ internal sealed class CarryChest : BaseFeature<CarryChest>
     protected override void Activate()
     {
         // Events
-        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
-        this.modEvents.GameLoop.OneSecondUpdateTicked += this.OnOneSecondUpdateTicked;
+        this.Events.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Subscribe<OneSecondUpdateTickedEventArgs>(this.OnOneSecondUpdateTicked);
 
         // Patches
         this.harmony.Patch(
@@ -75,8 +75,8 @@ internal sealed class CarryChest : BaseFeature<CarryChest>
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
-        this.modEvents.GameLoop.OneSecondUpdateTicked -= this.OnOneSecondUpdateTicked;
+        this.Events.Unsubscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Unsubscribe<OneSecondUpdateTickedEventArgs>(this.OnOneSecondUpdateTicked);
 
         // Patches
         this.harmony.Unpatch(
@@ -116,7 +116,7 @@ internal sealed class CarryChest : BaseFeature<CarryChest>
         CarryChest.instance.proxyChestFactory.TryRestoreProxy(placedChest);
     }
 
-    private void OnOneSecondUpdateTicked(object? sender, OneSecondUpdateTickedEventArgs e)
+    private void OnOneSecondUpdateTicked(OneSecondUpdateTickedEventArgs e)
     {
         if (this.Config.CarryChestSlowLimit == 0)
         {
@@ -135,7 +135,7 @@ internal sealed class CarryChest : BaseFeature<CarryChest>
         }
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (!Context.IsPlayerFree
             || Game1.player.CurrentItem is Tool

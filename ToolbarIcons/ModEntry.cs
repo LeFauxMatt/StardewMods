@@ -57,7 +57,7 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.Translation);
         this.container.RegisterInstance(new Dictionary<string, ClickableTextureComponent>());
         this.container.RegisterSingleton<AssetHandler>();
-        this.container.RegisterSingleton<EventManager>();
+        this.container.RegisterSingleton<IEventManager, EventManager>();
         this.container.RegisterSingleton<IEventPublisher, EventManager>();
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<FuryCoreIntegration>();

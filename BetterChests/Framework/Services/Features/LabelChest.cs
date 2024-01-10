@@ -2,7 +2,9 @@
 
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
@@ -11,27 +13,23 @@ using StardewValley.Menus;
 internal sealed class LabelChest : BaseFeature<LabelChest>
 {
     private readonly ContainerFactory containerFactory;
-    private readonly IModEvents modEvents;
 
     private readonly PerScreen<IStorageContainer?> containerFacing = new();
 
     /// <summary>Initializes a new instance of the <see cref="LabelChest" /> class.</summary>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     public LabelChest(
-        ConfigManager configManager,
         ContainerFactory containerFactory,
+        IEventManager eventManager,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents)
-        : base(log, manifest, configManager)
-    {
+        IModConfig modConfig)
+        : base(eventManager, log, manifest, modConfig) =>
         this.containerFactory = containerFactory;
-        this.modEvents = modEvents;
-    }
 
     /// <inheritdoc />
     public override bool ShouldBeActive => this.Config.LabelChest;
@@ -40,21 +38,21 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
     protected override void Activate()
     {
         // Events
-        this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.modEvents.Display.RenderedHud += this.OnRenderedHud;
-        this.modEvents.Input.CursorMoved += this.OnCursorMoved;
+        this.Events.Subscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Subscribe<RenderedHudEventArgs>(this.OnRenderedHud);
+        this.Events.Subscribe<CursorMovedEventArgs>(this.OnCursorMoved);
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.modEvents.Display.RenderedHud -= this.OnRenderedHud;
-        this.modEvents.Input.CursorMoved -= this.OnCursorMoved;
+        this.Events.Unsubscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Unsubscribe<RenderedHudEventArgs>(this.OnRenderedHud);
+        this.Events.Unsubscribe<CursorMovedEventArgs>(this.OnCursorMoved);
     }
 
-    private void OnCursorMoved(object? sender, CursorMovedEventArgs e)
+    private void OnCursorMoved(CursorMovedEventArgs e)
     {
         this.containerFacing.Value = null;
 
@@ -82,7 +80,7 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
         this.containerFacing.Value = container;
     }
 
-    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    private void OnRenderedActiveMenu(RenderedActiveMenuEventArgs e)
     {
         if (!this.containerFactory.TryGetOneFromMenu(out var container)
             || string.IsNullOrWhiteSpace(container.Options.ChestLabel))
@@ -102,7 +100,7 @@ internal sealed class LabelChest : BaseFeature<LabelChest>
             overrideY: overrideY);
     }
 
-    private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
+    private void OnRenderedHud(RenderedHudEventArgs e)
     {
         if (!Context.IsPlayerFree || this.containerFacing.Value is null)
         {

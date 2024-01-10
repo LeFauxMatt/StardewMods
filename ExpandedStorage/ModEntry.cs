@@ -49,7 +49,7 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.Translation);
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
         this.container.RegisterSingleton<ContentPatcherIntegration>();
-        this.container.RegisterSingleton<EventManager>();
+        this.container.RegisterSingleton<IEventManager, EventManager>();
         this.container.RegisterSingleton<IEventPublisher, EventManager>();
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<ILog, LogService>();

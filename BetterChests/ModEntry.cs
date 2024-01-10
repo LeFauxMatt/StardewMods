@@ -60,7 +60,7 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<ConfigManager, ConfigManager>();
         this.container.RegisterSingleton<ContainerFactory>();
         this.container.RegisterSingleton<ContainerHandler>();
-        this.container.RegisterSingleton<EventManager>();
+        this.container.RegisterSingleton<IEventManager, EventManager>();
         this.container.RegisterSingleton<IEventPublisher, EventManager>();
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<FuryCoreIntegration>();

@@ -4,7 +4,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -17,35 +19,33 @@ internal sealed class TransferItems : BaseFeature<TransferItems>
     private readonly PerScreen<ClickableTextureComponent> downArrow;
     private readonly IInputHelper inputHelper;
     private readonly ItemGrabMenuManager itemGrabMenuManager;
-    private readonly IModEvents modEvents;
     private readonly PerScreen<ClickableTextureComponent> upArrow;
 
     /// <summary>Initializes a new instance of the <see cref="TransferItems" /> class.</summary>
     /// <param name="assetHandler">Dependency used for handling assets.</param>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerHandler">Dependency used for handling operations between containers.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     public TransferItems(
         AssetHandler assetHandler,
-        ConfigManager configManager,
         ContainerHandler containerHandler,
+        IEventManager eventManager,
         IGameContentHelper gameContentHelper,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents)
-        : base(log, manifest, configManager)
+        IModConfig modConfig)
+        : base(eventManager, log, manifest, modConfig)
     {
         this.containerHandler = containerHandler;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
-        this.modEvents = modEvents;
 
         this.downArrow = new PerScreen<ClickableTextureComponent>(
             () => new ClickableTextureComponent(
@@ -77,18 +77,18 @@ internal sealed class TransferItems : BaseFeature<TransferItems>
     protected override void Activate()
     {
         // Events
-        this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
-        this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.Events.Subscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Subscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
-        this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.Events.Unsubscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Unsubscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Unsubscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
     }
 
     private void Transfer(IStorageContainer containerFrom, IStorageContainer containerTo)
@@ -113,7 +113,7 @@ internal sealed class TransferItems : BaseFeature<TransferItems>
         }
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (e.Button is not SButton.MouseLeft
             || this.itemGrabMenuManager.Top.Container is null
@@ -137,7 +137,7 @@ internal sealed class TransferItems : BaseFeature<TransferItems>
         }
     }
 
-    private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
+    private void OnItemGrabMenuChanged(ItemGrabMenuChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.Top.Menu is null
             || this.itemGrabMenuManager.Bottom.Menu is null
@@ -169,7 +169,7 @@ internal sealed class TransferItems : BaseFeature<TransferItems>
         }
     }
 
-    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    private void OnRenderedActiveMenu(RenderedActiveMenuEventArgs e)
     {
         if (this.itemGrabMenuManager.CurrentMenu is null)
         {

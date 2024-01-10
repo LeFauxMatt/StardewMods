@@ -9,7 +9,6 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Extensions;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
@@ -25,25 +24,24 @@ internal sealed class ItemGrabMenuManager : BaseService
     private readonly PerScreen<InventoryMenuManager> bottomMenu;
     private readonly ContainerFactory containerFactory;
     private readonly PerScreen<IClickableMenu?> currentMenu = new();
+    private readonly EventManager eventManager;
     private readonly IModConfig modConfig;
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<InventoryMenuManager> topMenu;
 
-    private EventHandler<ItemGrabMenuChangedEventArgs>? itemGrabMenuChanged;
-
     /// <summary>Initializes a new instance of the <see cref="ItemGrabMenuManager" /> class.</summary>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     public ItemGrabMenuManager(
+        EventManager eventManager,
         ILog log,
         IManifest manifest,
         IModConfig modConfig,
-        IModEvents modEvents,
         Harmony harmony,
         IInputHelper inputHelper,
         ContainerFactory containerFactory)
@@ -51,6 +49,7 @@ internal sealed class ItemGrabMenuManager : BaseService
     {
         // Init
         ItemGrabMenuManager.instance = this;
+        this.eventManager = eventManager;
         this.modConfig = modConfig;
         this.inputHelper = inputHelper;
         this.containerFactory = containerFactory;
@@ -58,14 +57,14 @@ internal sealed class ItemGrabMenuManager : BaseService
         this.bottomMenu = new PerScreen<InventoryMenuManager>(() => new InventoryMenuManager(log, manifest));
 
         // Events
-        modEvents.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
-        modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        modEvents.GameLoop.UpdateTicked += this.OnUpdateTicked;
-        modEvents.GameLoop.UpdateTicking += this.OnUpdateTicking;
-        modEvents.Input.ButtonPressed += this.OnButtonPressed;
-        modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
-        modEvents.Input.CursorMoved += this.OnCursorMoved;
-        modEvents.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
+        eventManager.Subscribe<RenderingActiveMenuEventArgs>(this.OnRenderingActiveMenu);
+        eventManager.Subscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        eventManager.Subscribe<UpdateTickingEventArgs>(this.OnUpdateTicking);
+        eventManager.Subscribe<UpdateTickedEventArgs>(this.OnUpdateTicked);
+        eventManager.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        eventManager.Subscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        eventManager.Subscribe<CursorMovedEventArgs>(this.OnCursorMoved);
+        eventManager.Subscribe<MouseWheelScrolledEventArgs>(this.OnMouseWheelScrolled);
 
         // Patches
         harmony.Patch(
@@ -81,13 +80,6 @@ internal sealed class ItemGrabMenuManager : BaseService
             transpiler: new HarmonyMethod(
                 typeof(ItemGrabMenuManager),
                 nameof(ItemGrabMenuManager.ItemGrabMenu_constructor_transpiler)));
-    }
-
-    /// <summary>Event raised when the item grab menu has changed.</summary>
-    public event EventHandler<ItemGrabMenuChangedEventArgs> ItemGrabMenuChanged
-    {
-        add => this.itemGrabMenuChanged += value;
-        remove => this.itemGrabMenuChanged -= value;
     }
 
     /// <summary>Gets the current item grab menu.</summary>
@@ -178,9 +170,9 @@ internal sealed class ItemGrabMenuManager : BaseService
 
     private static int GetActualCapacity(int capacity) => capacity > 70 ? 70 : capacity;
 
-    private void OnUpdateTicking(object? sender, UpdateTickingEventArgs e) => this.UpdateMenu();
+    private void OnUpdateTicking(UpdateTickingEventArgs e) => this.UpdateMenu();
 
-    private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e) => this.UpdateMenu();
+    private void OnUpdateTicked(UpdateTickedEventArgs e) => this.UpdateMenu();
 
     private void UpdateHighlightMethods()
     {
@@ -215,7 +207,7 @@ internal sealed class ItemGrabMenuManager : BaseService
         {
             this.topMenu.Value.Reset(null, null);
             this.bottomMenu.Value.Reset(null, null);
-            this.itemGrabMenuChanged.InvokeAll(this, new ItemGrabMenuChangedEventArgs());
+            this.eventManager.Publish(new ItemGrabMenuChangedEventArgs());
             return;
         }
 
@@ -240,13 +232,13 @@ internal sealed class ItemGrabMenuManager : BaseService
 
         // Reset filters
         this.UpdateHighlightMethods();
-        this.itemGrabMenuChanged.InvokeAll(this, new ItemGrabMenuChangedEventArgs());
+        this.eventManager.Publish(new ItemGrabMenuChangedEventArgs());
 
         // Disable background fade
         itemGrabMenu.drawBG = false;
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (this.CurrentMenu is null)
         {
@@ -264,7 +256,7 @@ internal sealed class ItemGrabMenuManager : BaseService
         this.inputHelper.Suppress(e.Button);
     }
 
-    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    private void OnButtonsChanged(ButtonsChangedEventArgs e)
     {
         if (this.CurrentMenu is null)
         {
@@ -284,7 +276,7 @@ internal sealed class ItemGrabMenuManager : BaseService
         }
     }
 
-    private void OnCursorMoved(object? sender, CursorMovedEventArgs e)
+    private void OnCursorMoved(CursorMovedEventArgs e)
     {
         if (this.CurrentMenu is null)
         {
@@ -296,7 +288,7 @@ internal sealed class ItemGrabMenuManager : BaseService
         this.bottomMenu.Value.Hover(mouseX, mouseY);
     }
 
-    private void OnMouseWheelScrolled(object? sender, MouseWheelScrolledEventArgs e)
+    private void OnMouseWheelScrolled(MouseWheelScrolledEventArgs e)
     {
         if (this.CurrentMenu is null)
         {
@@ -318,7 +310,7 @@ internal sealed class ItemGrabMenuManager : BaseService
     }
 
     [EventPriority((EventPriority)int.MaxValue)]
-    private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)
+    private void OnRenderingActiveMenu(RenderingActiveMenuEventArgs e)
     {
         if (this.CurrentMenu is null)
         {
@@ -333,7 +325,7 @@ internal sealed class ItemGrabMenuManager : BaseService
     }
 
     [EventPriority((EventPriority)int.MinValue)]
-    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    private void OnRenderedActiveMenu(RenderedActiveMenuEventArgs e)
     {
         if (this.CurrentMenu is null)
         {

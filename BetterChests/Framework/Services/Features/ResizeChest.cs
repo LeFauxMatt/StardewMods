@@ -1,7 +1,9 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using HarmonyLib;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Objects;
@@ -17,18 +19,20 @@ internal sealed class ResizeChest : BaseFeature<ResizeChest>
     private readonly Harmony harmony;
 
     /// <summary>Initializes a new instance of the <see cref="ResizeChest" /> class.</summary>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     public ResizeChest(
-        ConfigManager configManager,
         ContainerFactory containerFactory,
+        IEventManager eventManager,
         Harmony harmony,
         ILog log,
-        IManifest manifest)
-        : base(log, manifest, configManager)
+        IManifest manifest,
+        IModConfig modConfig)
+        : base(eventManager, log, manifest, modConfig)
     {
         ResizeChest.instance = this;
         this.containerFactory = containerFactory;

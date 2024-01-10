@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Enums;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
@@ -19,7 +20,7 @@ using StardewValley.Menus;
 internal sealed class ToolbarManager : BaseService
 {
     private readonly Dictionary<string, ClickableTextureComponent> components;
-    private readonly EventManager eventManager;
+    private readonly IEventManager eventManager;
     private readonly IModConfig modConfig;
     private readonly PerScreen<string> currentHoverText = new();
     private readonly IGameContentHelper gameContentHelper;
@@ -44,7 +45,7 @@ internal sealed class ToolbarManager : BaseService
     public ToolbarManager(
         AssetHandler assetHandler,
         Dictionary<string, ClickableTextureComponent> components,
-        EventManager eventManager,
+        IEventManager eventManager,
         IGameContentHelper gameContentHelper,
         IInputHelper inputHelper,
         ILog log,

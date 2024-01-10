@@ -1,5 +1,6 @@
 namespace StardewMods.ExpandedStorage.Framework.Services;
 
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.ExpandedStorage.Framework.Interfaces;
@@ -13,14 +14,16 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
     private readonly IModHelper modHelper;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigManager" /> class.</summary>
+    /// <param name="eventPublisher">Dependency used for publishing events.</param>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
     public ConfigManager(
+        IEventPublisher eventPublisher,
         GenericModConfigMenuIntegration genericModConfigMenuIntegration,
         IManifest manifest,
         IModHelper modHelper)
-        : base(modHelper)
+        : base(eventPublisher, modHelper)
     {
         this.genericModConfigMenuIntegration = genericModConfigMenuIntegration;
         this.manifest = manifest;

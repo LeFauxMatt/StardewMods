@@ -1,6 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Models.Events;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -12,18 +13,23 @@ internal abstract class BaseFeature<TFeature> : BaseService<TFeature>, IFeature
     private bool isActivated;
 
     /// <summary>Initializes a new instance of the <see cref="BaseFeature{TFeature}" /> class.</summary>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="configManager">Dependency used for managing config data.</param>
-    protected BaseFeature(ILog log, IManifest manifest, ConfigManager configManager)
+    /// <param name="modConfig">Dependency used for managing config data.</param>
+    protected BaseFeature(IEventManager eventManager, ILog log, IManifest manifest, IModConfig modConfig)
         : base(log, manifest)
     {
-        this.Config = configManager;
-        configManager.ConfigChanged += this.OnConfigChanged;
+        this.Config = modConfig;
+        this.Events = eventManager;
+        this.Events.Subscribe<ConfigChangedEventArgs>(this.OnConfigChanged);
     }
 
     /// <inheritdoc />
     public abstract bool ShouldBeActive { get; }
+
+    /// <summary>Gets the dependency used for managing events.</summary>
+    protected IEventManager Events { get; }
 
     /// <summary>Gets the dependency used for accessing config data.</summary>
     protected IModConfig Config { get; }
@@ -34,7 +40,7 @@ internal abstract class BaseFeature<TFeature> : BaseService<TFeature>, IFeature
     /// <summary>Deactivate this feature.</summary>
     protected abstract void Deactivate();
 
-    private void OnConfigChanged(object? sender, ConfigChangedEventArgs e)
+    private void OnConfigChanged(ConfigChangedEventArgs e)
     {
         if (this.isActivated == this.ShouldBeActive)
         {

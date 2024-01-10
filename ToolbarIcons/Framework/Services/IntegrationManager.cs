@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
@@ -18,7 +19,7 @@ internal sealed class IntegrationManager : BaseService
 {
     private readonly AssetHandler assetHandler;
     private readonly IEnumerable<ICustomIntegration> customIntegrations;
-    private readonly EventManager eventManager;
+    private readonly IEventManager eventManager;
     private readonly IGameContentHelper gameContentHelper;
     private readonly Dictionary<string, Action> icons = new();
     private readonly IModRegistry modRegistry;
@@ -42,7 +43,7 @@ internal sealed class IntegrationManager : BaseService
         AssetHandler assetHandler,
         ILog log,
         IEnumerable<ICustomIntegration> customIntegrations,
-        EventManager eventManager,
+        IEventManager eventManager,
         IGameContentHelper gameContentHelper,
         IManifest manifest,
         IModRegistry modRegistry,

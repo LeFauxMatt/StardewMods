@@ -3,10 +3,12 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewMods.BetterChests.Framework.UI;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
@@ -21,7 +23,6 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<bool> isActive = new();
     private readonly PerScreen<ItemMatcher> itemMatcher;
-    private readonly IModEvents modEvents;
     private readonly PerScreen<List<Pointer>> pointers = new(() => []);
     private readonly PerScreen<bool> resetCache = new(() => true);
     private readonly PerScreen<SearchBar> searchBar;
@@ -30,30 +31,29 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
 
     /// <summary>Initializes a new instance of the <see cref="ChestFinder" /> class.</summary>
     /// <param name="assetHandler">Dependency used for handling assets.</param>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemMatcherFactory">Dependency used for getting an ItemMatcher.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public ChestFinder(
         AssetHandler assetHandler,
-        ConfigManager configManager,
         ContainerFactory containerFactory,
+        IEventManager eventManager,
         IInputHelper inputHelper,
         ItemMatcherFactory itemMatcherFactory,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents,
+        IModConfig modConfig,
         ToolbarIconsIntegration toolbarIconsIntegration)
-        : base(log, manifest, configManager)
+        : base(eventManager, log, manifest, modConfig)
     {
         this.assetHandler = assetHandler;
         this.containerFactory = containerFactory;
         this.inputHelper = inputHelper;
-        this.modEvents = modEvents;
         this.toolbarIconsIntegration = toolbarIconsIntegration;
         this.itemMatcher = new PerScreen<ItemMatcher>(itemMatcherFactory.GetOneForSearch);
         this.searchBar = new PerScreen<SearchBar>(
@@ -76,12 +76,12 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
     protected override void Activate()
     {
         // Events
-        this.modEvents.Display.RenderedHud += this.OnRenderedHud;
-        this.modEvents.Display.RenderingHud += this.OnRenderingHud;
-        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
-        this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.modEvents.World.ChestInventoryChanged += this.OnChestInventoryChanged;
-        this.modEvents.Player.Warped += this.OnWarped;
+        this.Events.Subscribe<RenderedHudEventArgs>(this.OnRenderedHud);
+        this.Events.Subscribe<RenderingHudEventArgs>(this.OnRenderingHud);
+        this.Events.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Subscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Subscribe<ChestInventoryChangedEventArgs>(this.OnChestInventoryChanged);
+        this.Events.Subscribe<WarpedEventArgs>(this.OnWarped);
 
         // Integrations
         if (!this.toolbarIconsIntegration.IsLoaded)
@@ -95,19 +95,19 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
             new Rectangle(48, 0, 16, 16),
             I18n.Button_FindChest_Name());
 
-        this.toolbarIconsIntegration.Api.ToolbarIconPressed += this.OnToolbarIconPressed;
+        this.toolbarIconsIntegration.Api.Subscribe<IIconPressedEventArgs>(this.OnIconPressed);
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Display.RenderedHud -= this.OnRenderedHud;
-        this.modEvents.Display.RenderingHud -= this.OnRenderingHud;
-        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
-        this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.modEvents.World.ChestInventoryChanged -= this.OnChestInventoryChanged;
-        this.modEvents.Player.Warped -= this.OnWarped;
+        this.Events.Unsubscribe<RenderedHudEventArgs>(this.OnRenderedHud);
+        this.Events.Unsubscribe<RenderingHudEventArgs>(this.OnRenderingHud);
+        this.Events.Unsubscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Unsubscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Unsubscribe<ChestInventoryChangedEventArgs>(this.OnChestInventoryChanged);
+        this.Events.Unsubscribe<WarpedEventArgs>(this.OnWarped);
 
         // Integrations
         if (!this.toolbarIconsIntegration.IsLoaded)
@@ -116,10 +116,10 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
         }
 
         this.toolbarIconsIntegration.Api.RemoveToolbarIcon(this.Id);
-        this.toolbarIconsIntegration.Api.ToolbarIconPressed -= this.OnToolbarIconPressed;
+        this.toolbarIconsIntegration.Api.Unsubscribe<IIconPressedEventArgs>(this.OnIconPressed);
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (!this.isActive.Value
             || e.Button is not (SButton.MouseLeft or SButton.MouseRight)
@@ -147,7 +147,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
         }
     }
 
-    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    private void OnButtonsChanged(ButtonsChangedEventArgs e)
     {
         // Activate Search Bar
         if (Context.IsPlayerFree
@@ -187,7 +187,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
         this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.OpenFoundChest);
     }
 
-    private void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)
+    private void OnChestInventoryChanged(ChestInventoryChangedEventArgs e)
     {
         if (e.Location.Equals(Game1.currentLocation))
         {
@@ -195,7 +195,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
         }
     }
 
-    private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
+    private void OnRenderedHud(RenderedHudEventArgs e)
     {
         if (!this.isActive.Value || !Game1.displayHUD || Game1.activeClickableMenu is SearchOverlay)
         {
@@ -218,7 +218,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
         this.searchOverlay.Value.draw(e.SpriteBatch);
     }
 
-    private void OnRenderingHud(object? sender, RenderingHudEventArgs e)
+    private void OnRenderingHud(RenderingHudEventArgs e)
     {
         if (!this.isActive.Value || !Game1.displayHUD)
         {
@@ -229,7 +229,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
         this.searchBar.Value.Update(mouseX, mouseY);
     }
 
-    private void OnWarped(object? sender, WarpedEventArgs e) => this.resetCache.Value = true;
+    private void OnWarped(WarpedEventArgs e) => this.resetCache.Value = true;
 
     private void OpenSearchBar()
     {
@@ -237,9 +237,9 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
         this.searchOverlay.Value.Show();
     }
 
-    private void OnToolbarIconPressed(object? sender, string id)
+    private void OnIconPressed(IIconPressedEventArgs e)
     {
-        if (id == this.Id)
+        if (e.Id == this.Id)
         {
             this.OpenSearchBar();
         }

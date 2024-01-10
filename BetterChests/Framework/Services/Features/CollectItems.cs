@@ -3,7 +3,9 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -19,32 +21,30 @@ internal sealed class CollectItems : BaseFeature<CollectItems>
     private readonly ContainerFactory containerFactory;
     private readonly Harmony harmony;
     private readonly IInputHelper inputHelper;
-    private readonly IModEvents modEvents;
     private readonly PerScreen<bool> resetCache = new(() => true);
 
     /// <summary>Initializes a new instance of the <see cref="CollectItems" /> class.</summary>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     public CollectItems(
-        ConfigManager configManager,
         ContainerFactory containerFactory,
+        IEventManager eventManager,
         Harmony harmony,
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents)
-        : base(log, manifest, configManager)
+        IModConfig modConfig)
+        : base(eventManager, log, manifest, modConfig)
     {
         CollectItems.instance = this;
         this.containerFactory = containerFactory;
         this.harmony = harmony;
         this.inputHelper = inputHelper;
-        this.modEvents = modEvents;
     }
 
     /// <inheritdoc />
@@ -54,8 +54,8 @@ internal sealed class CollectItems : BaseFeature<CollectItems>
     protected override void Activate()
     {
         // Events
-        this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.modEvents.Player.InventoryChanged += this.OnInventoryChanged;
+        this.Events.Subscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Subscribe<InventoryChangedEventArgs>(this.OnInventoryChanged);
 
         // Patches
         this.harmony.Patch(
@@ -67,8 +67,8 @@ internal sealed class CollectItems : BaseFeature<CollectItems>
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.modEvents.Player.InventoryChanged -= this.OnInventoryChanged;
+        this.Events.Unsubscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Unsubscribe<InventoryChangedEventArgs>(this.OnInventoryChanged);
 
         // Patches
         this.harmony.Unpatch(
@@ -120,7 +120,7 @@ internal sealed class CollectItems : BaseFeature<CollectItems>
             AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventoryBool)),
             AccessTools.Method(typeof(CollectItems), nameof(CollectItems.AddItemToInventoryBool)));
 
-    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    private void OnButtonsChanged(ButtonsChangedEventArgs e)
     {
         // Toggle Collect Items
         if (Context.IsPlayerFree && this.Config.Controls.ToggleCollectItems.JustPressed())
@@ -140,7 +140,7 @@ internal sealed class CollectItems : BaseFeature<CollectItems>
         }
     }
 
-    private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e) => this.resetCache.Value = true;
+    private void OnInventoryChanged(InventoryChangedEventArgs e) => this.resetCache.Value = true;
 
     private void RefreshEligible()
     {

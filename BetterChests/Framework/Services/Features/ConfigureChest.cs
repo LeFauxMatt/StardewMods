@@ -9,6 +9,7 @@ using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.UI;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -33,12 +34,12 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
     private readonly ItemGrabMenuManager itemGrabMenuManager;
     private readonly PerScreen<IStorageContainer?> lastContainer = new();
     private readonly IManifest manifest;
-    private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigureChest" /> class.</summary>
     /// <param name="assetHandler">Dependency used for handling assets.</param>
     /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
     /// <param name="getCategorizeOption">Gets a new instance of <see cref="CategorizeOption" />.</param>
@@ -47,11 +48,11 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
     public ConfigureChest(
         AssetHandler assetHandler,
         ConfigManager configManager,
         ContainerFactory containerFactory,
+        IEventManager eventManager,
         IGameContentHelper gameContentHelper,
         GenericModConfigMenuIntegration genericModConfigMenuIntegration,
         Func<CategorizeOption> getCategorizeOption,
@@ -59,14 +60,12 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         ILog log,
-        IManifest manifest,
-        IModEvents modEvents)
-        : base(log, manifest, configManager)
+        IManifest manifest)
+        : base(eventManager, log, manifest, configManager)
     {
         ConfigureChest.instance = this;
         this.configManager = configManager;
         this.containerFactory = containerFactory;
-        this.modEvents = modEvents;
         this.genericModConfigMenuIntegration = genericModConfigMenuIntegration;
         this.getCategorizeOption = getCategorizeOption;
         this.harmony = harmony;
@@ -95,11 +94,11 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
     protected override void Activate()
     {
         // Events
-        this.modEvents.Display.MenuChanged += this.OnMenuChanged;
-        this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
-        this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.Events.Subscribe<MenuChangedEventArgs>(this.OnMenuChanged);
+        this.Events.Subscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Subscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Subscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
 
         // Patches
         this.harmony.Patch(
@@ -113,11 +112,11 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Display.MenuChanged -= this.OnMenuChanged;
-        this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
-        this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.Events.Unsubscribe<MenuChangedEventArgs>(this.OnMenuChanged);
+        this.Events.Unsubscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Unsubscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Unsubscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Unsubscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
 
         // Patches
         this.harmony.Unpatch(
@@ -183,7 +182,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         }
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (!this.isActive.Value
             || e.Button is not (SButton.MouseLeft or SButton.ControllerA)
@@ -203,7 +202,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         this.ShowMenu(this.itemGrabMenuManager.Top.Container);
     }
 
-    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    private void OnButtonsChanged(ButtonsChangedEventArgs e)
     {
         if (!this.isActive.Value)
         {
@@ -222,7 +221,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         this.ShowMenu(container);
     }
 
-    private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
+    private void OnItemGrabMenuChanged(ItemGrabMenuChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.CurrentMenu is null
             || this.itemGrabMenuManager.Top.Container?.Options.ConfigureChest != FeatureOption.Enabled)
@@ -235,7 +234,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         this.itemGrabMenuManager.CurrentMenu.RepositionSideButtons();
     }
 
-    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    private void OnMenuChanged(MenuChangedEventArgs e)
     {
         if (this.lastContainer.Value is null || e.OldMenu?.GetType().Name != "SpecificModConfigMenu")
         {
@@ -254,7 +253,7 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         this.lastContainer.Value = null;
     }
 
-    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    private void OnRenderedActiveMenu(RenderedActiveMenuEventArgs e)
     {
         if (!this.isActive.Value || this.itemGrabMenuManager.CurrentMenu is null)
         {

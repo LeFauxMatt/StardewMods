@@ -3,8 +3,10 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.Common.Extensions;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
@@ -12,31 +14,25 @@ using StardewValley.Menus;
 /// <summary>Locks items in inventory so they cannot be stashed.</summary>
 internal sealed class LockItem : BaseFeature<LockItem>
 {
-    private readonly ContainerHandler containerHandler;
     private readonly IInputHelper inputHelper;
     private readonly ItemGrabMenuManager itemGrabMenuManager;
-    private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="LockItem" /> class.</summary>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
-    /// <param name="containerHandler">Dependency used for handling operations between containers.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     public LockItem(
-        ConfigManager configManager,
-        ContainerHandler containerHandler,
+        IEventManager eventManager,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents)
-        : base(log, manifest, configManager)
+        IModConfig modConfig)
+        : base(eventManager, log, manifest, modConfig)
     {
-        this.containerHandler = containerHandler;
-        this.modEvents = modEvents;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
     }
@@ -48,22 +44,22 @@ internal sealed class LockItem : BaseFeature<LockItem>
     protected override void Activate()
     {
         // Events
-        this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
-        this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.containerHandler.ItemTransferring += this.OnItemTransferring;
-        this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.Events.Subscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Subscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Subscribe<ItemTransferringEventArgs>(this.OnItemTransferring);
+        this.Events.Subscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
-        this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.containerHandler.ItemTransferring -= this.OnItemTransferring;
-        this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.Events.Unsubscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Unsubscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Unsubscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Unsubscribe<ItemTransferringEventArgs>(this.OnItemTransferring);
+        this.Events.Unsubscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
     }
 
     private static bool TryGetMenu(int mouseX, int mouseY, [NotNullWhen(true)] out InventoryMenu? inventoryMenu)
@@ -91,7 +87,7 @@ internal sealed class LockItem : BaseFeature<LockItem>
         return inventoryMenu is not null;
     }
 
-    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    private void OnRenderedActiveMenu(RenderedActiveMenuEventArgs e)
     {
         if (this.itemGrabMenuManager.Top.Menu is not null)
         {
@@ -135,7 +131,7 @@ internal sealed class LockItem : BaseFeature<LockItem>
         }
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (!this.Config.LockItemHold || e.Button is not SButton.MouseLeft || !this.Config.Controls.LockSlot.IsDown())
         {
@@ -165,7 +161,7 @@ internal sealed class LockItem : BaseFeature<LockItem>
         this.ToggleLock(item);
     }
 
-    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    private void OnButtonsChanged(ButtonsChangedEventArgs e)
     {
         if (this.Config.LockItemHold || !this.Config.Controls.LockSlot.JustPressed())
         {
@@ -195,13 +191,13 @@ internal sealed class LockItem : BaseFeature<LockItem>
         this.ToggleLock(item);
     }
 
-    private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
+    private void OnItemGrabMenuChanged(ItemGrabMenuChangedEventArgs e)
     {
         this.itemGrabMenuManager.Top.AddHighlightMethod(this.IsUnlocked);
         this.itemGrabMenuManager.Bottom.AddHighlightMethod(this.IsUnlocked);
     }
 
-    private void OnItemTransferring(object? sender, ItemTransferringEventArgs e)
+    private void OnItemTransferring(ItemTransferringEventArgs e)
     {
         if (!this.IsUnlocked(e.Item))
         {

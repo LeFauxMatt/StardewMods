@@ -1,6 +1,6 @@
 namespace StardewMods.Common.Services;
 
-using StardewMods.Common.Extensions;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Models.Events;
 
 /// <summary>
@@ -11,24 +11,19 @@ using StardewMods.Common.Models.Events;
 internal class ConfigManager<TConfig>
     where TConfig : class, new()
 {
+    private readonly IEventPublisher eventPublisher;
     private readonly IModHelper modHelper;
 
-    private EventHandler<ConfigChangedEventArgs>? configChanged;
     private bool initialized;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigManager{TConfig}" /> class.</summary>
+    /// <param name="eventPublisher">Dependency used for publishing events.</param>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
-    public ConfigManager(IModHelper modHelper)
+    public ConfigManager(IEventPublisher eventPublisher, IModHelper modHelper)
     {
+        this.eventPublisher = eventPublisher;
         this.modHelper = modHelper;
         this.Config = this.modHelper.ReadConfig<TConfig>();
-    }
-
-    /// <summary>Event raised when the configuration has been changed.</summary>
-    public event EventHandler<ConfigChangedEventArgs> ConfigChanged
-    {
-        add => this.configChanged += value;
-        remove => this.configChanged -= value;
     }
 
     /// <summary>Gets the backing config.</summary>
@@ -43,7 +38,7 @@ internal class ConfigManager<TConfig>
         }
 
         this.initialized = true;
-        this.configChanged?.InvokeAll(this, new ConfigChangedEventArgs());
+        this.eventPublisher.Publish(new ConfigChangedEventArgs());
     }
 
     /// <summary>Returns a new instance of IModConfig.</summary>
@@ -58,7 +53,7 @@ internal class ConfigManager<TConfig>
     public void Reset()
     {
         this.Config = this.GetNew();
-        this.configChanged?.InvokeAll(this, new ConfigChangedEventArgs());
+        this.eventPublisher.Publish(new ConfigChangedEventArgs());
     }
 
     /// <summary>Saves the provided config.</summary>
@@ -67,6 +62,6 @@ internal class ConfigManager<TConfig>
     {
         this.modHelper.WriteConfig(config);
         this.Config = config;
-        this.configChanged?.InvokeAll(this, new ConfigChangedEventArgs());
+        this.eventPublisher.Publish(new ConfigChangedEventArgs());
     }
 }

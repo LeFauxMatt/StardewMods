@@ -1,7 +1,7 @@
 namespace StardewMods.Common.Interfaces;
 
 /// <summary>
-/// Represents a publish-subscribe service.
+/// Represents an event publisher service.
 /// </summary>
 public interface IEventPublisher
 {

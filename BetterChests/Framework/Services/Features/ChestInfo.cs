@@ -3,8 +3,10 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
@@ -20,28 +22,26 @@ internal sealed class ChestInfo : BaseFeature<ChestInfo>
     private readonly ContainerFactory containerFactory;
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<bool> isActive = new();
-    private readonly IModEvents modEvents;
     private readonly PerScreen<bool> resetCache = new(() => true);
 
     /// <summary>Initializes a new instance of the <see cref="ChestInfo" /> class.</summary>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     public ChestInfo(
-        ConfigManager configManager,
         ContainerFactory containerFactory,
+        IEventManager eventManager,
         IInputHelper inputHelper,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents)
-        : base(log, manifest, configManager)
+        IModConfig modConfig)
+        : base(eventManager, log, manifest, modConfig)
     {
         this.containerFactory = containerFactory;
         this.inputHelper = inputHelper;
-        this.modEvents = modEvents;
     }
 
     /// <inheritdoc />
@@ -51,23 +51,23 @@ internal sealed class ChestInfo : BaseFeature<ChestInfo>
     protected override void Activate()
     {
         // Events
-        this.modEvents.Display.MenuChanged += this.OnMenuChanged;
-        this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.modEvents.Player.InventoryChanged += this.OnInventoryChanged;
+        this.Events.Subscribe<MenuChangedEventArgs>(this.OnMenuChanged);
+        this.Events.Subscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Subscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Subscribe<InventoryChangedEventArgs>(this.OnInventoryChanged);
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Display.MenuChanged -= this.OnMenuChanged;
-        this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.modEvents.Player.InventoryChanged -= this.OnInventoryChanged;
+        this.Events.Unsubscribe<MenuChangedEventArgs>(this.OnMenuChanged);
+        this.Events.Unsubscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Unsubscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Unsubscribe<InventoryChangedEventArgs>(this.OnInventoryChanged);
     }
 
-    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    private void OnButtonsChanged(ButtonsChangedEventArgs e)
     {
         if (this.resetCache.Value || !this.cachedInfo.Value.Any() || !this.Config.Controls.ToggleInfo.JustPressed())
         {
@@ -79,11 +79,11 @@ internal sealed class ChestInfo : BaseFeature<ChestInfo>
         this.Log.Trace("{0}: Toggled chest info to {1}", this.Id, this.isActive.Value);
     }
 
-    private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e) => this.resetCache.Value = true;
+    private void OnInventoryChanged(InventoryChangedEventArgs e) => this.resetCache.Value = true;
 
-    private void OnMenuChanged(object? sender, MenuChangedEventArgs e) => this.resetCache.Value = true;
+    private void OnMenuChanged(MenuChangedEventArgs e) => this.resetCache.Value = true;
 
-    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    private void OnRenderedActiveMenu(RenderedActiveMenuEventArgs e)
     {
         // Check if info needs to be refreshed
         if (this.resetCache.Value)

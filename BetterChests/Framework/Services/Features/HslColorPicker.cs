@@ -5,9 +5,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.UI;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Models;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -33,7 +35,6 @@ internal sealed class HslColorPicker : BaseFeature<HslColorPicker>
     private readonly PerScreen<bool> isActive = new();
     private readonly ItemGrabMenuManager itemGrabMenuManager;
     private readonly PerScreen<Slider> lightness;
-    private readonly IModEvents modEvents;
     private readonly PerScreen<ClickableTextureComponent> noColorButton = new();
     private readonly PerScreen<Rectangle> noColorButtonArea = new();
     private readonly PerScreen<Slider> saturation;
@@ -43,31 +44,30 @@ internal sealed class HslColorPicker : BaseFeature<HslColorPicker>
 
     /// <summary>Initializes a new instance of the <see cref="HslColorPicker" /> class.</summary>
     /// <param name="assetHandler">Dependency used for handling assets.</param>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     public HslColorPicker(
         AssetHandler assetHandler,
-        ConfigManager configManager,
+        IEventManager eventManager,
         IGameContentHelper gameContentHelper,
         Harmony harmony,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents)
-        : base(log, manifest, configManager)
+        IModConfig modConfig)
+        : base(eventManager, log, manifest, modConfig)
     {
         HslColorPicker.instance = this;
         this.harmony = harmony;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
-        this.modEvents = modEvents;
 
         var hslTexture = gameContentHelper.Load<Texture2D>(assetHandler.HslTexturePath);
         var colors = new Color[hslTexture.Width * hslTexture.Height];
@@ -168,10 +168,10 @@ internal sealed class HslColorPicker : BaseFeature<HslColorPicker>
     protected override void Activate()
     {
         // Events
-        this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.modEvents.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
-        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
-        this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.Events.Subscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Subscribe<RenderingActiveMenuEventArgs>(this.OnRenderingActiveMenu);
+        this.Events.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Subscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
 
         // Patches
         this.harmony.Patch(
@@ -201,10 +201,10 @@ internal sealed class HslColorPicker : BaseFeature<HslColorPicker>
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.modEvents.Display.RenderingActiveMenu -= this.OnRenderingActiveMenu;
-        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
-        this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.Events.Unsubscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Unsubscribe<RenderingActiveMenuEventArgs>(this.OnRenderingActiveMenu);
+        this.Events.Unsubscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Unsubscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
 
         // Patches
         this.harmony.Unpatch(
@@ -289,7 +289,7 @@ internal sealed class HslColorPicker : BaseFeature<HslColorPicker>
         }
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (!this.isActive.Value
             || e.Button is not (SButton.MouseLeft or SButton.MouseRight or SButton.ControllerA or SButton.ControllerB)
@@ -365,7 +365,7 @@ internal sealed class HslColorPicker : BaseFeature<HslColorPicker>
         }
     }
 
-    private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
+    private void OnItemGrabMenuChanged(ItemGrabMenuChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.CurrentMenu?.chestColorPicker is not
             {
@@ -404,7 +404,7 @@ internal sealed class HslColorPicker : BaseFeature<HslColorPicker>
         this.lightness.Value.MoveTo(this.xPosition.Value + 32, this.yPosition.Value + 36);
     }
 
-    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    private void OnRenderedActiveMenu(RenderedActiveMenuEventArgs e)
     {
         if (!this.isActive.Value
             || !Game1.player.showChestColorPicker
@@ -464,7 +464,7 @@ internal sealed class HslColorPicker : BaseFeature<HslColorPicker>
             local: true);
     }
 
-    private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)
+    private void OnRenderingActiveMenu(RenderingActiveMenuEventArgs e)
     {
         if (!this.isActive.Value || !Game1.player.showChestColorPicker)
         {

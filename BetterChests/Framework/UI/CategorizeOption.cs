@@ -7,6 +7,7 @@ using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Transient;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewValley.Menus;
 
@@ -30,8 +31,8 @@ internal sealed class CategorizeOption : BaseComplexOption
         });
 
     private readonly List<ClickableComponent> allComponents = [];
+    private readonly IEventSubscriber eventSubscriber;
     private readonly IGameContentHelper gameContentHelper;
-    private readonly IModEvents modEvents;
     private readonly IInputHelper inputHelper;
     private readonly Dictionary<string, InventoryTabData> inventoryTabData;
     private readonly ItemMatcher itemMatcherForFiltering;
@@ -51,22 +52,22 @@ internal sealed class CategorizeOption : BaseComplexOption
     private HashSet<string> tags = [];
 
     /// <summary>Initializes a new instance of the <see cref="CategorizeOption" /> class.</summary>
+    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="getInventoryTabData">Function which returns inventory tab data.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemMatcherFactory">Dependency used for getting an ItemMatcher.</param>
     /// <param name="translationHelper">Dependency used for accessing translations.</param>
     public CategorizeOption(
+        IEventSubscriber eventSubscriber,
         IGameContentHelper gameContentHelper,
         Func<Dictionary<string, InventoryTabData>> getInventoryTabData,
-        IModEvents modEvents,
         IInputHelper inputHelper,
         ItemMatcherFactory itemMatcherFactory,
         ITranslationHelper translationHelper)
     {
+        this.eventSubscriber = eventSubscriber;
         this.gameContentHelper = gameContentHelper;
-        this.modEvents = modEvents;
         this.inputHelper = inputHelper;
         this.inventoryTabData = getInventoryTabData();
         this.itemMatcherForFiltering = itemMatcherFactory.GetDefault();
@@ -250,15 +251,15 @@ internal sealed class CategorizeOption : BaseComplexOption
     /// <inheritdoc />
     public override void BeforeMenuOpened()
     {
-        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
-        this.modEvents.Input.CursorMoved += this.OnCursorMoved;
+        this.eventSubscriber.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.eventSubscriber.Subscribe<CursorMovedEventArgs>(this.OnCursorMoved);
     }
 
     /// <inheritdoc />
     public override void BeforeMenuClosed()
     {
-        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
-        this.modEvents.Input.CursorMoved -= this.OnCursorMoved;
+        this.eventSubscriber.Unsubscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.eventSubscriber.Unsubscribe<CursorMovedEventArgs>(this.OnCursorMoved);
     }
 
     private static void DrawQuality(
@@ -441,7 +442,7 @@ internal sealed class CategorizeOption : BaseComplexOption
         this.RefreshItems();
     }
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (e.Button is not (SButton.MouseLeft or SButton.MouseRight))
         {
@@ -504,7 +505,7 @@ internal sealed class CategorizeOption : BaseComplexOption
         this.RefreshItems();
     }
 
-    private void OnCursorMoved(object? sender, CursorMovedEventArgs e)
+    private void OnCursorMoved(CursorMovedEventArgs e)
     {
         var (mouseX, mouseY) = e.NewPosition.GetScaledScreenPixels().ToPoint();
         var component =

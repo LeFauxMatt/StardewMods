@@ -8,7 +8,7 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 /// <summary>
 /// Represents a base event manager service.
 /// </summary>
-internal class BaseEventManager : BaseService, IEventPublisher, IEventSubscriber
+internal class BaseEventManager : BaseService, IEventManager
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseEventManager"/> class.

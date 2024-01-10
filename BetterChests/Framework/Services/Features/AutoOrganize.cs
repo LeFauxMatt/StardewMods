@@ -1,7 +1,9 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using StardewModdingAPI.Events;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -11,26 +13,24 @@ internal sealed class AutoOrganize : BaseFeature<AutoOrganize>
 {
     private readonly ContainerFactory containerFactory;
     private readonly ContainerHandler containerHandler;
-    private readonly IModEvents modEvents;
 
     /// <summary>Initializes a new instance of the <see cref="AutoOrganize" /> class.</summary>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     /// <param name="containerHandler">Dependency used for handling operations between containers.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     public AutoOrganize(
-        ConfigManager configManager,
         ContainerFactory containerFactory,
         ContainerHandler containerHandler,
+        IEventManager eventManager,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents)
-        : base(log, manifest, configManager)
+        IModConfig modConfig)
+        : base(eventManager, log, manifest, modConfig)
     {
         this.containerHandler = containerHandler;
-        this.modEvents = modEvents;
         this.containerFactory = containerFactory;
     }
 
@@ -38,12 +38,12 @@ internal sealed class AutoOrganize : BaseFeature<AutoOrganize>
     public override bool ShouldBeActive => this.Config.DefaultOptions.AutoOrganize != FeatureOption.Disabled;
 
     /// <inheritdoc />
-    protected override void Activate() => this.modEvents.GameLoop.DayEnding += this.OnDayEnding;
+    protected override void Activate() => this.Events.Subscribe<DayEndingEventArgs>(this.OnDayEnding);
 
     /// <inheritdoc />
-    protected override void Deactivate() => this.modEvents.GameLoop.DayEnding -= this.OnDayEnding;
+    protected override void Deactivate() => this.Events.Unsubscribe<DayEndingEventArgs>(this.OnDayEnding);
 
-    private void OnDayEnding(object? sender, DayEndingEventArgs e) => this.OrganizeAll();
+    private void OnDayEnding(DayEndingEventArgs e) => this.OrganizeAll();
 
     private void OrganizeAll()
     {

@@ -3,10 +3,12 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Enums;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewMods.BetterChests.Framework.UI;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
@@ -18,31 +20,28 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
     private readonly PerScreen<bool> isActive = new();
     private readonly ItemGrabMenuManager itemGrabMenuManager;
     private readonly PerScreen<ItemMatcher> itemMatcher;
-    private readonly IModEvents modEvents;
     private readonly PerScreen<SearchBar> searchBar;
 
     /// <summary>Initializes a new instance of the <see cref="SearchItems" /> class.</summary>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="itemMatcherFactory">Dependency used for getting an ItemMatcher.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     public SearchItems(
-        ConfigManager configManager,
+        IEventManager eventManager,
         IInputHelper inputHelper,
         ItemGrabMenuManager itemGrabMenuManager,
         ItemMatcherFactory itemMatcherFactory,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents)
-        : base(log, manifest, configManager)
+        IModConfig modConfig)
+        : base(eventManager, log, manifest, modConfig)
     {
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
-        this.modEvents = modEvents;
-
         this.itemMatcher = new PerScreen<ItemMatcher>(itemMatcherFactory.GetOneForSearch);
         this.searchBar = new PerScreen<SearchBar>(
             () => new SearchBar(
@@ -65,22 +64,22 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
     protected override void Activate()
     {
         // Events
-        this.modEvents.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
-        this.modEvents.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
-        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
-        this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.Events.Subscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Subscribe<RenderingActiveMenuEventArgs>(this.OnRenderingActiveMenu);
+        this.Events.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Subscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Subscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Display.RenderedActiveMenu -= this.OnRenderedActiveMenu;
-        this.modEvents.Display.RenderingActiveMenu -= this.OnRenderingActiveMenu;
-        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
-        this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.Events.Unsubscribe<RenderedActiveMenuEventArgs>(this.OnRenderedActiveMenu);
+        this.Events.Unsubscribe<RenderingActiveMenuEventArgs>(this.OnRenderingActiveMenu);
+        this.Events.Unsubscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Unsubscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Unsubscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
     }
 
     private IEnumerable<Item> FilterBySearch(IEnumerable<Item> items) =>
@@ -93,7 +92,7 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
                 _ => items,
             };
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (!this.isActive.Value || this.itemGrabMenuManager.CurrentMenu is null)
         {
@@ -123,7 +122,7 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
         }
     }
 
-    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    private void OnButtonsChanged(ButtonsChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.Top.Container?.Options.SearchItems != FeatureOption.Enabled
             || !this.Config.Controls.ToggleSearch.JustPressed())
@@ -135,7 +134,7 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
         this.inputHelper.SuppressActiveKeybinds(this.Config.Controls.ToggleSearch);
     }
 
-    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    private void OnRenderedActiveMenu(RenderedActiveMenuEventArgs e)
     {
         if (!this.isActive.Value || this.itemGrabMenuManager.CurrentMenu is null)
         {
@@ -145,7 +144,7 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
         this.searchBar.Value.Draw(e.SpriteBatch);
     }
 
-    private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)
+    private void OnRenderingActiveMenu(RenderingActiveMenuEventArgs e)
     {
         if (!this.isActive.Value || this.itemGrabMenuManager.CurrentMenu is null)
         {
@@ -156,7 +155,7 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
         this.searchBar.Value.Update(mouseX, mouseY);
     }
 
-    private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
+    private void OnItemGrabMenuChanged(ItemGrabMenuChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.Top.Menu is null
             || this.itemGrabMenuManager.Top.Container?.Options.SearchItems != FeatureOption.Enabled)

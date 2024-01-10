@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Enums\ComponentArea.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Enums\SimpleLogLevel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CommonExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IEventManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IEventPublisher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IEventSubscriber.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\PriorityAttribute.cs" />

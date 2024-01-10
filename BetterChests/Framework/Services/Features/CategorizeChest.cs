@@ -1,9 +1,11 @@
 namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using System.Runtime.CompilerServices;
+using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Transient;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
@@ -12,27 +14,25 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
 {
     private readonly ConditionalWeakTable<IStorageContainer, ItemMatcher> cachedItemMatchers = new();
-    private readonly ContainerHandler containerHandler;
     private readonly ItemGrabMenuManager itemGrabMenuManager;
     private readonly ItemMatcherFactory itemMatcherFactory;
 
     /// <summary>Initializes a new instance of the <see cref="CategorizeChest" /> class.</summary>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
-    /// <param name="containerHandler">Dependency used for handling operations between containers.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="itemMatcherFactory">Dependency used for getting an ItemMatcher.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     public CategorizeChest(
-        ConfigManager configManager,
-        ContainerHandler containerHandler,
+        IEventManager eventManager,
         ItemGrabMenuManager itemGrabMenuManager,
         ItemMatcherFactory itemMatcherFactory,
         ILog log,
-        IManifest manifest)
-        : base(log, manifest, configManager)
+        IManifest manifest,
+        IModConfig modConfig)
+        : base(eventManager, log, manifest, modConfig)
     {
-        this.containerHandler = containerHandler;
         this.itemGrabMenuManager = itemGrabMenuManager;
         this.itemMatcherFactory = itemMatcherFactory;
     }
@@ -44,19 +44,19 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
     protected override void Activate()
     {
         // Events
-        this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
-        this.containerHandler.ItemTransferring += this.OnItemTransferring;
+        this.Events.Subscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
+        this.Events.Subscribe<ItemTransferringEventArgs>(this.OnItemTransferring);
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
-        this.containerHandler.ItemTransferring -= this.OnItemTransferring;
+        this.Events.Unsubscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
+        this.Events.Unsubscribe<ItemTransferringEventArgs>(this.OnItemTransferring);
     }
 
-    private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
+    private void OnItemGrabMenuChanged(ItemGrabMenuChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.Top.Container?.Options.CategorizeChest == FeatureOption.Enabled)
         {
@@ -71,7 +71,7 @@ internal sealed class CategorizeChest : BaseFeature<CategorizeChest>
         }
     }
 
-    private void OnItemTransferring(object? sender, ItemTransferringEventArgs e)
+    private void OnItemTransferring(ItemTransferringEventArgs e)
     {
         if (e.Into.Options.CategorizeChest != FeatureOption.Enabled)
         {

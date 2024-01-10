@@ -21,23 +21,23 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
 
     /// <summary>Initializes a new instance of the <see cref="ConfigManager" /> class.</summary>
     /// <param name="components">Dependency used for the toolbar icon components.</param>
-    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="genericModConfigMenuIntegration">Dependency for Generic Mod Config Menu integration.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
     public ConfigManager(
         Dictionary<string, ClickableTextureComponent> components,
-        IEventSubscriber eventSubscriber,
+        IEventManager eventManager,
         GenericModConfigMenuIntegration genericModConfigMenuIntegration,
         IManifest manifest,
         IModHelper modHelper)
-        : base(modHelper)
+        : base(eventManager, modHelper)
     {
         this.manifest = manifest;
         this.components = components;
         this.genericModConfigMenuIntegration = genericModConfigMenuIntegration;
 
-        eventSubscriber.Subscribe<ToolbarIconsLoadedEventArgs>(this.OnToolbarIconsLoaded);
+        eventManager.Subscribe<ToolbarIconsLoadedEventArgs>(this.OnToolbarIconsLoaded);
     }
 
     /// <inheritdoc />

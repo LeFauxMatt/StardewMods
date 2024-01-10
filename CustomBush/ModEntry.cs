@@ -47,7 +47,7 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance<Func<Dictionary<string, BushModel>>>(this.GetData);
         this.container.RegisterSingleton<AssetHandler>();
         this.container.RegisterSingleton<BushManager>();
-        this.container.RegisterSingleton<EventManager>();
+        this.container.RegisterSingleton<IEventManager, EventManager>();
         this.container.RegisterSingleton<IEventPublisher, EventManager>();
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<FuryCoreIntegration>();

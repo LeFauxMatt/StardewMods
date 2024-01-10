@@ -12,12 +12,17 @@ internal sealed class AssetHandler : BaseService
     private readonly IDataHelper dataHelper;
 
     /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
-    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="dataHelper">Dependency used for storing and retrieving data.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="theming">Dependency used for swapping palettes.</param>
-    public AssetHandler(ILog log, IDataHelper dataHelper, IManifest manifest, IModEvents modEvents, ITheming theming)
+    public AssetHandler(
+        IDataHelper dataHelper,
+        EventManager eventManager,
+        ILog log,
+        IManifest manifest,
+        ITheming theming)
         : base(log, manifest)
     {
         // Init
@@ -29,7 +34,7 @@ internal sealed class AssetHandler : BaseService
         theming.AddAssets([this.IconTexturePath, this.TabTexturePath]);
 
         // Events
-        modEvents.Content.AssetRequested += this.OnAssetRequested;
+        eventManager.Subscribe<AssetRequestedEventArgs>(this.OnAssetRequested);
     }
 
     /// <summary>Gets the game path to the hsl texture.</summary>
@@ -44,7 +49,7 @@ internal sealed class AssetHandler : BaseService
     /// <summary>Gets the game path to tab data.</summary>
     public string TabDataPath { get; }
 
-    private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+    private void OnAssetRequested(AssetRequestedEventArgs e)
     {
         if (e.Name.IsEquivalentTo(this.HslTexturePath))
         {

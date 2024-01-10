@@ -8,6 +8,7 @@ using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
@@ -21,32 +22,30 @@ internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
     private readonly InventoryTabFactory inventoryTabFactory;
     private readonly PerScreen<bool> isActive = new();
     private readonly ItemGrabMenuManager itemGrabMenuManager;
-    private readonly IModEvents modEvents;
     private readonly PerScreen<int> newIndex = new(() => -1);
     private readonly PerScreen<bool> resetCache = new(() => true);
 
     /// <summary>Initializes a new instance of the <see cref="InventoryTabs" /> class.</summary>
-    /// <param name="configManager">Dependency used for accessing config data.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="inventoryTabFactory">Dependency used for managing inventory tabs.</param>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
+    /// <param name="modConfig">Dependency used for accessing config data.</param>
     public InventoryTabs(
-        ConfigManager configManager,
+        IEventManager eventManager,
         IInputHelper inputHelper,
         InventoryTabFactory inventoryTabFactory,
         ItemGrabMenuManager itemGrabMenuManager,
         ILog log,
         IManifest manifest,
-        IModEvents modEvents)
-        : base(log, manifest, configManager)
+        IModConfig modConfig)
+        : base(eventManager, log, manifest, modConfig)
     {
         this.inputHelper = inputHelper;
         this.inventoryTabFactory = inventoryTabFactory;
         this.itemGrabMenuManager = itemGrabMenuManager;
-        this.modEvents = modEvents;
     }
 
     /// <inheritdoc />
@@ -65,22 +64,22 @@ internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
     protected override void Activate()
     {
         // Events
-        this.modEvents.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
-        this.modEvents.Input.ButtonPressed += this.OnButtonPressed;
-        this.modEvents.Input.ButtonsChanged += this.OnButtonsChanged;
-        this.modEvents.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
-        this.itemGrabMenuManager.ItemGrabMenuChanged += this.OnItemGrabMenuChanged;
+        this.Events.Subscribe<RenderingActiveMenuEventArgs>(this.OnRenderingActiveMenu);
+        this.Events.Subscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Subscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Subscribe<MouseWheelScrolledEventArgs>(this.OnMouseWheelScrolled);
+        this.Events.Subscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
     }
 
     /// <inheritdoc />
     protected override void Deactivate()
     {
         // Events
-        this.modEvents.Display.RenderingActiveMenu -= this.OnRenderingActiveMenu;
-        this.modEvents.Input.ButtonPressed -= this.OnButtonPressed;
-        this.modEvents.Input.ButtonsChanged -= this.OnButtonsChanged;
-        this.modEvents.Input.MouseWheelScrolled -= this.OnMouseWheelScrolled;
-        this.itemGrabMenuManager.ItemGrabMenuChanged -= this.OnItemGrabMenuChanged;
+        this.Events.Unsubscribe<RenderingActiveMenuEventArgs>(this.OnRenderingActiveMenu);
+        this.Events.Unsubscribe<ButtonPressedEventArgs>(this.OnButtonPressed);
+        this.Events.Unsubscribe<ButtonsChangedEventArgs>(this.OnButtonsChanged);
+        this.Events.Unsubscribe<MouseWheelScrolledEventArgs>(this.OnMouseWheelScrolled);
+        this.Events.Unsubscribe<ItemGrabMenuChangedEventArgs>(this.OnItemGrabMenuChanged);
     }
 
     private IEnumerable<Item> FilterByTab(IEnumerable<Item> items) =>
@@ -93,7 +92,7 @@ internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
                 _ => items,
             };
 
-    private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+    private void OnButtonPressed(ButtonPressedEventArgs e)
     {
         if (!this.isActive.Value
             || this.resetCache.Value
@@ -119,7 +118,7 @@ internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
         this.inputHelper.Suppress(e.Button);
     }
 
-    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    private void OnButtonsChanged(ButtonsChangedEventArgs e)
     {
         if (!this.isActive.Value || this.resetCache.Value || !this.cachedTabs.Value.Any())
         {
@@ -139,7 +138,7 @@ internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
         }
     }
 
-    private void OnMouseWheelScrolled(object? sender, MouseWheelScrolledEventArgs e)
+    private void OnMouseWheelScrolled(MouseWheelScrolledEventArgs e)
     {
         if (!this.isActive.Value || this.resetCache.Value || !this.cachedTabs.Value.Any())
         {
@@ -164,7 +163,7 @@ internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
         }
     }
 
-    private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)
+    private void OnRenderingActiveMenu(RenderingActiveMenuEventArgs e)
     {
         if (!this.isActive.Value || this.itemGrabMenuManager.CurrentMenu is null)
         {
@@ -234,7 +233,7 @@ internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
         }
     }
 
-    private void OnItemGrabMenuChanged(object? sender, ItemGrabMenuChangedEventArgs e)
+    private void OnItemGrabMenuChanged(ItemGrabMenuChangedEventArgs e)
     {
         if (this.itemGrabMenuManager.Top.Container?.Options.InventoryTabs != FeatureOption.Enabled)
         {
