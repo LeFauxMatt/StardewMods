@@ -41,7 +41,7 @@ internal sealed class ToolbarManager : BaseService
     /// <param name="log">Dependency used for monitoring and logging.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
+    /// <param name="reflectionHelper">Dependency used for reflecting into external code.</param>
     public ToolbarManager(
         AssetHandler assetHandler,
         Dictionary<string, ClickableTextureComponent> components,

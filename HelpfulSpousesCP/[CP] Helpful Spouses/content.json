@@ -1,9 +1,132 @@
 {
   "Format": "1.29.0",
-  "ConfigSchema":  {
-    
+  "ConfigSchema": {
   },
+  "DynamicTokens": [
+    // Default to blank
+    { "Name":  "SpouseChore", "Value": "" },
+    { "Name":  "RoommateChore", "Value": "" },
+    // Individual chores
+    {
+      "Name": "AbigailChore",
+      "Value": "{{furyx639.CustomChores_RandomChoreFor: Abigail}}"
+    },
+    {
+      "Name": "AlexChore",
+      "Value": "{{furyx639.CustomChores_RandomChoreFor: Alex}}"
+    },
+    {
+      "Name": "ElliottChore",
+      "Value": "{{furyx639.CustomChores_RandomChoreFor: Elliott}}"
+    },
+    {
+      "Name": "EmilyChore",
+      "Value": "{{furyx639.CustomChores_RandomChoreFor: Emily}}"
+    },
+    {
+      "Name": "HaleyChore",
+      "Value": "{{furyx639.CustomChores_RandomChoreFor: Haley}}"
+    },
+    {
+      "Name": "HarveyChore",
+      "Value": "{{furyx639.CustomChores_RandomChoreFor: Harvey}}"
+    },
+    {
+      "Name": "LeahChore",
+      "Value": "{{furyx639.CustomChores_RandomChoreFor: Leah}}"
+    },
+    {
+      "Name": "SamChore",
+      "Value": "{{furyx639.CustomChores_RandomChoreFor: Sam}}"
+    },
+    {
+      "Name": "SebastianChore",
+      "Value": "{{furyx639.CustomChores_RandomChoreFor: Sebastian}}"
+    },
+    {
+      "Name": "ShaneChore",
+      "Value": "{{furyx639.CustomChores_RandomChoreFor: Shane}}"
+    },
+    // Catch-all (other spouse exclude individuals above)
+    {
+      "Name": "SpouseChore",
+      "Value": "{{furyx639.CustomChores_RandomChoreFor: {{Spouse}} }}",
+      "When": {
+        "HasValue:{{Spouse}}": "true",
+        "Query: '{{Spouse}}' IN ('Alex')": "false"
+      }
+    },
+    // Catch-all (other spouse exclude individuals above)
+    {
+      "Name": "RoommateChore",
+      "Value": "{{furyx639.CustomChores_RandomChoreFor: {{Roommate}} }}",
+      "When": {
+        "HasValue:{{Roommate}}": "true",
+        "Query: '{{Roommate}}' IN ('Alex')": "false"
+      }
+    }
+  ],
   "Changes": [
+    // If another C# mod adds a custom chore, they can edit Characters\\Dialogue\\{{Spouse}}["fury639.HelpfulSpouses_{{Chore}}"] to add their own dialogue entries.
+    {
+      "LogName": "Load Spouse Dialogue",
+      "Action": "EditData",
+      "Target": "Characters\\Dialogue\\{{Spouse}}",
+      "Entries": {
+        "{{ModId}}_{{SpouseChore}}": "{{i18n:dialogue-{{SpouseChore}}-{{Spouse}} |default={{i18n:dialogue-{{SpouseChore}} |default={{i18n:dialogue-Generic}} }} }}"
+      },
+      "When": {
+        "HasValue:{{SpouseChore}}": "true"
+      }
+    },
+    // If another CP mod adds a custom dateable NPC, they can edit Data\\TriggerActions["furyx639.HelpfulSpouses_{{Spouse}}"] to add their own actions.
+    {
+      "LogName": "Perform Spouse Chore",
+      "Action": "EditData",
+      "Target": "Data/TriggerActions",
+      "Entries": {
+        "{{ModId}}_{{Spouse}}DoChore": {
+          "Id": "{{ModId}}_{{Spouse}}DoChore",
+          "Trigger": "DayStarted",
+          "Actions": [
+            "furyx639.CustomChores_DoChore: {{SpouseChore}}",
+            "furyx639.CustomChores_AddDialogue: {{Spouse}} |DialogueKey={{ModId}}_{{SpouseChore}}"
+          ]
+        },
+        "When": {
+          "HasValue:{{OtherChore}}": "true"
+        }
+      }
+    },
+    {
+      "LogName": "Load Roommate Dialogue",
+      "Action": "EditData",
+      "Target": "Characters\\Dialogue\\{{Roommate}}",
+      "Entries": {
+        "{{ModId}}_{{RoommateChore}}": "{{i18n:dialogue-{{RoommateChore}}-{{Roommate}} |default={{i18n:dialogue-{{RoommateChore}} |default={{i18n:dialogue-Generic}} }} }}"
+      },
+      "When": {
+        "HasValue:{{RoommateChore}}": "true"
+      }
+    },
+    {
+      "LogName": "Perform Roommate Chore",
+      "Action": "EditData",
+      "Target": "Data/TriggerActions",
+      "Entries": {
+        "{{ModId}}_{{Roommate}}DoChore": {
+          "Id": "{{ModId}}_{{Roommate}}DoChore",
+          "Trigger": "DayStarted",
+          "Actions": [
+            "furyx639.CustomChores_DoChore: {{RoommateChore}}",
+            "furyx639.CustomChores_AddDialogue: {{Roommate}} |DialogueKey={{ModId}}_{{RoommateChore}}"
+          ]
+        },
+        "When": {
+          "HasValue:{{RoommateChore}}": "true"
+        }
+      }
+    },
     // Vanilla Characters
     {
       "Action": "Include",
@@ -81,238 +204,241 @@
         "Elliott",
         "CustomFields"
       ],
-        //Custom
-        //3414
-        "Paul": {
-          "furyx639.HelpfulSpouses/BirthdayGift": 0.8,
-          "furyx639.HelpfulSpouses/PetTheAnimals": 0.6,
-          "furyx639.HelpfulSpouses/WaterTheCrops": 0.4
-        }
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        "Jas": {
-          "furyx639.HelpfulSpouses/FeedTheAnimals": 0.8,
-          "furyx639.HelpfulSpouses/LoveThePets": 0.8,
-          "furyx639.HelpfulSpouses/PetTheAnimals": 0.7
-        }
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        "Jodi": {
-          "furyx639.HelpfulSpouses/MakeBreakfast": 1.0,
-          "furyx639.HelpfulSpouses/BirthdayGift": 9.0,
-          "furyx639.HelpfulSpouses/RepairTheFences": 0.5
-        }
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        "Caroline": {
-          "furyx639.HelpfulSpouses/WaterTheCrops": 0.6,
-          "furyx639.HelpfulSpouses/BirthdayGift": 0.6,
-          "furyx639.HelpfulSpouses/MakeBreakfast": 0.7
-        }
-        //5653
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        "Valerie": {
-          "furyx639.HelpfulSpouses/WaterTheSlimes": 0.2,
-          "furyx639.HelpfulSpouses/RepairTheFences": 0.6,
-          "furyx639.HelpfulSpouses/FeedThePet": 0.8
-        }
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        "Lucikiel": {
-          "furyx639.HelpfulSpouses/WaterTheSlimes": 0.3,
-          "furyx639.HelpfulSpouses/RepairTheFences": 0.5,
-          "furyx639.HelpfulSpouses/MakeBreakfast": 0.5
-        }
-        //7313
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        "Wilford": {
-          "furyx639.HelpfulSpouses/RepairTheFences": 0.7,
-          "furyx639.HelpfulSpouses/PetTheAnimals": 0.1,
-          "furyx639.HelpfulSpouses/WaterTheCrops": 0.7
-        }
-        //https://www.nexusmods.com/stardewvalley/mods/16978
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        "Katrielle": {
-          "furyx639.HelpfulSpouses/RepairTheFences": 0.4,
-          "furyx639.HelpfulSpouses/FeedTheAnimals": 0.4,
-          "furyx639.HelpfulSpouses/WaterTheSlimes": 0.6
-        }
-        //https://www.nexusmods.com/stardewvalley/mods/5559
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        "Jade": {
-          "furyx639.HelpfulSpouses/MakeBreakfast": 0.2,
-          "furyx639.HelpfulSpouses/RepairTheFences": 0.9,
-          "furyx639.HelpfulSpouses/FeedThePet": 0.7
-        }
-        //https://www.nexusmods.com/stardewvalley/mods/17119
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        "Elian": {
-          "furyx639.HelpfulSpouses/FeedTheAnimals": 0.2,
-          "furyx639.HelpfulSpouses/MakeBreakfast": 0.3,
-          "furyx639.HelpfulSpouses/WaterTheSlimes": 0.4
-        }
-        //https://www.nexusmods.com/stardewvalley/mods/9222
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        "Eugene": {
-          "furyx639.HelpfulSpouses/WaterTheSlimes": 0.8,
-          "furyx639.HelpfulSpouses/FeedTheAnimals": 0.9,
-          "furyx639.HelpfulSpouses/PetTheAnimals": 0.1
-        }
-        //https://www.nexusmods.com/stardewvalley/mods/2969?tab=description
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        "harvest Godess": {
-          "furyx639.HelpfulSpouses/WaterTheCrops": 0.4,
-          "furyx639.HelpfulSpouses/WaterTheSlimes": 0.7,
-          "furyx639.HelpfulSpouses/FeedTheAnimals": 0.5
-        }
-        //https://www.nexusmods.com/stardewvalley/mods/6931
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        "Isla": {
-          "furyx639.HelpfulSpouses/WaterTheCrops": 0.4,
-          "furyx639.HelpfulSpouses/PetTheAnimals": 0.5,
-          "furyx639.HelpfulSpouses/MakeBreakfast": 1.0
-        }
-        //https://www.nexusmods.com/stardewvalley/mods/12533
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        "Sable": {
-          "furyx639.HelpfulSpouses/WaterTheSlimes": 0.6,
-          "furyx639.HelpfulSpouses/MakeBreakfast": 0.6,
-          "furyx639.HelpfulSpouses/WaterTheCrops": 0.1
-        }
-    },
-    {
-      "LogName": "Load Elliott Chores",
-      "Action": "EditData",
-      "Target": "Data/Characters",
-      "TargetField": [
-        "Elliott",
-        "CustomFields"
-      ],
-        //8606
-        "Juna": {
-          "furyx639.HelpfulSpouses/FeedThePet": 0.9,
-          "furyx639.HelpfulSpouses/WaterTheCrops": 0.8,
-          "furyx639.HelpfulSpouses/MakeBreakfast": 0.9
-        }
+      //Custom
+      //3414
+      "Paul": {
+        "furyx639.HelpfulSpouses/BirthdayGift": 0.8,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.6,
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.4
       }
     },
     {
-      "LogName": "Load Dialogue",
+      "LogName": "Load Elliott Chores",
       "Action": "EditData",
-      "Target": "Shockah.ProjectFluent/ContentPacks",
-      "Entries": {
-        "": {
-          "ID": "furyx639.HelpfulSpousesCP.EN",
-          "Format": "1.1.0",
-          "AdditionalFluentPaths": [
-            {
-              "LocalizedMod": "furyx639.HelpfulSpouses",
-              "LocalizingMod": "furyx639.HelpfulSpousesCP"
-            }
-          ]
-        }
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Jas": {
+        "furyx639.HelpfulSpouses/FeedTheAnimals": 0.8,
+        "furyx639.HelpfulSpouses/LoveThePets": 0.8,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.7
       }
-    }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Jodi": {
+        "furyx639.HelpfulSpouses/MakeBreakfast": 1.0,
+        "furyx639.HelpfulSpouses/BirthdayGift": 9.0,
+        "furyx639.HelpfulSpouses/RepairTheFences": 0.5
+      }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Caroline": {
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.6,
+        "furyx639.HelpfulSpouses/BirthdayGift": 0.6,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.7
+      }
+      //5653
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Valerie": {
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.2,
+        "furyx639.HelpfulSpouses/RepairTheFences": 0.6,
+        "furyx639.HelpfulSpouses/FeedThePet": 0.8
+      }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Lucikiel": {
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.3,
+        "furyx639.HelpfulSpouses/RepairTheFences": 0.5,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.5
+      }
+      //7313
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Wilford": {
+        "furyx639.HelpfulSpouses/RepairTheFences": 0.7,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.1,
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.7
+      }
+      //https://www.nexusmods.com/stardewvalley/mods/16978
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Katrielle": {
+        "furyx639.HelpfulSpouses/RepairTheFences": 0.4,
+        "furyx639.HelpfulSpouses/FeedTheAnimals": 0.4,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.6
+      }
+      //https://www.nexusmods.com/stardewvalley/mods/5559
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Jade": {
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.2,
+        "furyx639.HelpfulSpouses/RepairTheFences": 0.9,
+        "furyx639.HelpfulSpouses/FeedThePet": 0.7
+      }
+      //https://www.nexusmods.com/stardewvalley/mods/17119
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Elian": {
+        "furyx639.HelpfulSpouses/FeedTheAnimals": 0.2,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.3,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.4
+      }
+      //https://www.nexusmods.com/stardewvalley/mods/9222
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Eugene": {
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.8,
+        "furyx639.HelpfulSpouses/FeedTheAnimals": 0.9,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.1
+      }
+      //https://www.nexusmods.com/stardewvalley/mods/2969?tab=description
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "harvest Godess": {
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.4,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.7,
+        "furyx639.HelpfulSpouses/FeedTheAnimals": 0.5
+      }
+      //https://www.nexusmods.com/stardewvalley/mods/6931
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Isla": {
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.4,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.5,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 1.0
+      }
+      //https://www.nexusmods.com/stardewvalley/mods/12533
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      "Sable": {
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.6,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.6,
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.1
+      }
+    },
+    {
+      "LogName": "Load Elliott Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elliott",
+        "CustomFields"
+      ],
+      //8606
+      "Juna": {
+        "furyx639.HelpfulSpouses/FeedThePet": 0.9,
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.8,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.9
+      },
   ],
   "$schema": "https://smapi.io/schemas/content-patcher.json"
+}
+}
+},
+{
+"LogName": "Load Dialogue",
+"Action": "EditData",
+"Target": "Shockah.ProjectFluent/ContentPacks",
+"Entries": {
+"": {
+"ID": "furyx639.HelpfulSpousesCP.EN",
+"Format": "1.1.0",
+"AdditionalFluentPaths": [
+{
+"LocalizedMod": "furyx639.HelpfulSpouses",
+"LocalizingMod": "furyx639.HelpfulSpousesCP"
+}
+]
+}
+}
+}
+],
+"$schema": "https://smapi.io/schemas/content-patcher.json"
 }

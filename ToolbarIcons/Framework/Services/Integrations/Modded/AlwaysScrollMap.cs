@@ -8,7 +8,7 @@ internal sealed class AlwaysScrollMap : IActionIntegration
     private readonly IReflectionHelper reflectionHelper;
 
     /// <summary>Initializes a new instance of the <see cref="AlwaysScrollMap" /> class.</summary>
-    /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
+    /// <param name="reflectionHelper">Dependency used for reflecting into external code.</param>
     public AlwaysScrollMap(IReflectionHelper reflectionHelper) => this.reflectionHelper = reflectionHelper;
 
     /// <inheritdoc />

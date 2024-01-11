@@ -4,7 +4,9 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewMods.Common.Enums;
 using StardewMods.Common.Interfaces;
+using StardewMods.Common.Models;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.ExpandedStorage.Framework.Models;
@@ -29,15 +31,15 @@ internal sealed class ModPatches : BaseService
 
     /// <summary>Initializes a new instance of the <see cref="ModPatches" /> class.</summary>
     /// <param name="eventPublisher">Dependency used for publishing events.</param>
-    /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="patchManager">Dependency used for managing patches.</param>
     /// <param name="storageManager">Dependency used to handle the objects which should be managed by Expanded Storages.</param>
     public ModPatches(
         IEventPublisher eventPublisher,
-        Harmony harmony,
         ILog log,
         IManifest manifest,
+        IPatchManager patchManager,
         StorageManager storageManager)
         : base(log, manifest)
     {
@@ -47,80 +49,98 @@ internal sealed class ModPatches : BaseService
         this.storageManager = storageManager;
 
         // Patches
-        harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.checkForAction)),
-            transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_checkForAction_transpiler)));
+        patchManager.Add(
+            this.ModId,
+            new SavedPatch(
+                AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.checkForAction)),
+                AccessTools.DeclaredMethod(typeof(ModPatches), nameof(ModPatches.Chest_checkForAction_transpiler)),
+                PatchType.Transpiler),
+            new SavedPatch(
+                AccessTools.DeclaredMethod(
+                    typeof(Chest),
+                    nameof(Chest.draw),
+                    [typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)]),
+                AccessTools.DeclaredMethod(typeof(ModPatches), nameof(ModPatches.Chest_draw_prefix)),
+                PatchType.Prefix),
+            new SavedPatch(
+                AccessTools.DeclaredMethod(
+                    typeof(Chest),
+                    nameof(Chest.draw),
+                    [typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool)]),
+                AccessTools.DeclaredMethod(typeof(ModPatches), nameof(ModPatches.Chest_drawLocal_prefix)),
+                PatchType.Prefix),
+            new SavedPatch(
+                AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.getLastLidFrame)),
+                AccessTools.DeclaredMethod(typeof(ModPatches), nameof(ModPatches.Chest_getLastLidFrame_postfix)),
+                PatchType.Postfix),
+            new SavedPatch(
+                AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.OpenMiniShippingMenu)),
+                AccessTools.DeclaredMethod(
+                    typeof(ModPatches),
+                    nameof(ModPatches.Chest_OpenMiniShippingMenu_transpiler)),
+                PatchType.Transpiler),
+            new SavedPatch(
+                AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.ShowMenu)),
+                AccessTools.DeclaredMethod(typeof(ModPatches), nameof(ModPatches.Chest_SpecialChestType_transpiler)),
+                PatchType.Transpiler),
+            new SavedPatch(
+                AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
+                AccessTools.DeclaredMethod(typeof(ModPatches), nameof(ModPatches.Chest_UpdateFarmerNearby_transpiler)),
+                PatchType.Transpiler),
+            new SavedPatch(
+                AccessTools
+                    .GetDeclaredConstructors(typeof(ItemGrabMenu))
+                    .First(ctor => ctor.GetParameters().Length >= 10),
+                AccessTools.DeclaredMethod(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_constructor_postfix)),
+                PatchType.Postfix),
+            new SavedPatch(
+                AccessTools
+                    .GetDeclaredConstructors(typeof(ItemGrabMenu))
+                    .First(ctor => ctor.GetParameters().Length >= 10),
+                AccessTools.DeclaredMethod(
+                    typeof(ModPatches),
+                    nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)),
+                PatchType.Transpiler),
+            new SavedPatch(
+                AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw)),
+                AccessTools.DeclaredMethod(
+                    typeof(ModPatches),
+                    nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)),
+                PatchType.Transpiler),
+            new SavedPatch(
+                AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.gameWindowSizeChanged)),
+                AccessTools.DeclaredMethod(
+                    typeof(ModPatches),
+                    nameof(ModPatches.ItemGrabMenu_gameWindowSizeChanged_postfix)),
+                PatchType.Postfix),
+            new SavedPatch(
+                AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.gameWindowSizeChanged)),
+                AccessTools.DeclaredMethod(
+                    typeof(ModPatches),
+                    nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)),
+                PatchType.Transpiler),
+            new SavedPatch(
+                AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
+                AccessTools.DeclaredMethod(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_setSourceItem_postfix)),
+                PatchType.Postfix),
+            new SavedPatch(
+                AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
+                AccessTools.DeclaredMethod(
+                    typeof(ModPatches),
+                    nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)),
+                PatchType.Transpiler),
+            new SavedPatch(
+                AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.snapToDefaultClickableComponent)),
+                AccessTools.DeclaredMethod(
+                    typeof(ModPatches),
+                    nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)),
+                PatchType.Transpiler),
+            new SavedPatch(
+                AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.placementAction)),
+                AccessTools.DeclaredMethod(typeof(ModPatches), nameof(ModPatches.Object_placementAction_postfix)),
+                PatchType.Postfix));
 
-        harmony.Patch(
-            AccessTools.DeclaredMethod(
-                typeof(Chest),
-                nameof(Chest.draw),
-                [typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)]),
-            new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_draw_prefix)));
-
-        harmony.Patch(
-            AccessTools.DeclaredMethod(
-                typeof(Chest),
-                nameof(Chest.draw),
-                [typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool)]),
-            new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_drawLocal_prefix)));
-
-        harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.getLastLidFrame)),
-            postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_getLastLidFrame_postfix)));
-
-        harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.OpenMiniShippingMenu)),
-            transpiler: new HarmonyMethod(
-                typeof(ModPatches),
-                nameof(ModPatches.Chest_OpenMiniShippingMenu_transpiler)));
-
-        harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.ShowMenu)),
-            transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_SpecialChestType_transpiler)));
-
-        harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(Chest), nameof(Chest.UpdateFarmerNearby)),
-            transpiler: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Chest_UpdateFarmerNearby_transpiler)));
-
-        harmony.Patch(
-            AccessTools.GetDeclaredConstructors(typeof(ItemGrabMenu)).First(ctor => ctor.GetParameters().Length >= 10),
-            postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_constructor_postfix)),
-            transpiler: new HarmonyMethod(
-                typeof(ModPatches),
-                nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)));
-
-        harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.draw)),
-            transpiler: new HarmonyMethod(
-                typeof(ModPatches),
-                nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)));
-
-        harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.gameWindowSizeChanged)),
-            postfix: new HarmonyMethod(
-                typeof(ModPatches),
-                nameof(ModPatches.ItemGrabMenu_gameWindowSizeChanged_postfix)),
-            transpiler: new HarmonyMethod(
-                typeof(ModPatches),
-                nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)));
-
-        harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.setSourceItem)),
-            postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.ItemGrabMenu_setSourceItem_postfix)),
-            transpiler: new HarmonyMethod(
-                typeof(ModPatches),
-                nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)));
-
-        harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(ItemGrabMenu), nameof(ItemGrabMenu.snapToDefaultClickableComponent)),
-            transpiler: new HarmonyMethod(
-                typeof(ModPatches),
-                nameof(ModPatches.ItemGrabMenu_SpecialChestType_transpiler)));
-
-        harmony.Patch(
-            AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.placementAction)),
-            postfix: new HarmonyMethod(typeof(ModPatches), nameof(ModPatches.Object_placementAction_postfix)));
+        patchManager.Patch(this.ModId);
     }
 
     private static IEnumerable<CodeInstruction> Chest_checkForAction_transpiler(

@@ -8,22 +8,25 @@ using StardewMods.FuryCore.Framework.Interfaces;
 /// <inheritdoc />
 internal sealed class Log : ILog
 {
-    private readonly IConfigWithLogLevel config;
+    private readonly Lazy<IModConfig> modConfig;
     private readonly IMonitor monitor;
 
     private string lastMessage = string.Empty;
 
     /// <summary>Initializes a new instance of the <see cref="Log" /> class.</summary>
-    /// <param name="config">Dependency used for accessing config data.</param>
+    /// <param name="getConfig">Dependency used for accessing config data.</param>
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
-    public Log(IConfigWithLogLevel config, IMonitor monitor)
+    public Log(Func<IModConfig> getConfig, IMonitor monitor)
     {
-        this.config = config;
+        this.modConfig = new Lazy<IModConfig>(getConfig);
         this.monitor = monitor;
     }
 
     /// <inheritdoc />
     public void Trace(string message, object?[]? args = null) => this.Raise(message, LogLevel.Trace, false, args);
+
+    /// <inheritdoc />
+    public void TraceOnce(string message, params object?[]? args) => this.Raise(message, LogLevel.Trace, true, args);
 
     /// <inheritdoc />
     public void Debug(string message, object?[]? args = null) => this.Raise(message, LogLevel.Debug, false, args);
@@ -47,10 +50,10 @@ internal sealed class Log : ILog
     {
         switch (level)
         {
-            case LogLevel.Trace when this.config.LogLevel == SimpleLogLevel.More:
-            case LogLevel.Debug when this.config.LogLevel == SimpleLogLevel.More:
-            case LogLevel.Info when this.config.LogLevel >= SimpleLogLevel.Less:
-            case LogLevel.Warn when this.config.LogLevel >= SimpleLogLevel.Less:
+            case LogLevel.Trace when this.modConfig.Value.LogLevel == SimpleLogLevel.More:
+            case LogLevel.Debug when this.modConfig.Value.LogLevel == SimpleLogLevel.More:
+            case LogLevel.Info when this.modConfig.Value.LogLevel >= SimpleLogLevel.Less:
+            case LogLevel.Warn when this.modConfig.Value.LogLevel >= SimpleLogLevel.Less:
             case LogLevel.Error:
             case LogLevel.Alert:
                 if (args != null)

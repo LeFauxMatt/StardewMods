@@ -3,6 +3,7 @@ namespace StardewMods.BetterChests.Framework.Services;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Models;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
@@ -13,16 +14,16 @@ internal sealed class AssetHandler : BaseService
 
     /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
     /// <param name="dataHelper">Dependency used for storing and retrieving data.</param>
-    /// <param name="eventManager">Dependency used for managing events.</param>
+    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="theming">Dependency used for swapping palettes.</param>
+    /// <param name="themeHelper">Dependency used for swapping palettes.</param>
     public AssetHandler(
         IDataHelper dataHelper,
-        EventManager eventManager,
+        IEventSubscriber eventSubscriber,
         ILog log,
         IManifest manifest,
-        ITheming theming)
+        IThemeHelper themeHelper)
         : base(log, manifest)
     {
         // Init
@@ -31,10 +32,10 @@ internal sealed class AssetHandler : BaseService
         this.IconTexturePath = this.ModId + "/Icons";
         this.TabTexturePath = this.ModId + "/Tabs/Texture";
         this.TabDataPath = this.ModId + "/Tabs";
-        theming.AddAssets([this.IconTexturePath, this.TabTexturePath]);
+        themeHelper.AddAssets([this.IconTexturePath, this.TabTexturePath]);
 
         // Events
-        eventManager.Subscribe<AssetRequestedEventArgs>(this.OnAssetRequested);
+        eventSubscriber.Subscribe<AssetRequestedEventArgs>(this.OnAssetRequested);
     }
 
     /// <summary>Gets the game path to the hsl texture.</summary>

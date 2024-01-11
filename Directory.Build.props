@@ -1,10 +1,10 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
   <PropertyGroup>
-    <Author>furyx639</Author>
-    <Authors>furyx639</Authors>
+    <Author>LeFauxMatt</Author>
+    <Authors>LeFauxMatt</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/ImJustMatt/StardewMods</RepositoryUrl>
+    <RepositoryUrl>https://github.com/LeFauxMatt/StardewMods</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>

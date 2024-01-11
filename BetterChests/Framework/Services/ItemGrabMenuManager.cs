@@ -9,6 +9,7 @@ using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewValley.Menus;
@@ -24,7 +25,7 @@ internal sealed class ItemGrabMenuManager : BaseService
     private readonly PerScreen<InventoryMenuManager> bottomMenu;
     private readonly ContainerFactory containerFactory;
     private readonly PerScreen<IClickableMenu?> currentMenu = new();
-    private readonly EventManager eventManager;
+    private readonly IEventManager eventManager;
     private readonly IModConfig modConfig;
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<InventoryMenuManager> topMenu;
@@ -38,7 +39,7 @@ internal sealed class ItemGrabMenuManager : BaseService
     /// <param name="inputHelper">Dependency used for checking and changing input state.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
     public ItemGrabMenuManager(
-        EventManager eventManager,
+        IEventManager eventManager,
         ILog log,
         IManifest manifest,
         IModConfig modConfig,

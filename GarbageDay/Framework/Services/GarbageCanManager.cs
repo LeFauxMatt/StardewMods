@@ -36,7 +36,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
+    /// <param name="reflectionHelper">Dependency used for reflecting into external code.</param>
     /// <param name="toolbarIconsIntegration">Dependency for Toolbar Icons integration.</param>
     public GarbageCanManager(
         Definitions definitions,
@@ -125,7 +125,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
 
         // Queue up NPC response
         this.currentNpc.Value = npc;
-        this.multiplayer.GetValue().globalChatInfoMessage("TrashCan", Game1.player.Name, npc.Name);
+        this.multiplayer.GetValue().globalChatInfoMessage("TrashCan", Game1.player.Name, npc.GetTokenizedDisplayName());
         if (npc.Name.Equals("Linus", StringComparison.OrdinalIgnoreCase))
         {
             npc.doEmote(32);

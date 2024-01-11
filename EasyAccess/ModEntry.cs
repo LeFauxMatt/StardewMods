@@ -55,7 +55,7 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<ILog, LogService>();
-        this.container.RegisterSingleton<ITheming, ThemingService>();
+        this.container.RegisterSingleton<IThemeHelper, ThemeService>();
         this.container.RegisterSingleton<ToolbarIconsIntegration>();
 
         // Verify

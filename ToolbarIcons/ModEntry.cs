@@ -33,9 +33,9 @@ public sealed class ModEntry : Mod
     /// <inheritdoc />
     public override object GetApi(IModInfo mod) =>
         new ToolbarIconsApi(
-            this.container.GetInstance<EventManager>(),
-            this.container.GetInstance<ILog>(),
             mod,
+            this.container.GetInstance<IEventSubscriber>(),
+            this.container.GetInstance<ILog>(),
             this.container.GetInstance<ToolbarManager>());
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
@@ -65,7 +65,7 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
         this.container.RegisterSingleton<IntegrationManager>();
         this.container.RegisterSingleton<ILog, LogService>();
-        this.container.RegisterSingleton<ITheming, ThemingService>();
+        this.container.RegisterSingleton<IThemeHelper, ThemeService>();
         this.container.RegisterSingleton<ToolbarManager>();
 
         this.container.Collection.Register<ICustomIntegration>(

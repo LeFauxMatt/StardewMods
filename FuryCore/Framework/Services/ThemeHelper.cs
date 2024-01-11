@@ -7,8 +7,8 @@ using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
-/// <inheritdoc cref="StardewMods.Common.Services.Integrations.FuryCore.ITheming" />
-internal sealed class Theming : BaseService, ITheming
+/// <inheritdoc cref="IThemeHelper" />
+internal sealed class ThemeHelper : BaseService, IThemeHelper
 {
     private readonly Dictionary<IAssetName, Texture2D> cachedTextures = new();
     private readonly IGameContentHelper gameContentHelper;
@@ -27,12 +27,16 @@ internal sealed class Theming : BaseService, ITheming
 
     private bool initialize;
 
-    /// <summary>Initializes a new instance of the <see cref="Theming" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ThemeHelper" /> class.</summary>
     /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    public Theming(IEventSubscriber eventSubscriber, IGameContentHelper gameContentHelper, ILog log, IManifest manifest)
+    public ThemeHelper(
+        IEventSubscriber eventSubscriber,
+        IGameContentHelper gameContentHelper,
+        ILog log,
+        IManifest manifest)
         : base(log, manifest)
     {
         this.gameContentHelper = gameContentHelper;

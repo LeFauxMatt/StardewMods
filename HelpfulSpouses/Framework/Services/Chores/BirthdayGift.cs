@@ -10,7 +10,7 @@ using StardewValley.Extensions;
 internal sealed class BirthdayGift : BaseChore<BirthdayGift>
 {
     private static readonly Lazy<List<Item>> Items = new(
-        delegate
+        () =>
         {
             return ItemRegistry
                 .GetObjectTypeDefinition()
@@ -41,7 +41,7 @@ internal sealed class BirthdayGift : BaseChore<BirthdayGift>
         }
 
         tokens["Birthday"] = this.birthdayNpc.getName();
-        tokens["BirthdayGender"] = this.birthdayNpc.Gender switch { 1 => "Female", _ => "Male" };
+        tokens["BirthdayGender"] = this.birthdayNpc.Gender.ToString();
         tokens["ItemId"] = $"[{this.birthdayGift.QualifiedItemId}]";
         tokens["ItemName"] = this.birthdayGift.DisplayName;
     }

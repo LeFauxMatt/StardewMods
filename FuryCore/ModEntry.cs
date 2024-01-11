@@ -9,6 +9,7 @@ using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.FuryCore.Framework;
 using StardewMods.FuryCore.Framework.Interfaces;
 using StardewMods.FuryCore.Framework.Services;
+using ThemeHelper = StardewMods.FuryCore.Framework.Services.ThemeHelper;
 
 /// <inheritdoc />
 public sealed class ModEntry : Mod
@@ -29,7 +30,10 @@ public sealed class ModEntry : Mod
 
     /// <inheritdoc />
     public override object GetApi(IModInfo mod) =>
-        new FuryCoreApi(mod, this.container.GetInstance<IConfigWithLogLevel>(), this.container.GetInstance<ITheming>());
+        new FuryCoreApi(
+            mod,
+            this.container.GetInstance<Func<IModConfig>>(),
+            this.container.GetInstance<IThemeHelper>());
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
@@ -48,7 +52,7 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.ModRegistry);
         this.container.RegisterInstance(this.Helper.Reflection);
         this.container.RegisterInstance(this.Helper.Translation);
-        this.container.RegisterSingleton<IConfigWithLogLevel, ConfigManager>();
+        this.container.RegisterInstance<Func<IModConfig>>(this.GetConfig);
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
         this.container.RegisterSingleton<ConfigManager, ConfigManager>();
         this.container.RegisterSingleton<IEventManager, EventManager>();
@@ -56,9 +60,11 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<ILog, Log>();
-        this.container.RegisterSingleton<ITheming, Theming>();
+        this.container.RegisterSingleton<IThemeHelper, ThemeHelper>();
 
         // Verify
         this.container.Verify();
     }
+
+    private IModConfig GetConfig() => this.container.GetInstance<IModConfig>();
 }

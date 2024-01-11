@@ -1,6 +1,7 @@
 ﻿namespace StardewMods.Common.Services.Integrations.ContentPatcher;
 
 using StardewModdingAPI.Events;
+using StardewMods.Common.Interfaces;
 
 /// <inheritdoc />
 internal sealed class ContentPatcherIntegration : ModIntegration<IContentPatcherApi>
@@ -8,14 +9,14 @@ internal sealed class ContentPatcherIntegration : ModIntegration<IContentPatcher
     private const string ModUniqueId = "Pathoschild.ContentPatcher";
     private const string ModVersion = "1.28.0";
 
-    private readonly EventManager eventManager;
+    private readonly IEventManager eventManager;
 
     private int countDown = 10;
 
     /// <summary>Initializes a new instance of the <see cref="ContentPatcherIntegration" /> class.</summary>
     /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="modRegistry">Dependency used for fetching metadata about loaded mods.</param>
-    public ContentPatcherIntegration(EventManager eventManager, IModRegistry modRegistry)
+    public ContentPatcherIntegration(IEventManager eventManager, IModRegistry modRegistry)
         : base(modRegistry, ContentPatcherIntegration.ModUniqueId, ContentPatcherIntegration.ModVersion)
     {
         this.eventManager = eventManager;

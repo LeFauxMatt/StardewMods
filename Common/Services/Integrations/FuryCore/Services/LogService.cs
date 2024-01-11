@@ -10,6 +10,9 @@ internal sealed class LogService(FuryCoreIntegration furyCoreIntegration, IMonit
     public void Trace(string message, object?[]? args = null) => this.log.Trace(message, args);
 
     /// <inheritdoc/>
+    public void TraceOnce(string message, params object?[]? args) => this.log.TraceOnce(message, args);
+
+    /// <inheritdoc/>
     public void Debug(string message, object?[]? args = null) => this.log.Debug(message, args);
 
     /// <inheritdoc/>

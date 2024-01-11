@@ -31,7 +31,7 @@ internal sealed class ContainerHandler : BaseService
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modRegistry">Dependency used for fetching metadata about loaded mods.</param>
-    /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
+    /// <param name="reflectionHelper">Dependency used for reflecting into external code.</param>
     public ContainerHandler(
         AutomateIntegration automateIntegration,
         ContainerFactory containerFactory,

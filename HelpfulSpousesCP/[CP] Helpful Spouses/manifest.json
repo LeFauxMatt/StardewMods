@@ -1,7 +1,7 @@
 {
   "Name": "[CP] Helpful Spouses",
   "Author": "furyx639",
-  "Version": "2.6.0-alpha.20231231",
+  "Version": "2.0.0",
   "Description": "Adds individual chore chances and dialogue to spouses.",
   "UniqueID": "furyx639.HelpfulSpousesCP",
   "UpdateKeys": [
@@ -13,8 +13,7 @@
   "Dependencies": [
     {
       "UniqueID": "furyx639.HelpfulSpouses",
-      "IsRequired": true,
-      "MinimumVersion": "2.6.0-alpha.20231231"
+      "IsRequired": true
     }
   ],
   "$schema": "https://smapi.io/schemas/manifest.json"

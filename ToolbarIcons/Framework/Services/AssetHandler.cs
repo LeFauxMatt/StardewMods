@@ -14,15 +14,15 @@ internal sealed class AssetHandler : BaseService<AssetHandler>
     /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="theming">Dependency used for swapping palettes.</param>
-    public AssetHandler(IEventSubscriber eventSubscriber, ILog log, IManifest manifest, ITheming theming)
+    /// <param name="themeHelper">Dependency used for swapping palettes.</param>
+    public AssetHandler(IEventSubscriber eventSubscriber, ILog log, IManifest manifest, IThemeHelper themeHelper)
         : base(log, manifest)
     {
         // Init
         this.ArrowsPath = this.ModId + "/Arrows";
         this.IconPath = this.ModId + "/Icons";
         this.DataPath = this.ModId + "/Data";
-        theming.AddAssets([this.IconPath, this.ArrowsPath]);
+        themeHelper.AddAssets([this.IconPath, this.ArrowsPath]);
 
         // Events
         eventSubscriber.Subscribe<AssetRequestedEventArgs>(this.OnAssetRequested);

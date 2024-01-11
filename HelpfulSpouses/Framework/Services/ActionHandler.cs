@@ -3,36 +3,40 @@ namespace StardewMods.HelpfulSpouses.Framework.Services;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Extensions;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.ProjectFluent;
 using StardewMods.HelpfulSpouses.Framework.Enums;
 using StardewMods.HelpfulSpouses.Framework.Interfaces;
 using StardewMods.HelpfulSpouses.Framework.Models;
+using StardewValley.Delegates;
 using StardewValley.Extensions;
+using StardewValley.TokenizableStrings;
+using StardewValley.Triggers;
 
 /// <summary>Responsible for managing chores performed by spouses.</summary>
-internal sealed class ChoreManager : BaseService
+internal sealed class ActionHandler : BaseService
 {
     private readonly IEnumerable<IChore> chores;
     private readonly IFluent<string> fluent;
     private readonly IModConfig modConfig;
 
-    /// <summary>Initializes a new instance of the <see cref="ChoreManager" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="ActionHandler" /> class.</summary>
     /// <param name="chores">Dependency for accessing chores.</param>
+    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
-    /// <param name="modEvents">Dependency used for managing access to events.</param>
     /// <param name="projectFluentIntegration">Dependency for integration with Project Fluent.</param>
-    public ChoreManager(
+    public ActionHandler(
         IEnumerable<IChore> chores,
+        IEventSubscriber eventSubscriber,
         Harmony harmony,
         ILog log,
         IManifest manifest,
         IModConfig modConfig,
-        IModEvents modEvents,
         ProjectFluentIntegration projectFluentIntegration)
         : base(log, manifest)
     {
@@ -41,13 +45,16 @@ internal sealed class ChoreManager : BaseService
         this.modConfig = modConfig;
         this.fluent = projectFluentIntegration.Api!.GetLocalizationsForCurrentLocale(manifest);
 
+        // Actions
+        TriggerActionManager.RegisterAction(this.ModId + "_PerformChore", this.PerformChore);
+
         // Events
-        modEvents.GameLoop.DayStarted += this.OnDayStarted;
+        eventSubscriber.Subscribe<DayStartedEventArgs>(this.OnDayStarted);
 
         // Patches
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(NPC), nameof(NPC.marriageDuties)),
-            new HarmonyMethod(typeof(ChoreManager), nameof(ChoreManager.NPC_marriageDuties_prefix)));
+            new HarmonyMethod(typeof(ActionHandler), nameof(ActionHandler.NPC_marriageDuties_prefix)));
     }
 
     private static void NPC_marriageDuties_prefix()
@@ -58,7 +65,52 @@ internal sealed class ChoreManager : BaseService
         NPC.hasSomeoneWateredCrops = true;
     }
 
-    private void OnDayStarted(object? sender, DayStartedEventArgs e)
+    private bool PerformChore(string[] args, TriggerActionContext context, out string? error)
+    {
+        // Get chore to perform
+        if (!ArgUtility.TryGet(args, 1, out var choreName, out error, false))
+        {
+            return false;
+        }
+
+        if (!ChoreOptionExtensions.TryParse(choreName, out var choreOption))
+        {
+            error = $"Chore {choreName} is not supported by this mod.";
+            return false;
+        }
+
+        // Get spouse to perform chore
+        if (!ArgUtility.TryGet(args, 2, out var npcName, out error, false))
+        {
+            return false;
+        }
+
+        var npc = Game1.getCharacterFromName(npcName);
+        if (npc == null)
+        {
+            error = "no NPC found with name '" + npcName + "'";
+            return false;
+        }
+
+        // Validate chore
+        var chore = this.chores.First(chore => chore.Option == choreOption);
+        if (!chore.IsPossibleForSpouse(npc))
+        {
+            error = $"Chore {choreName} is not possible for {npcName}.";
+            return false;
+        }
+
+        // Try to perform chore
+        if (!chore.TryPerformChore(npc))
+        {
+            error = $"Chore {choreName} could not be performed.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private void OnDayStarted(DayStartedEventArgs e)
     {
         if (!Game1.player.isMarriedOrRoommates())
         {

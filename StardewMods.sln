@@ -34,6 +34,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomBush", "CustomBush\Cu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FuryCore", "FuryCore\FuryCore.csproj", "{86D15779-C8A5-49C9-8ECD-530298893A52}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FindAnything", "FindAnything\FindAnything.csproj", "{83CE3B0E-6A1F-4477-93AE-AFFA9FFDF9CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ItemIconOverlays", "ItemIconOverlays\ItemIconOverlays.csproj", "{4632D2C9-A337-461B-9F74-28F779078879}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,6 +80,14 @@ Global
 		{86D15779-C8A5-49C9-8ECD-530298893A52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86D15779-C8A5-49C9-8ECD-530298893A52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86D15779-C8A5-49C9-8ECD-530298893A52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83CE3B0E-6A1F-4477-93AE-AFFA9FFDF9CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83CE3B0E-6A1F-4477-93AE-AFFA9FFDF9CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83CE3B0E-6A1F-4477-93AE-AFFA9FFDF9CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83CE3B0E-6A1F-4477-93AE-AFFA9FFDF9CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4632D2C9-A337-461B-9F74-28F779078879}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4632D2C9-A337-461B-9F74-28F779078879}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4632D2C9-A337-461B-9F74-28F779078879}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4632D2C9-A337-461B-9F74-28F779078879}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,5 +1,6 @@
 namespace StardewMods.HelpfulSpouses.Framework.Services;
 
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.HelpfulSpouses.Framework.Interfaces;
 using StardewMods.HelpfulSpouses.Framework.Models;
@@ -9,9 +10,10 @@ using StardewMods.HelpfulSpouses.Framework.Models.Chores;
 internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
 {
     /// <summary>Initializes a new instance of the <see cref="ConfigManager" /> class.</summary>
+    /// <param name="eventPublisher">Dependency used for publishing events.</param>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
-    public ConfigManager(IModHelper modHelper)
-        : base(modHelper) { }
+    public ConfigManager(IEventPublisher eventPublisher, IModHelper modHelper)
+        : base(eventPublisher, modHelper) { }
 
     /// <inheritdoc />
     public BirthdayGiftOptions BirthdayGift => this.Config.BirthdayGift;

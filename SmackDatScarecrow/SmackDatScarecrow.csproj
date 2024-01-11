@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Smack Dat Scarecrow</Name>
     <Description>Go ahead and do it, they can take it.</Description>
-    <Version>1.1.0-alpha.20240106</Version>
+    <Version>1.1.0-alpha.20240111</Version>
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.SmackDatScarecrow</RootNamespace>
     <UniqueId>furyx639.SmackDatScarecrow</UniqueId>

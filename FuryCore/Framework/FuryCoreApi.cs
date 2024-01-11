@@ -7,24 +7,27 @@ using StardewMods.FuryCore.Framework.Services;
 /// <inheritdoc />
 public sealed class FuryCoreApi : IFuryCoreApi
 {
-    private readonly IConfigWithLogLevel config;
+    private readonly Func<IModConfig> getConfig;
     private readonly IModInfo modInfo;
-    private readonly ITheming theming;
+    private readonly IThemeHelper themeHelper;
 
     /// <summary>Initializes a new instance of the <see cref="FuryCoreApi" /> class.</summary>
     /// <param name="modInfo">Dependency used for accessing mod info.</param>
-    /// <param name="config">Dependency used for accessing config data.</param>
-    /// <param name="theming">Dependency used for swapping palettes.</param>
-    public FuryCoreApi(IModInfo modInfo, IConfigWithLogLevel config, ITheming theming)
+    /// <param name="getConfig">Dependency used for accessing config data.</param>
+    /// <param name="themeHelper">Dependency used for swapping palettes.</param>
+    public FuryCoreApi(IModInfo modInfo, Func<IModConfig> getConfig, IThemeHelper themeHelper)
     {
         this.modInfo = modInfo;
-        this.config = config;
-        this.theming = theming;
+        this.getConfig = getConfig;
+        this.themeHelper = themeHelper;
     }
 
     /// <inheritdoc />
-    public ILog CreateLogService(IMonitor monitor) => new Log(this.config, monitor);
+    public ILog CreateLogService(IMonitor monitor) => new Log(this.getConfig, monitor);
 
     /// <inheritdoc />
-    public ITheming CreateThemingService() => this.theming;
+    public IPatchManager CreatePatchService(ILog log) => new PatchManager(log, this.modInfo.Manifest);
+
+    /// <inheritdoc />
+    public IThemeHelper CreateThemeService() => this.themeHelper;
 }

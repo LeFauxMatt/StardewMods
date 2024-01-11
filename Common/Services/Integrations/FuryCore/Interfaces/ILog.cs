@@ -9,6 +9,12 @@ public interface ILog
     [StringFormatMethod("message")]
     public void Trace(string message, params object?[]? args);
 
+    /// <summary>Logs a trace message to the console only once.</summary>
+    /// <param name="message">The message to send.</param>
+    /// <param name="args">The arguments to parse in a formatted string.</param>
+    [StringFormatMethod("message")]
+    public void TraceOnce(string message, params object?[]? args);
+
     /// <summary>Logs a debug message to the console.</summary>
     /// <param name="message">The message to send.</param>
     /// <param name="args">The arguments to parse in a formatted string.</param>

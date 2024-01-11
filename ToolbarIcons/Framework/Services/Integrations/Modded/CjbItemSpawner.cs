@@ -9,7 +9,7 @@ internal sealed class CjbItemSpawner : IActionIntegration
     private readonly IReflectionHelper reflectionHelper;
 
     /// <summary>Initializes a new instance of the <see cref="CjbItemSpawner" /> class.</summary>
-    /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
+    /// <param name="reflectionHelper">Dependency used for reflecting into external code.</param>
     public CjbItemSpawner(IReflectionHelper reflectionHelper) => this.reflectionHelper = reflectionHelper;
 
     /// <inheritdoc />

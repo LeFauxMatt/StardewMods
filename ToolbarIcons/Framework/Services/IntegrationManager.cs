@@ -37,7 +37,7 @@ internal sealed class IntegrationManager : BaseService
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="modRegistry">Dependency for fetching metadata about loaded mods.</param>
-    /// <param name="reflectionHelper">Dependency used for accessing inaccessible code.</param>
+    /// <param name="reflectionHelper">Dependency used for reflecting into external code.</param>
     /// <param name="toolbarManager">API to add icons above or below the toolbar.</param>
     public IntegrationManager(
         AssetHandler assetHandler,

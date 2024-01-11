@@ -53,7 +53,7 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.Translation);
         this.container.RegisterInstance<Func<CategorizeOption>>(this.GetCategorizeOption);
         this.container.RegisterInstance<Func<Dictionary<string, InventoryTabData>>>(this.GetInventoryTabData);
-        this.container.RegisterInstance<Func<IModConfig>>(this.GetModConfig);
+        this.container.RegisterInstance<Func<IModConfig>>(this.GetConfig);
         this.container.RegisterSingleton<AssetHandler>();
         this.container.RegisterSingleton<AutomateIntegration>();
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
@@ -72,7 +72,7 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<ILog, LogService>();
         this.container.RegisterSingleton<ProxyChestFactory>();
         this.container.RegisterSingleton<StatusEffectManager>();
-        this.container.RegisterSingleton<ITheming, ThemingService>();
+        this.container.RegisterSingleton<IThemeHelper, ThemeService>();
         this.container.RegisterSingleton<ToolbarIconsIntegration>();
         this.container.Register<CategorizeOption>();
 
@@ -108,14 +108,14 @@ public sealed class ModEntry : Mod
         configManager.Init();
     }
 
+    private IModConfig GetConfig() => this.container.GetInstance<IModConfig>();
+
     private Dictionary<string, InventoryTabData> GetInventoryTabData()
     {
         var assetHandler = this.container.GetInstance<AssetHandler>();
         var gameContentHelper = this.container.GetInstance<IGameContentHelper>();
         return gameContentHelper.Load<Dictionary<string, InventoryTabData>>(assetHandler.TabDataPath);
     }
-
-    private IModConfig GetModConfig() => this.container.GetInstance<IModConfig>();
 
     private CategorizeOption GetCategorizeOption() => this.container.GetInstance<CategorizeOption>();
 }

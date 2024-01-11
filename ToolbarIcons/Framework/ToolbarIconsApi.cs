@@ -20,21 +20,21 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
     private EventHandler<string>? toolbarIconPressed;
 
     /// <summary>Initializes a new instance of the <see cref="ToolbarIconsApi" /> class.</summary>
+    /// <param name="modInfo">Mod info from the calling mod.</param>
     /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="log">Dependency used for monitoring and logging.</param>
-    /// <param name="modInfo">Mod info from the calling mod.</param>
     /// <param name="toolbarManager">Dependency for managing the toolbar icons.</param>
     internal ToolbarIconsApi(
+        IModInfo modInfo,
         IEventSubscriber eventSubscriber,
         ILog log,
-        IModInfo modInfo,
         ToolbarManager toolbarManager)
     {
         // Init
-        this.log = log;
         this.modInfo = modInfo;
-        this.prefix = this.modInfo.Manifest.UniqueID + "/";
+        this.log = log;
         this.toolbarManager = toolbarManager;
+        this.prefix = this.modInfo.Manifest.UniqueID + "/";
         this.eventManager = new BaseEventManager(log, modInfo.Manifest);
 
         // Events
