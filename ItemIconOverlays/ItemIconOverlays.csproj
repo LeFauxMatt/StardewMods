@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Name>Item Icon Overlays</Name>
+    <Description>Draw overlays over item icons based on it's attributes.</Description>
+    <Version>1.0.0-alpha.20240111</Version>
+    <RootNamespace>StardewMods.ItemIconOverlays</RootNamespace>
+    <UniqueId>furyx639.ItemIconOverlays</UniqueId>
+    <UpdateKeys>Nexus:</UpdateKeys>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="SimpleInjector">
+      <HintPath>$(GameModsPath)\FuryCore\SimpleInjector.dll</HintPath>
+      <Version>5.4.2</Version>
+      <Private>false</Private>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.20240111" required="true"/>
+  </ItemGroup>
+</Project>
