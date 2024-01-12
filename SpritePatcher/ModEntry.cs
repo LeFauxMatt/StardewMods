@@ -8,6 +8,7 @@ using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Services;
 using StardewMods.SpritePatcher.Framework.Services.Patches;
+using StardewMods.SpritePatcher.Framework.Services.Patches.Objects;
 
 /// <inheritdoc />
 internal sealed class ModEntry : Mod
@@ -50,5 +51,14 @@ internal sealed class ModEntry : Mod
 
         // Verify
         this.container.Verify();
+
+        var eventSubscriber = this.container.GetInstance<IEventSubscriber>();
+        eventSubscriber.Subscribe<ConditionsApiReadyEventArgs>(this.OnConditionsApiReady);
+    }
+
+    private void OnConditionsApiReady(ConditionsApiReadyEventArgs obj)
+    {
+        var patchManager = this.container.GetInstance<IPatchManager>();
+        patchManager.Patch(this.ModManifest.UniqueID);
     }
 }
