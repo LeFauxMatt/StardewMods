@@ -52,11 +52,11 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<IEventManager, EventManager>();
         this.container.RegisterSingleton<IEventPublisher, EventManager>();
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
+        this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<ILog, LogService>();
         this.container.RegisterSingleton<IPatchManager, PatchService>();
         this.container.RegisterSingleton<StorageManager>();
         this.container.RegisterSingleton<ModPatches>();
-        this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<ToolbarIconsIntegration>();
 

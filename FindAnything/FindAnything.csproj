@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Find Anything</Name>
     <Description>Search for anything in your current location.</Description>
-    <Version>1.0.0-alpha.20240111</Version>
+    <Version>1.0.0-alpha.20240112</Version>
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.FindAnything</RootNamespace>
     <UniqueId>furyx639.FindAnything</UniqueId>
@@ -21,12 +21,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.20240111" required="true"/>
-    <SMAPIDependency Include="furyx639.ToolbarIcons" Version="2.6.0-alpha.20240111" required="false"/>
+    <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.20240112" required="true"/>
+    <SMAPIDependency Include="furyx639.ToolbarIcons" Version="2.6.0-alpha.20240112" required="false"/>
     <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="assets\" />
-    <Folder Include="Framework\Enums\" />
   </ItemGroup>
 </Project>
