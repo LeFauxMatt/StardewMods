@@ -1,4 +1,4 @@
-# Item Icon Overlays Change Log
+# Sprite Patcher Change Log
 
 ## 1.0.0 (Unreleased)
 

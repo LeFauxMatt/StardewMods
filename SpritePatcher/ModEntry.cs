@@ -1,11 +1,12 @@
-namespace StardewMods.ItemIconOverlays;
+namespace StardewMods.SpritePatcher;
 
 using SimpleInjector;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
-using StardewMods.ItemIconOverlays.Framework.Services;
+using StardewMods.SpritePatcher.Framework.Services;
 
 /// <inheritdoc />
 internal sealed class ModEntry : Mod
@@ -34,14 +35,17 @@ internal sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.ModRegistry);
         this.container.RegisterInstance(this.Helper.Reflection);
         this.container.RegisterInstance(this.Helper.Translation);
+        this.container.RegisterSingleton<ContentPatcherIntegration>();
         this.container.RegisterSingleton<IEventManager, EventManager>();
         this.container.RegisterSingleton<IEventPublisher, EventManager>();
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<FuryCoreIntegration>();
-        this.container.RegisterSingleton<IconManager>();
-        this.container.RegisterSingleton<ItemPropertyManager>();
+        this.container.RegisterSingleton<AssetHandler>();
+        this.container.RegisterSingleton<DrawPatches>();
+        this.container.RegisterSingleton<DelegateManager>();
         this.container.RegisterSingleton<ILog, LogService>();
-        this.container.RegisterSingleton<OverlayManager>();
+        this.container.RegisterSingleton<IPatchManager, PatchService>();
+        this.container.RegisterSingleton<TextureBuilder>();
 
         // Verify
         this.container.Verify();
