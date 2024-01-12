@@ -14,7 +14,6 @@ internal sealed class TextureBuilder : BaseService
     private readonly AssetHandler assetHandler;
     private readonly Dictionary<string, Texture2D> cachedTextures = [];
     private readonly DelegateManager delegateManager;
-    private readonly string disabledKey;
     private readonly IGameContentHelper gameContentHelper;
 
     /// <summary>Initializes a new instance of the <see cref="TextureBuilder" /> class.</summary>
@@ -34,7 +33,6 @@ internal sealed class TextureBuilder : BaseService
         this.assetHandler = assetHandler;
         this.delegateManager = delegateManager;
         this.gameContentHelper = gameContentHelper;
-        this.disabledKey = this.ModId + "/Disabled";
     }
 
     /// <summary>Tries to get a modified texture for the given entity using patches and conditions.</summary>
@@ -52,19 +50,26 @@ internal sealed class TextureBuilder : BaseService
         [NotNullWhen(true)] out Texture2D? texture)
     {
         // Check if any patches may apply to this texture
-        if (!this.assetHandler.TryGetData(baseTexture.Name, out var patches)
-            || entity.modData.ContainsKey(this.disabledKey))
+        if (!this.assetHandler.TryGetData(baseTexture.Name, out var patches))
         {
             texture = null;
             return false;
         }
 
         // Check if the texture is in cache
-        var modDataKey = this.ModId + "/" + baseTexture.Name + "/" + sourceRect;
-        if (entity.modData.TryGetValue(modDataKey, out var cachedTextureName)
-            && this.cachedTextures.TryGetValue(cachedTextureName, out texture))
+        var modDataKey = this.ModId + "/" + baseTexture.Name + "/" + sourceRect + "/" + drawMethod;
+        if (entity.modData.TryGetValue(modDataKey, out var cachedTextureName))
         {
-            return true;
+            if (cachedTextureName == "Disabled")
+            {
+                texture = null;
+                return false;
+            }
+
+            if (this.cachedTextures.TryGetValue(cachedTextureName, out texture))
+            {
+                return true;
+            }
         }
 
         // Attempt to build the texture
@@ -144,7 +149,7 @@ internal sealed class TextureBuilder : BaseService
 
         if (!initialized)
         {
-            entity.modData[this.disabledKey] = "true";
+            entity.modData[modDataKey] = "Disabled";
             texture = null;
             return false;
         }

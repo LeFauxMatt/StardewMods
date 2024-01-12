@@ -5,6 +5,7 @@ using SimpleInjector;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc />
 internal sealed class ModEntry : Mod
@@ -42,6 +43,8 @@ internal sealed class ModEntry : Mod
         this.container.RegisterSingleton<IEventManager, EventManager>();
         this.container.RegisterSingleton<IEventPublisher, EventManager>();
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
+        this.container.RegisterSingleton<FuryCoreIntegration>();
+        this.container.RegisterSingleton<ILog, LogService>();
 
         // Verify
         this.container.Verify();

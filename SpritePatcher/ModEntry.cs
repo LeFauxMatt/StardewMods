@@ -7,6 +7,7 @@ using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Services;
+using StardewMods.SpritePatcher.Framework.Services.Patches;
 
 /// <inheritdoc />
 internal sealed class ModEntry : Mod
@@ -41,7 +42,7 @@ internal sealed class ModEntry : Mod
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<AssetHandler>();
-        this.container.RegisterSingleton<DrawPatches>();
+        this.container.RegisterSingleton<ObjectPatches>();
         this.container.RegisterSingleton<DelegateManager>();
         this.container.RegisterSingleton<ILog, LogService>();
         this.container.RegisterSingleton<IPatchManager, PatchService>();

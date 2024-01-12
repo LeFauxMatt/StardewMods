@@ -1,12 +1,12 @@
 namespace StardewMods.SpritePatcher.Framework.Services;
 
 using System.Linq.Expressions;
+using System.Reflection;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Models.ComparableValues;
-using StardewValley.Objects;
 
-/// <summary>Manages the retrieval of property values from an Item object.</summary>
+/// <summary>Manages the retrieval of property values from an IHaveModData object.</summary>
 internal sealed class DelegateManager : BaseService
 {
     private readonly Dictionary<string, Delegate> cachedDelegates = new();
@@ -27,6 +27,7 @@ internal sealed class DelegateManager : BaseService
     /// <typeparam name="TSource">The source type.</typeparam>
     /// <returns>true if the value was successfully retrieved; otherwise, false.</returns>
     public bool TryGetValue<TSource>(TSource source, string path, [NotNullWhen(true)] out IEquatable<string>? value)
+        where TSource : IHaveModData
     {
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -39,15 +40,17 @@ internal sealed class DelegateManager : BaseService
         {
             try
             {
-                cachedDelegate = source switch
-                {
-                    Furniture => DelegateManager.CompileGetter<Furniture>(parts),
-                    ColoredObject => DelegateManager.CompileGetter<ColoredObject>(parts),
-                    SObject => DelegateManager.CompileGetter<SObject>(parts),
-                    Item => DelegateManager.CompileGetter<Item>(parts),
-                    _ => DelegateManager.CompileGetter<TSource>(parts),
-                };
+                var method = typeof(DelegateManager).GetMethod(
+                    nameof(DelegateManager.CompileGetter),
+                    BindingFlags.NonPublic | BindingFlags.Static);
 
+                if (method == null)
+                {
+                    throw new InvalidOperationException("CompileGetter method not found.");
+                }
+
+                var genericMethod = method.MakeGenericMethod(source.GetType());
+                cachedDelegate = (Delegate)genericMethod.Invoke(null, [parts])!;
                 this.cachedDelegates[path] = cachedDelegate;
             }
             catch (Exception e)
@@ -60,15 +63,7 @@ internal sealed class DelegateManager : BaseService
 
         try
         {
-            var rawValue = source switch
-            {
-                Furniture furniture => ((Func<Furniture, object?>)cachedDelegate).Invoke(furniture),
-                ColoredObject coloredObject => ((Func<ColoredObject, object?>)cachedDelegate).Invoke(coloredObject),
-                SObject @object => ((Func<SObject, object?>)cachedDelegate).Invoke(@object),
-                Item item => ((Func<Item, object?>)cachedDelegate).Invoke(item),
-                _ => ((Func<TSource, object?>)cachedDelegate).Invoke(source),
-            };
-
+            var rawValue = cachedDelegate.DynamicInvoke(source);
             if (rawValue is null)
             {
                 value = null;

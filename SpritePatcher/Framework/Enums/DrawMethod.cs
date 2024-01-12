@@ -6,6 +6,9 @@ public enum DrawMethod
     /// <summary>The method when an item is drawn in a menu.</summary>
     Menu,
 
+    /// <summary>The method when an item is drawn while being held.</summary>
+    Held,
+
     /// <summary>The method when an object is drawn in the world.</summary>
     World,
 }

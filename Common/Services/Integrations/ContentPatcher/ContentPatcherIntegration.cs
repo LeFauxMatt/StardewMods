@@ -39,6 +39,7 @@ internal sealed class ContentPatcherIntegration : ModIntegration<IContentPatcher
             return;
         }
 
+        this.eventManager.Unsubscribe<UpdateTickedEventArgs>(this.OnUpdateTicked);
         this.eventManager.Publish(new ConditionsApiReadyEventArgs());
     }
 }
