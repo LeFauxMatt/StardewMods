@@ -36,7 +36,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FuryCore", "FuryCore\FuryCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FindAnything", "FindAnything\FindAnything.csproj", "{83CE3B0E-6A1F-4477-93AE-AFFA9FFDF9CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ItemIconOverlays", "ItemIconOverlays\ItemIconOverlays.csproj", "{4632D2C9-A337-461B-9F74-28F779078879}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpritePatcher", "SpritePatcher\SpritePatcher.csproj", "{4632D2C9-A337-461B-9F74-28F779078879}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
