@@ -69,10 +69,10 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<ItemGrabMenuManager>();
         this.container.RegisterSingleton<ItemMatcherFactory>();
         this.container.RegisterSingleton<LocalizedTextManager>();
-        this.container.RegisterSingleton<ILog, LogService>();
+        this.container.RegisterSingleton<ILog, FuryLogger>();
         this.container.RegisterSingleton<ProxyChestFactory>();
         this.container.RegisterSingleton<StatusEffectManager>();
-        this.container.RegisterSingleton<IThemeHelper, ThemeService>();
+        this.container.RegisterSingleton<IThemeHelper, FuryThemer>();
         this.container.RegisterSingleton<ToolbarIconsIntegration>();
         this.container.Register<CategorizeOption>();
 

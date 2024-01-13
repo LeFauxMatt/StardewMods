@@ -2,7 +2,7 @@ namespace StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc />
 
-internal sealed class LogService(FuryCoreIntegration furyCoreIntegration, IMonitor monitor) : ILog
+internal sealed class FuryLogger(FuryCoreIntegration furyCoreIntegration, IMonitor monitor) : ILog
 {
     private readonly ILog log = furyCoreIntegration.Api!.CreateLogService(monitor);
 

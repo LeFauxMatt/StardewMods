@@ -29,9 +29,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\Interfaces\IPatchManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\Interfaces\ISavedPatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\Interfaces\IThemeHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\Services\LogService.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\Services\PatchService.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\Services\ThemeService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\Services\FuryLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\Services\FuryPatcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\FuryCore\Services\FuryThemer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\BaseComplexOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\Integrations\GenericModConfigMenu\IComplexOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\BaseService.cs" />

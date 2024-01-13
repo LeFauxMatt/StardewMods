@@ -6,59 +6,91 @@ using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Models;
+using StardewMods.SpritePatcher.Framework.Models.Events;
 
 /// <summary>Manages the data model for sprite patches.</summary>
 internal sealed class AssetHandler : BaseService
 {
     private readonly string assetPath;
+    private readonly IEventManager eventManager;
     private readonly IGameContentHelper gameContentHelper;
 
-    private Dictionary<string, List<PatchData>>? patchData;
+    private Dictionary<string, PatchData> allPatches = [];
+    private Dictionary<string, SortedList<int, PatchData>> loadedPatches = [];
+    private bool checkForChanges = true;
 
     /// <summary>Initializes a new instance of the <see cref="AssetHandler" /> class.</summary>
-    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
+    /// <param name="eventManager">Dependency used for managing events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    public AssetHandler(
-        IEventSubscriber eventSubscriber,
-        IGameContentHelper gameContentHelper,
-        ILog log,
-        IManifest manifest)
+    public AssetHandler(IEventManager eventManager, IGameContentHelper gameContentHelper, ILog log, IManifest manifest)
         : base(log, manifest)
     {
         this.assetPath = this.ModId + "/Patches";
+        this.eventManager = eventManager;
         this.gameContentHelper = gameContentHelper;
-        eventSubscriber.Subscribe<AssetRequestedEventArgs>(this.OnAssetRequested);
-        eventSubscriber.Subscribe<AssetsInvalidatedEventArgs>(this.OnAssetsInvalidated);
-        eventSubscriber.Subscribe<ConditionsApiReadyEventArgs>(this.OnConditionsApiReady);
+        eventManager.Subscribe<AssetRequestedEventArgs>(this.OnAssetRequested);
+        eventManager.Subscribe<AssetsInvalidatedEventArgs>(this.OnAssetsInvalidated);
+        eventManager.Subscribe<ConditionsApiReadyEventArgs>(this.OnConditionsApiReady);
     }
 
     /// <summary>Tries to get the data for the given target.</summary>
     /// <param name="target">The target for which the data is requested.</param>
     /// <param name="patches">When this method returns, contains the data for the target if it is found; otherwise, null.</param>
     /// <returns>true if the data for the target is found; otherwise, false.</returns>
-    public bool TryGetData(string target, [NotNullWhen(true)] out List<PatchData>? patches)
+    public bool TryGetData(string target, [NotNullWhen(true)] out SortedList<int, PatchData>? patches)
     {
-        this.patchData ??= this.LoadData();
-        return this.patchData.TryGetValue(target, out patches);
+        if (!this.checkForChanges)
+        {
+            return this.loadedPatches.TryGetValue(target, out patches);
+        }
+
+        this.checkForChanges = false;
+        var newPatches = this.gameContentHelper.Load<Dictionary<string, PatchData>>(this.assetPath);
+        if (this.allPatches.Count == newPatches.Count && newPatches.Keys.All(this.allPatches.ContainsKey))
+        {
+            return this.loadedPatches.TryGetValue(target, out patches);
+        }
+
+        var keys = newPatches
+            .Keys.Except(this.allPatches.Keys)
+            .Concat(this.allPatches.Keys.Except(newPatches.Keys))
+            .ToList();
+
+        var targets = newPatches
+            .Concat(this.allPatches)
+            .Where(pair => keys.Contains(pair.Key))
+            .Select(pair => pair.Value.Target)
+            .Distinct()
+            .ToList();
+
+        this.allPatches = newPatches;
+        this.ReloadPatches();
+        this.eventManager.Publish(new PatchesChangedEventArgs(targets));
+        return this.loadedPatches.TryGetValue(target, out patches);
     }
 
-    private Dictionary<string, List<PatchData>> LoadData()
+    private void ReloadPatches()
     {
-        var data = new Dictionary<string, List<PatchData>>();
-        foreach (var (_, patch) in this.gameContentHelper.Load<Dictionary<string, PatchData>>(this.assetPath))
+        var data = new Dictionary<string, SortedList<int, PatchData>>();
+        foreach (var (_, patch) in this.allPatches)
         {
             if (!data.TryGetValue(patch.Target, out var patches))
             {
-                patches = new List<PatchData>();
+                patches = new SortedList<int, PatchData>(new DescendingComparer());
                 data[patch.Target] = patches;
             }
 
-            patches.Add(patch);
+            patches.Add(patch.Priority, patch);
         }
 
-        return data;
+        if (this.loadedPatches.Count == data.Count && !data.Keys.All(this.loadedPatches.ContainsKey))
+        {
+            return;
+        }
+
+        this.loadedPatches = data;
     }
 
     private void OnAssetRequested(AssetRequestedEventArgs e)
@@ -73,9 +105,15 @@ internal sealed class AssetHandler : BaseService
     {
         if (e.Names.Any(assetName => assetName.IsEquivalentTo(this.assetPath)))
         {
-            this.patchData = null;
+            this.checkForChanges = true;
         }
     }
 
-    private void OnConditionsApiReady(ConditionsApiReadyEventArgs e) => this.patchData = null;
+    private void OnConditionsApiReady(ConditionsApiReadyEventArgs e) => this.checkForChanges = true;
+
+    private sealed class DescendingComparer : IComparer<int>
+    {
+        /// <inheritdoc />
+        public int Compare(int x, int y) => y.CompareTo(x);
+    }
 }

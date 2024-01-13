@@ -1,7 +1,7 @@
 namespace StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc />
-internal sealed class ThemeService(FuryCoreIntegration furyCore) : IThemeHelper
+internal sealed class FuryThemer(FuryCoreIntegration furyCore) : IThemeHelper
 {
     private readonly IThemeHelper themeHelper = furyCore.Api!.CreateThemeService();
 

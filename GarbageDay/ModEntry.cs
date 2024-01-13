@@ -56,7 +56,7 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<FuryCoreIntegration>();
         this.container.RegisterSingleton<GarbageCanManager>();
-        this.container.RegisterSingleton<ILog, LogService>();
+        this.container.RegisterSingleton<ILog, FuryLogger>();
         this.container.RegisterSingleton<ToolbarIconsIntegration>();
 
         // Verify

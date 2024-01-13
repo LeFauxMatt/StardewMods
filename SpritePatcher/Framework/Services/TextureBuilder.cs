@@ -2,29 +2,35 @@ namespace StardewMods.SpritePatcher.Framework.Services;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewMods.Common.Interfaces;
+using StardewMods.Common.Models;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
+using StardewMods.SpritePatcher.Framework.Models.Events;
 
 /// <summary>Helps build a texture object from patches.</summary>
 internal sealed class TextureBuilder : BaseService
 {
     private readonly AssetHandler assetHandler;
     private readonly Dictionary<string, Texture2D> cachedTextures = [];
+    private readonly Dictionary<string, HashSet<string>> cachedTextureKeys = [];
     private readonly DelegateManager delegateManager;
     private readonly IGameContentHelper gameContentHelper;
 
     /// <summary>Initializes a new instance of the <see cref="TextureBuilder" /> class.</summary>
     /// <param name="assetHandler">Dependency used for managing icons.</param>
     /// <param name="delegateManager">Dependency used for getting item properties.</param>
+    /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     public TextureBuilder(
         AssetHandler assetHandler,
         DelegateManager delegateManager,
+        IEventSubscriber eventSubscriber,
         IGameContentHelper gameContentHelper,
         ILog log,
         IManifest manifest)
@@ -33,6 +39,7 @@ internal sealed class TextureBuilder : BaseService
         this.assetHandler = assetHandler;
         this.delegateManager = delegateManager;
         this.gameContentHelper = gameContentHelper;
+        eventSubscriber.Subscribe<PatchesChangedEventArgs>(this.OnPatchesChanged);
     }
 
     /// <summary>Tries to get a modified texture for the given entity using patches and conditions.</summary>
@@ -76,7 +83,7 @@ internal sealed class TextureBuilder : BaseService
         Color[]? data = null;
         var initialized = false;
         cachedTextureName = string.Empty;
-        foreach (var patch in patches)
+        foreach (var patch in patches.Values)
         {
             // Check if the patch applies to this draw method
             if (!patch.DrawMethods.Contains(drawMethod))
@@ -109,12 +116,21 @@ internal sealed class TextureBuilder : BaseService
             // Apply tinting
             if (patchTexture.Tint is not null)
             {
+                var tint = HslColor.FromColor(patchTexture.Tint.Value);
+                var blendColor = new HslColor(tint.H, 2f * tint.S, 2f * tint.L).ToRgbColor();
                 for (var i = 0; i < patchData.Length; ++i)
                 {
-                    if (patchData[i].A > 0)
+                    if (patchData[i].A <= 0)
                     {
-                        patchData[i] = Color.Lerp(patchData[i], patchTexture.Tint.Value, 0.3f);
+                        continue;
                     }
+
+                    var multiplyColor = new Color(
+                        patchData[i].R / 255f * patchTexture.Tint.Value.R / 255f,
+                        patchData[i].G / 255f * patchTexture.Tint.Value.G / 255f,
+                        patchData[i].B / 255f * patchTexture.Tint.Value.B / 255f);
+
+                    patchData[i] = Color.Lerp(multiplyColor, blendColor, 0.3f);
                 }
             }
 
@@ -158,6 +174,13 @@ internal sealed class TextureBuilder : BaseService
         texture.SetData(data);
         this.cachedTextures[cachedTextureName] = texture;
         entity.modData[modDataKey] = cachedTextureName;
+        if (!this.cachedTextureKeys.TryGetValue(baseTexture.Name, out var cachedTextureNames))
+        {
+            cachedTextureNames = new HashSet<string>();
+            this.cachedTextureKeys[baseTexture.Name] = cachedTextureNames;
+        }
+
+        cachedTextureNames.Add(cachedTextureName);
         return true;
     }
 
@@ -191,6 +214,24 @@ internal sealed class TextureBuilder : BaseService
 
             return true;
         };
+
+    private void OnPatchesChanged(PatchesChangedEventArgs e)
+    {
+        foreach (var target in e.ChangedTargets)
+        {
+            if (!this.cachedTextureKeys.TryGetValue(target, out var cachedTextureNames))
+            {
+                continue;
+            }
+
+            foreach (var cachedTextureName in cachedTextureNames)
+            {
+                this.cachedTextures.Remove(cachedTextureName);
+            }
+
+            this.cachedTextureKeys.Remove(target);
+        }
+    }
 
     private bool TryGetTokens(
         IHaveModData entity,

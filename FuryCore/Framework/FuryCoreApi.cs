@@ -3,6 +3,7 @@ namespace StardewMods.FuryCore.Framework;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.FuryCore.Framework.Interfaces;
 using StardewMods.FuryCore.Framework.Services;
+using PatchManager = StardewMods.FuryCore.Framework.Services.PatchManager;
 
 /// <inheritdoc />
 public sealed class FuryCoreApi : IFuryCoreApi

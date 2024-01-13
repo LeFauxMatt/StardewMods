@@ -64,8 +64,8 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
         this.container.RegisterSingleton<IntegrationManager>();
-        this.container.RegisterSingleton<ILog, LogService>();
-        this.container.RegisterSingleton<IThemeHelper, ThemeService>();
+        this.container.RegisterSingleton<ILog, FuryLogger>();
+        this.container.RegisterSingleton<IThemeHelper, FuryThemer>();
         this.container.RegisterSingleton<ToolbarManager>();
 
         this.container.Collection.Register<ICustomIntegration>(

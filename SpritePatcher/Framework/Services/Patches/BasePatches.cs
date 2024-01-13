@@ -6,9 +6,7 @@ using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Enums;
 
-/// <summary>
-/// Base class for texture patches.
-/// </summary>
+/// <summary>Base class for texture patches.</summary>
 internal abstract class BasePatches : BaseService
 {
 #nullable disable
@@ -17,9 +15,7 @@ internal abstract class BasePatches : BaseService
 
     private readonly TextureBuilder textureBuilder;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BasePatches"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="BasePatches" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="textureBuilder">Dependency used for building the texture.</param>
@@ -30,9 +26,7 @@ internal abstract class BasePatches : BaseService
         this.textureBuilder = textureBuilder;
     }
 
-    /// <summary>
-    /// Draws a texture using a SpriteBatch with optional modifications.
-    /// </summary>
+    /// <summary>Draws a texture using a SpriteBatch with optional modifications.</summary>
     /// <param name="spriteBatch">The SpriteBatch used for drawing.</param>
     /// <param name="texture">The texture to draw.</param>
     /// <param name="position">The position at which to draw the texture.</param>

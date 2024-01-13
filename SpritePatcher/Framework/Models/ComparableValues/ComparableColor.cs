@@ -7,11 +7,17 @@ using StardewMods.SpritePatcher.Framework.Enums;
 /// <inheritdoc />
 internal sealed class ComparableColor(Color value) : IEquatable<string>
 {
-    private static readonly Regex Regex = new(@"^(<=|>=|!=|<|>|)?\s*(.+)$");
+    private static readonly Regex Regex = new(
+        @"^(<=|>=|!=|<|>|)?\s*(.+)$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
     private static readonly Dictionary<string, (CompareType CompareType, Color? Value)> ExpressionCache = new();
 
-    /// <inheritdoc />
-    public bool Equals(string? expression)
+    /// <summary>Determines whether the specified value matches the given expression.</summary>
+    /// <param name="value">The value to compare.</param>
+    /// <param name="expression">The expression to match against the value.</param>
+    /// <returns>True if the value matches the expression; otherwise, false.</returns>
+    public static bool Equals(Color value, string? expression)
     {
         if (string.IsNullOrWhiteSpace(expression))
         {
@@ -38,6 +44,9 @@ internal sealed class ComparableColor(Color value) : IEquatable<string>
             _ => false,
         };
     }
+
+    /// <inheritdoc />
+    public bool Equals(string? expression) => ComparableColor.Equals(value, expression);
 
     /// <inheritdoc />
     public override string ToString() => value.ToString();

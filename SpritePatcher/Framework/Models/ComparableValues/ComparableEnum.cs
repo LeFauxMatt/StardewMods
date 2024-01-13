@@ -7,11 +7,17 @@ using StardewMods.SpritePatcher.Framework.Enums;
 internal sealed class ComparableEnum<T>(T value) : IEquatable<string>
     where T : Enum
 {
-    private static readonly Regex Regex = new(@"^(<=|>=|!=|<|>|)?\s*(.+)$");
+    private static readonly Regex Regex = new(
+        @"^(<=|>=|!=|<|>|)?\s*(.+)$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
     private static readonly Dictionary<string, (CompareType CompareType, string? Value)> ExpressionCache = new();
 
-    /// <inheritdoc />
-    public bool Equals(string? expression)
+    /// <summary>Determines whether the specified value matches the given expression.</summary>
+    /// <param name="value">The value to compare.</param>
+    /// <param name="expression">The expression to match against the value.</param>
+    /// <returns>True if the value matches the expression; otherwise, false.</returns>
+    public static bool Equals(T value, string? expression)
     {
         if (string.IsNullOrWhiteSpace(expression))
         {
@@ -33,11 +39,14 @@ internal sealed class ComparableEnum<T>(T value) : IEquatable<string>
         return compareType switch
         {
             CompareType.WildCard => true,
-            CompareType.EqualTo => this.ToString() == stringValue,
-            CompareType.NotEqualTo => this.ToString() != stringValue,
+            CompareType.EqualTo => value.ToString() == stringValue,
+            CompareType.NotEqualTo => value.ToString() != stringValue,
             _ => false,
         };
     }
+
+    /// <inheritdoc />
+    public bool Equals(string? expression) => ComparableEnum<T>.Equals(value, expression);
 
     /// <inheritdoc />
     public override string ToString() => value.ToString();

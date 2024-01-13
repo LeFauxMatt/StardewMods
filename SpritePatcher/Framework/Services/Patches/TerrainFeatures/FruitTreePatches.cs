@@ -1,6 +1,3 @@
 namespace StardewMods.SpritePatcher.Framework.Services.Patches.TerrainFeatures;
 
-public class FruitTreePatches
-{
-    
-}
+public class FruitTreePatches { }

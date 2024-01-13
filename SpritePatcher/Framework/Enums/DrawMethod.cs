@@ -11,4 +11,13 @@ public enum DrawMethod
 
     /// <summary>The method when an object is drawn in the world.</summary>
     World,
+
+    /// <summary>The method for a building which has DrawInBackground enabled.</summary>
+    Background,
+
+    /// <summary>The method for a building in construction.</summary>
+    Construction,
+
+    /// <summary>The method for drawing a shadow.</summary>
+    Shadow,
 }

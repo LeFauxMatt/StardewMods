@@ -1,5 +1,7 @@
 namespace StardewMods.SpritePatcher.Framework.Services;
 
+using System.Collections;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using StardewMods.Common.Services;
@@ -9,7 +11,7 @@ using StardewMods.SpritePatcher.Framework.Models.ComparableValues;
 /// <summary>Manages the retrieval of property values from an IHaveModData object.</summary>
 internal sealed class DelegateManager : BaseService
 {
-    private readonly Dictionary<string, Delegate> cachedDelegates = new();
+    private readonly Dictionary<Type, Dictionary<string, Delegate>> cachedDelegates = new();
 
     /// <summary>Initializes a new instance of the <see cref="DelegateManager" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
@@ -17,17 +19,22 @@ internal sealed class DelegateManager : BaseService
     public DelegateManager(ILog log, IManifest manifest)
         : base(log, manifest) { }
 
-    /// <summary>Tries to get the value associated with a specific path in an item using compiled delegate functions.</summary>
-    /// <param name="source">The item to retrieve the value from.</param>
+    /// <summary>Used to obtain a value from an object that implements <see cref="IHaveModData" />.</summary>
+    /// <param name="source">The object from which the value is being obtained.</param>
+    /// <param name="path">The path to the value to be obtained.</param>
+    /// <param name="value">When this method returns, contains the value if one is found; otherwise, <see langword="null" />.</param>
+    /// <returns><see langword="true" /> if a value is found; otherwise, <see langword="false" />.</returns>
+    public delegate bool TryGetComparable(IHaveModData source, string path, out IEquatable<string>? value);
+
+    /// <summary>Tries to get the value associated with a specific path in a source using compiled delegate functions.</summary>
+    /// <param name="source">The source to retrieve the value from.</param>
     /// <param name="path">The path to the desired value.</param>
     /// <param name="value">
     /// When this method returns, contains the value associated with the specified path, if the path is
     /// found; otherwise, null.
     /// </param>
-    /// <typeparam name="TSource">The source type.</typeparam>
     /// <returns>true if the value was successfully retrieved; otherwise, false.</returns>
-    public bool TryGetValue<TSource>(TSource source, string path, [NotNullWhen(true)] out IEquatable<string>? value)
-        where TSource : IHaveModData
+    public bool TryGetValue(IHaveModData source, string path, [NotNullWhen(true)] out IEquatable<string>? value)
     {
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -35,8 +42,14 @@ internal sealed class DelegateManager : BaseService
             return false;
         }
 
-        var parts = path.Split('.');
-        if (!this.cachedDelegates.TryGetValue(path, out var cachedDelegate))
+        var type = source.GetType();
+        if (!this.cachedDelegates.TryGetValue(type, out var delegates))
+        {
+            delegates = new Dictionary<string, Delegate>();
+            this.cachedDelegates[type] = delegates;
+        }
+
+        if (!delegates.TryGetValue(path, out var cachedDelegate))
         {
             try
             {
@@ -50,8 +63,8 @@ internal sealed class DelegateManager : BaseService
                 }
 
                 var genericMethod = method.MakeGenericMethod(source.GetType());
-                cachedDelegate = (Delegate)genericMethod.Invoke(null, [parts])!;
-                this.cachedDelegates[path] = cachedDelegate;
+                cachedDelegate = (Delegate)genericMethod.Invoke(null, [path.Split('.')])!;
+                delegates[path] = cachedDelegate;
             }
             catch (Exception e)
             {
@@ -78,7 +91,17 @@ internal sealed class DelegateManager : BaseService
                 Enum enumValue => Activator.CreateInstance(
                     typeof(ComparableEnum<>).MakeGenericType(enumValue.GetType()),
                     enumValue) as IEquatable<string>,
-                _ => new ComparableOther(rawValue),
+                IEnumerable<int> intList => new ComparableList<int>(intList, ComparableInt.Equals),
+                IEnumerable<string> stringList => new ComparableList<string>(stringList, ComparableString.Equals),
+                IDictionary
+                {
+                    Values: IEnumerable<int> intDict,
+                } => new ComparableList<int>(intDict, ComparableInt.Equals),
+                IDictionary
+                {
+                    Values: IEnumerable<string> stringDict,
+                } => new ComparableList<string>(stringDict, ComparableString.Equals),
+                _ => new ComparableModel(source, this.TryGetValue),
             };
 
             return value is not null;
@@ -98,32 +121,42 @@ internal sealed class DelegateManager : BaseService
 
         foreach (var member in parts)
         {
-            // Check if member is a method
-            var methodInfo = body.Type.GetMethod(member);
-            if (methodInfo != null && methodInfo.GetParameters().Length == 0)
+            // Check if member is a method call
+            if (member.EndsWith("()", StringComparison.OrdinalIgnoreCase))
             {
+                var methodName = member[..^2];
+                var methodInfo = body.Type.GetMethod(methodName);
+                if (methodInfo == null || methodInfo.GetParameters().Length != 0)
+                {
+                    throw new NotSupportedException($"Method '{methodName}' is not supported.");
+                }
+
                 body = Expression.Call(body, methodInfo);
                 continue;
             }
 
             // Check if member is a dictionary with constant key type
-            if (body.Type.IsGenericType && body.Type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+            var bracketStart = member.IndexOf('[', StringComparison.OrdinalIgnoreCase);
+            var bracketEnd = member.IndexOf(']', StringComparison.OrdinalIgnoreCase);
+            if (bracketStart != -1 && bracketEnd != -1 && bracketEnd > bracketStart)
             {
-                var bodyType = body.Type.GetGenericArguments()[0];
-                var itemProperty = body.Type.GetProperty("Item")!;
-                if (bodyType == typeof(string))
+                var dictionaryName = member[..bracketStart];
+                var key = member.Substring(bracketStart + 1, bracketEnd - bracketStart - 1);
+
+                var dictionaryExpression = Expression.PropertyOrField(body, dictionaryName);
+                if (dictionaryExpression.Type.IsGenericType
+                    && dictionaryExpression.Type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
                 {
-                    body = Expression.Property(body, itemProperty, Expression.Constant(member));
+                    var keyType = dictionaryExpression.Type.GetGenericArguments()[0];
+                    var itemProperty = dictionaryExpression.Type.GetProperty("Item")!;
+                    var keyExpression =
+                        Expression.Constant(Convert.ChangeType(key, keyType, CultureInfo.InvariantCulture));
+
+                    body = Expression.Property(dictionaryExpression, itemProperty, keyExpression);
                     continue;
                 }
 
-                if (bodyType == typeof(int) && int.TryParse(member, out var intMember))
-                {
-                    body = Expression.Property(body, itemProperty, Expression.Constant(intMember));
-                    continue;
-                }
-
-                throw new NotSupportedException($"Dictionary key type '{bodyType}' is not supported.");
+                throw new NotSupportedException($"Dictionary access {member} is not valid for type '{body.Type}'.");
             }
 
             // Default to any property or field

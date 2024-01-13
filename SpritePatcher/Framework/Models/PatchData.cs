@@ -5,16 +5,17 @@ using StardewMods.SpritePatcher.Framework.Interfaces;
 
 /// <inheritdoc />
 internal sealed class PatchData(
-    string id,
+    string? logName,
     string target,
     string path,
     List<DrawMethod> drawMethods,
     PatchMode patchMode,
     Dictionary<string, TokenDefinition> tokens,
-    List<ConditionalTexture> textures) : IPatchData
+    List<ConditionalTexture> textures,
+    int priority = 0) : IPatchData
 {
     /// <inheritdoc />
-    public string Id { get; set; } = id;
+    public string? LogName { get; set; } = logName;
 
     /// <inheritdoc />
     public string Target { get; set; } = target;
@@ -33,4 +34,7 @@ internal sealed class PatchData(
 
     /// <inheritdoc />
     public List<ConditionalTexture> Textures { get; set; } = textures;
+
+    /// <inheritdoc />
+    public int Priority { get; set; } = priority;
 }

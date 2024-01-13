@@ -8,19 +8,15 @@ using StardewMods.Common.Enums;
 using StardewMods.Common.Models;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
-/// <summary>Manages overlays for items.</summary>
-internal sealed class ObjectPatches : BasePatches
+/// <summary>Patches for objects drawn in the game.</summary>
+internal sealed class PatchObjects : BasePatches
 {
-    /// <summary>Initializes a new instance of the <see cref="ObjectPatches" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="PatchObjects" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="patchManager">Dependency used for managing patches.</param>
     /// <param name="textureBuilder">Dependency used for building the texture.</param>
-    public ObjectPatches(
-        ILog log,
-        IManifest manifest,
-        IPatchManager patchManager,
-        TextureBuilder textureBuilder)
+    public PatchObjects(ILog log, IManifest manifest, IPatchManager patchManager, TextureBuilder textureBuilder)
         : base(log, manifest, textureBuilder) =>
         patchManager.Add(
             this.ModId,
@@ -29,22 +25,22 @@ internal sealed class ObjectPatches : BasePatches
                     typeof(SObject),
                     nameof(SObject.draw),
                     [typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)]),
-                AccessTools.DeclaredMethod(typeof(ObjectPatches), nameof(ObjectPatches.Draw_Transpiler)),
+                AccessTools.DeclaredMethod(typeof(PatchObjects), nameof(PatchObjects.Draw_Transpiler)),
                 PatchType.Transpiler),
             new SavedPatch(
                 AccessTools.DeclaredMethod(
                     typeof(SObject),
                     nameof(SObject.draw),
                     [typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(float)]),
-                AccessTools.DeclaredMethod(typeof(ObjectPatches), nameof(ObjectPatches.Draw_Transpiler)),
+                AccessTools.DeclaredMethod(typeof(PatchObjects), nameof(PatchObjects.Draw_Transpiler)),
                 PatchType.Transpiler),
             new SavedPatch(
                 AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.drawInMenu)),
-                AccessTools.DeclaredMethod(typeof(ObjectPatches), nameof(ObjectPatches.DrawInMenu_Transpiler)),
+                AccessTools.DeclaredMethod(typeof(PatchObjects), nameof(PatchObjects.DrawInMenu_Transpiler)),
                 PatchType.Transpiler),
             new SavedPatch(
                 AccessTools.DeclaredMethod(typeof(SObject), nameof(SObject.drawWhenHeld)),
-                AccessTools.DeclaredMethod(typeof(ObjectPatches), nameof(ObjectPatches.DrawWhenHeld_Transpiler)),
+                AccessTools.DeclaredMethod(typeof(PatchObjects), nameof(PatchObjects.DrawWhenHeld_Transpiler)),
                 PatchType.Transpiler));
 
     private static IEnumerable<CodeInstruction> Draw_Transpiler(IEnumerable<CodeInstruction> instructions)

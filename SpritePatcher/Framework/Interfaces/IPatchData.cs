@@ -6,8 +6,8 @@ using StardewMods.SpritePatcher.Framework.Models;
 /// <summary>Data for an icon overlay.</summary>
 internal interface IPatchData
 {
-    /// <summary>Gets the unique identifier of the patch.</summary>
-    string Id { get; }
+    /// <summary>Gets the message to log for when the patch is applied.</summary>
+    string? LogName { get; }
 
     /// <summary>Gets the target sprite sheet being patched.</summary>
     string Target { get; }
@@ -26,4 +26,7 @@ internal interface IPatchData
 
     /// <summary>Gets the textures to use for the patch.</summary>
     List<ConditionalTexture> Textures { get; }
+
+    /// <summary>Gets the priority of the patch which determines the order in which patches are applied.</summary>
+    public int Priority { get; }
 }

@@ -7,7 +7,7 @@ using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Services;
-using StardewMods.SpritePatcher.Framework.Services.Patches;
+using StardewMods.SpritePatcher.Framework.Services.Patches.Buildings;
 using StardewMods.SpritePatcher.Framework.Services.Patches.Objects;
 
 /// <inheritdoc />
@@ -37,16 +37,17 @@ internal sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.ModRegistry);
         this.container.RegisterInstance(this.Helper.Reflection);
         this.container.RegisterInstance(this.Helper.Translation);
+        this.container.RegisterSingleton<AssetHandler>();
         this.container.RegisterSingleton<ContentPatcherIntegration>();
         this.container.RegisterSingleton<IEventManager, EventManager>();
         this.container.RegisterSingleton<IEventPublisher, EventManager>();
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
         this.container.RegisterSingleton<FuryCoreIntegration>();
-        this.container.RegisterSingleton<AssetHandler>();
-        this.container.RegisterSingleton<ObjectPatches>();
+        this.container.RegisterSingleton<ILog, FuryLogger>();
+        this.container.RegisterSingleton<IPatchManager, FuryPatcher>();
+        this.container.RegisterSingleton<PatchBuildings>();
+        this.container.RegisterSingleton<PatchObjects>();
         this.container.RegisterSingleton<DelegateManager>();
-        this.container.RegisterSingleton<ILog, LogService>();
-        this.container.RegisterSingleton<IPatchManager, PatchService>();
         this.container.RegisterSingleton<TextureBuilder>();
 
         // Verify

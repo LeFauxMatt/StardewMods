@@ -1,7 +1,7 @@
 namespace StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc />
-internal sealed class PatchService(FuryCoreIntegration furyCore, ILog log) : IPatchManager
+internal sealed class FuryPatcher(FuryCoreIntegration furyCore, ILog log) : IPatchManager
 {
     private readonly IPatchManager patchManager = furyCore.Api!.CreatePatchService(log);
 
