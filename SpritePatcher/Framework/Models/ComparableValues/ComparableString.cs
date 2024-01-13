@@ -7,10 +7,10 @@ using StardewMods.SpritePatcher.Framework.Enums;
 internal sealed class ComparableString(string value) : IEquatable<string>
 {
     private static readonly Regex Regex = new(
-        @"^(<=|>=|!=|<|>|)?\s*(.+)$",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        @"^(<=|>=|!=|<|>|~=|=~)?\s*(.+)$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
-    private static readonly Dictionary<string, (CompareType CompareType, string? Value)> ExpressionCache = new();
+    private static readonly Dictionary<string, (CompareType CompareType, string[]? Values)> ExpressionCache = new();
 
     /// <summary>Determines whether the specified value matches the given expression.</summary>
     /// <param name="value">The value to compare.</param>
@@ -29,8 +29,8 @@ internal sealed class ComparableString(string value) : IEquatable<string>
             ComparableString.ExpressionCache[expression] = parsedExpression;
         }
 
-        var (compareType, stringValue) = parsedExpression;
-        if (string.IsNullOrWhiteSpace(stringValue))
+        var (compareType, values) = parsedExpression;
+        if (values?.Any() != true)
         {
             return compareType == CompareType.WildCard;
         }
@@ -38,8 +38,10 @@ internal sealed class ComparableString(string value) : IEquatable<string>
         return compareType switch
         {
             CompareType.WildCard => true,
-            CompareType.EqualTo => value == stringValue,
-            CompareType.NotEqualTo => value != stringValue,
+            CompareType.EqualTo => values.Any(stringValue => value == stringValue),
+            CompareType.NotEqualTo => values.Any(stringValue => value != stringValue),
+            CompareType.LeftContains => values.Any(value.Contains),
+            CompareType.RightContains => values.Any(stringValue => stringValue.Contains(value)),
             _ => false,
         };
     }
@@ -50,7 +52,7 @@ internal sealed class ComparableString(string value) : IEquatable<string>
     /// <inheritdoc />
     public override string ToString() => value;
 
-    private static (CompareType CompareType, string? Value) ParseExpression(string expression)
+    private static (CompareType CompareType, string[]? Values) ParseExpression(string expression)
     {
         if (expression == "*")
         {
@@ -63,14 +65,20 @@ internal sealed class ComparableString(string value) : IEquatable<string>
             return (CompareType.EqualTo, null);
         }
 
+        var values = match
+            .Groups[2]
+            .Value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
         return match.Groups[1].Value switch
         {
-            "<=" => (CompareType.LessThanOrEqualTo, match.Groups[2].Value),
-            ">=" => (CompareType.GreaterThanOrEqualTo, match.Groups[2].Value),
-            "!=" => (CompareType.NotEqualTo, match.Groups[2].Value),
-            "<" => (CompareType.LessThan, match.Groups[2].Value),
-            ">" => (CompareType.GreaterThan, match.Groups[2].Value),
-            _ => (CompareType.EqualTo, match.Groups[2].Value),
+            "<=" => (CompareType.LessThanOrEqualTo, values),
+            ">=" => (CompareType.GreaterThanOrEqualTo, values),
+            "!=" => (CompareType.NotEqualTo, values),
+            "<" => (CompareType.LessThan, values),
+            ">" => (CompareType.GreaterThan, values),
+            "=~" => (CompareType.LeftContains, values),
+            "~=" => (CompareType.RightContains, values),
+            _ => (CompareType.EqualTo, values),
         };
     }
 }

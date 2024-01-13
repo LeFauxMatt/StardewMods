@@ -61,7 +61,7 @@ internal sealed class AssetHandler : BaseService
         var targets = newPatches
             .Concat(this.allPatches)
             .Where(pair => keys.Contains(pair.Key))
-            .Select(pair => pair.Value.Target)
+            .Select(pair => pair.Value.BaseTarget)
             .Distinct()
             .ToList();
 
@@ -76,10 +76,10 @@ internal sealed class AssetHandler : BaseService
         var data = new Dictionary<string, SortedList<int, PatchData>>();
         foreach (var (_, patch) in this.allPatches)
         {
-            if (!data.TryGetValue(patch.Target, out var patches))
+            if (!data.TryGetValue(patch.BaseTarget, out var patches))
             {
                 patches = new SortedList<int, PatchData>(new DescendingComparer());
-                data[patch.Target] = patches;
+                data[patch.BaseTarget] = patches;
             }
 
             patches.Add(patch.Priority, patch);

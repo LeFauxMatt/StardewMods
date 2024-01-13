@@ -67,16 +67,12 @@ internal sealed class TextureBuilder : BaseService
         var modDataKey = this.ModId + "/" + baseTexture.Name + "/" + sourceRect + "/" + drawMethod;
         if (entity.modData.TryGetValue(modDataKey, out var cachedTextureName))
         {
-            if (cachedTextureName == "Disabled")
-            {
-                texture = null;
-                return false;
-            }
-
             if (this.cachedTextures.TryGetValue(cachedTextureName, out texture))
             {
                 return true;
             }
+
+            entity.modData.Remove(modDataKey);
         }
 
         // Attempt to build the texture
@@ -87,6 +83,12 @@ internal sealed class TextureBuilder : BaseService
         {
             // Check if the patch applies to this draw method
             if (!patch.DrawMethods.Contains(drawMethod))
+            {
+                continue;
+            }
+
+            // Check if specific target is applicable
+            if (patch.SourceRect is not null && patch.SourceRect != sourceRect)
             {
                 continue;
             }

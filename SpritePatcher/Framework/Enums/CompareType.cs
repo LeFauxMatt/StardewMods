@@ -23,4 +23,10 @@ public enum CompareType
 
     /// <summary>Test if the one value is greater than or equal to the other value.</summary>
     GreaterThanOrEqualTo,
+
+    /// <summary>Test if the left value contains the other value.</summary>
+    LeftContains,
+
+    /// <summary>Test if the right value contains the other value.</summary>
+    RightContains,
 }

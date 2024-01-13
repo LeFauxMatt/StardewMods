@@ -7,8 +7,8 @@ using StardewMods.SpritePatcher.Framework.Enums;
 internal sealed class ComparableBool(bool value) : IEquatable<string>
 {
     private static readonly Regex Regex = new(
-        @"^(<=|>=|!=|<|>|)?\s*(true|false)$",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        @"^(<=|>=|!=|<|>|~=|=~)?\s*(true|false)$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
     private static readonly Dictionary<string, (CompareType CompareType, bool? Value)> ExpressionCache = new();
 
@@ -70,6 +70,8 @@ internal sealed class ComparableBool(bool value) : IEquatable<string>
             "!=" => (CompareType.NotEqualTo, boolValue),
             "<" => (CompareType.LessThan, boolValue),
             ">" => (CompareType.GreaterThan, boolValue),
+            "=~" => (CompareType.LeftContains, boolValue),
+            "~=" => (CompareType.RightContains, boolValue),
             _ => (CompareType.EqualTo, boolValue),
         };
     }

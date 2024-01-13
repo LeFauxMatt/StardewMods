@@ -1,5 +1,6 @@
 namespace StardewMods.SpritePatcher.Framework.Interfaces;
 
+using Microsoft.Xna.Framework;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Models;
 
@@ -11,6 +12,12 @@ internal interface IPatchData
 
     /// <summary>Gets the target sprite sheet being patched.</summary>
     string Target { get; }
+
+    /// <summary>Gets the base target sprite sheet being patched.</summary>
+    public string BaseTarget { get; }
+
+    /// <summary>Gets the source rectangle of the sprite sheet being patched.</summary>
+    public Rectangle? SourceRect { get; }
 
     /// <summary>Gets the path to the texture.</summary>
     string Path { get; }

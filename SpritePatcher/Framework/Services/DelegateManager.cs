@@ -24,7 +24,10 @@ internal sealed class DelegateManager : BaseService
     /// <param name="path">The path to the value to be obtained.</param>
     /// <param name="value">When this method returns, contains the value if one is found; otherwise, <see langword="null" />.</param>
     /// <returns><see langword="true" /> if a value is found; otherwise, <see langword="false" />.</returns>
-    public delegate bool TryGetComparable(IHaveModData source, string path, out IEquatable<string>? value);
+    public delegate bool TryGetComparable(
+        IHaveModData source,
+        string path,
+        [NotNullWhen(true)] out IEquatable<string>? value);
 
     /// <summary>Tries to get the value associated with a specific path in a source using compiled delegate functions.</summary>
     /// <param name="source">The source to retrieve the value from.</param>
@@ -93,6 +96,9 @@ internal sealed class DelegateManager : BaseService
                     enumValue) as IEquatable<string>,
                 IEnumerable<int> intList => new ComparableList<int>(intList, ComparableInt.Equals),
                 IEnumerable<string> stringList => new ComparableList<string>(stringList, ComparableString.Equals),
+                IEnumerable<IHaveModData> otherList => new ComparableList<IHaveModData>(
+                    otherList,
+                    (modData, expression) => ComparableModel.Equals(modData, this.TryGetValue, expression)),
                 IDictionary
                 {
                     Values: IEnumerable<int> intDict,
@@ -101,7 +107,13 @@ internal sealed class DelegateManager : BaseService
                 {
                     Values: IEnumerable<string> stringDict,
                 } => new ComparableList<string>(stringDict, ComparableString.Equals),
-                _ => new ComparableModel(source, this.TryGetValue),
+                IDictionary
+                {
+                    Values: IEnumerable<IHaveModData> otherDict,
+                } => new ComparableList<IHaveModData>(
+                    otherDict,
+                    (modData, expression) => ComparableModel.Equals(modData, this.TryGetValue, expression)),
+                IHaveModData otherValue => new ComparableModel(otherValue, this.TryGetValue),
             };
 
             return value is not null;
