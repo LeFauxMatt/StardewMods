@@ -9,6 +9,7 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 internal sealed class PatchManager : BaseService<PatchManager>, IPatchManager
 {
     private readonly Lazy<Harmony> harmony;
+    private readonly HashSet<string> appliedPatches = [];
     private readonly Dictionary<string, List<ISavedPatch>> savedPatches = new();
 
     /// <summary>Initializes a new instance of the <see cref="PatchManager" /> class.</summary>
@@ -36,11 +37,12 @@ internal sealed class PatchManager : BaseService<PatchManager>, IPatchManager
     /// <inheritdoc />
     public void Patch(string id)
     {
-        if (!this.savedPatches.TryGetValue(id, out var patches))
+        if (this.appliedPatches.Contains(id) || !this.savedPatches.TryGetValue(id, out var patches))
         {
             return;
         }
 
+        this.appliedPatches.Add(id);
         foreach (var patch in patches)
         {
             try
@@ -79,11 +81,12 @@ internal sealed class PatchManager : BaseService<PatchManager>, IPatchManager
     /// <inheritdoc />
     public void Unpatch(string id)
     {
-        if (!this.savedPatches.TryGetValue(id, out var patches))
+        if (!this.appliedPatches.Contains(id) || !this.savedPatches.TryGetValue(id, out var patches))
         {
             return;
         }
 
+        this.appliedPatches.Remove(id);
         foreach (var patch in patches)
         {
             this.Log.Trace("Unpatching {0} with {1}.", patch.Original.Name, patch.Patch.Name);
