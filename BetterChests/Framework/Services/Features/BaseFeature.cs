@@ -1,6 +1,7 @@
 ﻿namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.BetterChests.Framework.Models;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Models.Events;
 using StardewMods.Common.Services;
@@ -22,7 +23,7 @@ internal abstract class BaseFeature<TFeature> : BaseService<TFeature>, IFeature
     {
         this.Config = modConfig;
         this.Events = eventManager;
-        this.Events.Subscribe<ConfigChangedEventArgs>(this.OnConfigChanged);
+        this.Events.Subscribe<ConfigChangedEventArgs<DefaultConfig>>(this.OnConfigChanged);
     }
 
     /// <inheritdoc />
@@ -40,7 +41,7 @@ internal abstract class BaseFeature<TFeature> : BaseService<TFeature>, IFeature
     /// <summary>Deactivate this feature.</summary>
     protected abstract void Deactivate();
 
-    private void OnConfigChanged(ConfigChangedEventArgs e)
+    private void OnConfigChanged(ConfigChangedEventArgs<DefaultConfig> e)
     {
         if (this.isActivated == this.ShouldBeActive)
         {

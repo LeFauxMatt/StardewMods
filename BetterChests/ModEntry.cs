@@ -26,10 +26,7 @@ public sealed class ModEntry : Mod
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
     {
-        // Init
         I18n.Init(this.Helper.Translation);
-
-        // Events
         this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
     }
 
@@ -70,9 +67,9 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<ItemMatcherFactory>();
         this.container.RegisterSingleton<LocalizedTextManager>();
         this.container.RegisterSingleton<ILog, FuryLogger>();
+        this.container.RegisterSingleton<IThemeHelper, FuryThemer>();
         this.container.RegisterSingleton<ProxyChestFactory>();
         this.container.RegisterSingleton<StatusEffectManager>();
-        this.container.RegisterSingleton<IThemeHelper, FuryThemer>();
         this.container.RegisterSingleton<ToolbarIconsIntegration>();
         this.container.Register<CategorizeOption>();
 
