@@ -62,7 +62,7 @@ internal sealed class DelegateManager : BaseService
             }
             catch (Exception e)
             {
-                this.Log.Trace("Failed to compile getter for path '{0}'.\nError: {1}", path, e.Message);
+                this.Log.TraceOnce("Failed to compile getter on {0} for path '{1}'.\nError: {2}", type.Name, path, e.Message);
                 return false;
             }
         }
@@ -80,7 +80,7 @@ internal sealed class DelegateManager : BaseService
         }
         catch (Exception e)
         {
-            this.Log.Error("Failed to retrieve value for path '{0}'.\nError: {1}", path, e.Message);
+            this.Log.TraceOnce("Failed to retrieve value on {0} for path '{1}'.\nError: {2}", type.Name, path, e.Message);
             return false;
         }
     }
