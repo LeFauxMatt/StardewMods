@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using StardewMods.SpritePatcher.Framework.Enums;
 
 /// <inheritdoc />
-internal sealed class ComparableBool(bool value) : IEquatable<string>
+internal sealed class ComparableBool(Func<bool> getter) : IEquatable<string>
 {
     private static readonly Regex Regex = new(
         @"^(<=|>=|!=|<|>|~=|=~)?\s*(true|false)$",
@@ -45,10 +45,10 @@ internal sealed class ComparableBool(bool value) : IEquatable<string>
     }
 
     /// <inheritdoc />
-    public bool Equals(string? expression) => ComparableBool.Equals(value, expression);
+    public bool Equals(string? expression) => ComparableBool.Equals(getter(), expression);
 
     /// <inheritdoc />
-    public override string ToString() => value.ToString();
+    public override string ToString() => getter().ToString();
 
     private static (CompareType CompareType, bool? Value) ParseExpression(string expression)
     {

@@ -1,0 +1,304 @@
+{
+    "Changes": [
+        {
+            "LogName": "Quality Wine Bottles",
+			"Action": "Load",
+			"Target": "{{ModId}}/WineBase/None, {{ModId}}/WineBase/Silver, {{ModId}}/WineBase/Gold, {{ModId}}/WineBase/Iridium",
+            "FromFile": "assets/wines/{{TargetWithoutPath}}.png",
+            "When": {
+                "QualityWineBottles": "true"
+            }
+        },
+        {
+            "LogName": "Quality Tinted Wine Bottles Overlay",
+			"Action": "Load",
+			"Target": "{{ModId}}/WineTop, {{ModId}}/WineTop, {{ModId}}/WineTop, {{ModId}}/WineTop",
+            "FromFile": "assets/wines/top.png",
+            "When": {
+                "TintedWineBottles": "true",
+                "QualityWineBottles": "true"
+            }
+        },
+        {
+            "LogName": "Wine Label Overlay",
+			"Action": "Load",
+			"Target": "{{ModId}}/Overlays/Wine",
+            "FromFile": "assets/overlays/{{TargetWithoutPath}}.png",
+            "When": {
+                "CustomWineLabels": "true"
+            }
+        },
+        {
+            "LogName": "Load Untinted Quality Wine Bottles",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "When": {
+                "TintedWineBottles": "false",
+                "QualityWineBottles": "true"
+            },
+            "Entries": {
+                "{{ModId}}/WineBaseLayer": {
+                    "LogName": "Replace Wine Base Layer",
+                    "Target": "Maps/springobjects",
+                    "Path": "{{ModId}}/{Type}Base/{Quality}",
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Replace",
+                    "Priority": 10,
+                    "Tokens": {
+                        "Quality": {
+                            "RefersTo": "Quality",
+                            "Map": {
+                                "None": "0",
+                                "Silver": "1",
+                                "Gold": "2",
+                                "Iridium": "4"
+                            }
+                        },
+                        "Item": {
+                            "RefersTo": "preservedParentSheetIndex.Value",
+                            "Map": {
+                                "Blueberry": "258",
+                                "Ancient Fruit": "454",
+                                "Apple": "613"
+                            }
+                        },
+                        "Type": {
+                            "RefersTo": "preserve.Value"
+                        }
+                    },
+                    "Textures": [
+                        {
+                            "Conditions": {
+                                "Type": "Wine",
+                                "Item": "*"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "LogName": "Load Quality Tinted Wine Bottles",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "When": {
+                "TintedWineBottles": "true",
+                "QualityWineBottles": "true"
+            },
+            "Entries": {
+                "{{ModId}}/WineBaseLayer": {
+                    "LogName": "Replace Wine Base Layer",
+                    "Target": "Maps/springobjects",
+                    "Path": "{{ModId}}/{Type}Base/{Quality}",
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Replace",
+                    "Priority": 10,
+                    "Tokens": {
+                        "Quality": {
+                            "RefersTo": "Quality",
+                            "Map": {
+                                "None": "0",
+                                "Silver": "1",
+                                "Gold": "2",
+                                "Iridium": "4"
+                            }
+                        },
+                        "Item": {
+                            "RefersTo": "preservedParentSheetIndex.Value",
+                            "Map": {
+                                "Blueberry": "258",
+                                "Ancient Fruit": "454",
+                                "Apple": "613"
+                            }
+                        },
+                        "Type": {
+                            "RefersTo": "preserve.Value"
+                        }
+                    },
+                    "Textures": [
+                        {
+                            "Conditions": {
+                                "Type": "Wine",
+                                "Item": "Blueberry"
+                            },
+                            "Tint": {
+                                "R": 6,
+                                "G": 59,
+                                "B": 206
+                            }
+                        },
+                        {
+                            "Conditions": {
+                                "Type": "Wine",
+                                "Item": "Ancient Fruit"
+                            },
+                            "Tint": {
+                                "R": 0,
+                                "G": 113,
+                                "B": 155
+                            }
+                        },
+                        {
+                            "Conditions": {
+                                "Type": "Wine",
+                                "Item": "Apple"
+                            },
+                            "Tint": {
+                                "R": 191,
+                                "G": 0,
+                                "B": 0
+                            }
+                        },
+                        {
+                            "Conditions": {
+                                "Type": "Wine",
+                                "Item": "*"
+                            }
+                        }
+                    ]
+                },
+                "{{ModId}}/WineTopLayer": {
+                    "LogName": "Overlay Wine Top Layer",
+                    "Target": "Maps/springobjects",
+                    "Path": "{{ModId}}/{Type}Top",
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Overlay",
+                    "Priority": 5,
+                    "Tokens": {
+                        "Quality": {
+                            "RefersTo": "Quality",
+                            "Map": {
+                                "None": "0",
+                                "Silver": "1",
+                                "Gold": "2",
+                                "Iridium": "4"
+                            }
+                        },
+                        "Type": {
+                            "RefersTo": "preserve.Value"
+                        }
+                    },
+                    "Textures": [
+                        {
+                            "Conditions": {
+                                "Type": "Wine",
+                                "Quality": "None"
+                            },
+                            "FromArea": {
+                                "X": 0,
+                                "Y": 0,
+                                "Width": 16,
+                                "Height": 16
+                            }
+                        },
+                        {
+                            "Conditions": {
+                                "Type": "Wine",
+                                "Quality": "Silver"
+                            },
+                            "FromArea": {
+                                "X": 16,
+                                "Y": 0,
+                                "Width": 16,
+                                "Height": 16
+                            }
+                        },
+                        {
+                            "Conditions": {
+                                "Type": "Wine",
+                                "Quality": "Gold"
+                            },
+                            "FromArea": {
+                                "X": 32,
+                                "Y": 0,
+                                "Width": 16,
+                                "Height": 16
+                            }
+                        },
+                        {
+                            "Conditions": {
+                                "Type": "Wine",
+                                "Quality": "Iridium"
+                            },
+                            "FromArea": {
+                                "X": 48,
+                                "Y": 0,
+                                "Width": 16,
+                                "Height": 16
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "LogName": "Load Sprite Patches",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "When": {
+                "CustomWineLabels": "true"
+            },
+            "Entries": {
+                "{{ModId}}/WineOverlay": {
+                    "LogName": "Overlay Wine Label",
+                    "Target": "Maps/springobjects",
+                    "Path": "{{ModId}}/Overlays/{Type}",
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Overlay",
+                    "Priority": 1,
+                    "Tokens": {
+                        "Item": {
+                            "RefersTo": "preservedParentSheetIndex.Value",
+                            "Map": {
+                                "Blueberry": "258",
+                                "Ancient Fruit": "454",
+                                "Apple": "613"
+                            }
+                        },
+                        "Type": {
+                            "RefersTo": "preserve.Value"
+                        }
+                    },
+                    "Textures": [
+                        {
+                            "Conditions": {
+                                "Type": "Wine",
+                                "Item": "Blueberry"
+                            },
+                            "FromArea": {
+                                "X": 0,
+                                "Y": 0,
+                                "Width": 16,
+                                "Height": 16
+                            }
+                        },
+                        {
+                            "Conditions": {
+                                "Type": "Wine",
+                                "Item": "Ancient Fruit"
+                            },
+                            "FromArea": {
+                                "X": 16,
+                                "Y": 0,
+                                "Width": 16,
+                                "Height": 16
+                            }
+                        },
+                        {
+                            "Conditions": {
+                                "Type": "Wine",
+                                "Item": "Apple"
+                            },
+                            "FromArea": {
+                                "X": 32,
+                                "Y": 0,
+                                "Width": 16,
+                                "Height": 16
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

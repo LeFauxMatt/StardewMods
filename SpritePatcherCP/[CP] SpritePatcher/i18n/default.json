@@ -1,0 +1,8 @@
+{
+    "config.section.Wine.name": "Wine Options",
+    "config.section.Wine.description": "Config options for wine",
+    "config.WineEnabled.name": "Enable Wine Textures",
+    "config.QualityWineBottles.name": "Quality Wine Bottles",
+    "config.TintedWineBottles.name": "Tinted Wine Bottles",
+    "config.CustomWineLabels.name": "Custom Wine Labels"
+}

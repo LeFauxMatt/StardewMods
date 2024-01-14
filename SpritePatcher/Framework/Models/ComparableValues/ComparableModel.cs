@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using StardewMods.SpritePatcher.Framework.Services;
 
 /// <inheritdoc />
-internal sealed class ComparableModel(IHaveModData source, DelegateManager.TryGetComparable tryGetComparable)
+internal sealed class ComparableModel(Func<IHaveModData> getter, DelegateManager.TryGetComparable tryGetComparable)
     : IEquatable<string>
 {
     private static readonly Regex Regex = new(
@@ -41,7 +41,7 @@ internal sealed class ComparableModel(IHaveModData source, DelegateManager.TryGe
     }
 
     /// <inheritdoc />
-    public bool Equals(string? expression) => ComparableModel.Equals(source, tryGetComparable, expression);
+    public bool Equals(string? expression) => ComparableModel.Equals(getter(), tryGetComparable, expression);
 
     private static (string? Expression, string? Value) ParseExpression(string expression)
     {

@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 using StardewMods.SpritePatcher.Framework.Enums;
 
 /// <inheritdoc />
-internal sealed class ComparableColor(Color value) : IEquatable<string>
+internal sealed class ComparableColor(Func<Color> getter) : IEquatable<string>
 {
     private static readonly Regex Regex = new(
         @"^(<=|>=|!=|<|>|~=|=~)?\s*(.+)$",
@@ -46,10 +46,10 @@ internal sealed class ComparableColor(Color value) : IEquatable<string>
     }
 
     /// <inheritdoc />
-    public bool Equals(string? expression) => ComparableColor.Equals(value, expression);
+    public bool Equals(string? expression) => ComparableColor.Equals(getter(), expression);
 
     /// <inheritdoc />
-    public override string ToString() => value.ToString();
+    public override string ToString() => getter().ToString();
 
     private static (CompareType CompareType, Color[]? Values) ParseExpression(string expression)
     {

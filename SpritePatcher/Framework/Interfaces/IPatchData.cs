@@ -7,8 +7,8 @@ using StardewMods.SpritePatcher.Framework.Models;
 /// <summary>Data for an icon overlay.</summary>
 internal interface IPatchData
 {
-    /// <summary>Gets the message to log for when the patch is applied.</summary>
-    string? LogName { get; }
+    /// <summary>Gets the unique identifier for the patch.</summary>
+    string Id { get; }
 
     /// <summary>Gets the target sprite sheet being patched.</summary>
     string Target { get; }
@@ -18,9 +18,6 @@ internal interface IPatchData
 
     /// <summary>Gets the source rectangle of the sprite sheet being patched.</summary>
     public Rectangle? SourceRect { get; }
-
-    /// <summary>Gets the path to the texture.</summary>
-    string Path { get; }
 
     /// <summary>Gets the draw methods where the texture can be applied.</summary>
     List<DrawMethod> DrawMethods { get; }

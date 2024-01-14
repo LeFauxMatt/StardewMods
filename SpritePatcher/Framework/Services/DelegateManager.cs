@@ -4,6 +4,7 @@ using System.Collections;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.Xna.Framework;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Models.ComparableValues;
@@ -39,9 +40,9 @@ internal sealed class DelegateManager : BaseService
     /// <returns>true if the value was successfully retrieved; otherwise, false.</returns>
     public bool TryGetValue(IHaveModData source, string path, [NotNullWhen(true)] out IEquatable<string>? value)
     {
+        value = null;
         if (string.IsNullOrWhiteSpace(path))
         {
-            value = null;
             return false;
         }
 
@@ -56,23 +57,12 @@ internal sealed class DelegateManager : BaseService
         {
             try
             {
-                var method = typeof(DelegateManager).GetMethod(
-                    nameof(DelegateManager.CompileGetter),
-                    BindingFlags.NonPublic | BindingFlags.Static);
-
-                if (method == null)
-                {
-                    throw new InvalidOperationException("CompileGetter method not found.");
-                }
-
-                var genericMethod = method.MakeGenericMethod(source.GetType());
-                cachedDelegate = (Delegate)genericMethod.Invoke(null, [path.Split('.')])!;
+                cachedDelegate = DelegateManager.CompileGetter(type, path);
                 delegates[path] = cachedDelegate;
             }
             catch (Exception e)
             {
-                this.Log.Error("Failed to compile getter for path '{0}': {1}", path, e.Message);
-                value = null;
+                this.Log.Trace("Failed to compile getter for path '{0}'.\nError: {1}", path, e.Message);
                 return false;
             }
         }
@@ -82,101 +72,126 @@ internal sealed class DelegateManager : BaseService
             var rawValue = cachedDelegate.DynamicInvoke(source);
             if (rawValue is null)
             {
-                value = null;
                 return false;
             }
 
-            value = rawValue switch
-            {
-                string stringValue => new ComparableString(stringValue),
-                int intValue => new ComparableInt(intValue),
-                bool boolValue => new ComparableBool(boolValue),
-                Enum enumValue => Activator.CreateInstance(
-                    typeof(ComparableEnum<>).MakeGenericType(enumValue.GetType()),
-                    enumValue) as IEquatable<string>,
-                IEnumerable<int> intList => new ComparableList<int>(intList, ComparableInt.Equals),
-                IEnumerable<string> stringList => new ComparableList<string>(stringList, ComparableString.Equals),
-                IEnumerable<IHaveModData> otherList => new ComparableList<IHaveModData>(
-                    otherList,
-                    (modData, expression) => ComparableModel.Equals(modData, this.TryGetValue, expression)),
-                IDictionary
-                {
-                    Values: IEnumerable<int> intDict,
-                } => new ComparableList<int>(intDict, ComparableInt.Equals),
-                IDictionary
-                {
-                    Values: IEnumerable<string> stringDict,
-                } => new ComparableList<string>(stringDict, ComparableString.Equals),
-                IDictionary
-                {
-                    Values: IEnumerable<IHaveModData> otherDict,
-                } => new ComparableList<IHaveModData>(
-                    otherDict,
-                    (modData, expression) => ComparableModel.Equals(modData, this.TryGetValue, expression)),
-                IHaveModData otherValue => new ComparableModel(otherValue, this.TryGetValue),
-            };
-
+            value = this.ConvertToComparable(cachedDelegate, source);
             return value is not null;
         }
         catch (Exception e)
         {
-            this.Log.Error("Failed to compile getter for path '{0}': {1}", path, e.Message);
-            value = null;
+            this.Log.Error("Failed to retrieve value for path '{0}'.\nError: {1}", path, e.Message);
             return false;
         }
     }
 
-    private static Delegate CompileGetter<T>(IEnumerable<string> parts)
+    private static Delegate CompileGetter(Type sourceType, string path)
     {
-        var parameterExpression = Expression.Parameter(typeof(T));
-        Expression body = parameterExpression;
+        var parts = path.Split('.');
+        var parameter = Expression.Parameter(sourceType, "source");
+        var body = DelegateManager.BuildExpressionTree(parameter, parts);
+        var lambdaType = typeof(Func<,>).MakeGenericType(sourceType, typeof(object));
+        return Expression.Lambda(lambdaType, body, parameter).Compile();
+    }
 
+    private static Expression BuildExpressionTree(Expression parameter, IEnumerable<string> parts)
+    {
+        var body = parameter;
         foreach (var member in parts)
         {
-            // Check if member is a method call
-            if (member.EndsWith("()", StringComparison.OrdinalIgnoreCase))
-            {
-                var methodName = member[..^2];
-                var methodInfo = body.Type.GetMethod(methodName);
-                if (methodInfo == null || methodInfo.GetParameters().Length != 0)
-                {
-                    throw new NotSupportedException($"Method '{methodName}' is not supported.");
-                }
-
-                body = Expression.Call(body, methodInfo);
-                continue;
-            }
-
-            // Check if member is a dictionary with constant key type
-            var bracketStart = member.IndexOf('[', StringComparison.OrdinalIgnoreCase);
-            var bracketEnd = member.IndexOf(']', StringComparison.OrdinalIgnoreCase);
-            if (bracketStart != -1 && bracketEnd != -1 && bracketEnd > bracketStart)
-            {
-                var dictionaryName = member[..bracketStart];
-                var key = member.Substring(bracketStart + 1, bracketEnd - bracketStart - 1);
-
-                var dictionaryExpression = Expression.PropertyOrField(body, dictionaryName);
-                if (dictionaryExpression.Type.IsGenericType
-                    && dictionaryExpression.Type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
-                {
-                    var keyType = dictionaryExpression.Type.GetGenericArguments()[0];
-                    var itemProperty = dictionaryExpression.Type.GetProperty("Item")!;
-                    var keyExpression =
-                        Expression.Constant(Convert.ChangeType(key, keyType, CultureInfo.InvariantCulture));
-
-                    body = Expression.Property(dictionaryExpression, itemProperty, keyExpression);
-                    continue;
-                }
-
-                throw new NotSupportedException($"Dictionary access {member} is not valid for type '{body.Type}'.");
-            }
-
-            // Default to any property or field
-            body = Expression.PropertyOrField(body, member);
+            body = member.EndsWith("()", StringComparison.OrdinalIgnoreCase)
+                ? DelegateManager.ProcessMethodCall(body, member)
+                : DelegateManager.ProcessMemberAccess(body, member);
         }
 
-        body = Expression.Convert(body, typeof(object));
-        var lambda = Expression.Lambda<Func<T, object>>(body, parameterExpression);
-        return lambda.Compile();
+        return Expression.Convert(body, typeof(object));
+    }
+
+    private static Expression ProcessMethodCall(Expression body, string member)
+    {
+        var methodName = member[..^2];
+        var methodInfo = body.Type.GetMethod(
+            methodName,
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        if (methodInfo == null || methodInfo.GetParameters().Length != 0)
+        {
+            throw new NotSupportedException($"Method '{methodName}' is not supported.");
+        }
+
+        return Expression.Call(body, methodInfo);
+    }
+
+    private static Expression ProcessMemberAccess(Expression body, string member)
+    {
+        var bracketStart = member.IndexOf('[', StringComparison.OrdinalIgnoreCase);
+        var bracketEnd = member.IndexOf(']', StringComparison.OrdinalIgnoreCase);
+        if (bracketStart == -1 || bracketEnd == -1 || bracketEnd <= bracketStart)
+        {
+            return Expression.PropertyOrField(body, member);
+        }
+
+        var dictionaryName = member[..bracketStart];
+        var key = member.Substring(bracketStart + 1, bracketEnd - bracketStart - 1);
+
+        var dictionaryExpression = Expression.PropertyOrField(body, dictionaryName);
+        if (dictionaryExpression.Type.IsGenericType
+            && dictionaryExpression.Type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+        {
+            var keyType = dictionaryExpression.Type.GetGenericArguments()[0];
+            var itemProperty = dictionaryExpression.Type.GetProperty("Item")!;
+            var keyExpression = Expression.Constant(Convert.ChangeType(key, keyType, CultureInfo.InvariantCulture));
+
+            return Expression.Property(dictionaryExpression, itemProperty, keyExpression);
+        }
+
+        throw new NotSupportedException($"Dictionary access {member} is not valid for type '{body.Type}'.");
+    }
+
+    private IEquatable<string>? ConvertToComparable(Delegate cachedDelegate, IHaveModData source)
+    {
+        var rawValue = cachedDelegate.DynamicInvoke(source);
+        if (rawValue is null)
+        {
+            return null;
+        }
+
+        return rawValue switch
+        {
+            Color => new ComparableColor(CreateGetter<Color>()),
+            string => new ComparableString(CreateGetter<string>()),
+            int => new ComparableInt(CreateGetter<int>()),
+            bool => new ComparableBool(CreateGetter<bool>()),
+            Enum enumValue =>
+                new ComparableString(
+                    () => Enum.GetName(enumValue.GetType(), cachedDelegate.DynamicInvoke(source)!)!),
+            IEnumerable<int> => new ComparableList<int>(CreateGetter<IEnumerable<int>>(), ComparableInt.Equals),
+            IEnumerable<string> =>
+                new ComparableList<string>(CreateGetter<IEnumerable<string>>(), ComparableString.Equals),
+            IEnumerable<IHaveModData> => new ComparableList<IHaveModData>(
+                CreateGetter<IEnumerable<IHaveModData>>(),
+                (modData, expression) => ComparableModel.Equals(modData, this.TryGetValue, expression)),
+            IDictionary dictionary => dictionary.Values switch
+            {
+                IEnumerable<int> =>
+                    new ComparableList<int>(CreateDictionaryGetter<int>(), ComparableInt.Equals),
+                IEnumerable<string> => new ComparableList<string>(
+                    CreateDictionaryGetter<string>(),
+                    ComparableString.Equals),
+                IEnumerable<IHaveModData> => new ComparableList<IHaveModData>(
+                    CreateDictionaryGetter<IHaveModData>(),
+                    (modData, expression) => ComparableModel.Equals(modData, this.TryGetValue, expression)),
+                _ => null,
+            },
+            IHaveModData => new ComparableModel(CreateGetter<IHaveModData>(), this.TryGetValue),
+            _ => null,
+        };
+
+        // Lambda to get the live value
+        Func<T> CreateGetter<T>() => () => (T)cachedDelegate.DynamicInvoke(source)!;
+
+        // Lambda to get the live dictionary values
+        Func<IEnumerable<T>> CreateDictionaryGetter<T>() =>
+            () => (cachedDelegate.DynamicInvoke(source) as IDictionary)?.Values.Cast<T>() ?? Enumerable.Empty<T>();
     }
 }

@@ -5,6 +5,9 @@ using Microsoft.Xna.Framework;
 /// <summary>Represents a conditional texture.</summary>
 public interface IConditionalTexture
 {
+    /// <summary>Gets the path to the texture.</summary>
+    string Path { get; }
+
     /// <summary>Gets the conditions for applying the texture.</summary>
     Dictionary<string, string> Conditions { get; }
 

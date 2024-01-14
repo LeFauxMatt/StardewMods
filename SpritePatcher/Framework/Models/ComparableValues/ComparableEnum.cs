@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using StardewMods.SpritePatcher.Framework.Enums;
 
 /// <inheritdoc />
-internal sealed class ComparableEnum<T>(T value) : IEquatable<string>
+internal sealed class ComparableEnum<T>(Func<T> getter) : IEquatable<string>
     where T : Enum
 {
     private static readonly Regex Regex = new(
@@ -48,10 +48,10 @@ internal sealed class ComparableEnum<T>(T value) : IEquatable<string>
     }
 
     /// <inheritdoc />
-    public bool Equals(string? expression) => ComparableEnum<T>.Equals(value, expression);
+    public bool Equals(string? expression) => ComparableEnum<T>.Equals(getter(), expression);
 
     /// <inheritdoc />
-    public override string ToString() => value.ToString();
+    public override string ToString() => getter().ToString();
 
     private static (CompareType CompareType, string[]? Values) ParseExpression(string expression)
     {

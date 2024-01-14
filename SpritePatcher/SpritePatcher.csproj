@@ -2,13 +2,14 @@
   <PropertyGroup>
     <Name>Sprite Patcher</Name>
     <Description>Patch sprites based on the object's attributes.</Description>
-    <Version>1.0.0-alpha.20240112</Version>
+    <Version>1.0.0-Galpha.20240113</Version>
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.SpritePatcher</RootNamespace>
     <UniqueId>furyx639.SpritePatcher</UniqueId>
     <UpdateKeys>Nexus:</UpdateKeys>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
     <PackageReference Include="SimpleInjector">
       <HintPath>$(GameModsPath)\FuryCore\SimpleInjector.dll</HintPath>
       <Version>5.4.2</Version>
@@ -20,6 +21,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.20240112" required="true"/>
+    <SMAPIDependency Include="furyx639.FuryCore" Version="2.0.0-alpha.20240113" required="true"/>
   </ItemGroup>
 </Project>

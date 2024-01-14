@@ -1,149 +1,38 @@
 {
     "Format": "2.0",
+    "ConfigSchema": {
+        "WineEnabled": {
+            "AllowValues": "true, false",
+            "Default": "true",
+            "Section": "Wine"
+        },
+        "QualityWineBottles": {
+            "Allowvalues": "true, false",
+            "Default": "true",
+            "Section": "Wine"
+        },
+        "TintedWineBottles": {
+            "AllowValues": "true, false",
+            "Default": "true",
+            "Section": "Wine"
+        },
+        "CustomWineLabels": {
+            "AllowValues": "true, false",
+            "Default": "true",
+            "Section": "Wine"
+        }
+    },
     "Changes": [
         {
-            "LogName": "Replace Wines",
-			"Action": "Load",
-			"Target": "{{ModId}}/Wine/None, {{ModId}}/Wine/Silver, {{ModId}}/Wine/Gold, {{ModId}}/Wine/Iridium",
-            "FromFile": "assets/wines/{{TargetWithoutPath}}.png"
-        },
-        {
-            "LogName": "Overlay Wines and Jellys",
-			"Action": "Load",
-			"Target": "{{ModId}}/Overlays/Wine",
-            "FromFile": "assets/overlays/{{TargetWithoutPath}}.png"
-        },
-        {
-            "LogName": "Load Sprite Patches",
-            "Action": "EditData",
-            "Target": "furyx639.SpritePatcher/Patches",
-            "Entries": {
-                // Replace Wine with a unique "bottle" depending on the quality
-                // Tint the bottle depending on the preserve
-                "{{ModId}}/WineReplace": {
-                    "Id": "{{ModId}}/WineReplace",
-                    "Target": "Maps/springobjects",
-                    "Path": "{{ModId}}/{Type}/{Quality}",
-                    "DrawMethods": ["Menu"],
-                    "PatchMode": "Replace",
-                    "Tokens": {
-                        "Quality": {
-                            "RefersTo": "Quality",
-                            "Map": {
-                                "None": "0",
-                                "Silver": "1",
-                                "Gold": "2",
-                                "Iridium": "4"
-                            }
-                        },
-                        "Item": {
-                            "RefersTo": "preservedParentSheetIndex.Value",
-                            "Map": {
-                                "Blueberry": "258",
-                                "Ancient Fruit": "454",
-                                "Apple": "613"
-                            }
-                        },
-                        "Type": {
-                            "RefersTo": "preserve.Value"
-                        }
-                    },
-                    "Textures": [
-                        {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "Blueberry"
-                            },
-                            "Tint": {
-                                "R": 6,
-                                "G": 59,
-                                "B": 206
-                            }
-                        },
-                        {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "Ancient Fruit"
-                            },
-                            "Tint": {
-                                "R": 0,
-                                "G": 113,
-                                "B": 155
-                            }
-                        },
-                        {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "Apple"
-                            },
-                            "Tint": {
-                                "R": 191,
-                                "G": 0,
-                                "B": 0
-                            }
-                        }
-                    ]
-                },
-                // Add an overlay to wine depending on the preserve
-                "{{ModId}}/WineOverlay": {
-                    "Id": "{{ModId}}/WineOverlay",
-                    "Target": "Maps/springobjects",
-                    "Path": "{{ModId}}/Overlays/{Type}",
-                    "DrawMethods": ["Menu"],
-                    "PatchMode": "Overlay",
-                    "Tokens": {
-                        "Item": {
-                            "RefersTo": "preservedParentSheetIndex.Value",
-                            "Map": {
-                                "Blueberry": "258",
-                                "Ancient Fruit": "454",
-                                "Apple": "613"
-                            }
-                        },
-                        "Type": {
-                            "RefersTo": "preserve.Value"
-                        }
-                    },
-                    "Textures": [
-                        {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "Blueberry"
-                            },
-                            "FromArea": {
-                                "X": 0,
-                                "Y": 0,
-                                "Width": 16,
-                                "Height": 16
-                            }
-                        },
-                        {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "Ancient Fruit"
-                            },
-                            "FromArea": {
-                                "X": 16,
-                                "Y": 0,
-                                "Width": 16,
-                                "Height": 16
-                            }
-                        },
-                        {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "Apple"
-                            },
-                            "FromArea": {
-                                "X": 32,
-                                "Y": 0,
-                                "Width": 16,
-                                "Height": 16
-                            }
-                        }
-                    ]
-                }
+            "Action": "Include",
+            "FromFile": "data/wine.json",
+            "When": {
+                "WineEnabled": "true"
             }
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/barn.json"
         }
     ]
 }

@@ -7,9 +7,8 @@ using StardewMods.SpritePatcher.Framework.Interfaces;
 
 /// <inheritdoc />
 internal sealed class PatchData(
-    string? logName,
+    string id,
     string target,
-    string path,
     List<DrawMethod> drawMethods,
     PatchMode patchMode,
     Dictionary<string, TokenDefinition> tokens,
@@ -37,13 +36,10 @@ internal sealed class PatchData(
     }
 
     /// <inheritdoc />
-    public string? LogName { get; set; } = logName;
+    public string Id { get; set; } = id;
 
     /// <inheritdoc />
     public string Target { get; set; } = target;
-
-    /// <inheritdoc />
-    public string Path { get; set; } = path;
 
     /// <inheritdoc />
     public List<DrawMethod> DrawMethods { get; set; } = drawMethods;
