@@ -1,7 +1,5 @@
 namespace StardewMods.Common.Services.Integrations.FuryCore;
 
-using StardewMods.Common.Interfaces;
-
 /// <summary>Api for shared functionality between mods.</summary>
 public interface IFuryCoreApi
 {

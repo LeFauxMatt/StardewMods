@@ -38,7 +38,7 @@ internal class ConfigManager<TConfig>
         }
 
         this.initialized = true;
-        this.eventPublisher.Publish(new ConfigChangedEventArgs());
+        this.eventPublisher.Publish(new ConfigChangedEventArgs<TConfig>(this.Config));
     }
 
     /// <summary>Returns a new instance of IModConfig.</summary>
@@ -53,7 +53,7 @@ internal class ConfigManager<TConfig>
     public void Reset()
     {
         this.Config = this.GetNew();
-        this.eventPublisher.Publish(new ConfigChangedEventArgs());
+        this.eventPublisher.Publish(new ConfigChangedEventArgs<TConfig>(this.Config));
     }
 
     /// <summary>Saves the provided config.</summary>
@@ -62,6 +62,6 @@ internal class ConfigManager<TConfig>
     {
         this.modHelper.WriteConfig(config);
         this.Config = config;
-        this.eventPublisher.Publish(new ConfigChangedEventArgs());
+        this.eventPublisher.Publish(new ConfigChangedEventArgs<TConfig>(this.Config));
     }
 }
