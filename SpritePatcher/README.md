@@ -272,7 +272,7 @@ Chest is, you would need to use an expression:
 {
     "Tokens": {
         "Capacity": {
-            "RefersTo": "Items.Count",
+            "RefersTo": "GetItemsForPlayer().Count",
             "Map": {
                 "Empty": "0",
                 "Half": "<= 18",

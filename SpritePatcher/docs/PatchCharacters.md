@@ -9,24 +9,28 @@
 
 ## Child
 
-### Common Attributes
-
 ## FarmAnimal
-
-### Common Attributes
 
 ## Horse
 
-### Common Attributes
-
 ## JunimoHarvester
 
-### Common Attributes
+
+| field         | type  | description                           |
+|---------------|-------|---------------------------------------|
+| `color.Value` | Color | Get the color of the JunimoHarvester. |
 
 ## Junimo
 
-### Common Attributes
+
+| field         | type  | description                  |
+|---------------|-------|------------------------------|
+| `color.Value` | Color | Get the color of the Junimo. |
 
 ## Pet
 
-### Common Attributes
+
+| field                           | type | description                 |
+|---------------------------------|------|-----------------------------|
+| `friendshipTowardFarmer.Value`  | int  | Get the friendship level.   |
+| `grantedFriendshipForPet.Value` | bool | Check if pet was pet today. |

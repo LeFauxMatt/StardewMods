@@ -7,16 +7,22 @@
 
 ## FishingRod
 
-### Common Attributes
+| field         | type                            | description              |
+|---------------|---------------------------------|--------------------------|
+| `GetBait()`   | [Object](./PatchItems#object)[] | Get the equipped bait.   |
+| `GetTackle()` | [Object](./PatchItems#object)[] | Get the equipped tackle. |
 
 ## MeleeWeapon
 
-### Common Attributes
-
 ## Slingshot
 
-### Common Attributes
+| field                     | type                            | description     |
+|---------------------------|---------------------------------|-----------------|
+| `attachments[0].getOne()` | [Object](./PatchItems#object)[] | Get ammunition. |
 
 ## WateringCan
 
-### Common Attributes
+
+| field       | type | description                   |
+|-------------|------|-------------------------------|
+| `WaterLeft` | int  | Get the amount of water left. |

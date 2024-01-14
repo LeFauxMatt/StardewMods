@@ -97,7 +97,7 @@ internal sealed class AssetHandler : BaseService
     {
         if (e.Name.IsEquivalentTo(this.assetPath))
         {
-            e.LoadFrom(() => new Dictionary<string, PatchData>(), AssetLoadPriority.Exclusive);
+            e.LoadFrom(static () => new Dictionary<string, PatchData>(), AssetLoadPriority.Exclusive);
         }
     }
 

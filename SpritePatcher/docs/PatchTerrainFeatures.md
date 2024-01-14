@@ -13,36 +13,42 @@
 
 ## Bush
 
-### Common Attributes
+| field           | type | description                              |
+|-----------------|------|------------------------------------------|
+| `IsSheltered()` | bool | Get whether the bush is planted indoors. |
 
 ## CosmeticPlant
 
-### Common Attributes
-
 ## Flooring
-
-### Common Attributes
 
 ## FruitTree
 
-### Common Attributes
+| field                | type                          | description                                |
+|----------------------|-------------------------------|--------------------------------------------|
+| `fruit.Value`        | [Item](./PatchItems#object)[] | Get the fruit.                             |
 
 ## GiantCrop
 
-### Common Attributes
-
 ## Grass
-
-### Common Attributes
 
 ## HoeDirt
 
-### Common Attributes
+| field                | type | description                                |
+|----------------------|------|--------------------------------------------|
+| `Crop`               | Crop | Get the crop.                              |
+| `HasFertilizer()`    | bool | Get whether the hoe dirt is fertilized.    |
+| `hasPaddyCrop()`     | bool | Get whether the hoe dirt has a paddy crop. |
+| `needsWatering()`    | bool | Get whether the hoe dirt needs watering.   |
+| `readyiForHarvest()` | bool | Get whether the hoe dirt needs watering.   |
 
 ## ResourceClump
 
-### Common Attributes
-
 ## Tree
 
-### Common Attributes
+
+| field                  | type   | description                            |
+|------------------------|--------|----------------------------------------|
+| `treeType.Value`       | string | Get the tree type.                     |
+| `tapped.Value`         | bool   | Get whether the tree is tapped.        |
+| `wasShakenToday.Value` | bool   | Get whether the tree was shaken today. |
+| `hasSeed.Value`        | bool   | Get whether the tree has a seed.       |

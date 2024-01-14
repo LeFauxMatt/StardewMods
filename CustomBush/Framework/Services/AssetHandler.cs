@@ -28,7 +28,7 @@ internal sealed class AssetHandler : BaseService
         if (e.Name.IsEquivalentTo(this.DataPath))
         {
             e.LoadFrom(
-                () => new Dictionary<string, BushModel>(StringComparer.OrdinalIgnoreCase),
+                static () => new Dictionary<string, BushModel>(StringComparer.OrdinalIgnoreCase),
                 AssetLoadPriority.Exclusive);
         }
     }

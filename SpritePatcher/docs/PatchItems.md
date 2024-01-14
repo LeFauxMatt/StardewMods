@@ -20,64 +20,63 @@
 
 ## Boots
 
-### Common Attributes
-
 ## Chest
 
-### Common Attributes
+
+| field                 | type              | description                 |
+|-----------------------|-------------------|-----------------------------|
+| `GetItemsForPlayer()` | [Item](#object)[] | Get the items in the Chest. |
 
 ## Clothing
 
-### Common Attributes
-
 ## ColoredObject
 
-### Common Attributes
+
+| field         | type  | description                          |
+|---------------|-------|--------------------------------------|
+| `color.Value` | Color | Get the Color of the Colored object. |
 
 ## CombinedRing
 
-### Common Attributes
+
+| field                 | type            | description    |
+|-----------------------|-----------------|----------------|
+| `combinedRings.Value` | [Ring](#ring)[] | Get the rings. |
 
 ## CrabPot
 
-### Common Attributes
+
+| field        | type              | description        |
+|--------------|-------------------|--------------------|
+| `bait.Value` | [Object](#object) | Get the bait item. |
 
 ## Fence
 
-### Common Attributes
-
 ## FishTank
-
-### Common Attributes
 
 ## Furniture
 
-### Common Attributes
-
 ## Hat
-
-### Common Attributes
 
 ## IndoorPot
 
-### Common Attributes
+
+| field           | type                                      | description                  |
+|-----------------|-------------------------------------------|------------------------------|
+| `hoeDirt.Value` | [HoeDirt](./PatchTerrainFeatures#hoedirt) | Get the hoe dirt in the pot. |
 
 ## ItemPedestal
 
-### Common Attributes
-
 ## Object
 
-### Common Attributes
+| field              | type   | description          |
+|--------------------|--------|----------------------|
+| `heldObject.Value` | Object | Get the held object. |
+
+*Held object is used in many objects such as Casks and Kegs.*
 
 ## Ring
 
-### Common Attributes
-
 ## Wallpaper
 
-### Common Attributes
-
 ## WoodChipper
-
-### Common Attributes

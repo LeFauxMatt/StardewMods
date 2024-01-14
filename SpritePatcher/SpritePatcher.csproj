@@ -9,12 +9,14 @@
     <UpdateKeys>Nexus:</UpdateKeys>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.0-2.final" />
     <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
     <PackageReference Include="SimpleInjector">
       <HintPath>$(GameModsPath)\FuryCore\SimpleInjector.dll</HintPath>
       <Version>5.4.2</Version>
       <Private>false</Private>
     </PackageReference>
+    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
     <Reference Include="HarmonyLib">
       <HintPath>$(GamePath)\smapi-internal\0Harmony.dll</HintPath>
       <Private>false</Private>

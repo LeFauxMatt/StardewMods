@@ -53,7 +53,7 @@ internal sealed class AssetHandler : BaseService<AssetHandler>
 
         if (e.Name.IsEquivalentTo(this.DataPath))
         {
-            e.LoadFrom(() => new Dictionary<string, ToolbarIconData>(), AssetLoadPriority.Exclusive);
+            e.LoadFrom(static () => new Dictionary<string, ToolbarIconData>(), AssetLoadPriority.Exclusive);
         }
     }
 }
