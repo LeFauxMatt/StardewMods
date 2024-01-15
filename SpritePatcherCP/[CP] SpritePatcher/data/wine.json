@@ -3,21 +3,8 @@
         {
             "LogName": "Quality Wine Bottles",
 			"Action": "Load",
-			"Target": "{{ModId}}/WineBase/None, {{ModId}}/WineBase/Silver, {{ModId}}/WineBase/Gold, {{ModId}}/WineBase/Iridium",
-            "FromFile": "assets/wines/{{TargetWithoutPath}}.png",
-            "When": {
-                "QualityWineBottles": "true"
-            }
-        },
-        {
-            "LogName": "Quality Tinted Wine Bottles Overlay",
-			"Action": "Load",
-			"Target": "{{ModId}}/WineTop, {{ModId}}/WineTop, {{ModId}}/WineTop, {{ModId}}/WineTop",
-            "FromFile": "assets/wines/top.png",
-            "When": {
-                "TintedWineBottles": "true",
-                "QualityWineBottles": "true"
-            }
+			"Target": "{{ModId}}/Wine/Base, {{ModId}}/Wine/Top",
+            "FromFile": "assets/wines/{{TargetWithoutPath}}.png"
         },
         {
             "LogName": "Wine Label Overlay",
@@ -38,42 +25,27 @@
             },
             "Entries": {
                 "{{ModId}}/WineBaseLayer": {
-                    "LogName": "Replace Wine Base Layer",
                     "Target": "Maps/springobjects",
-                    "Path": "{{ModId}}/{Type}Base/{Quality}",
                     "DrawMethods": ["Menu", "Held", "World"],
                     "PatchMode": "Replace",
                     "Priority": 10,
-                    "Tokens": {
-                        "Quality": {
-                            "RefersTo": "Quality",
-                            "Map": {
-                                "None": "0",
-                                "Silver": "1",
-                                "Gold": "2",
-                                "Iridium": "4"
-                            }
-                        },
-                        "Item": {
-                            "RefersTo": "preservedParentSheetIndex.Value",
-                            "Map": {
-                                "Blueberry": "258",
-                                "Ancient Fruit": "454",
-                                "Apple": "613"
-                            }
-                        },
-                        "Type": {
-                            "RefersTo": "preserve.Value"
-                        }
-                    },
-                    "Textures": [
+                    "Code": "
+                        if (entity is not SObject obj) return false;
+                        if (obj.preserve.Value is not SObject.PreserveType.Wine) return false;
+                        this.Path = $`{this.ModId}/{obj.preserve.Value}/Base`;
+                        this.Area = obj.Quality switch
                         {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "*"
-                            }
-                        }
-                    ]
+                            // Silver
+                            1 => new Rectangle(16, 0, 16, 16),
+                            // Gold
+                            2 => new Rectangle(32, 0, 16, 16),
+                            // Iridium
+                            4 => new Rectangle(48, 0, 16, 16),
+                            // Default
+                            _ => new Rectangle(0, 0, 16, 16),
+                        };
+                        return true;
+                    "
                 }
             }
         },
@@ -87,147 +59,61 @@
             },
             "Entries": {
                 "{{ModId}}/WineBaseLayer": {
-                    "LogName": "Replace Wine Base Layer",
                     "Target": "Maps/springobjects",
-                    "Path": "{{ModId}}/{Type}Base/{Quality}",
                     "DrawMethods": ["Menu", "Held", "World"],
                     "PatchMode": "Replace",
                     "Priority": 10,
-                    "Tokens": {
-                        "Quality": {
-                            "RefersTo": "Quality",
-                            "Map": {
-                                "None": "0",
-                                "Silver": "1",
-                                "Gold": "2",
-                                "Iridium": "4"
-                            }
-                        },
-                        "Item": {
-                            "RefersTo": "preservedParentSheetIndex.Value",
-                            "Map": {
-                                "Blueberry": "258",
-                                "Ancient Fruit": "454",
-                                "Apple": "613"
-                            }
-                        },
-                        "Type": {
-                            "RefersTo": "preserve.Value"
-                        }
-                    },
-                    "Textures": [
+                    "Code": "
+                        if (entity is not SObject obj) return false;
+                        if (obj.preserve.Value is not SObject.PreserveType.Wine) return false;
+                        this.Path = $`{this.ModId}/{obj.preserve.Value}/Base`;
+                        this.Area = obj.Quality switch
                         {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "Blueberry"
-                            },
-                            "Tint": {
-                                "R": 6,
-                                "G": 59,
-                                "B": 206
-                            }
-                        },
+                            // Silver
+                            1 => new Rectangle(16, 0, 16, 16),
+                            // Gold
+                            2 => new Rectangle(32, 0, 16, 16),
+                            // Iridium
+                            4 => new Rectangle(48, 0, 16, 16),
+                            // Default
+                            _ => new Rectangle(0, 0, 16, 16),
+                        };
+                        this.Tint = obj.preservedParentSheetIndex.Value switch
                         {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "Ancient Fruit"
-                            },
-                            "Tint": {
-                                "R": 0,
-                                "G": 113,
-                                "B": 155
-                            }
-                        },
-                        {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "Apple"
-                            },
-                            "Tint": {
-                                "R": 191,
-                                "G": 0,
-                                "B": 0
-                            }
-                        },
-                        {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "*"
-                            }
-                        }
-                    ]
+                            // Blueberry
+                            `258` => new Color(6, 59, 206),
+                            // Ancient Fruit
+                            `454` => new Color(0, 113, 155),
+                            // Apple
+                            `613` => new Color(191, 0, 0),
+                            // Default
+                            _ => null,
+                        };
+                        return true;
+                    "
                 },
                 "{{ModId}}/WineTopLayer": {
-                    "LogName": "Overlay Wine Top Layer",
                     "Target": "Maps/springobjects",
-                    "Path": "{{ModId}}/{Type}Top",
                     "DrawMethods": ["Menu", "Held", "World"],
                     "PatchMode": "Overlay",
                     "Priority": 5,
-                    "Tokens": {
-                        "Quality": {
-                            "RefersTo": "Quality",
-                            "Map": {
-                                "None": "0",
-                                "Silver": "1",
-                                "Gold": "2",
-                                "Iridium": "4"
-                            }
-                        },
-                        "Type": {
-                            "RefersTo": "preserve.Value"
-                        }
-                    },
-                    "Textures": [
+                    "Code": "
+                        if (entity is not SObject obj) return false;
+                        if (obj.preserve.Value is not SObject.PreserveType.Wine) return false;
+                        this.Path = $`{this.ModId}/{obj.preserve.Value}/Top`;
+                        this.Area = obj.Quality switch
                         {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Quality": "None"
-                            },
-                            "FromArea": {
-                                "X": 0,
-                                "Y": 0,
-                                "Width": 16,
-                                "Height": 16
-                            }
-                        },
-                        {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Quality": "Silver"
-                            },
-                            "FromArea": {
-                                "X": 16,
-                                "Y": 0,
-                                "Width": 16,
-                                "Height": 16
-                            }
-                        },
-                        {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Quality": "Gold"
-                            },
-                            "FromArea": {
-                                "X": 32,
-                                "Y": 0,
-                                "Width": 16,
-                                "Height": 16
-                            }
-                        },
-                        {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Quality": "Iridium"
-                            },
-                            "FromArea": {
-                                "X": 48,
-                                "Y": 0,
-                                "Width": 16,
-                                "Height": 16
-                            }
-                        }
-                    ]
+                            // Silver
+                            1 => new Rectangle(16, 0, 16, 16),
+                            // Gold
+                            2 => new Rectangle(32, 0, 16, 16),
+                            // Iridium
+                            4 => new Rectangle(48, 0, 16, 16),
+                            // Default
+                            _ => new Rectangle(0, 0, 16, 16),
+                        };
+                        return true;
+                    "
                 }
             }
         },
@@ -240,63 +126,27 @@
             },
             "Entries": {
                 "{{ModId}}/WineOverlay": {
-                    "LogName": "Overlay Wine Label",
                     "Target": "Maps/springobjects",
-                    "Path": "{{ModId}}/Overlays/{Type}",
                     "DrawMethods": ["Menu", "Held", "World"],
                     "PatchMode": "Overlay",
                     "Priority": 1,
-                    "Tokens": {
-                        "Item": {
-                            "RefersTo": "preservedParentSheetIndex.Value",
-                            "Map": {
-                                "Blueberry": "258",
-                                "Ancient Fruit": "454",
-                                "Apple": "613"
-                            }
-                        },
-                        "Type": {
-                            "RefersTo": "preserve.Value"
-                        }
-                    },
-                    "Textures": [
+                    "Code": "
+                        if (entity is not SObject obj) return false;
+                        if (obj.preserve.Value is not SObject.PreserveType.Wine) return false;
+                        this.Path = $`{this.ModId}/Overlays/{obj.preserve.Value}`;
+                        this.Area = obj.preservedParentSheetIndex.Value switch
                         {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "Blueberry"
-                            },
-                            "FromArea": {
-                                "X": 0,
-                                "Y": 0,
-                                "Width": 16,
-                                "Height": 16
-                            }
-                        },
-                        {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "Ancient Fruit"
-                            },
-                            "FromArea": {
-                                "X": 16,
-                                "Y": 0,
-                                "Width": 16,
-                                "Height": 16
-                            }
-                        },
-                        {
-                            "Conditions": {
-                                "Type": "Wine",
-                                "Item": "Apple"
-                            },
-                            "FromArea": {
-                                "X": 32,
-                                "Y": 0,
-                                "Width": 16,
-                                "Height": 16
-                            }
-                        }
-                    ]
+                            // Blueberry
+                            `258` => new Rectangle(16, 0, 16, 16),
+                            // Ancient Fruit
+                            `454` => new Rectangle(32, 0, 16, 16),
+                            // Apple
+                            `613` => new Rectangle(48, 0, 16, 16),
+                            // Default
+                            _ => new Rectangle(0, 0, 16, 16),
+                        };
+                        return true;
+                    "
                 }
             }
         }

@@ -12,30 +12,18 @@
             "Target": "furyx639.SpritePatcher/Patches",
             "Entries": {
                 "{{ModId}}/BarnOverlay": {
-                    "LogName": "Overlay Barn with Cow",
-                    "Target": "Buildings/Barn{0,0,112,112}",
-                    "Path": "{{ModId}}/Overlays/Barn",
+                    "Target": "Buildings/Barn",
+                    "Area": {"X": 0, "Y": 0, "Width": 112, "Height": 112},
                     "DrawMethods": ["World", "Construction"],
                     "PatchMode": "Overlay",
                     "Priority": 10,
-                    "Tokens": {
-                        "Animals": {
-                            "RefersTo": "GetIndoors().getAllFarmAnimals()"
-                        }
-                    },
-                    "Textures": [
-                        {
-                            "Conditions": {
-                                "Animals": "type.Value =~ Cow"
-                            },
-                            "FromArea": {
-                                "X": 0,
-                                "Y": 0,
-                                "Width": 112,
-                                "Height": 112
-                            }
-                        }
-                    ]
+                    "Code": "
+                        if (entity is not Building building) return false;
+                        if (!building.GetIndoors().getAllFarmAnimals().Any(animal => animal.type.Value.Contains(`Cow`))) return false;
+                        this.Path = $`{this.ModId}/Overlays/Barn`;
+                        this.Area = new Rectangle(0, 0, 112, 112);
+                        return true;
+                    "
                 }
             }
         }

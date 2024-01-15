@@ -20,6 +20,11 @@
             "AllowValues": "true, false",
             "Default": "true",
             "Section": "Wine"
+        },
+        "BarnEnabled": {
+            "AllowValues": "true, false",
+            "Default": "true",
+            "Section": "Barn"
         }
     },
     "Changes": [
@@ -32,7 +37,10 @@
         },
         {
             "Action": "Include",
-            "FromFile": "data/barn.json"
+            "FromFile": "data/barn.json",
+            "When": {
+                "BarnEnabled": "true"
+            }
         }
     ]
 }
