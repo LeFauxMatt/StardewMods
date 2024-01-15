@@ -10,15 +10,11 @@ using StardewMods.SpritePatcher.Framework.Interfaces;
 /// <summary>Helps build a texture object from patches.</summary>
 internal sealed class TextureBuilder : BaseService
 {
-    private readonly IGameContentHelper gameContentHelper;
-
     /// <summary>Initializes a new instance of the <see cref="TextureBuilder" /> class.</summary>
-    /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    public TextureBuilder(IGameContentHelper gameContentHelper, ILog log, IManifest manifest)
-        : base(log, manifest) =>
-        this.gameContentHelper = gameContentHelper;
+    public TextureBuilder(ILog log, IManifest manifest)
+        : base(log, manifest) { }
 
     /// <summary>Tries to get a modified texture for the given entity using patches and conditions.</summary>
     /// <param name="baseTexture">The base texture to modify.</param>
@@ -35,29 +31,33 @@ internal sealed class TextureBuilder : BaseService
         Color[]? data = null;
         foreach (var layer in layers)
         {
-            var layerTexture = this.gameContentHelper.Load<Texture2D>(layer.Path);
-            var layerArea = layer.Area ?? new Rectangle(0, 0, layerTexture.Width, layerTexture.Height);
-            var layerData = new Color[layerArea.Width * layerArea.Height];
-            layerTexture.GetData(0, layerArea, layerData, 0, layerData.Length);
+            if (layer.Texture == null || layer.Area == null)
+            {
+                continue;
+            }
 
             // Apply tinting if applicable
-            if (layer.Tint is not null)
+            if (layer.Tint != null)
             {
                 var hsl = HslColor.FromColor(layer.Tint.Value);
                 var boostedTint = new HslColor(hsl.H, 2f * hsl.S, 2f * hsl.L).ToRgbColor();
-                for (var i = 0; i < layerData.Length; ++i)
+                for (var y = layer.Area.Value.Y; y < layer.Area.Value.Y + layer.Area.Value.Height; ++y)
                 {
-                    if (layerData[i].A <= 0)
+                    for (var x = layer.Area.Value.X; x < layer.Area.Value.X + layer.Area.Value.Width; ++x)
                     {
-                        continue;
+                        var index = (y * layer.Texture.Width) + x;
+                        if (layer.Texture.Data[index].A <= 0)
+                        {
+                            continue;
+                        }
+
+                        var baseTint = new Color(
+                            layer.Texture.Data[index].R / 255f * layer.Tint.Value.R / 255f,
+                            layer.Texture.Data[index].G / 255f * layer.Tint.Value.G / 255f,
+                            layer.Texture.Data[index].B / 255f * layer.Tint.Value.B / 255f);
+
+                        layer.Texture.Data[index] = Color.Lerp(baseTint, boostedTint, 0.3f);
                     }
-
-                    var baseTint = new Color(
-                        layerData[i].R / 255f * layer.Tint.Value.R / 255f,
-                        layerData[i].G / 255f * layer.Tint.Value.G / 255f,
-                        layerData[i].B / 255f * layer.Tint.Value.B / 255f);
-
-                    layerData[i] = Color.Lerp(baseTint, boostedTint, 0.3f);
                 }
             }
 
@@ -65,21 +65,32 @@ internal sealed class TextureBuilder : BaseService
             switch (layer.PatchMode)
             {
                 case PatchMode.Replace:
-                    data = layerData;
+                    data = new Color[sourceRect.Width * sourceRect.Height];
+                    for (var y = 0; y < layer.Area.Value.Height; ++y)
+                    {
+                        for (var x = 0; x < layer.Area.Value.Width; ++x)
+                        {
+                            var sourceIndex = ((layer.Area.Value.Y + y) * layer.Texture.Width) + layer.Area.Value.X + x;
+                            var targetIndex = (y * layer.Area.Value.Width) + x;
+                            data[targetIndex] = layer.Texture.Data[sourceIndex];
+                        }
+                    }
                     break;
 
                 default:
-                    if (data is null)
+                    if (data == null)
                     {
                         data = new Color[sourceRect.Width * sourceRect.Height];
                         baseTexture.GetData(0, sourceRect, data, 0, data.Length);
                     }
 
-                    for (var i = 0; i < data.Length; ++i)
+                    for (var y = 0; y < layer.Area.Value.Height; ++y)
                     {
-                        if (layerData[i].A > 0)
+                        for (var x = 0; x < layer.Area.Value.Width; ++x)
                         {
-                            data[i] = layerData[i];
+                            var sourceIndex = ((layer.Area.Value.Y + y) * layer.Texture.Width) + layer.Area.Value.X + x;
+                            var targetIndex = (y * layer.Area.Value.Width) + x;
+                            data[targetIndex] = layer.Texture.Data[sourceIndex];
                         }
                     }
 

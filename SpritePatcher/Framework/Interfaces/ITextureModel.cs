@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 public interface ITextureModel
 {
     /// <summary>Gets the path to the texture.</summary>
-    string Path { get; }
+    IRawTextureData? Texture { get; }
 
     /// <summary>Gets the area of the texture.</summary>
     Rectangle? Area { get; }
