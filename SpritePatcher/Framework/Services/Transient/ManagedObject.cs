@@ -9,28 +9,19 @@ using StardewMods.SpritePatcher.Framework.Interfaces;
 internal sealed partial class ManagedObject
 {
     private readonly CachedTextures cachedTextures;
-    private readonly CachedTokens cachedTokens;
     private readonly IHaveModData entity;
-    private readonly AssetHandler assetHandler;
-    private readonly DelegateManager delegateManager;
+    private readonly CodeManager codeManager;
     private readonly TextureBuilder textureBuilder;
 
     /// <summary>Initializes a new instance of the <see cref="ManagedObject" /> class.</summary>
     /// <param name="entity">The entity being managed.</param>
-    /// <param name="assetHandler">Dependency used for managing icons.</param>
-    /// <param name="delegateManager">Dependency used for getting item properties.</param>
+    /// <param name="codeManager">Dependency used for managing icons.</param>
     /// <param name="textureBuilder">Dependency used for generating textures.</param>
-    public ManagedObject(
-        IHaveModData entity,
-        AssetHandler assetHandler,
-        DelegateManager delegateManager,
-        TextureBuilder textureBuilder)
+    public ManagedObject(IHaveModData entity, CodeManager codeManager, TextureBuilder textureBuilder)
     {
         this.cachedTextures = new CachedTextures(this);
-        this.cachedTokens = new CachedTokens(this);
         this.entity = entity;
-        this.assetHandler = assetHandler;
-        this.delegateManager = delegateManager;
+        this.codeManager = codeManager;
         this.textureBuilder = textureBuilder;
     }
 
@@ -90,71 +81,40 @@ internal sealed partial class ManagedObject
         // Attempt to retrieve texture from cache
         if (this.cachedTextures.TryGet(baseTexture.Name, sourceRectangle, drawMethod, out texture))
         {
-            return true;
+            return texture != null;
         }
 
         // Check if any patches may apply to this texture
-        if (!this.assetHandler.TryGetData(baseTexture.Name, out var patches))
+        if (!this.codeManager.TryGet(baseTexture.Name, out var allPatches))
         {
+            this.cachedTextures.Disable(baseTexture.Name, sourceRectangle, drawMethod);
             texture = null;
             return false;
         }
 
         // Determine which textures apply
-        var texturesToApply = new List<(IPatchData Patch, IConditionalTexture Texture)>();
-        foreach (var patch in patches.Values)
+        var patches = allPatches.Where(patch => patch.DrawMethods.Contains(drawMethod));
+        patches = patches.Where(patch => patch.SourceArea is null || patch.SourceArea == sourceRectangle);
+        patches = patches.Where(patch => patch.Run(this.entity));
+        var patchesToApply = patches.OfType<ITextureModel>().ToList();
+
+        if (!patchesToApply.Any())
         {
-            // Skip if patch does not apply to the draw method
-            if (!patch.DrawMethods.Contains(drawMethod))
-            {
-                continue;
-            }
-
-            // Skip if patch does not apply to the source rectangle
-            if (patch.SourceRect is not null && patch.SourceRect != sourceRectangle)
-            {
-                continue;
-            }
-
-            // Verify if all required tokens are applicable to this entity
-            if (!this.cachedTokens.Init(patch) || !this.cachedTokens.Refresh(patch))
-            {
-                continue;
-            }
-
-            // Try to find the first texture whose conditions are met
-            if (!this.cachedTokens.TryFindMatch(patch, out var textureToApply))
-            {
-                continue;
-            }
-
-            texturesToApply.Add((patch, textureToApply));
-        }
-
-        if (!texturesToApply.Any())
-        {
+            this.cachedTextures.Disable(baseTexture.Name, sourceRectangle, drawMethod);
             texture = null;
             return false;
         }
 
         // Attempt to build the texture
         var sourceRect = sourceRectangle ?? new Rectangle(0, 0, baseTexture.Width, baseTexture.Height);
-        var layers = new List<(string Path, Rectangle? Area, Color? Tint, PatchMode Mode)>();
-        foreach (var (patch, textureToApply) in texturesToApply)
+        if (!this.textureBuilder.TryBuildTexture(baseTexture, sourceRect, patchesToApply, out texture))
         {
-            // Get path to texture patch
-            var path = this.cachedTokens.Parse(patch, textureToApply.Path);
-
-            layers.Add((path, textureToApply.FromArea, textureToApply.Tint, patch.PatchMode));
-        }
-
-        if (!this.textureBuilder.TryBuildTexture(baseTexture, sourceRect, layers, out texture))
-        {
+            this.cachedTextures.Disable(baseTexture.Name, sourceRectangle, drawMethod);
             return false;
         }
 
         // Cache the texture
-        this.cachedTextures.AddOrUpdate(baseTexture.Name, sourceRectangle, drawMethod, texture, layers);
+        this.cachedTextures.AddOrUpdate(baseTexture.Name, sourceRectangle, drawMethod, texture);
         return true;
     }
 }

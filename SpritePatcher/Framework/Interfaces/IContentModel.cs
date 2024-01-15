@@ -2,22 +2,15 @@ namespace StardewMods.SpritePatcher.Framework.Interfaces;
 
 using Microsoft.Xna.Framework;
 using StardewMods.SpritePatcher.Framework.Enums;
-using StardewMods.SpritePatcher.Framework.Models;
 
 /// <summary>Data for an icon overlay.</summary>
-internal interface IPatchData
+internal interface IContentModel
 {
-    /// <summary>Gets the unique identifier for the patch.</summary>
-    string Id { get; }
-
     /// <summary>Gets the target sprite sheet being patched.</summary>
     string Target { get; }
 
-    /// <summary>Gets the base target sprite sheet being patched.</summary>
-    public string BaseTarget { get; }
-
     /// <summary>Gets the source rectangle of the sprite sheet being patched.</summary>
-    public Rectangle? SourceRect { get; }
+    Rectangle? Area { get; }
 
     /// <summary>Gets the draw methods where the texture can be applied.</summary>
     List<DrawMethod> DrawMethods { get; }
@@ -25,12 +18,9 @@ internal interface IPatchData
     /// <summary>Gets the mode that the patch will be applied.</summary>
     PatchMode PatchMode { get; }
 
-    /// <summary>Gets a mapping of property values to path names.</summary>
-    Dictionary<string, TokenDefinition> Tokens { get; }
-
-    /// <summary>Gets the textures to use for the patch.</summary>
-    List<ConditionalTexture> Textures { get; }
-
     /// <summary>Gets the priority of the patch which determines the order in which patches are applied.</summary>
-    public int Priority { get; }
+    int Priority { get; }
+
+    /// <summary>Gets the code for the patch which is used to determine if the patch should be applied.</summary>
+    string Code { get; }
 }

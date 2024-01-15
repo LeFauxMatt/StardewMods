@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Models;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
-using StardewMods.SpritePatcher.Framework.Enums;
+using StardewMods.SpritePatcher.Framework.Interfaces;
 
 /// <summary>Helps build a texture object from patches.</summary>
 internal sealed class TextureBuilder : BaseService
@@ -29,20 +29,21 @@ internal sealed class TextureBuilder : BaseService
     public bool TryBuildTexture(
         Texture2D baseTexture,
         Rectangle sourceRect,
-        List<(string Path, Rectangle? Area, Color? Tint, PatchMode Mode)> layers,
+        IEnumerable<ITextureModel> layers,
         [NotNullWhen(true)] out Texture2D? texture)
     {
         Color[]? data = null;
-        foreach (var (path, area, tint, mode) in layers)
+        foreach (var layer in layers)
         {
-            var layerTexture = this.gameContentHelper.Load<Texture2D>(path);
-            var layerData = new Color[sourceRect.Width * sourceRect.Height];
-            layerTexture.GetData(0, area, layerData, 0, layerData.Length);
+            var layerTexture = this.gameContentHelper.Load<Texture2D>(layer.Path);
+            var layerArea = layer.Area ?? new Rectangle(0, 0, layerTexture.Width, layerTexture.Height);
+            var layerData = new Color[layerArea.Width * layerArea.Height];
+            layerTexture.GetData(0, layerArea, layerData, 0, layerData.Length);
 
             // Apply tinting if applicable
-            if (tint is not null)
+            if (layer.Tint is not null)
             {
-                var hsl = HslColor.FromColor(tint.Value);
+                var hsl = HslColor.FromColor(layer.Tint.Value);
                 var boostedTint = new HslColor(hsl.H, 2f * hsl.S, 2f * hsl.L).ToRgbColor();
                 for (var i = 0; i < layerData.Length; ++i)
                 {
@@ -52,16 +53,16 @@ internal sealed class TextureBuilder : BaseService
                     }
 
                     var baseTint = new Color(
-                        layerData[i].R / 255f * tint.Value.R / 255f,
-                        layerData[i].G / 255f * tint.Value.G / 255f,
-                        layerData[i].B / 255f * tint.Value.B / 255f);
+                        layerData[i].R / 255f * layer.Tint.Value.R / 255f,
+                        layerData[i].G / 255f * layer.Tint.Value.G / 255f,
+                        layerData[i].B / 255f * layer.Tint.Value.B / 255f);
 
                     layerData[i] = Color.Lerp(baseTint, boostedTint, 0.3f);
                 }
             }
 
             // Apply patch
-            switch (mode)
+            switch (layer.PatchMode)
             {
                 case PatchMode.Replace:
                     data = layerData;

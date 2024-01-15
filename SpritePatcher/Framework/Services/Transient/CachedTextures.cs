@@ -9,31 +9,23 @@ internal sealed partial class ManagedObject
 {
     private class CachedTextures(ManagedObject managedObject)
     {
-        private readonly Dictionary<string, Dictionary<(Rectangle? Area, DrawMethod Method), CachedTexture>>
-            cachedTextures = [];
+        private readonly IDictionary<string, IDictionary<(Rectangle? Area, DrawMethod Method), Texture2D>>
+            cachedTextures =
+                new Dictionary<string, IDictionary<(Rectangle? Area, DrawMethod Method), Texture2D>>(
+                    StringComparer.OrdinalIgnoreCase);
 
-        public void AddOrUpdate(
-            string target,
-            Rectangle? area,
-            DrawMethod method,
-            Texture2D texture,
-            List<(string Path, Rectangle? Area, Color? Tint, PatchMode Mode)> layers)
+        private readonly IDictionary<string, HashSet<(Rectangle? Area, DrawMethod Method)>> disabledTextures =
+            new Dictionary<string, HashSet<(Rectangle? Area, DrawMethod Method)>>(StringComparer.OrdinalIgnoreCase);
+
+        public void AddOrUpdate(string target, Rectangle? area, DrawMethod method, Texture2D texture)
         {
             if (!this.cachedTextures.TryGetValue(target, out var textures))
             {
-                textures = new Dictionary<(Rectangle? Area, DrawMethod Method), CachedTexture>();
+                textures = new Dictionary<(Rectangle? Area, DrawMethod Method), Texture2D>();
                 this.cachedTextures[target] = textures;
             }
 
-            if (!textures.TryGetValue((area, method), out var cachedTexture))
-            {
-                cachedTexture = new CachedTexture(texture, [..layers]);
-                textures[(area, method)] = cachedTexture;
-                return;
-            }
-
-            cachedTexture.Texture = texture;
-            cachedTexture.Layers = [..layers];
+            textures[(area, method)] = texture;
         }
 
         public void ClearCache(IEnumerable<string> targets)
@@ -41,33 +33,27 @@ internal sealed partial class ManagedObject
             foreach (var target in targets)
             {
                 this.cachedTextures.Remove(target);
+                this.disabledTextures.Remove(target);
             }
         }
 
-        public bool TryGet(
-            string target,
-            Rectangle? area,
-            DrawMethod method,
-            [NotNullWhen(true)] out Texture2D? texture)
+        public void Disable(string target, Rectangle? area, DrawMethod method)
         {
-            if (!this.cachedTextures.TryGetValue(target, out var textures)
-                || !textures.TryGetValue((area, method), out var cachedTexture))
+            if (!this.disabledTextures.TryGetValue(target, out var textures))
             {
-                texture = null;
-                return false;
+                textures = new HashSet<(Rectangle? Area, DrawMethod Method)>();
+                this.disabledTextures[target] = textures;
             }
 
-            texture = cachedTexture.Texture;
-            return true;
+            textures.Add((area, method));
         }
 
-        private class CachedTexture(
-            Texture2D texture,
-            HashSet<(string Path, Rectangle? Area, Color? Tint, PatchMode Mode)> layers)
+        public bool TryGet(string target, Rectangle? area, DrawMethod method, out Texture2D? texture)
         {
-            public HashSet<(string Path, Rectangle? Area, Color? Tint, PatchMode Mode)> Layers { get; set; } = layers;
-
-            public Texture2D Texture { get; set; } = texture;
+            texture = null;
+            return (this.cachedTextures.TryGetValue(target, out var enabled)
+                    && enabled.TryGetValue((area, method), out texture))
+                || (this.disabledTextures.TryGetValue(target, out var disabled) && disabled.Contains((area, method)));
         }
     }
 }

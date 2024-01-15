@@ -10,29 +10,25 @@ using StardewMods.SpritePatcher.Framework.Services.Transient;
 /// <summary>Represents a factory that manages the creation and retrieval of ManagedObject instances.</summary>
 internal sealed class ManagedObjectFactory : BaseService
 {
-    private readonly AssetHandler assetHandler;
-    private readonly DelegateManager delegateManager;
+    private readonly CodeManager codeManager;
     private readonly TextureBuilder textureBuilder;
     private readonly ConditionalWeakTable<IHaveModData, ManagedObject> cachedObjects = new();
 
     /// <summary>Initializes a new instance of the <see cref="ManagedObjectFactory" /> class.</summary>
-    /// <param name="assetHandler">Dependency used for managing icons.</param>
-    /// <param name="delegateManager">Dependency used for getting item properties.</param>
+    /// <param name="codeManager">Dependency used for managing icons.</param>
     /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="textureBuilder">Dependency used for generating textures.</param>
     public ManagedObjectFactory(
-        AssetHandler assetHandler,
-        DelegateManager delegateManager,
+        CodeManager codeManager,
         IEventSubscriber eventSubscriber,
         ILog log,
         IManifest manifest,
         TextureBuilder textureBuilder)
         : base(log, manifest)
     {
-        this.assetHandler = assetHandler;
-        this.delegateManager = delegateManager;
+        this.codeManager = codeManager;
         this.textureBuilder = textureBuilder;
         eventSubscriber.Subscribe<PatchesChangedEventArgs>(this.OnPatchesChanged);
     }
@@ -47,7 +43,7 @@ internal sealed class ManagedObjectFactory : BaseService
             return managedObject;
         }
 
-        managedObject = new ManagedObject(entity, this.assetHandler, this.delegateManager, this.textureBuilder);
+        managedObject = new ManagedObject(entity, this.codeManager, this.textureBuilder);
         this.cachedObjects.Add(entity, managedObject);
         return managedObject;
     }

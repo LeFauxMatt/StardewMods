@@ -47,7 +47,7 @@ internal sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.ModRegistry);
         this.container.RegisterInstance(this.Helper.Reflection);
         this.container.RegisterInstance(this.Helper.Translation);
-        this.container.RegisterSingleton<AssetHandler>();
+        this.container.RegisterSingleton<CodeManager>();
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
         this.container.RegisterSingleton<ConfigManager, ConfigManager>();
         this.container.RegisterSingleton<ContentPatcherIntegration>();
@@ -58,7 +58,6 @@ internal sealed class ModEntry : Mod
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<ILog, FuryLogger>();
         this.container.RegisterSingleton<IPatchManager, FuryPatcher>();
-        this.container.RegisterSingleton<DelegateManager>();
         this.container.RegisterSingleton<ManagedObjectFactory>();
         this.container.RegisterSingleton<TextureBuilder>();
 
