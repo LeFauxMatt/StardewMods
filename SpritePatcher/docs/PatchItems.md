@@ -22,6 +22,7 @@
 
 ## Chest
 
+### Common Attributes
 
 | field                 | type              | description                 |
 |-----------------------|-------------------|-----------------------------|
@@ -31,6 +32,7 @@
 
 ## ColoredObject
 
+### Common Attributes
 
 | field         | type  | description                          |
 |---------------|-------|--------------------------------------|
@@ -38,6 +40,7 @@
 
 ## CombinedRing
 
+### Common Attributes
 
 | field                 | type            | description    |
 |-----------------------|-----------------|----------------|
@@ -45,12 +48,17 @@
 
 ## CrabPot
 
+### Common Attributes
 
 | field        | type              | description        |
 |--------------|-------------------|--------------------|
 | `bait.Value` | [Object](#object) | Get the bait item. |
 
 ## Fence
+
+Refer to `Data/Fences.json` in
+the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
+for a complete list of the fence targets/areas.
 
 ## FishTank
 
@@ -60,6 +68,7 @@
 
 ## IndoorPot
 
+### Common Attributes
 
 | field           | type                                      | description                  |
 |-----------------|-------------------------------------------|------------------------------|
@@ -68,6 +77,12 @@
 ## ItemPedestal
 
 ## Object
+
+Refer to `Data/Objects.json` in
+the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
+for a complete list of the object targets/areas.
+
+### Common Attributes
 
 | field              | type   | description          |
 |--------------------|--------|----------------------|

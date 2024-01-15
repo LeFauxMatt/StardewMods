@@ -13,6 +13,8 @@
 
 ## Bush
 
+### Common Attributes
+
 | field           | type | description                              |
 |-----------------|------|------------------------------------------|
 | `IsSheltered()` | bool | Get whether the bush is planted indoors. |
@@ -21,7 +23,17 @@
 
 ## Flooring
 
+Refer to `Data/FloorsAndPaths.json` in
+the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
+for a complete list of the flooring targets/areas.
+
 ## FruitTree
+
+Refer to `Data/FruitTrees.json` in
+the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
+for a complete list of the fruit tree targets/areas.
+
+### Common Attributes
 
 | field                | type                          | description                                |
 |----------------------|-------------------------------|--------------------------------------------|
@@ -29,9 +41,19 @@
 
 ## GiantCrop
 
+Refer to `Data/GiantCrops.json` in
+the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
+for a complete list of the giant crop targets/areas.
+
 ## Grass
 
 ## HoeDirt
+
+Refer to `Data/Crops.json` in
+the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
+for a complete list of the crop targets/areas.
+
+### Common Attributes
 
 | field                | type | description                                |
 |----------------------|------|--------------------------------------------|
@@ -45,6 +67,11 @@
 
 ## Tree
 
+Refer to `Data/WildTrees.json` in
+the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
+for a complete list of the tree targets/areas.
+
+### Common Attributes
 
 | field                  | type   | description                            |
 |------------------------|--------|----------------------------------------|

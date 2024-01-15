@@ -11,26 +11,18 @@
 
 ## FarmAnimal
 
+Refer to `Data/FarmAnimals.json` in
+the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
+for a complete list of the farm animal targets/areas.
+
 ## Horse
 
 ## JunimoHarvester
 
-
-| field         | type  | description                           |
-|---------------|-------|---------------------------------------|
-| `color.Value` | Color | Get the color of the JunimoHarvester. |
-
 ## Junimo
-
-
-| field         | type  | description                  |
-|---------------|-------|------------------------------|
-| `color.Value` | Color | Get the color of the Junimo. |
 
 ## Pet
 
-
-| field                           | type | description                 |
-|---------------------------------|------|-----------------------------|
-| `friendshipTowardFarmer.Value`  | int  | Get the friendship level.   |
-| `grantedFriendshipForPet.Value` | bool | Check if pet was pet today. |
+Refer to `Data/Pets.json` in
+the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
+for a complete list of the pet targets/areas.
