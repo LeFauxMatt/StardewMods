@@ -3,6 +3,7 @@ namespace StardewMods.SpritePatcher;
 using Microsoft.Xna.Framework;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
+using StardewMods.SpritePatcher.Framework.Models;
 
 /// <inheritdoc />
 public abstract class BasePatchModel : IPatchModel
@@ -10,29 +11,17 @@ public abstract class BasePatchModel : IPatchModel
     private readonly IMonitor monitor;
 
     /// <summary>Initializes a new instance of the <see cref="BasePatchModel" /> class.</summary>
-    /// <param name="monitor">Dependency used for monitoring and logging.</param>
-    /// <param name="modId">The unique id of the mod.</param>
-    /// <param name="contentPack">The content pack of the mod.</param>
-    /// <param name="target">The target sprite sheet of the patch.</param>
-    /// <param name="sourceArea">The area of the patch.</param>
-    /// <param name="drawMethods">The draw method of the patch.</param>
-    /// <param name="patchMode">The patch mode.</param>
-    protected BasePatchModel(
-        IMonitor monitor,
-        string modId,
-        IContentPack contentPack,
-        string target,
-        Rectangle? sourceArea,
-        List<DrawMethod> drawMethods,
-        PatchMode patchMode)
+    /// <param name="args">The patch model arguments.</param>
+    protected BasePatchModel(PatchModelCtorArgs args)
     {
-        this.monitor = monitor;
-        this.ModId = modId;
-        this.ContentPack = contentPack;
-        this.Target = target;
-        this.SourceArea = sourceArea;
-        this.DrawMethods = drawMethods;
-        this.PatchMode = patchMode;
+        this.monitor = args.Monitor;
+        this.ModId = args.ModId;
+        this.ContentPack = args.ContentPack;
+        this.Target = args.Target;
+        this.SourceArea = args.Area;
+        this.DrawMethods = args.DrawMethods;
+        this.PatchMode = args.PatchMode;
+        this.NetFields = args.NetFields;
         this.Helper = new PatchHelper(this);
     }
 
@@ -50,6 +39,9 @@ public abstract class BasePatchModel : IPatchModel
 
     /// <inheritdoc />
     public List<DrawMethod> DrawMethods { get; }
+
+    /// <inheritdoc />
+    public List<string> NetFields { get; }
 
     /// <inheritdoc />
     public PatchMode PatchMode { get; }
@@ -72,10 +64,6 @@ public abstract class BasePatchModel : IPatchModel
     /// <summary>The Helper class provides useful methods for performing common operations.</summary>
     protected class PatchHelper(BasePatchModel patchModel)
     {
-        /// <summary>Logs a message with the specified information.</summary>
-        /// <param name="message">The message to be logged.</param>
-        protected void Log(string message) => patchModel.monitor.Log($"{patchModel.ModId}: {message}", LogLevel.Info);
-
         /// <summary>Sets the Area representing the icon to the specified index within a texture.</summary>
         /// <param name="index">The index of the icon within the texture.</param>
         /// <param name="width">The width of each icon within the texture. Default value is 16.</param>
@@ -107,5 +95,9 @@ public abstract class BasePatchModel : IPatchModel
             var values = input.Split(separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             return Array.FindIndex(values, v => v.Equals(value, StringComparison.OrdinalIgnoreCase));
         }
+
+        /// <summary>Logs a message with the specified information.</summary>
+        /// <param name="message">The message to be logged.</param>
+        protected void Log(string message) => patchModel.monitor.Log($"{patchModel.ModId}: {message}", LogLevel.Info);
     }
 }

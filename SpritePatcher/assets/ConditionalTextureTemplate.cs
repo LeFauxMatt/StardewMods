@@ -8,6 +8,7 @@ using StardewModdingAPI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.SpritePatcher.Framework.Enums;
+using StardewMods.SpritePatcher.Framework.Models;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Characters;
@@ -19,8 +20,8 @@ using SObject = StardewValley.Object;
 
 public class Runner : global::StardewMods.SpritePatcher.BasePatchModel
 {
-    public Runner(IMonitor monitor, string modId, IContentPack contentPack, string target, Rectangle? sourceArea, List<DrawMethod> drawMethods, PatchMode patchMode)
-        : base(monitor, modId, contentPack, target, sourceArea, drawMethods, patchMode) { }
+    public Runner(PatchModelCtorArgs args)
+        : base(args) { }
 
     public override bool Run(IHaveModData entity)
     {
@@ -36,6 +37,6 @@ public class Runner : global::StardewMods.SpritePatcher.BasePatchModel
 
     public void ActualRun(IHaveModData entity)
     {
-        #REPLACE_code
+#REPLACE_code
     }
 }

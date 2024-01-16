@@ -10,11 +10,15 @@ internal sealed class ContentModel(
     Rectangle? area,
     List<DrawMethod> drawMethods,
     PatchMode patchMode,
+    List<string>? netFields,
     int priority,
     string code) : IContentModel
 {
     /// <inheritdoc />
     public Rectangle? Area { get; } = area;
+
+    /// <inheritdoc />
+    public List<string>? NetFields { get; } = netFields;
 
     /// <inheritdoc />
     public string Target { get; set; } = target;

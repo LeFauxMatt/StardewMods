@@ -59,7 +59,6 @@ internal sealed class ModEntry : Mod
         this.container.RegisterSingleton<ILog, FuryLogger>();
         this.container.RegisterSingleton<IPatchManager, FuryPatcher>();
         this.container.RegisterSingleton<ManagedObjectFactory>();
-        this.container.RegisterSingleton<TextureBuilder>();
 
         this.container.Collection.Register<ITextureManager>(
             new[]

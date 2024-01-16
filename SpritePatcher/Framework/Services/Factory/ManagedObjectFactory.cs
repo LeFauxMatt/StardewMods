@@ -11,7 +11,6 @@ using StardewMods.SpritePatcher.Framework.Services.Transient;
 internal sealed class ManagedObjectFactory : BaseService
 {
     private readonly CodeManager codeManager;
-    private readonly TextureBuilder textureBuilder;
     private readonly ConditionalWeakTable<IHaveModData, ManagedObject> cachedObjects = new();
 
     /// <summary>Initializes a new instance of the <see cref="ManagedObjectFactory" /> class.</summary>
@@ -19,17 +18,10 @@ internal sealed class ManagedObjectFactory : BaseService
     /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="textureBuilder">Dependency used for generating textures.</param>
-    public ManagedObjectFactory(
-        CodeManager codeManager,
-        IEventSubscriber eventSubscriber,
-        ILog log,
-        IManifest manifest,
-        TextureBuilder textureBuilder)
+    public ManagedObjectFactory(CodeManager codeManager, IEventSubscriber eventSubscriber, ILog log, IManifest manifest)
         : base(log, manifest)
     {
         this.codeManager = codeManager;
-        this.textureBuilder = textureBuilder;
         eventSubscriber.Subscribe<PatchesChangedEventArgs>(this.OnPatchesChanged);
     }
 
@@ -43,7 +35,7 @@ internal sealed class ManagedObjectFactory : BaseService
             return managedObject;
         }
 
-        managedObject = new ManagedObject(entity, this.codeManager, this.textureBuilder);
+        managedObject = new ManagedObject(entity, this.codeManager);
         this.cachedObjects.Add(entity, managedObject);
         return managedObject;
     }

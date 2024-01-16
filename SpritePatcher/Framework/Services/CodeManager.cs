@@ -3,14 +3,12 @@ namespace StardewMods.SpritePatcher.Framework.Services;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
-using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
 using StardewMods.SpritePatcher.Framework.Models.Events;
@@ -204,20 +202,9 @@ internal sealed class CodeManager : BaseService
             try
             {
                 var type = assembly.GetType($"{modId}.Runner");
-                var ctor = type!.GetConstructor(
-                [
-                    typeof(IMonitor),
-                    typeof(string),
-                    typeof(IContentPack),
-                    typeof(string),
-                    typeof(Rectangle?),
-                    typeof(List<DrawMethod>),
-                    typeof(PatchMode),
-                ]);
-
                 var contentPack = (IContentPack)modInfo.GetType().GetProperty("ContentPack")!.GetValue(modInfo)!;
-                var patchModel = (BasePatchModel)ctor!.Invoke(
-                [
+                var ctor = type!.GetConstructor([typeof(PatchModelCtorArgs)]);
+                var ctorArgs = new PatchModelCtorArgs(
                     this.monitor,
                     modId,
                     contentPack,
@@ -225,7 +212,9 @@ internal sealed class CodeManager : BaseService
                     contentModel.Area,
                     contentModel.DrawMethods,
                     contentModel.PatchMode,
-                ]);
+                    contentModel.NetFields);
+
+                var patchModel = (BasePatchModel)ctor!.Invoke([ctorArgs]);
 
                 if (!this.patches.TryGetValue(contentModel.Target, out var prioritizedPatches))
                 {
