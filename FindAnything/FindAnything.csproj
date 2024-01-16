@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Find Anything</Name>
     <Description>Search for anything in your current location.</Description>
-    <Version>1.0.0-alpha.20240115</Version>
+    <Version>1.0.0-alpha.20240116</Version>
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.FindAnything</RootNamespace>
     <UniqueId>furyx639.FindAnything</UniqueId>
