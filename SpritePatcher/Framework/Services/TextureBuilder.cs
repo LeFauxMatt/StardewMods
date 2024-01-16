@@ -1,15 +1,23 @@
-namespace StardewMods.SpritePatcher.Framework;
+namespace StardewMods.SpritePatcher.Framework.Services;
 
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Models;
+using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 
-/// <summary>Extension methods for Sprite Patcher.</summary>
-internal static class Extensions
+/// <summary>Build and cache textures from patch layers.</summary>
+internal sealed class TextureBuilder : BaseService
 {
-    private static readonly Dictionary<string, Texture2D> CachedTextures = [];
+    private readonly Dictionary<string, Texture2D> cachedTextures = [];
+
+    /// <summary>Initializes a new instance of the <see cref="TextureBuilder" /> class.</summary>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    public TextureBuilder(ILog log, IManifest manifest)
+        : base(log, manifest) { }
 
     /// <summary>Tries to build a texture by combining multiple texture layers.</summary>
     /// <param name="layers">The list of texture layers to combine.</param>
@@ -17,8 +25,8 @@ internal static class Extensions
     /// <param name="sourceRect">The source rectangle from the base texture to build the final texture from.</param>
     /// <param name="texture">When this method returns, contains the built texture if successful, otherwise null.</param>
     /// <returns>True if the texture was successfully built, otherwise false.</returns>
-    public static bool TryBuildTexture(
-        this List<IPatchModel> layers,
+    public bool TryBuildTexture(
+        List<IPatchModel> layers,
         Texture2D baseTexture,
         Rectangle sourceRect,
         [NotNullWhen(true)] out Texture2D? texture)
@@ -29,8 +37,8 @@ internal static class Extensions
             return false;
         }
 
-        var key = Extensions.GetCachedTextureKey(layers, baseTexture, sourceRect);
-        if (Extensions.CachedTextures.TryGetValue(key, out texture))
+        var key = TextureBuilder.GetCachedTextureKey(layers, baseTexture, sourceRect);
+        if (this.cachedTextures.TryGetValue(key, out texture))
         {
             return true;
         }
@@ -110,11 +118,14 @@ internal static class Extensions
 
         texture = new Texture2D(baseTexture.GraphicsDevice, sourceRect.Width, sourceRect.Height);
         texture.SetData(data);
-        Extensions.CachedTextures[key] = texture;
+        this.cachedTextures[key] = texture;
         return true;
     }
 
-    private static string GetCachedTextureKey(List<IPatchModel> layers, Texture2D baseTexture, Rectangle sourceRect)
+    private static string GetCachedTextureKey(
+        List<IPatchModel> layers,
+        GraphicsResource baseTexture,
+        Rectangle sourceRect)
     {
         var sb = new StringBuilder();
         sb.Append(baseTexture.Name);

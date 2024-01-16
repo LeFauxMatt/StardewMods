@@ -19,6 +19,7 @@ internal sealed class ManagedObject
 
     private readonly Dictionary<TextureKey, Texture2D> cachedTextures = [];
     private readonly CodeManager codeManager;
+    private readonly TextureBuilder textureBuilder;
     private readonly HashSet<TextureKey> disabledTextures = [];
     private readonly Dictionary<string, HashSet<TextureKey>> fieldTargets = new(StringComparer.OrdinalIgnoreCase);
     private readonly IHaveModData entity;
@@ -27,11 +28,13 @@ internal sealed class ManagedObject
     /// <summary>Initializes a new instance of the <see cref="ManagedObject" /> class.</summary>
     /// <param name="entity">The entity being managed.</param>
     /// <param name="codeManager">Dependency used for managing icons.</param>
-    public ManagedObject(IHaveModData entity, CodeManager codeManager)
+    /// <param name="textureBuilder">Dependency used for generating textures from patches.</param>
+    public ManagedObject(IHaveModData entity, CodeManager codeManager, TextureBuilder textureBuilder)
     {
         this.type = entity.GetType();
         this.entity = entity;
         this.codeManager = codeManager;
+        this.textureBuilder = textureBuilder;
     }
 
     /// <summary>Draws a sprite on the screen using the specified parameters.</summary>
@@ -128,7 +131,8 @@ internal sealed class ManagedObject
         }
 
         var patchesToApply = conditionalPatches.Where(patch => patch.Run(this.entity)).ToList();
-        if (patchesToApply.TryBuildTexture(
+        if (this.textureBuilder.TryBuildTexture(
+            patchesToApply,
             baseTexture,
             key.Area ?? new Rectangle(0, 0, baseTexture.Width, baseTexture.Height),
             out texture))

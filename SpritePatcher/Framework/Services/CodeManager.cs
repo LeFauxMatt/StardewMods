@@ -13,7 +13,7 @@ using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
 using StardewMods.SpritePatcher.Framework.Models.Events;
 
-/// <summary>Managing the code which is compiled by this mod from content pack data.</summary>
+/// <summary>Manages the code which is compiled by this mod from content pack data.</summary>
 internal sealed class CodeManager : BaseService
 {
     private static readonly CSharpCompilationOptions CompileOptions = new(
