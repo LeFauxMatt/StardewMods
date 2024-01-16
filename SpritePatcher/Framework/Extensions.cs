@@ -1,5 +1,6 @@
 namespace StardewMods.SpritePatcher.Framework;
 
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Models;
@@ -8,6 +9,8 @@ using StardewMods.SpritePatcher.Framework.Interfaces;
 /// <summary>Extension methods for Sprite Patcher.</summary>
 internal static class Extensions
 {
+    private static readonly Dictionary<string, Texture2D> CachedTextures = [];
+
     /// <summary>Tries to build a texture by combining multiple texture layers.</summary>
     /// <param name="layers">The list of texture layers to combine.</param>
     /// <param name="baseTexture">The base texture to use as a background.</param>
@@ -15,7 +18,7 @@ internal static class Extensions
     /// <param name="texture">When this method returns, contains the built texture if successful, otherwise null.</param>
     /// <returns>True if the texture was successfully built, otherwise false.</returns>
     public static bool TryBuildTexture(
-        this List<ITextureModel> layers,
+        this List<IPatchModel> layers,
         Texture2D baseTexture,
         Rectangle sourceRect,
         [NotNullWhen(true)] out Texture2D? texture)
@@ -24,6 +27,12 @@ internal static class Extensions
         if (!layers.Any())
         {
             return false;
+        }
+
+        var key = Extensions.GetCachedTextureKey(layers, baseTexture, sourceRect);
+        if (Extensions.CachedTextures.TryGetValue(key, out texture))
+        {
+            return true;
         }
 
         var data = new Color[sourceRect.Width * sourceRect.Height];
@@ -38,6 +47,8 @@ internal static class Extensions
             {
                 continue;
             }
+
+            var targetArea = layer.SourceArea ?? sourceRect;
 
             // Apply tinting if applicable
             if (layer.Tint != null)
@@ -65,13 +76,31 @@ internal static class Extensions
             }
 
             // Apply layer to data
-            for (var y = 0; y < layer.Area.Value.Height; ++y)
+            var left = Math.Max(sourceRect.Left, targetArea.Left);
+            var top = Math.Max(sourceRect.Top, targetArea.Top);
+            var right = Math.Min(sourceRect.Right, targetArea.Right);
+            var bottom = Math.Min(sourceRect.Bottom, targetArea.Bottom);
+
+            for (var y = top; y < bottom; ++y)
             {
-                for (var x = 0; x < layer.Area.Value.Width; ++x)
+                for (var x = left; x < right; ++x)
                 {
-                    var sourceIndex = ((layer.Area.Value.Y + y) * layer.Texture.Width) + layer.Area.Value.X + x;
-                    var targetIndex = (y * layer.Area.Value.Width) + x;
-                    if (layer.PatchMode == PatchMode.Replace || layer.Texture.Data[sourceIndex].A > 0)
+                    // Calculate the index in the layer's texture array, aligned to the top-left of layer.Area
+                    var patchX = x - targetArea.Left + layer.Area.Value.X;
+                    var patchY = y - targetArea.Top + layer.Area.Value.Y;
+                    var sourceIndex = (patchY * layer.Texture.Width) + patchX;
+
+                    // Calculate the index in the target data array
+                    var targetX = x - sourceRect.X;
+                    var targetY = y - sourceRect.Y;
+                    var targetIndex = (targetY * sourceRect.Width) + targetX;
+
+                    // Apply the patch if within bounds and according to PatchMode
+                    if (sourceIndex >= 0
+                        && targetIndex >= 0
+                        && sourceIndex <= layer.Texture.Data.Length
+                        && targetIndex <= data.Length
+                        && (layer.PatchMode == PatchMode.Replace || layer.Texture.Data[sourceIndex].A > 0))
                     {
                         data[targetIndex] = layer.Texture.Data[sourceIndex];
                     }
@@ -81,6 +110,22 @@ internal static class Extensions
 
         texture = new Texture2D(baseTexture.GraphicsDevice, sourceRect.Width, sourceRect.Height);
         texture.SetData(data);
+        Extensions.CachedTextures[key] = texture;
         return true;
+    }
+
+    private static string GetCachedTextureKey(List<IPatchModel> layers, Texture2D baseTexture, Rectangle sourceRect)
+    {
+        var sb = new StringBuilder();
+        sb.Append(baseTexture.Name);
+        sb.Append('_');
+        sb.Append(sourceRect.ToString());
+        foreach (var layer in layers)
+        {
+            sb.Append('_');
+            sb.Append(layer.GetCurrentId());
+        }
+
+        return sb.ToString();
     }
 }

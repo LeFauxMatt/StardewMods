@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using StardewMods.SpritePatcher.Framework.Enums;
-using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
 using StardewValley.Extensions;
 
@@ -128,7 +127,7 @@ internal sealed class ManagedObject
             this.SubscribeToFieldEvent(netField, key);
         }
 
-        var patchesToApply = conditionalPatches.Where(patch => patch.Run(this.entity)).OfType<ITextureModel>().ToList();
+        var patchesToApply = conditionalPatches.Where(patch => patch.Run(this.entity)).ToList();
         if (patchesToApply.TryBuildTexture(
             baseTexture,
             key.Area ?? new Rectangle(0, 0, baseTexture.Width, baseTexture.Height),

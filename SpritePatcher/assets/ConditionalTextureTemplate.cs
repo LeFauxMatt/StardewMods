@@ -27,7 +27,7 @@ public class Runner : global::StardewMods.SpritePatcher.BasePatchModel
     {
         this.Texture = null;
         this.Area = Rectangle.Empty;
-        this.Tint = Color.White;
+        this.Tint = null;
         this.ActualRun(entity);
         if (this.Texture is null) return false;
         this.Area ??= new Rectangle(0, 0, this.Texture.Width, this.Texture.Height);

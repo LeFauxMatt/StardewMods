@@ -1,5 +1,6 @@
 namespace StardewMods.SpritePatcher;
 
+using System.Text;
 using Microsoft.Xna.Framework;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
@@ -9,6 +10,7 @@ using StardewMods.SpritePatcher.Framework.Models;
 public abstract class BasePatchModel : IPatchModel
 {
     private readonly IMonitor monitor;
+    private string path = string.Empty;
 
     /// <summary>Initializes a new instance of the <see cref="BasePatchModel" /> class.</summary>
     /// <param name="args">The patch model arguments.</param>
@@ -59,6 +61,20 @@ public abstract class BasePatchModel : IPatchModel
     protected PatchHelper Helper { get; }
 
     /// <inheritdoc />
+    public string GetCurrentId()
+    {
+        var sb = new StringBuilder();
+        sb.Append(this.path);
+        sb.Append('_');
+        sb.Append(this.Area?.ToString() ?? string.Empty);
+        sb.Append('_');
+        sb.Append(this.Tint?.ToString() ?? string.Empty);
+        sb.Append('_');
+        sb.Append(this.PatchMode.ToString());
+        return sb.ToString();
+    }
+
+    /// <inheritdoc />
     public abstract bool Run(IHaveModData entity);
 
     /// <summary>The Helper class provides useful methods for performing common operations.</summary>
@@ -82,8 +98,11 @@ public abstract class BasePatchModel : IPatchModel
 
         /// <summary>Sets the texture of an object using the specified path.</summary>
         /// <param name="path">The path of the texture.</param>
-        public void SetTexture(string path) =>
+        public void SetTexture(string path)
+        {
+            patchModel.path = path;
             patchModel.Texture = patchModel.ContentPack.ModContent.Load<IRawTextureData>(path);
+        }
 
         /// <summary>Returns the index of the first occurrence of the specified value in the given array of strings.</summary>
         /// <param name="input">The input string to split.</param>
@@ -93,7 +112,8 @@ public abstract class BasePatchModel : IPatchModel
         public int GetIndexFromString(string input, string value, char separator = ',')
         {
             var values = input.Split(separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            return Array.FindIndex(values, v => v.Equals(value, StringComparison.OrdinalIgnoreCase));
+            var index = Array.FindIndex(values, v => v.Equals(value, StringComparison.OrdinalIgnoreCase));
+            return index;
         }
 
         /// <summary>Logs a message with the specified information.</summary>
