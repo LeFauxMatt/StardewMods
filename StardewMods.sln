@@ -38,6 +38,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FindAnything", "FindAnythin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpritePatcher", "SpritePatcher\SpritePatcher.csproj", "{4632D2C9-A337-461B-9F74-28F779078879}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnhancedJunimoChest", "EnhancedJunimoChest\EnhancedJunimoChest.csproj", "{0C576B26-09D4-4B7B-AA3F-D93CA61865EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,6 +90,10 @@ Global
 		{4632D2C9-A337-461B-9F74-28F779078879}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4632D2C9-A337-461B-9F74-28F779078879}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4632D2C9-A337-461B-9F74-28F779078879}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C576B26-09D4-4B7B-AA3F-D93CA61865EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C576B26-09D4-4B7B-AA3F-D93CA61865EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C576B26-09D4-4B7B-AA3F-D93CA61865EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C576B26-09D4-4B7B-AA3F-D93CA61865EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
