@@ -117,6 +117,7 @@ internal sealed class CodeManager : BaseService
 
         if (!result.Success)
         {
+            // TODO - Add back diagnostics
             this.Log.Error("Failed to compile code for {0}", id);
             assembly = null;
             return false;
@@ -204,16 +205,7 @@ internal sealed class CodeManager : BaseService
                 var type = assembly.GetType($"{modId}.Runner");
                 var contentPack = (IContentPack)modInfo.GetType().GetProperty("ContentPack")!.GetValue(modInfo)!;
                 var ctor = type!.GetConstructor([typeof(PatchModelCtorArgs)]);
-                var ctorArgs = new PatchModelCtorArgs(
-                    this.monitor,
-                    modId,
-                    contentPack,
-                    contentModel.Target,
-                    contentModel.Area,
-                    contentModel.DrawMethods,
-                    contentModel.PatchMode,
-                    contentModel.NetFields);
-
+                var ctorArgs = new PatchModelCtorArgs(this.monitor, key, contentPack, contentModel);
                 var patchModel = (BasePatchModel)ctor!.Invoke([ctorArgs]);
 
                 if (!this.patches.TryGetValue(contentModel.Target, out var prioritizedPatches))

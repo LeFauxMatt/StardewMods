@@ -5,11 +5,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using StardewMods.SpritePatcher.Framework.Enums;
+using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
 using StardewValley.Extensions;
 
-/// <summary>Represents an object being managed by the mod.</summary>
-internal sealed class ManagedObject
+/// <inheritdoc />
+internal sealed class ManagedObject : IManagedObject
 {
     private static readonly Dictionary<Type, IDictionary<string, (INetSerializable NetField, EventInfo? EventInfo)>>
         CachedEvents = [];
@@ -22,7 +23,6 @@ internal sealed class ManagedObject
     private readonly TextureBuilder textureBuilder;
     private readonly HashSet<TextureKey> disabledTextures = [];
     private readonly Dictionary<string, HashSet<TextureKey>> fieldTargets = new(StringComparer.OrdinalIgnoreCase);
-    private readonly IHaveModData entity;
     private readonly Type type;
 
     /// <summary>Initializes a new instance of the <see cref="ManagedObject" /> class.</summary>
@@ -32,23 +32,15 @@ internal sealed class ManagedObject
     public ManagedObject(IHaveModData entity, CodeManager codeManager, TextureBuilder textureBuilder)
     {
         this.type = entity.GetType();
-        this.entity = entity;
+        this.Entity = entity;
         this.codeManager = codeManager;
         this.textureBuilder = textureBuilder;
     }
 
-    /// <summary>Draws a sprite on the screen using the specified parameters.</summary>
-    /// <param name="spriteBatch">The SpriteBatch used to draw the sprite.</param>
-    /// <param name="texture">The texture of the sprite.</param>
-    /// <param name="position">The position of the sprite.</param>
-    /// <param name="sourceRectangle">The portion of the texture to draw. Null to draw the entire texture.</param>
-    /// <param name="color">The color to tint the sprite.</param>
-    /// <param name="rotation">The rotation angle of the sprite in radians.</param>
-    /// <param name="origin">The origin of the sprite, relative to its position.</param>
-    /// <param name="scale">The scaling factor applied to the sprite.</param>
-    /// <param name="effects">The SpriteEffects applied to the sprite.</param>
-    /// <param name="layerDepth">The layer depth of the sprite.</param>
-    /// <param name="drawMethod">The method used for drawing the sprite.</param>
+    /// <inheritdoc/>
+    public IHaveModData Entity { get; }
+
+    /// <inheritdoc/>
     public void Draw(
         SpriteBatch spriteBatch,
         Texture2D texture,
@@ -80,8 +72,7 @@ internal sealed class ManagedObject
             layerDepth);
     }
 
-    /// <summary>Clears the cache for the specified textureName.</summary>
-    /// <param name="targets">The name of the texture caches to be cleared.</param>
+    /// <inheritdoc/>
     public void ClearCache(IEnumerable<string> targets)
     {
         foreach (var target in targets)
@@ -130,7 +121,7 @@ internal sealed class ManagedObject
             this.SubscribeToFieldEvent(netField, key);
         }
 
-        var patchesToApply = conditionalPatches.Where(patch => patch.Run(this.entity)).ToList();
+        var patchesToApply = conditionalPatches.Where(patch => patch.Run(this)).ToList();
         if (this.textureBuilder.TryBuildTexture(
             patchesToApply,
             baseTexture,
@@ -153,7 +144,7 @@ internal sealed class ManagedObject
             ManagedObject.CachedEvents[this.type] = objectEvents;
         }
 
-        if (this.entity is not INetObject<NetFields> obj)
+        if (this.Entity is not INetObject<NetFields> obj)
         {
             return;
         }

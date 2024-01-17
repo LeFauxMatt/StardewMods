@@ -11,6 +11,7 @@ using StardewMods.SpritePatcher.Framework.Interfaces;
 /// <summary>Build and cache textures from patch layers.</summary>
 internal sealed class TextureBuilder : BaseService
 {
+    private readonly Dictionary<string, Color[]> cachedData = [];
     private readonly Dictionary<string, Texture2D> cachedTextures = [];
 
     /// <summary>Initializes a new instance of the <see cref="TextureBuilder" /> class.</summary>
@@ -43,10 +44,10 @@ internal sealed class TextureBuilder : BaseService
             return true;
         }
 
-        var data = new Color[sourceRect.Width * sourceRect.Height];
+        var textureData = new Color[sourceRect.Width * sourceRect.Height];
         if (layers.First().PatchMode == PatchMode.Overlay)
         {
-            baseTexture.GetData(0, sourceRect, data, 0, data.Length);
+            baseTexture.GetData(0, sourceRect, textureData, 0, textureData.Length);
         }
 
         foreach (var layer in layers)
@@ -56,34 +57,41 @@ internal sealed class TextureBuilder : BaseService
                 continue;
             }
 
-            var targetArea = layer.SourceArea ?? sourceRect;
-
-            // Apply tinting if applicable
-            if (layer.Tint != null)
+            var layerId = layer.GetCurrentId();
+            if (!this.cachedData.TryGetValue(layerId, out var layerData))
             {
-                var hsl = HslColor.FromColor(layer.Tint.Value);
-                var boostedTint = new HslColor(hsl.H, 2f * hsl.S, 2f * hsl.L).ToRgbColor();
-                for (var y = layer.Area.Value.Y; y < layer.Area.Value.Y + layer.Area.Value.Height; ++y)
+                layerData = (Color[])layer.Texture.Data.Clone();
+
+                // Apply tinting if applicable
+                if (layer.Tint != null)
                 {
-                    for (var x = layer.Area.Value.X; x < layer.Area.Value.X + layer.Area.Value.Width; ++x)
+                    var hsl = HslColor.FromColor(layer.Tint.Value);
+                    var boostedTint = new HslColor(hsl.H, 2f * hsl.S, 2f * hsl.L).ToRgbColor();
+                    for (var y = layer.Area.Value.Y; y < layer.Area.Value.Y + layer.Area.Value.Height; ++y)
                     {
-                        var index = (y * layer.Texture.Width) + x;
-                        if (layer.Texture.Data[index].A <= 0)
+                        for (var x = layer.Area.Value.X; x < layer.Area.Value.X + layer.Area.Value.Width; ++x)
                         {
-                            continue;
+                            var index = (y * layer.Texture.Width) + x;
+                            if (layerData[index].A <= 0)
+                            {
+                                continue;
+                            }
+
+                            var baseTint = new Color(
+                                layerData[index].R / 255f * layer.Tint.Value.R / 255f,
+                                layerData[index].G / 255f * layer.Tint.Value.G / 255f,
+                                layerData[index].B / 255f * layer.Tint.Value.B / 255f);
+
+                            layerData[index] = Color.Lerp(baseTint, boostedTint, 0.3f);
                         }
-
-                        var baseTint = new Color(
-                            layer.Texture.Data[index].R / 255f * layer.Tint.Value.R / 255f,
-                            layer.Texture.Data[index].G / 255f * layer.Tint.Value.G / 255f,
-                            layer.Texture.Data[index].B / 255f * layer.Tint.Value.B / 255f);
-
-                        layer.Texture.Data[index] = Color.Lerp(baseTint, boostedTint, 0.3f);
                     }
                 }
+
+                this.cachedData[layerId] = layerData;
             }
 
             // Apply layer to data
+            var targetArea = layer.SourceArea ?? sourceRect;
             var left = Math.Max(sourceRect.Left, targetArea.Left);
             var top = Math.Max(sourceRect.Top, targetArea.Top);
             var right = Math.Min(sourceRect.Right, targetArea.Right);
@@ -106,18 +114,19 @@ internal sealed class TextureBuilder : BaseService
                     // Apply the patch if within bounds and according to PatchMode
                     if (sourceIndex >= 0
                         && targetIndex >= 0
-                        && sourceIndex <= layer.Texture.Data.Length
-                        && targetIndex <= data.Length
-                        && (layer.PatchMode == PatchMode.Replace || layer.Texture.Data[sourceIndex].A > 0))
+                        && sourceIndex <= layerData.Length
+                        && targetIndex <= textureData.Length
+                        && (layer.PatchMode == PatchMode.Replace || layerData[sourceIndex].A > 0))
                     {
-                        data[targetIndex] = layer.Texture.Data[sourceIndex];
+                        textureData[targetIndex] = layerData[sourceIndex];
                     }
                 }
             }
         }
 
         texture = new Texture2D(baseTexture.GraphicsDevice, sourceRect.Width, sourceRect.Height);
-        texture.SetData(data);
+        texture.SetData(textureData);
+        texture.Name = key;
         this.cachedTextures[key] = texture;
         return true;
     }

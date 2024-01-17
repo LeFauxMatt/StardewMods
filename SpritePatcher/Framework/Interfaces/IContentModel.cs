@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using StardewMods.SpritePatcher.Framework.Enums;
 
 /// <summary>Data for an icon overlay.</summary>
-internal interface IContentModel
+public interface IContentModel
 {
     /// <summary>Gets the target sprite sheet being patched.</summary>
     string Target { get; }

@@ -2,7 +2,7 @@
 
 Patch sprites based on the object's attributes.
 
-# Contents
+## Contents
 
 * [Key Concepts](#key-concepts)
 * [Object Types](#object-types)

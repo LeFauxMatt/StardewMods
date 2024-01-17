@@ -7,7 +7,7 @@ using StardewMods.SpritePatcher.Framework.Enums;
 public interface IPatchModel
 {
     /// <summary>Gets the unique identifier for this mod.</summary>
-    string ModId { get; }
+    string Id { get; }
 
     /// <summary>Gets the content pack associated with this mod.</summary>
     IContentPack? ContentPack { get; }
@@ -34,14 +34,14 @@ public interface IPatchModel
     Color? Tint { get; }
 
     /// <summary>Gets the mode that the patch will be applied.</summary>
-    public PatchMode PatchMode { get; }
+    PatchMode PatchMode { get; }
 
     /// <summary>Retrieves a unique identifier for the current patch.</summary>
     /// <returns>The current ID as a string.</returns>
-    public string GetCurrentId();
+    string GetCurrentId();
 
-    /// <summary>Runs code necessary to update the texture..</summary>
-    /// <param name="entity">The entity that is being textured.</param>
+    /// <summary>Runs code necessary to update the texture.</summary>
+    /// <param name="managedObject">The managed object requesting the patch.</param>
     /// <returns>True if the texture should be applied.</returns>
-    bool Run(IHaveModData entity);
+    bool Run(IManagedObject managedObject);
 }

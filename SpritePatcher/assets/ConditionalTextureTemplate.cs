@@ -8,6 +8,7 @@ using StardewModdingAPI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.SpritePatcher.Framework.Enums;
+using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
 using StardewValley;
 using StardewValley.Buildings;
@@ -18,17 +19,16 @@ using StardewValley.Tools;
 using IHaveModData = StardewValley.IHaveModData;
 using SObject = StardewValley.Object;
 
-public class Runner : global::StardewMods.SpritePatcher.BasePatchModel
+public class Runner : global::StardewMods.SpritePatcher.Framework.BasePatchModel
 {
-    public Runner(PatchModelCtorArgs args)
-        : base(args) { }
+    public Runner(PatchModelCtorArgs args) : base(args) { }
 
-    public override bool Run(IHaveModData entity)
+    public override bool Run(IManagedObject managedObject)
     {
         this.Texture = null;
         this.Area = Rectangle.Empty;
         this.Tint = null;
-        this.ActualRun(entity);
+        this.ActualRun(managedObject.Entity);
         if (this.Texture is null) return false;
         this.Area ??= new Rectangle(0, 0, this.Texture.Width, this.Texture.Height);
         if (this.Area.Value.Right > this.Texture.Width || this.Area.Value.Bottom > this.Texture.Height) return false;
