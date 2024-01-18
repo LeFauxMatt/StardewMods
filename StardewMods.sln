@@ -24,8 +24,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyAccess", "EasyAccess\Ea
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ToolbarIcons", "ToolbarIcons\ToolbarIcons.csproj", "{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SmackDatScarecrow", "SmackDatScarecrow\SmackDatScarecrow.csproj", "{66F2B279-351B-499C-826B-A885C2255334}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExpandedStorage", "ExpandedStorage\ExpandedStorage.csproj", "{9DE51A63-31AC-4678-9D40-F9351844BEA8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelpfulSpouses", "HelpfulSpouses\HelpfulSpouses.csproj", "{AA4CEF05-E3DA-45B8-80AD-E54BA33CE950}"
@@ -62,10 +60,6 @@ Global
 		{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA49490D-32DD-4EF1-8F1E-66A5FA68AEB6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{66F2B279-351B-499C-826B-A885C2255334}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{66F2B279-351B-499C-826B-A885C2255334}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{66F2B279-351B-499C-826B-A885C2255334}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{66F2B279-351B-499C-826B-A885C2255334}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9DE51A63-31AC-4678-9D40-F9351844BEA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9DE51A63-31AC-4678-9D40-F9351844BEA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DE51A63-31AC-4678-9D40-F9351844BEA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
