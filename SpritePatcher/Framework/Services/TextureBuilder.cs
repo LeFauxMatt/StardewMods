@@ -7,6 +7,7 @@ using StardewMods.Common.Models;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Interfaces;
+using StardewMods.SpritePatcher.Framework.Models;
 
 /// <summary>Build and cache textures from patch layers.</summary>
 internal sealed class TextureBuilder : BaseService
@@ -21,15 +22,15 @@ internal sealed class TextureBuilder : BaseService
         : base(log, manifest) { }
 
     /// <summary>Tries to build a texture by combining multiple texture layers.</summary>
-    /// <param name="layers">The list of texture layers to combine.</param>
+    /// <param name="key">A key for the original texture method.</param>
     /// <param name="baseTexture">The base texture to use as a background.</param>
-    /// <param name="sourceRect">The source rectangle from the base texture to build the final texture from.</param>
+    /// <param name="layers">The list of texture layers to combine.</param>
     /// <param name="texture">When this method returns, contains the built texture if successful, otherwise null.</param>
     /// <returns>True if the texture was successfully built, otherwise false.</returns>
     public bool TryBuildTexture(
-        List<IPatchModel> layers,
+        TextureKey key,
         Texture2D baseTexture,
-        Rectangle sourceRect,
+        List<IPatchModel> layers,
         [NotNullWhen(true)] out Texture2D? texture)
     {
         texture = null;
@@ -38,8 +39,9 @@ internal sealed class TextureBuilder : BaseService
             return false;
         }
 
-        var key = TextureBuilder.GetCachedTextureKey(layers, baseTexture, sourceRect);
-        if (this.cachedTextures.TryGetValue(key, out texture))
+        var sourceRect = key.Area ?? new Rectangle(0, 0, baseTexture.Width, baseTexture.Height);
+        var cacheKey = TextureBuilder.GetCachedTextureKey(layers, baseTexture, sourceRect);
+        if (this.cachedTextures.TryGetValue(cacheKey, out texture))
         {
             return true;
         }
@@ -114,8 +116,8 @@ internal sealed class TextureBuilder : BaseService
                     // Apply the patch if within bounds and according to PatchMode
                     if (sourceIndex >= 0
                         && targetIndex >= 0
-                        && sourceIndex <= layerData.Length
-                        && targetIndex <= textureData.Length
+                        && sourceIndex < layerData.Length
+                        && targetIndex < textureData.Length
                         && (layer.PatchMode == PatchMode.Replace || layerData[sourceIndex].A > 0))
                     {
                         textureData[targetIndex] = layerData[sourceIndex];
@@ -126,8 +128,8 @@ internal sealed class TextureBuilder : BaseService
 
         texture = new Texture2D(baseTexture.GraphicsDevice, sourceRect.Width, sourceRect.Height);
         texture.SetData(textureData);
-        texture.Name = key;
-        this.cachedTextures[key] = texture;
+        texture.Name = cacheKey;
+        this.cachedTextures[cacheKey] = texture;
         return true;
     }
 

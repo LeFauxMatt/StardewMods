@@ -9,12 +9,6 @@ using StardewValley.Objects;
 /// <summary>Harmony Patches for Enhanced Junimo Chests.</summary>
 internal sealed class ModPatches
 {
-#nullable disable
-    private static IModContentHelper modContentHelper;
-    private static string modId;
-    private static Texture2D texture;
-#nullable enable
-
     /// <summary>Initializes a new instance of the <see cref="ModPatches" /> class.</summary>
     /// <param name="modContentHelper">Dependency used for accessing mod content.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
@@ -310,4 +304,8 @@ internal sealed class ModPatches
             chest.playerChoiceColor.Value = data.Colors[selection].Color;
         }
     }
+#nullable disable
+    private static IModContentHelper modContentHelper;
+    private static string modId;
+    private static Texture2D texture;
 }

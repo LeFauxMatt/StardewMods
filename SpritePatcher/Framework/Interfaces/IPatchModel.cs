@@ -36,6 +36,9 @@ public interface IPatchModel
     /// <summary>Gets the mode that the patch will be applied.</summary>
     PatchMode PatchMode { get; }
 
+    /// <summary>Gets the scale of the texture.</summary>
+    float Scale { get; }
+
     /// <summary>Retrieves a unique identifier for the current patch.</summary>
     /// <returns>The current ID as a string.</returns>
     string GetCurrentId();

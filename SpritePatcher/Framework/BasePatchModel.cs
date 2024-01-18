@@ -10,13 +10,16 @@ using StardewMods.SpritePatcher.Framework.Models;
 public abstract partial class BasePatchModel : IPatchModel
 {
     private readonly IMonitor monitor;
+    private readonly INetFieldManager netFieldManager;
     private string path = string.Empty;
+    private IManagedObject? currentObject;
 
     /// <summary>Initializes a new instance of the <see cref="BasePatchModel" /> class.</summary>
     /// <param name="args">The patch model arguments.</param>
     protected BasePatchModel(PatchModelCtorArgs args)
     {
         this.monitor = args.Monitor;
+        this.netFieldManager = args.NetFieldManager;
         this.Id = args.Id;
         this.ContentPack = args.ContentPack;
         this.Target = args.ContentModel.Target;
@@ -47,6 +50,9 @@ public abstract partial class BasePatchModel : IPatchModel
 
     /// <inheritdoc />
     public PatchMode PatchMode { get; }
+
+    /// <inheritdoc />
+    public float Scale { get; protected set; } = 1f;
 
     /// <inheritdoc />
     public IRawTextureData? Texture { get; protected set; }
@@ -84,4 +90,28 @@ public abstract partial class BasePatchModel : IPatchModel
 
     /// <inheritdoc />
     public abstract bool Run(IManagedObject managedObject);
+
+    /// <summary>Resets the Texture, Area, and Tint properties of the object before running.</summary>
+    /// <param name="managedObject">The managed object requesting the patch.</param>
+    protected void BeforeRun(IManagedObject managedObject)
+    {
+        this.currentObject = managedObject;
+        this.Texture = null;
+        this.Area = Rectangle.Empty;
+        this.Tint = null;
+    }
+
+    /// <summary>Validate the Texture, Area, and Tint properties of the object after running.</summary>
+    /// <returns><c>true</c> if the patch should be applied; otherwise, <c>false</c>.</returns>
+    protected bool AfterRun()
+    {
+        this.currentObject = null;
+        if (this.Texture == null)
+        {
+            return false;
+        }
+
+        this.Area ??= new Rectangle(0, 0, this.Texture.Width, this.Texture.Height);
+        return this.Area.Value.Right <= this.Texture.Width && this.Area.Value.Bottom <= this.Texture.Height;
+    }
 }

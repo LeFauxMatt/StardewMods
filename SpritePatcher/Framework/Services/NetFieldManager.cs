@@ -1,113 +1,126 @@
-// namespace StardewMods.SpritePatcher.Framework.Services;
-//
-// using System.Reflection;
-// using Netcode;
-// using StardewMods.Common.Services;
-// using StardewMods.Common.Services.Integrations.FuryCore;
-// using StardewMods.SpritePatcher.Framework.Models;
-//
-// internal sealed class NetFieldManager : BaseService
-// {
-//     private static readonly Dictionary<Type, IDictionary<string, (INetSerializable NetField, EventInfo? EventInfo)>>
-//         CachedEvents = [];
-//
-//     private readonly Dictionary<string, (INetSerializable Target, Delegate Handler)> subscribedEvents =
-//         new(StringComparer.OrdinalIgnoreCase);
-//
-//     private readonly Dictionary<string, HashSet<TextureKey>> fieldTargets = new(StringComparer.OrdinalIgnoreCase);
-//
-//     public NetFieldManager(ILog log, IManifest manifest)
-//         : base(log, manifest) { }
-//
-//     private void SubscribeToFieldEvent(string name, TextureKey key)
-//     {
-//         if (!ManagedObject.CachedEvents.TryGetValue(this.type, out var objectEvents))
-//         {
-//             objectEvents = new Dictionary<string, (INetSerializable NetField, EventInfo? EventInfo)>();
-//             ManagedObject.CachedEvents[this.type] = objectEvents;
-//         }
-//
-//         if (this.entity is not INetObject<NetFields> obj)
-//         {
-//             return;
-//         }
-//
-//         // Create targets for field if they dont' exist
-//         var fieldName = obj.NetFields.Name + ": " + name;
-//         if (!this.fieldTargets.TryGetValue(fieldName, out var targets))
-//         {
-//             targets = new HashSet<TextureKey>();
-//             this.fieldTargets[fieldName] = targets;
-//         }
-//
-//         // Check if already subscribed to event and add target
-//         if (this.subscribedEvents.ContainsKey(fieldName))
-//         {
-//             targets.Add(key);
-//             return;
-//         }
-//
-//         // Check if cached event info exists
-//         if (!objectEvents.TryGetValue(fieldName, out var objectEvent))
-//         {
-//             foreach (var field in obj.NetFields.GetFields())
-//             {
-//                 // Check if field name matches
-//                 if (!field.Name.Equals(fieldName, StringComparison.OrdinalIgnoreCase))
-//                 {
-//                     continue;
-//                 }
-//
-//                 var fieldType = field.GetType();
-//                 var eventInfo = fieldType.GetEvent("fieldChangeVisibleEvent");
-//                 objectEvents[fieldName] = (field, eventInfo);
-//                 break;
-//             }
-//         }
-//
-//         if (objectEvent.EventInfo?.EventHandlerType == null)
-//         {
-//             return;
-//         }
-//
-//         // Create a delegate for the event
-//         EventHandler eventHandler = (_, _) => this.ClearCache(targets.Select(t => t.Target));
-//
-//         objectEvent.EventInfo.AddEventHandler(objectEvent.NetField, eventHandler);
-//         this.subscribedEvents[fieldName] = (objectEvent.NetField, eventHandler);
-//         targets.Add(key);
-//     }
-//
-//     private void UnsubscribeFromFieldEvents(TextureKey key)
-//     {
-//         if (!ManagedObject.CachedEvents.TryGetValue(this.type, out var objectEvents))
-//         {
-//             return;
-//         }
-//
-//         foreach (var (fieldName, (netField, eventInfo)) in objectEvents)
-//         {
-//             if (!this.fieldTargets.TryGetValue(fieldName, out var targets))
-//             {
-//                 continue;
-//             }
-//
-//             // Remove this particular target
-//             targets.Remove(key);
-//             if (targets.Any())
-//             {
-//                 continue;
-//             }
-//
-//             // If no targets remain, then unsubscribe from the actual event
-//             if (eventInfo?.EventHandlerType == null
-//                 || !this.subscribedEvents.TryGetValue(fieldName, out var subscribedEvent))
-//             {
-//                 continue;
-//             }
-//
-//             eventInfo.RemoveEventHandler(netField, subscribedEvent.Handler);
-//             this.subscribedEvents.Remove(fieldName);
-//         }
-//     }
-// }
+namespace StardewMods.SpritePatcher.Framework.Services;
+
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
+using HarmonyLib;
+using StardewMods.Common.Services;
+using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.SpritePatcher.Framework.Interfaces;
+
+/// <inheritdoc cref="StardewMods.SpritePatcher.Framework.Interfaces.INetFieldManager" />
+internal sealed class NetFieldManager : BaseService, INetFieldManager
+{
+#nullable disable
+    private static NetFieldManager instance;
+#nullable enable
+
+    private readonly
+        Dictionary<Type, Dictionary<string, (EventInfo? EventInfo, Delegate? Handler,
+            ConditionalWeakTable<object, HashSet<IManagedObject>> Handlers)>> cachedEvents = [];
+
+    /// <summary>Initializes a new instance of the <see cref="NetFieldManager" /> class.</summary>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
+    /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    public NetFieldManager(ILog log, IManifest manifest)
+        : base(log, manifest) =>
+        NetFieldManager.instance = this;
+
+    /// <inheritdoc />
+    public void SubscribeToFieldEvent(IManagedObject target, object source, string eventName)
+    {
+        var type = source.GetType();
+        if (!this.cachedEvents.TryGetValue(type, out var eventsBySourceType))
+        {
+            eventsBySourceType =
+                new Dictionary<string, (EventInfo? EventInfo, Delegate? Handler,
+                    ConditionalWeakTable<object, HashSet<IManagedObject>> Handlers)>(StringComparer.OrdinalIgnoreCase);
+
+            this.cachedEvents[type] = eventsBySourceType;
+        }
+
+        if (!eventsBySourceType.TryGetValue(eventName, out var eventInfoByEventName))
+        {
+            eventInfoByEventName.EventInfo = type.GetEvent(eventName);
+            eventInfoByEventName.Handlers = new ConditionalWeakTable<object, HashSet<IManagedObject>>();
+            eventsBySourceType[eventName] = eventInfoByEventName;
+        }
+
+        if (eventInfoByEventName.EventInfo?.EventHandlerType == null)
+        {
+            return;
+        }
+
+        // Get Delegate from cache or generate a new one through ilGenerator
+        if (eventInfoByEventName.Handler is null)
+        {
+            var invokeMethod = eventInfoByEventName.EventInfo.EventHandlerType.GetMethod("Invoke");
+            if (invokeMethod == null)
+            {
+                return;
+            }
+
+            var dynamicMethod = new DynamicMethod(
+                $"NetFieldManager_{eventInfoByEventName.EventInfo.Name}",
+                invokeMethod.ReturnType,
+                invokeMethod.GetParameters().Select(p => p.ParameterType).ToArray(),
+                typeof(NetFieldManager).Module);
+
+            var il = dynamicMethod.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldstr, eventName);
+            il.Emit(
+                OpCodes.Call,
+                AccessTools.DeclaredMethod(typeof(NetFieldManager), nameof(NetFieldManager.GenericHandler)));
+
+            il.Emit(OpCodes.Ret);
+
+            eventInfoByEventName.Handler =
+                dynamicMethod.CreateDelegate(eventInfoByEventName.EventInfo.EventHandlerType);
+        }
+
+        eventInfoByEventName.EventInfo.AddEventHandler(source, eventInfoByEventName.Handler);
+
+        if (!eventInfoByEventName.Handlers.TryGetValue(source, out var subscribers))
+        {
+            subscribers = new HashSet<IManagedObject>();
+            eventInfoByEventName.Handlers.Add(source, subscribers);
+        }
+
+        subscribers.Add(target);
+    }
+
+    private static void GenericHandler(object source, string eventName)
+    {
+        var type = source.GetType();
+        NetFieldManager.instance.Log.Trace("Sending event from {0}.{1}.", source, eventName);
+        if (!NetFieldManager.instance.cachedEvents.TryGetValue(type, out var eventsBySourceType))
+        {
+            return;
+        }
+
+        if (!eventsBySourceType.TryGetValue(eventName, out var eventInfoByEventName))
+        {
+            return;
+        }
+
+        // Send event to subscribers
+        if (eventInfoByEventName.Handlers.TryGetValue(source, out var subscribers))
+        {
+            foreach (var subscriber in subscribers)
+            {
+                subscriber.ClearCache();
+            }
+
+            subscribers.Clear();
+        }
+
+        if (eventInfoByEventName.EventInfo == null || eventInfoByEventName.Handler == null)
+        {
+            return;
+        }
+
+        // Unsubscribe handler from event
+        eventInfoByEventName.EventInfo.RemoveEventHandler(source, eventInfoByEventName.Handler);
+    }
+}

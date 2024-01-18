@@ -32,6 +32,7 @@ internal sealed class CodeManager : BaseService
     private readonly IManifest manifest;
     private readonly IMonitor monitor;
     private readonly IModRegistry modRegistry;
+    private readonly INetFieldManager netFieldManager;
     private readonly string path;
     private readonly List<MetadataReference> references = [];
     private readonly string template;
@@ -44,6 +45,7 @@ internal sealed class CodeManager : BaseService
     /// <param name="modHelper">Dependency for events, input, and content.</param>
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
     /// <param name="modRegistry">Dependency used for fetching metadata about loaded mods.</param>
+    /// <param name="netFieldManager">Dependency used for managing net field events.</param>
     public CodeManager(
         IEventManager eventManager,
         IGameContentHelper gameContentHelper,
@@ -51,7 +53,8 @@ internal sealed class CodeManager : BaseService
         IManifest manifest,
         IModHelper modHelper,
         IMonitor monitor,
-        IModRegistry modRegistry)
+        IModRegistry modRegistry,
+        INetFieldManager netFieldManager)
         : base(log, manifest)
     {
         this.assetPath = this.ModId + "/Patches";
@@ -60,6 +63,7 @@ internal sealed class CodeManager : BaseService
         this.manifest = manifest;
         this.monitor = monitor;
         this.modRegistry = modRegistry;
+        this.netFieldManager = netFieldManager;
         this.template = File.ReadAllText(Path.Join(modHelper.DirectoryPath, "assets/ConditionalTextureTemplate.cs"));
         this.path = Path.Combine(modHelper.DirectoryPath, "_generated");
         if (!Directory.Exists(this.path))
@@ -205,7 +209,13 @@ internal sealed class CodeManager : BaseService
                 var type = assembly.GetType($"{modId}.Runner");
                 var contentPack = (IContentPack)modInfo.GetType().GetProperty("ContentPack")!.GetValue(modInfo)!;
                 var ctor = type!.GetConstructor([typeof(PatchModelCtorArgs)]);
-                var ctorArgs = new PatchModelCtorArgs(this.monitor, key, contentPack, contentModel);
+                var ctorArgs = new PatchModelCtorArgs(
+                    this.monitor,
+                    this.netFieldManager,
+                    key,
+                    contentPack,
+                    contentModel);
+
                 var patchModel = (BasePatchModel)ctor!.Invoke([ctorArgs]);
 
                 if (!this.patches.TryGetValue(contentModel.Target, out var prioritizedPatches))

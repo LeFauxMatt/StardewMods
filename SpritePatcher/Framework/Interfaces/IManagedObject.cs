@@ -35,6 +35,9 @@ public interface IManagedObject
         float layerDepth,
         DrawMethod drawMethod);
 
+    /// <summary>Clears all cached textures.</summary>
+    public void ClearCache();
+
     /// <summary>Clears the cache for the specified textureName.</summary>
     /// <param name="targets">The name of the texture caches to be cleared.</param>
     public void ClearCache(IEnumerable<string> targets);

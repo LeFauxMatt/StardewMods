@@ -37,10 +37,10 @@ internal sealed class ManagedObject : IManagedObject
         this.textureBuilder = textureBuilder;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public IHaveModData Entity { get; }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Draw(
         SpriteBatch spriteBatch,
         Texture2D texture,
@@ -54,7 +54,10 @@ internal sealed class ManagedObject : IManagedObject
         float layerDepth,
         DrawMethod drawMethod)
     {
-        if (!this.TryGetTexture(texture, new TextureKey(texture.Name, sourceRectangle, drawMethod), out var newTexture))
+        if (!this.TryGetTexture(
+            texture,
+            new TextureKey(texture.Name, sourceRectangle, drawMethod, scale),
+            out var newTexture))
         {
             spriteBatch.Draw(texture, position, sourceRectangle, color, rotation, origin, scale, effects, layerDepth);
             return;
@@ -72,7 +75,14 @@ internal sealed class ManagedObject : IManagedObject
             layerDepth);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    public void ClearCache()
+    {
+        this.cachedTextures.Clear();
+        this.disabledTextures.Clear();
+    }
+
+    /// <inheritdoc />
     public void ClearCache(IEnumerable<string> targets)
     {
         foreach (var target in targets)
@@ -110,7 +120,9 @@ internal sealed class ManagedObject : IManagedObject
         var conditionalPatches = allPatches
             .Where(
                 patch => patch.DrawMethods.Contains(key.DrawMethod)
-                    && (patch.SourceArea is null || patch.SourceArea == key.Area))
+                    && (patch.SourceArea is null
+                        || key.Area is null
+                        || patch.SourceArea.Value.Intersects(key.Area.Value)))
             .ToList();
 
         // Add any net fields that will be used to invalidate the cache for this specific texture
@@ -122,11 +134,7 @@ internal sealed class ManagedObject : IManagedObject
         }
 
         var patchesToApply = conditionalPatches.Where(patch => patch.Run(this)).ToList();
-        if (this.textureBuilder.TryBuildTexture(
-            patchesToApply,
-            baseTexture,
-            key.Area ?? new Rectangle(0, 0, baseTexture.Width, baseTexture.Height),
-            out texture))
+        if (this.textureBuilder.TryBuildTexture(key, baseTexture, patchesToApply, out texture))
         {
             this.cachedTextures[key] = texture;
             return true;

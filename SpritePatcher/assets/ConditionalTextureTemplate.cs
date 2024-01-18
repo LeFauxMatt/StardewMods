@@ -25,14 +25,9 @@ public class Runner : global::StardewMods.SpritePatcher.Framework.BasePatchModel
 
     public override bool Run(IManagedObject managedObject)
     {
-        this.Texture = null;
-        this.Area = Rectangle.Empty;
-        this.Tint = null;
+        this.BeforeRun(managedObject);
         this.ActualRun(managedObject.Entity);
-        if (this.Texture is null) return false;
-        this.Area ??= new Rectangle(0, 0, this.Texture.Width, this.Texture.Height);
-        if (this.Area.Value.Right > this.Texture.Width || this.Area.Value.Bottom > this.Texture.Height) return false;
-        return true;
+        return this.AfterRun();
     }
 
     public void ActualRun(IHaveModData entity)
