@@ -1,4 +1,4 @@
-namespace StardewMods.EnhancedJunimoChests.Models;
+namespace StardewMods.CrystallineJunimoChests.Models;
 
 using Microsoft.Xna.Framework;
 

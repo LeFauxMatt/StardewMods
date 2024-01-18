@@ -1,10 +1,10 @@
 namespace StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 
+#nullable disable
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Utilities;
 
-#nullable disable
 /// <summary>The API which lets other mods add a config UI through Generic Mod Config Menu.</summary>
 public interface IGenericModConfigMenuApi
 {
@@ -14,12 +14,12 @@ public interface IGenericModConfigMenuApi
     /// <param name="setValue">Set a new value in the mod config.</param>
     /// <param name="name">The label text to show in the form.</param>
     /// <param name="tooltip">
-    ///     The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
-    ///     tooltip.
+    /// The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
+    /// tooltip.
     /// </param>
     /// <param name="fieldId">
-    ///     The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
-    ///     randomized ID.
+    /// The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
+    /// randomized ID.
     /// </param>
     void AddBoolOption(
         IManifest mod,
@@ -37,42 +37,42 @@ public interface IGenericModConfigMenuApi
     /// <param name="mod">The mod's manifest.</param>
     /// <param name="name">The label text to show in the form.</param>
     /// <param name="draw">
-    ///     Draw the option in the config UI. This is called with the sprite batch being rendered and the pixel
-    ///     position at which to start drawing.
+    /// Draw the option in the config UI. This is called with the sprite batch being rendered and the pixel
+    /// position at which to start drawing.
     /// </param>
     /// <param name="tooltip">
-    ///     The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
-    ///     tooltip.
+    /// The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
+    /// tooltip.
     /// </param>
     /// <param name="beforeMenuOpened">A callback raised just before the menu containing this option is opened.</param>
     /// <param name="beforeSave">
-    ///     A callback raised before the form's current values are saved to the config (i.e. before the
-    ///     <c>save</c> callback passed to <see cref="Register" />).
+    /// A callback raised before the form's current values are saved to the config (i.e. before the
+    /// <c>save</c> callback passed to <see cref="Register" />).
     /// </param>
     /// <param name="afterSave">
-    ///     A callback raised after the form's current values are saved to the config (i.e. after the
-    ///     <c>save</c> callback passed to <see cref="Register" />).
+    /// A callback raised after the form's current values are saved to the config (i.e. after the
+    /// <c>save</c> callback passed to <see cref="Register" />).
     /// </param>
     /// <param name="beforeReset">
-    ///     A callback raised before the form is reset to its default values (i.e. before the
-    ///     <c>reset</c> callback passed to <see cref="Register" />).
+    /// A callback raised before the form is reset to its default values (i.e. before the
+    /// <c>reset</c> callback passed to <see cref="Register" />).
     /// </param>
     /// <param name="afterReset">
-    ///     A callback raised after the form is reset to its default values (i.e. after the <c>reset</c>
-    ///     callback passed to <see cref="Register" />).
+    /// A callback raised after the form is reset to its default values (i.e. after the <c>reset</c>
+    /// callback passed to <see cref="Register" />).
     /// </param>
     /// <param name="beforeMenuClosed">A callback raised just before the menu containing this option is closed.</param>
     /// <param name="height">
-    ///     The pixel height to allocate for the option in the form, or <c>null</c> for a standard input-sized
-    ///     option. This is called and cached each time the form is opened.
+    /// The pixel height to allocate for the option in the form, or <c>null</c> for a standard input-sized
+    /// option. This is called and cached each time the form is opened.
     /// </param>
     /// <param name="fieldId">
-    ///     The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
-    ///     randomized ID.
+    /// The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
+    /// randomized ID.
     /// </param>
     /// <remarks>
-    ///     The custom logic represented by the callback parameters is responsible for managing its own state if needed.
-    ///     For example, you can store state in a static field or use closures to use a state variable.
+    /// The custom logic represented by the callback parameters is responsible for managing its own state if needed.
+    /// For example, you can store state in a static field or use closures to use a state variable.
     /// </remarks>
     void AddComplexOption(
         IManifest mod,
@@ -105,12 +105,12 @@ public interface IGenericModConfigMenuApi
     /// <param name="setValue">Set a new value in the mod config.</param>
     /// <param name="name">The label text to show in the form.</param>
     /// <param name="tooltip">
-    ///     The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
-    ///     tooltip.
+    /// The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
+    /// tooltip.
     /// </param>
     /// <param name="fieldId">
-    ///     The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
-    ///     randomized ID.
+    /// The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
+    /// randomized ID.
     /// </param>
     void AddKeybind(
         IManifest mod,
@@ -126,12 +126,12 @@ public interface IGenericModConfigMenuApi
     /// <param name="setValue">Set a new value in the mod config.</param>
     /// <param name="name">The label text to show in the form.</param>
     /// <param name="tooltip">
-    ///     The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
-    ///     tooltip.
+    /// The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
+    /// tooltip.
     /// </param>
     /// <param name="fieldId">
-    ///     The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
-    ///     randomized ID.
+    /// The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
+    /// randomized ID.
     /// </param>
     void AddKeybindList(
         IManifest mod,
@@ -147,16 +147,16 @@ public interface IGenericModConfigMenuApi
     /// <param name="setValue">Set a new value in the mod config.</param>
     /// <param name="name">The label text to show in the form.</param>
     /// <param name="tooltip">
-    ///     The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
-    ///     tooltip.
+    /// The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
+    /// tooltip.
     /// </param>
     /// <param name="min">The minimum allowed value, or <c>null</c> to allow any.</param>
     /// <param name="max">The maximum allowed value, or <c>null</c> to allow any.</param>
     /// <param name="interval">The interval of values that can be selected.</param>
     /// <param name="formatValue">Get the display text to show for a value, or <c>null</c> to show the number as-is.</param>
     /// <param name="fieldId">
-    ///     The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
-    ///     randomized ID.
+    /// The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
+    /// randomized ID.
     /// </param>
     void AddNumberOption(
         IManifest mod,
@@ -176,16 +176,16 @@ public interface IGenericModConfigMenuApi
     /// <param name="setValue">Set a new value in the mod config.</param>
     /// <param name="name">The label text to show in the form.</param>
     /// <param name="tooltip">
-    ///     The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
-    ///     tooltip.
+    /// The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
+    /// tooltip.
     /// </param>
     /// <param name="min">The minimum allowed value, or <c>null</c> to allow any.</param>
     /// <param name="max">The maximum allowed value, or <c>null</c> to allow any.</param>
     /// <param name="interval">The interval of values that can be selected.</param>
     /// <param name="formatValue">Get the display text to show for a value, or <c>null</c> to show the number as-is.</param>
     /// <param name="fieldId">
-    ///     The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
-    ///     randomized ID.
+    /// The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
+    /// randomized ID.
     /// </param>
     void AddNumberOption(
         IManifest mod,
@@ -203,15 +203,15 @@ public interface IGenericModConfigMenuApi
      ** Multi-page management
      ****/
     /// <summary>
-    ///     Start a new page in the mod's config UI, or switch to that page if it already exists. All options registered
-    ///     after this will be part of that page.
+    /// Start a new page in the mod's config UI, or switch to that page if it already exists. All options registered
+    /// after this will be part of that page.
     /// </summary>
     /// <param name="mod">The mod's manifest.</param>
     /// <param name="pageId">The unique page ID.</param>
     /// <param name="pageTitle">The page title shown in its UI, or <c>null</c> to show the <paramref name="pageId" /> value.</param>
     /// <remarks>
-    ///     You must also call <see cref="AddPageLink" /> to make the page accessible. This is only needed to set up a
-    ///     multi-page config UI. If you don't call this method, all options will be part of the mod's main config UI instead.
+    /// You must also call <see cref="AddPageLink" /> to make the page accessible. This is only needed to set up a
+    /// multi-page config UI. If you don't call this method, all options will be part of the mod's main config UI instead.
     /// </remarks>
     void AddPage(IManifest mod, string pageId, Func<string> pageTitle = null);
 
@@ -235,8 +235,8 @@ public interface IGenericModConfigMenuApi
     /// <param name="mod">The mod's manifest.</param>
     /// <param name="text">The title text shown in the form.</param>
     /// <param name="tooltip">
-    ///     The tooltip text shown when the cursor hovers on the title, or <c>null</c> to disable the
-    ///     tooltip.
+    /// The tooltip text shown when the cursor hovers on the title, or <c>null</c> to disable the
+    /// tooltip.
     /// </param>
     void AddSectionTitle(IManifest mod, Func<string> text, Func<string> tooltip = null);
 
@@ -246,17 +246,17 @@ public interface IGenericModConfigMenuApi
     /// <param name="setValue">Set a new value in the mod config.</param>
     /// <param name="name">The label text to show in the form.</param>
     /// <param name="tooltip">
-    ///     The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
-    ///     tooltip.
+    /// The tooltip text shown when the cursor hovers on the field, or <c>null</c> to disable the
+    /// tooltip.
     /// </param>
     /// <param name="allowedValues">The values that can be selected, or <c>null</c> to allow any.</param>
     /// <param name="formatAllowedValue">
-    ///     Get the display text to show for a value from <paramref name="allowedValues" />, or
-    ///     <c>null</c> to show the values as-is.
+    /// Get the display text to show for a value from <paramref name="allowedValues" />, or
+    /// <c>null</c> to show the values as-is.
     /// </param>
     /// <param name="fieldId">
-    ///     The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
-    ///     randomized ID.
+    /// The unique field ID for use with <see cref="OnFieldChanged" />, or <c>null</c> to auto-generate a
+    /// randomized ID.
     /// </param>
     void AddTextOption(
         IManifest mod,
@@ -272,8 +272,8 @@ public interface IGenericModConfigMenuApi
     /// <param name="mod">The mod's manifest.</param>
     /// <param name="onChange">The method to call with the option's unique field ID and new value.</param>
     /// <remarks>
-    ///     Options use a randomized ID by default; you'll likely want to specify the <c>fieldId</c> argument when adding
-    ///     options if you use this.
+    /// Options use a randomized ID by default; you'll likely want to specify the <c>fieldId</c> argument when adding
+    /// options if you use this.
     /// </remarks>
     void OnFieldChanged(IManifest mod, Action<string, object> onChange);
 
@@ -294,8 +294,8 @@ public interface IGenericModConfigMenuApi
     /// <param name="save">Save the mod's current config to the <c>config.json</c> file.</param>
     /// <param name="titleScreenOnly">Whether the options can only be edited from the title screen.</param>
     /// <remarks>
-    ///     Each mod can only be registered once, unless it's deleted via <see cref="Unregister" /> before calling this
-    ///     again.
+    /// Each mod can only be registered once, unless it's deleted via <see cref="Unregister" /> before calling this
+    /// again.
     /// </remarks>
     void Register(IManifest mod, Action reset, Action save, bool titleScreenOnly = false);
 
@@ -308,8 +308,8 @@ public interface IGenericModConfigMenuApi
     /// <summary>Get the currently-displayed mod config menu, if any.</summary>
     /// <param name="mod">The manifest of the mod whose config menu is being shown, or <c>null</c> if not applicable.</param>
     /// <param name="page">
-    ///     The page ID being shown for the current config menu, or <c>null</c> if not applicable. This may be
-    ///     <c>null</c> even if a mod config menu is shown (e.g. because the mod doesn't have pages).
+    /// The page ID being shown for the current config menu, or <c>null</c> if not applicable. This may be
+    /// <c>null</c> even if a mod config menu is shown (e.g. because the mod doesn't have pages).
     /// </param>
     /// <returns>Returns whether a mod config menu is being shown.</returns>
     bool TryGetCurrentMenu(out IManifest mod, out string page);

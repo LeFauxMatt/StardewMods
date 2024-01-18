@@ -76,11 +76,11 @@ internal struct HslColor
         }
         else if (Math.Abs(fG - max) < HslColor.Tolerance)
         {
-            hsl.H = ((1f / 3f) + deltaR) - deltaB;
+            hsl.H = (1f / 3f) + deltaR - deltaB;
         }
         else if (Math.Abs(fB - max) < HslColor.Tolerance)
         {
-            hsl.H = ((2f / 3f) + deltaG) - deltaR;
+            hsl.H = (2f / 3f) + deltaG - deltaR;
         }
 
         if (hsl.H < 0)
@@ -107,7 +107,7 @@ internal struct HslColor
             h -= 1;
         }
 
-        return new(h, this.S, this.L);
+        return new HslColor(h, this.S, this.L);
     }
 
     public Color ToRgbColor()
@@ -122,7 +122,7 @@ internal struct HslColor
         }
         else
         {
-            var v2 = (this.L + this.S) - (this.S * this.L);
+            var v2 = this.L + this.S - (this.S * this.L);
             if (this.L < 0.5f)
             {
                 v2 = this.L * (1 + this.S);

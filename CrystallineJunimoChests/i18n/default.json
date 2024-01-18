@@ -1,10 +1,8 @@
 {
   // Message displayed when the player does not have the required cost
   "message.alert": "You need {{cost}} {{item}} to infuse this {{chest}} to dye it {{color}}.",
-
   // Message displayed when the player has the required cost
   "message.confirm": "Spend {{cost}} {{item}} to make this {{chest}} {{color}}?",
-
   "color.Dark Blue": "dark blue",
   "color.Blue": "blue",
   "color.Teal": "teal",
@@ -24,5 +22,5 @@
   "color.Black": "black",
   "color.Gray": "gray",
   "color.Silver": "silver",
-  "color.White": "white",
+  "color.White": "white"
 }

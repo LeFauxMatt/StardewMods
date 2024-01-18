@@ -5,12 +5,12 @@ internal sealed class FuryPatcher(FuryCoreIntegration furyCore, ILog log) : IPat
 {
     private readonly IPatchManager patchManager = furyCore.Api!.CreatePatchService(log);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Add(string id, params ISavedPatch[] patches) => this.patchManager.Add(id, patches);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Patch(string id) => this.patchManager.Patch(id);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Unpatch(string id) => this.patchManager.Unpatch(id);
 }

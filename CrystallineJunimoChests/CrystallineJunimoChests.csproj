@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Name>Enhanced Junimo Chests</Name>
+    <Name>Crystalline Junimo Chests</Name>
     <Description>Adds enhanced Junimo Chests which can access multiple inventories depending on their color.</Description>
     <Version>1.0.0-alpha.20240117</Version>
     <EnableHarmony>true</EnableHarmony>
-    <RootNamespace>StardewMods.EnhancedJunimoChests</RootNamespace>
-    <UniqueId>furyx639.EnhancedJunimoChests</UniqueId>
+    <RootNamespace>StardewMods.CrystallineJunimoChests</RootNamespace>
+    <UniqueId>furyx639.CrystallineJunimoChests</UniqueId>
     <UpdateKeys>Nexus:</UpdateKeys>
   </PropertyGroup>
   <ItemGroup>

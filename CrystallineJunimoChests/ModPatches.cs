@@ -1,9 +1,9 @@
-namespace StardewMods.EnhancedJunimoChests;
+namespace StardewMods.CrystallineJunimoChests;
 
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewMods.EnhancedJunimoChests.Models;
+using StardewMods.CrystallineJunimoChests.Models;
 using StardewValley.Objects;
 
 /// <summary>Harmony Patches for Enhanced Junimo Chests.</summary>

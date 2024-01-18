@@ -12,16 +12,12 @@ public interface IExpandedStorageApi
     /// <returns>true if the data was successfully retrieved; otherwise, false.</returns>
     public bool TryGetData(Item item, [NotNullWhen(true)] out IStorageData? storageData);
 
-    /// <summary>
-    /// Subscribes to an event handler.
-    /// </summary>
+    /// <summary>Subscribes to an event handler.</summary>
     /// <typeparam name="TEventArgs">The type of the event arguments.</typeparam>
     /// <param name="handler">The event handler to subscribe.</param>
     void Subscribe<TEventArgs>(Action<TEventArgs> handler);
 
-    /// <summary>
-    /// Unsubscribes an event handler from an event.
-    /// </summary>
+    /// <summary>Unsubscribes an event handler from an event.</summary>
     /// <param name="handler">The event handler to unsubscribe.</param>
     /// <typeparam name="TEventArgs">The type of the event arguments.</typeparam>
     void Unsubscribe<TEventArgs>(Action<TEventArgs> handler);

@@ -19,8 +19,8 @@ public interface IFluent<Key>
     /// <summary>Returns a translation for a given key.</summary>
     /// <param name="key">The key to retrieve a translation for.</param>
     /// <param name="tokens">
-    ///     An object containing token key/value pairs. This can be an anonymous object (like
-    ///     <c>new { value = 42, name = "Cranberries" }</c>), a dictionary, or a class instance.
+    /// An object containing token key/value pairs. This can be an anonymous object (like
+    /// <c>new { value = 42, name = "Cranberries" }</c>), a dictionary, or a class instance.
     /// </param>
     string Get(Key key, object? tokens);
 }

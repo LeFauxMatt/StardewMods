@@ -6,33 +6,33 @@ using Microsoft.Xna.Framework.Graphics;
 /// <inheritdoc />
 internal abstract class BaseComplexOption : IComplexOption
 {
-    /// <inheritdoc/>
-    public abstract int Height { get; protected set; }
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual string Name => string.Empty;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual string Tooltip => string.Empty;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    public abstract int Height { get; protected set; }
+
+    /// <inheritdoc />
     public abstract void Draw(SpriteBatch spriteBatch, Vector2 pos);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual void BeforeMenuOpened() { }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual void BeforeMenuClosed() { }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual void BeforeSave() { }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual void AfterSave() { }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual void BeforeReset() { }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual void AfterReset() { }
 }

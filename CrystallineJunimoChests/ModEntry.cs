@@ -1,9 +1,9 @@
-﻿namespace StardewMods.EnhancedJunimoChests;
+﻿namespace StardewMods.CrystallineJunimoChests;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
-using StardewMods.EnhancedJunimoChests.Models;
+using StardewMods.CrystallineJunimoChests.Models;
 using StardewValley.Menus;
 using StardewValley.Objects;
 

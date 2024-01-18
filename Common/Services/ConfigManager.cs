@@ -4,8 +4,8 @@ using StardewMods.Common.Interfaces;
 using StardewMods.Common.Models.Events;
 
 /// <summary>
-/// The ConfigManager class is responsible for managing the configuration for a mod.
-/// It provides methods to initialize, reset, save, and retrieve the configuration.
+/// The ConfigManager class is responsible for managing the configuration for a mod. It provides methods to
+/// initialize, reset, save, and retrieve the configuration.
 /// </summary>
 /// <typeparam name="TConfig">The type of the configuration.</typeparam>
 internal class ConfigManager<TConfig>

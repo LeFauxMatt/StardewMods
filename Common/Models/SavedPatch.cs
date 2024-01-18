@@ -5,7 +5,11 @@ using StardewMods.Common.Enums;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc />
-internal sealed class SavedPatch(MethodBase original, MethodInfo patch, PatchType patchType, string? logId = default) : ISavedPatch
+internal sealed class SavedPatch(
+    MethodBase original,
+    MethodInfo patch,
+    PatchType patchType,
+    string? logId = default) : ISavedPatch
 {
     /// <inheritdoc />
     public string? LogId { get; } = logId;

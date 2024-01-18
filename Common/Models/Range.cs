@@ -46,5 +46,6 @@ internal sealed class Range<T>
         return this.Maximum.CompareTo(value) <= 0 ? this.Maximum : value;
     }
 
-    private bool IsValid() => this.Minimum is not null && this.Maximum is not null && this.Minimum.CompareTo(this.Maximum) <= 0;
+    private bool IsValid() =>
+        this.Minimum is not null && this.Maximum is not null && this.Minimum.CompareTo(this.Maximum) <= 0;
 }

@@ -5,27 +5,19 @@ using StardewMods.Common.Interfaces;
 using StardewMods.Common.Models;
 using StardewMods.Common.Services.Integrations.FuryCore;
 
-/// <summary>
-/// Represents a base event manager service.
-/// </summary>
+/// <summary>Represents a base event manager service.</summary>
 internal class BaseEventManager : BaseService, IEventManager
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BaseEventManager"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="BaseEventManager" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     public BaseEventManager(ILog log, IManifest manifest)
-        : base(log, manifest)
-    {
-    }
+        : base(log, manifest) { }
 
-    /// <summary>
-    /// Gets the subscribers.
-    /// </summary>
+    /// <summary>Gets the subscribers.</summary>
     protected Dictionary<Type, SortedList<int, List<Delegate>>> Subscribers { get; } = new();
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual void Publish<TEventArgs>(TEventArgs eventArgs)
         where TEventArgs : EventArgs
     {
@@ -63,7 +55,7 @@ internal class BaseEventManager : BaseService, IEventManager
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual void Publish<TEventType, TEventArgs>(TEventArgs eventArgs)
         where TEventArgs : EventArgs, TEventType
     {
@@ -101,7 +93,7 @@ internal class BaseEventManager : BaseService, IEventManager
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual void Subscribe<TEventArgs>(Action<TEventArgs> handler)
     {
         var eventType = typeof(TEventArgs);
@@ -126,7 +118,7 @@ internal class BaseEventManager : BaseService, IEventManager
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual void Unsubscribe<TEventArgs>(Action<TEventArgs> handler)
     {
         var eventType = typeof(TEventArgs);

@@ -7,9 +7,7 @@ using StardewValley.Mods;
 /// <summary>Common extension methods.</summary>
 internal static class CommonExtensions
 {
-    /// <summary>
-    /// Generate a box of coordinates centered at a specified point with a given radius.
-    /// </summary>
+    /// <summary>Generate a box of coordinates centered at a specified point with a given radius.</summary>
     /// <param name="center">The center point of the box.</param>
     /// <param name="radius">The radius of the box.</param>
     /// <returns>An enumerable collection of Vector2 coordinates representing the points in the box.</returns>
@@ -54,23 +52,23 @@ internal static class CommonExtensions
     /// <typeparam name="T">The event handler type.</typeparam>
     public static void InvokeAll<T>(this EventHandler<T>? eventHandler, object source, T param)
     {
-    if (eventHandler is null)
-    {
-        return;
-    }
+        if (eventHandler is null)
+        {
+            return;
+        }
 
-    foreach (var @delegate in eventHandler.GetInvocationList())
-    {
-        var handler = (EventHandler<T>)@delegate;
-        try
+        foreach (var @delegate in eventHandler.GetInvocationList())
         {
-            handler(source, param);
+            var handler = (EventHandler<T>)@delegate;
+            try
+            {
+                handler(source, param);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
-        catch (Exception)
-        {
-            // ignored
-        }
-    }
     }
 
     /// <summary>Maps a float value from one range to the same proportional value in another integer range.</summary>

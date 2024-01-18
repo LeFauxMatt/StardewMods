@@ -38,7 +38,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FindAnything", "FindAnythin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpritePatcher", "SpritePatcher\SpritePatcher.csproj", "{4632D2C9-A337-461B-9F74-28F779078879}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnhancedJunimoChest", "EnhancedJunimoChest\EnhancedJunimoChest.csproj", "{0C576B26-09D4-4B7B-AA3F-D93CA61865EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrystallineJunimoChests", "CrystallineJunimoChests\CrystallineJunimoChests.csproj", "{0C576B26-09D4-4B7B-AA3F-D93CA61865EE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

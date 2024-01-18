@@ -1,32 +1,31 @@
 namespace StardewMods.Common.Services.Integrations.FuryCore;
 
 /// <inheritdoc />
-
 internal sealed class FuryLogger(FuryCoreIntegration furyCoreIntegration, IMonitor monitor) : ILog
 {
     private readonly ILog log = furyCoreIntegration.Api!.CreateLogService(monitor);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Trace(string message, object?[]? args = null) => this.log.Trace(message, args);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void TraceOnce(string message, params object?[]? args) => this.log.TraceOnce(message, args);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Debug(string message, object?[]? args = null) => this.log.Debug(message, args);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Info(string message, object?[]? args = null) => this.log.Info(message, args);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Warn(string message, object?[]? args = null) => this.log.Warn(message, args);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void WarnOnce(string message, object?[]? args = null) => this.log.WarnOnce(message, args);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Error(string message, object?[]? args = null) => this.log.Error(message, args);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Alert(string message, object?[]? args = null) => this.log.Alert(message, args);
 }
