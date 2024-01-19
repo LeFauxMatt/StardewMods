@@ -1,6 +1,7 @@
 namespace StardewMods.SpritePatcher.Framework.Services.TextureMangers.TerrainFeatures;
 
 using HarmonyLib;
+using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Models;
@@ -30,7 +31,7 @@ internal sealed class TreeManager : BaseTextureManager
         this.Patches.Add(
             this.Id,
             new SavedPatch(
-                AccessTools.DeclaredMethod(typeof(Tree), nameof(Tree.draw)),
+                AccessTools.DeclaredMethod(typeof(Tree), nameof(Tree.draw), [typeof(SpriteBatch)]),
                 AccessTools.DeclaredMethod(typeof(BaseTextureManager), nameof(BaseTextureManager.Draw)),
                 PatchType.Transpiler),
             new SavedPatch(

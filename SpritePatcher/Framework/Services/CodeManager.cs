@@ -186,7 +186,7 @@ internal sealed class CodeManager : BaseService
             var parts = PathUtilities.GetSegments(key);
             if (parts.Length != 2)
             {
-                this.Log.Warn("Failed to load patch: {0}.\nInvalid id.", key);
+                this.Log.Warn("Failed to load paatch: {0}.\nInvalid id.", key);
                 continue;
             }
 

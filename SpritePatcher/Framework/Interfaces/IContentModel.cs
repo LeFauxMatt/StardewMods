@@ -18,9 +18,6 @@ public interface IContentModel
     /// <summary>Gets the mode that the patch will be applied.</summary>
     PatchMode PatchMode { get; }
 
-    /// <summary>Gets the net fields that will be used to invalidate the cache.</summary>
-    List<string>? NetFields { get; }
-
     /// <summary>Gets the priority of the patch which determines the order in which patches are applied.</summary>
     int Priority { get; }
 

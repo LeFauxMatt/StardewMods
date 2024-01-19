@@ -25,11 +25,15 @@ internal abstract class BaseTextureManager : BaseService, ITextureManager
     private static readonly CodeInstruction ConstructionDrawMethod = new(OpCodes.Ldc_I4_4);
     private static readonly CodeInstruction ShadowDrawMethod = new(OpCodes.Ldc_I4_5);
 
-    private static readonly CodeInstruction CallDraw = CodeInstruction.Call(
+    private static readonly CodeInstruction CallDraw1 = CodeInstruction.Call(
         typeof(BaseTextureManager),
-        nameof(BaseTextureManager.DrawCustom));
+        nameof(BaseTextureManager.DrawCustom1));
 
-    private static readonly MethodInfo SpriteBatchDraw = AccessTools.DeclaredMethod(
+    private static readonly CodeInstruction CallDraw2 = CodeInstruction.Call(
+        typeof(BaseTextureManager),
+        nameof(BaseTextureManager.DrawCustom2));
+
+    private static readonly MethodInfo SpriteBatchDraw1 = AccessTools.DeclaredMethod(
         typeof(SpriteBatch),
         nameof(SpriteBatch.Draw),
         [
@@ -40,6 +44,20 @@ internal abstract class BaseTextureManager : BaseService, ITextureManager
             typeof(float),
             typeof(Vector2),
             typeof(float),
+            typeof(SpriteEffects),
+            typeof(float),
+        ]);
+
+    private static readonly MethodInfo SpriteBatchDraw2 = AccessTools.DeclaredMethod(
+        typeof(SpriteBatch),
+        nameof(SpriteBatch.Draw),
+        [
+            typeof(Texture2D),
+            typeof(Rectangle),
+            typeof(Rectangle),
+            typeof(Color),
+            typeof(float),
+            typeof(Vector2),
             typeof(SpriteEffects),
             typeof(float),
         ]);
@@ -125,11 +143,17 @@ internal abstract class BaseTextureManager : BaseService, ITextureManager
     {
         foreach (var instruction in instructions)
         {
-            if (instruction.Calls(BaseTextureManager.SpriteBatchDraw))
+            if (instruction.Calls(BaseTextureManager.SpriteBatchDraw1))
             {
                 yield return new CodeInstruction(OpCodes.Ldarg_0);
                 yield return drawMethod;
-                yield return BaseTextureManager.CallDraw;
+                yield return BaseTextureManager.CallDraw1;
+            }
+            else if (instruction.Calls(BaseTextureManager.SpriteBatchDraw2))
+            {
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return drawMethod;
+                yield return BaseTextureManager.CallDraw2;
             }
             else
             {
@@ -138,7 +162,7 @@ internal abstract class BaseTextureManager : BaseService, ITextureManager
         }
     }
 
-    private static void DrawCustom(
+    private static void DrawCustom1(
         SpriteBatch spriteBatch,
         Texture2D texture,
         Vector2 position,
@@ -162,6 +186,33 @@ internal abstract class BaseTextureManager : BaseService, ITextureManager
             rotation,
             origin,
             scale,
+            effects,
+            layerDepth,
+            drawMethod);
+    }
+
+    private static void DrawCustom2(
+        SpriteBatch spriteBatch,
+        Texture2D texture,
+        Rectangle destinationRectangle,
+        Rectangle? sourceRectangle,
+        Color color,
+        float rotation,
+        Vector2 origin,
+        SpriteEffects effects,
+        float layerDepth,
+        IHaveModData entity,
+        DrawMethod drawMethod)
+    {
+        var managedObject = BaseTextureManager.instance.managedObjectFactory.GetOrAdd(entity);
+        managedObject.Draw(
+            spriteBatch,
+            texture,
+            destinationRectangle,
+            sourceRectangle,
+            color,
+            rotation,
+            origin,
             effects,
             layerDepth,
             drawMethod);

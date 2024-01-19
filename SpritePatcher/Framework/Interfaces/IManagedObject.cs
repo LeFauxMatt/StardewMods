@@ -10,17 +10,17 @@ public interface IManagedObject
     /// <summary>Gets the entity associated with this managed object.</summary>
     IHaveModData Entity { get; }
 
-    /// <summary>Draws a sprite on the screen using the specified parameters.</summary>
+    /// <summary>Submit a sprite for drawing in the current batch.</summary>
     /// <param name="spriteBatch">The SpriteBatch used to draw the sprite.</param>
-    /// <param name="texture">The texture of the sprite.</param>
-    /// <param name="position">The position of the sprite.</param>
-    /// <param name="sourceRectangle">The portion of the texture to draw. Null to draw the entire texture.</param>
-    /// <param name="color">The color to tint the sprite.</param>
-    /// <param name="rotation">The rotation angle of the sprite in radians.</param>
-    /// <param name="origin">The origin of the sprite, relative to its position.</param>
-    /// <param name="scale">The scaling factor applied to the sprite.</param>
-    /// <param name="effects">The SpriteEffects applied to the sprite.</param>
-    /// <param name="layerDepth">The layer depth of the sprite.</param>
+    /// <param name="texture">A texture.</param>
+    /// <param name="position">The drawing location on screen.</param>
+    /// <param name="sourceRectangle">An optional region on the texture which will be rendered. If null - draws full texture.</param>
+    /// <param name="color">A color mask.</param>
+    /// <param name="rotation">A rotation of this sprite.</param>
+    /// <param name="origin">Center of the rotation. 0,0 by default.</param>
+    /// <param name="scale">A scaling of this sprite.</param>
+    /// <param name="effects">Modificators for drawing. Can be combined.</param>
+    /// <param name="layerDepth">A depth of the layer of this sprite.</param>
     /// <param name="drawMethod">The method used for drawing the sprite.</param>
     public void Draw(
         SpriteBatch spriteBatch,
@@ -31,6 +31,29 @@ public interface IManagedObject
         float rotation,
         Vector2 origin,
         float scale,
+        SpriteEffects effects,
+        float layerDepth,
+        DrawMethod drawMethod);
+
+    /// <summary>Submit a sprite for drawing in the current batch.</summary>
+    /// <param name="spriteBatch">The SpriteBatch used to draw the sprite.</param>
+    /// <param name="texture">A texture.</param>
+    /// <param name="destinationRectangle">The drawing bounds on screen.</param>
+    /// <param name="sourceRectangle">An optional region on the texture which will be rendered. If null - draws full texture.</param>
+    /// <param name="color">A color mask.</param>
+    /// <param name="rotation">A rotation of this sprite.</param>
+    /// <param name="origin">Center of the rotation. 0,0 by default.</param>
+    /// <param name="effects">Modificators for drawing. Can be combined.</param>
+    /// <param name="layerDepth">A depth of the layer of this sprite.</param>
+    /// <param name="drawMethod">The method used for drawing the sprite.</param>
+    public void Draw(
+        SpriteBatch spriteBatch,
+        Texture2D texture,
+        Rectangle destinationRectangle,
+        Rectangle? sourceRectangle,
+        Color color,
+        float rotation,
+        Vector2 origin,
         SpriteEffects effects,
         float layerDepth,
         DrawMethod drawMethod);

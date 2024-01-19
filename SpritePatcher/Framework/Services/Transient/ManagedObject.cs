@@ -76,6 +76,48 @@ internal sealed class ManagedObject : IManagedObject
     }
 
     /// <inheritdoc />
+    public void Draw(
+        SpriteBatch spriteBatch,
+        Texture2D texture,
+        Rectangle destinationRectangle,
+        Rectangle? sourceRectangle,
+        Color color,
+        float rotation,
+        Vector2 origin,
+        SpriteEffects effects,
+        float layerDepth,
+        DrawMethod drawMethod)
+    {
+        if (!this.TryGetTexture(
+            texture,
+            new TextureKey(texture.Name, sourceRectangle, drawMethod, 1f),
+            out var newTexture))
+        {
+            spriteBatch.Draw(
+                texture,
+                destinationRectangle,
+                sourceRectangle,
+                color,
+                rotation,
+                origin,
+                effects,
+                layerDepth);
+
+            return;
+        }
+
+        spriteBatch.Draw(
+            newTexture,
+            destinationRectangle,
+            new Rectangle(0, 0, newTexture.Width, newTexture.Height),
+            color,
+            rotation,
+            origin,
+            effects,
+            layerDepth);
+    }
+
+    /// <inheritdoc />
     public void ClearCache()
     {
         this.cachedTextures.Clear();
@@ -125,16 +167,8 @@ internal sealed class ManagedObject : IManagedObject
                         || patch.SourceArea.Value.Intersects(key.Area.Value)))
             .ToList();
 
-        // Add any net fields that will be used to invalidate the cache for this specific texture
-        this.UnsubscribeFromFieldEvents(key);
-        var netFields = conditionalPatches.SelectMany(patch => patch.NetFields).Distinct().ToList();
-        foreach (var netField in netFields)
-        {
-            this.SubscribeToFieldEvent(netField, key);
-        }
-
         var patchesToApply = conditionalPatches.Where(patch => patch.Run(this)).ToList();
-        if (this.textureBuilder.TryBuildTexture(key, baseTexture, patchesToApply, out texture))
+        if (patchesToApply.Any() && this.textureBuilder.TryBuildTexture(key, baseTexture, patchesToApply, out texture))
         {
             this.cachedTextures[key] = texture;
             return true;
@@ -142,97 +176,5 @@ internal sealed class ManagedObject : IManagedObject
 
         this.disabledTextures.Add(key);
         return false;
-    }
-
-    private void SubscribeToFieldEvent(string name, TextureKey key)
-    {
-        if (!ManagedObject.CachedEvents.TryGetValue(this.type, out var objectEvents))
-        {
-            objectEvents = new Dictionary<string, (INetSerializable NetField, EventInfo? EventInfo)>();
-            ManagedObject.CachedEvents[this.type] = objectEvents;
-        }
-
-        if (this.Entity is not INetObject<NetFields> obj)
-        {
-            return;
-        }
-
-        // Create targets for field if they dont' exist
-        var fieldName = obj.NetFields.Name + ": " + name;
-        if (!this.fieldTargets.TryGetValue(fieldName, out var targets))
-        {
-            targets = new HashSet<TextureKey>();
-            this.fieldTargets[fieldName] = targets;
-        }
-
-        // Check if already subscribed to event and add target
-        if (this.subscribedEvents.ContainsKey(fieldName))
-        {
-            targets.Add(key);
-            return;
-        }
-
-        // Check if cached event info exists
-        if (!objectEvents.TryGetValue(fieldName, out var objectEvent))
-        {
-            foreach (var field in obj.NetFields.GetFields())
-            {
-                // Check if field name matches
-                if (!field.Name.Equals(fieldName, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                var fieldType = field.GetType();
-                var eventInfo = fieldType.GetEvent("fieldChangeVisibleEvent");
-                objectEvents[fieldName] = (field, eventInfo);
-                break;
-            }
-        }
-
-        if (objectEvent.EventInfo?.EventHandlerType == null)
-        {
-            return;
-        }
-
-        // Create a delegate for the event
-        EventHandler eventHandler = (_, _) => this.ClearCache(targets.Select(t => t.Target));
-
-        objectEvent.EventInfo.AddEventHandler(objectEvent.NetField, eventHandler);
-        this.subscribedEvents[fieldName] = (objectEvent.NetField, eventHandler);
-        targets.Add(key);
-    }
-
-    private void UnsubscribeFromFieldEvents(TextureKey key)
-    {
-        if (!ManagedObject.CachedEvents.TryGetValue(this.type, out var objectEvents))
-        {
-            return;
-        }
-
-        foreach (var (fieldName, (netField, eventInfo)) in objectEvents)
-        {
-            if (!this.fieldTargets.TryGetValue(fieldName, out var targets))
-            {
-                continue;
-            }
-
-            // Remove this particular target
-            targets.Remove(key);
-            if (targets.Any())
-            {
-                continue;
-            }
-
-            // If no targets remain, then unsubscribe from the actual event
-            if (eventInfo?.EventHandlerType == null
-                || !this.subscribedEvents.TryGetValue(fieldName, out var subscribedEvent))
-            {
-                continue;
-            }
-
-            eventInfo.RemoveEventHandler(netField, subscribedEvent.Handler);
-            this.subscribedEvents.Remove(fieldName);
-        }
     }
 }

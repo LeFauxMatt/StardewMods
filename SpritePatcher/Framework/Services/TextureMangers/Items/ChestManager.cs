@@ -41,7 +41,7 @@ internal sealed class ChestManager : BaseTextureManager
                 AccessTools.DeclaredMethod(
                     typeof(Chest),
                     nameof(Chest.draw),
-                    [typeof(SpriteBatch), typeof(int), typeof(int), typeof(int), typeof(float), typeof(bool)]),
+                    [typeof(SpriteBatch), typeof(int), typeof(int), typeof(float), typeof(bool)]),
                 AccessTools.DeclaredMethod(typeof(BaseTextureManager), nameof(BaseTextureManager.Draw)),
                 PatchType.Transpiler));
 

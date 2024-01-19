@@ -26,7 +26,6 @@ public abstract partial class BasePatchModel : IPatchModel
         this.SourceArea = args.ContentModel.Area;
         this.DrawMethods = args.ContentModel.DrawMethods;
         this.PatchMode = args.ContentModel.PatchMode;
-        this.NetFields = args.ContentModel.NetFields ?? [];
         this.Helper = new PatchHelper(this);
     }
 
@@ -44,9 +43,6 @@ public abstract partial class BasePatchModel : IPatchModel
 
     /// <inheritdoc />
     public List<DrawMethod> DrawMethods { get; }
-
-    /// <inheritdoc />
-    public List<string> NetFields { get; }
 
     /// <inheritdoc />
     public PatchMode PatchMode { get; }

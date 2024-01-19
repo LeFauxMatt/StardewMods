@@ -18,9 +18,6 @@ public interface IPatchModel
     /// <summary>Gets the draw methods where the texture can be applied.</summary>
     List<DrawMethod> DrawMethods { get; }
 
-    /// <summary>Gets the net fields that will be used to invalidate the cache.</summary>
-    List<string> NetFields { get; }
-
     /// <summary>Gets the path to the texture.</summary>
     IRawTextureData? Texture { get; }
 

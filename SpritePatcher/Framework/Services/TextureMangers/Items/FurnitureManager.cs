@@ -1,6 +1,7 @@
 namespace StardewMods.SpritePatcher.Framework.Services.TextureMangers.Items;
 
 using HarmonyLib;
+using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Enums;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Models;
@@ -30,7 +31,10 @@ internal sealed class FurnitureManager : BaseTextureManager
         this.Patches.Add(
             this.Id,
             new SavedPatch(
-                AccessTools.DeclaredMethod(typeof(Furniture), nameof(Furniture.draw)),
+                AccessTools.DeclaredMethod(
+                    typeof(Furniture),
+                    nameof(Furniture.draw),
+                    [typeof(SpriteBatch), typeof(int), typeof(int), typeof(float)]),
                 AccessTools.DeclaredMethod(typeof(BaseTextureManager), nameof(BaseTextureManager.Draw)),
                 PatchType.Transpiler),
             new SavedPatch(
