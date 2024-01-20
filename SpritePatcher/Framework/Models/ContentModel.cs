@@ -7,18 +7,14 @@ using StardewMods.SpritePatcher.Framework.Interfaces;
 /// <inheritdoc />
 internal sealed class ContentModel(
     string target,
-    Rectangle? area,
+    Rectangle area,
     List<DrawMethod> drawMethods,
     PatchMode patchMode,
-    List<string>? netFields,
     int priority,
     string code) : IContentModel
 {
     /// <inheritdoc />
-    public Rectangle? Area { get; } = area;
-
-    /// <inheritdoc />
-    public List<string>? NetFields { get; } = netFields;
+    public Rectangle SourceArea { get; } = area;
 
     /// <inheritdoc />
     public string Target { get; set; } = target;

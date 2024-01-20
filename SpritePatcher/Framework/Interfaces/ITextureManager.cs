@@ -23,7 +23,7 @@ public interface ITextureManager
     /// <returns>True if the texture was successfully built, otherwise false.</returns>
     public bool TryBuildTexture(
         TextureKey key,
-        Texture2D baseTexture,
+        Texture2D texture,
         List<IPatchModel> layers,
         [NotNullWhen(true)] out IManagedTexture? managedTexture);
 }

@@ -97,11 +97,7 @@ internal sealed class CodeManager : BaseService
 
         data = prioritizedPatches
             .SelectMany(patchModels => patchModels.Value)
-            .Where(
-                patch => patch.DrawMethods.Contains(key.DrawMethod)
-                    && (patch.SourceArea is null
-                        || key.Area is null
-                        || patch.SourceArea.Value.Intersects(key.Area.Value)))
+            .Where(patch => patch.DrawMethods.Contains(key.DrawMethod) && patch.SourceArea.Intersects(key.Area))
             .ToList();
 
         return data.Any();

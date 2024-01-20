@@ -55,7 +55,7 @@ internal sealed class ManagedObject : IManagedObject
         var target = this.gameContentHelper.ParseAssetName(texture.Name);
         if (!this.TryGetTexture(
             texture,
-            new TextureKey(target.BaseName, sourceRectangle, drawMethod),
+            new TextureKey(target.BaseName, sourceRectangle.GetValueOrDefault(), drawMethod),
             out var managedTexture))
         {
             spriteBatch.Draw(texture, position, sourceRectangle, color, rotation, origin, scale, effects, layerDepth);
@@ -64,7 +64,7 @@ internal sealed class ManagedObject : IManagedObject
 
         spriteBatch.Draw(
             managedTexture.Texture,
-            position,
+            position - (scale * managedTexture.Offset),
             new Rectangle(0, 0, managedTexture.Texture.Width, managedTexture.Texture.Height),
             color,
             rotation,
@@ -89,7 +89,7 @@ internal sealed class ManagedObject : IManagedObject
     {
         if (!this.TryGetTexture(
             texture,
-            new TextureKey(texture.Name, sourceRectangle, drawMethod),
+            new TextureKey(texture.Name, sourceRectangle.GetValueOrDefault(), drawMethod),
             out var managedTexture))
         {
             spriteBatch.Draw(
@@ -107,7 +107,11 @@ internal sealed class ManagedObject : IManagedObject
 
         spriteBatch.Draw(
             managedTexture.Texture,
-            destinationRectangle,
+            destinationRectangle with
+            {
+                X = destinationRectangle.X - (int)managedTexture.Offset.X,
+                Y = destinationRectangle.Y - (int)managedTexture.Offset.Y,
+            },
             new Rectangle(0, 0, managedTexture.Texture.Width, managedTexture.Texture.Height),
             color,
             rotation,

@@ -16,7 +16,7 @@ public interface IPatchModel
     string Target { get; }
 
     /// <summary>Gets the source rectangle of the sprite sheet being patched.</summary>
-    Rectangle? SourceArea { get; }
+    Rectangle SourceArea { get; }
 
     /// <summary>Gets the draw methods where the patch will be applied.</summary>
     List<DrawMethod> DrawMethods { get; }
@@ -24,17 +24,26 @@ public interface IPatchModel
     /// <summary>Gets the mode that the patch will be applied.</summary>
     PatchMode PatchMode { get; }
 
-    /// <summary>Gets the raw texture data for the patch.</summary>
-    IRawTextureData? Texture { get; }
+    /// <summary>Gets or sets the raw texture data for the patch.</summary>
+    IRawTextureData? Texture { get; set; }
 
-    /// <summary>Gets the area of the texture.</summary>
-    Rectangle? Area { get; }
+    /// <summary>Gets or sets the area of the texture.</summary>
+    Rectangle Area { get; set; }
 
-    /// <summary>Gets the tint of the texture.</summary>
-    Color? Tint { get; }
+    /// <summary>Gets or sets the tint of the texture.</summary>
+    Color? Tint { get; set; }
 
-    /// <summary>Gets the scale of the texture.</summary>
-    float Scale { get; }
+    /// <summary>Gets or sets the scale of the texture.</summary>
+    float Scale { get; set; }
+
+    /// <summary>Gets or sets the number of animation frames.</summary>
+    int Frames { get; set; }
+
+    /// <summary>Gets or sets the number of ticks per animation frame.</summary>
+    int TicksPerFrame { get; set; }
+
+    /// <summary>Gets or sets the offset for where the patch will be applied.</summary>
+    Vector2 Offset { get; set; }
 
     /// <summary>Retrieves a unique identifier for the current patch.</summary>
     /// <returns>The current ID as a string.</returns>

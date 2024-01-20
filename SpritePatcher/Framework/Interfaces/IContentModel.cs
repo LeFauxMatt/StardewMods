@@ -10,7 +10,7 @@ public interface IContentModel
     string Target { get; }
 
     /// <summary>Gets the source rectangle of the sprite sheet being patched.</summary>
-    Rectangle? Area { get; }
+    Rectangle SourceArea { get; }
 
     /// <summary>Gets the draw methods where the texture can be applied.</summary>
     List<DrawMethod> DrawMethods { get; }

@@ -28,7 +28,7 @@ public abstract partial class BasePatchModel : IPatchModel
         this.Id = args.Id;
         this.ContentPack = args.ContentPack;
         this.Target = args.ContentModel.Target;
-        this.SourceArea = args.ContentModel.Area;
+        this.SourceArea = args.ContentModel.SourceArea;
         this.DrawMethods = args.ContentModel.DrawMethods;
         this.PatchMode = args.ContentModel.PatchMode;
         this.Helper = new PatchHelper(this);
@@ -44,7 +44,7 @@ public abstract partial class BasePatchModel : IPatchModel
     public string Target { get; }
 
     /// <inheritdoc />
-    public Rectangle? SourceArea { get; }
+    public Rectangle SourceArea { get; }
 
     /// <inheritdoc />
     public List<DrawMethod> DrawMethods { get; }
@@ -53,16 +53,25 @@ public abstract partial class BasePatchModel : IPatchModel
     public PatchMode PatchMode { get; }
 
     /// <inheritdoc />
-    public IRawTextureData? Texture { get; protected set; }
+    public IRawTextureData? Texture { get; set; }
 
     /// <inheritdoc />
-    public Rectangle? Area { get; protected set; }
+    public Rectangle Area { get; set; }
 
     /// <inheritdoc />
-    public Color? Tint { get; protected set; }
+    public Color? Tint { get; set; }
 
     /// <inheritdoc />
-    public float Scale { get; protected set; } = 1f;
+    public float Scale { get; set; }
+
+    /// <inheritdoc />
+    public int Frames { get; set; }
+
+    /// <inheritdoc />
+    public int TicksPerFrame { get; set; }
+
+    /// <inheritdoc />
+    public Vector2 Offset { get; set; }
 
     /// <summary>Gets a helper that provides useful methods for performing common operations.</summary>
     protected IPatchHelper Helper { get; }
@@ -72,11 +81,8 @@ public abstract partial class BasePatchModel : IPatchModel
     {
         var sb = new StringBuilder();
         sb.Append(Path.Join(this.Id, this.path));
-        if (this.Area != null)
-        {
-            sb.Append('_');
-            sb.Append(this.Area.ToString());
-        }
+        sb.Append('_');
+        sb.Append(this.Area.ToString());
 
         if (this.Tint != null)
         {
@@ -107,6 +113,9 @@ public abstract partial class BasePatchModel : IPatchModel
         this.Area = Rectangle.Empty;
         this.Tint = null;
         this.Scale = 1f;
+        this.Frames = 0;
+        this.TicksPerFrame = 0;
+        this.Offset = Vector2.Zero;
     }
 
     /// <summary>Validate the Texture, Area, and Tint properties of the object after running.</summary>
@@ -115,12 +124,6 @@ public abstract partial class BasePatchModel : IPatchModel
     protected bool AfterRun(IManagedObject managedObject)
     {
         this.currentObject = null;
-        if (this.Texture == null)
-        {
-            return false;
-        }
-
-        this.Area ??= new Rectangle(0, 0, this.Texture.Width, this.Texture.Height);
-        return this.Area.Value.Right <= this.Texture.Width && this.Area.Value.Bottom <= this.Texture.Height;
+        return this.Texture != null;
     }
 }

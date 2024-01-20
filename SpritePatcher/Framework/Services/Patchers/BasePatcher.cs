@@ -18,12 +18,12 @@ using StardewMods.SpritePatcher.Framework.Services.Factory;
 /// <summary>Base class for texture patches.</summary>
 internal abstract class BasePatcher : BaseService, IPatcher
 {
-    private static readonly CodeInstruction MenuDrawMethod = new(OpCodes.Ldc_I4_0);
-    private static readonly CodeInstruction HeldDrawMethod = new(OpCodes.Ldc_I4_1);
-    private static readonly CodeInstruction WorldDrawMethod = new(OpCodes.Ldc_I4_2);
-    private static readonly CodeInstruction BackgroundDrawMethod = new(OpCodes.Ldc_I4_3);
-    private static readonly CodeInstruction ConstructionDrawMethod = new(OpCodes.Ldc_I4_4);
-    private static readonly CodeInstruction ShadowDrawMethod = new(OpCodes.Ldc_I4_5);
+    private static readonly CodeInstruction BackgroundDrawMethod = new(OpCodes.Ldc_I4_0);
+    private static readonly CodeInstruction ConstructionDrawMethod = new(OpCodes.Ldc_I4_1);
+    private static readonly CodeInstruction HeldDrawMethod = new(OpCodes.Ldc_I4_2);
+    private static readonly CodeInstruction MenuDrawMethod = new(OpCodes.Ldc_I4_3);
+    private static readonly CodeInstruction ShadowDrawMethod = new(OpCodes.Ldc_I4_4);
+    private static readonly CodeInstruction WorldDrawMethod = new(OpCodes.Ldc_I4_5);
 
     private static readonly CodeInstruction CallDraw1 = CodeInstruction.Call(
         typeof(BasePatcher),
