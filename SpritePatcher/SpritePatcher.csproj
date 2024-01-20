@@ -47,4 +47,7 @@
     <SMAPIDependency Include="furyx639.FuryCore" required="true"/>
     <SMAPIDependency Include="spacechase0.SpaceCore" required="true"/>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Framework\Services\Patchers\Monsters\" />
+  </ItemGroup>
 </Project>

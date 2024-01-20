@@ -1,6 +1,7 @@
 namespace StardewMods.SpritePatcher.Framework;
 
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 
 /// <inheritdoc />
@@ -23,6 +24,15 @@ public abstract partial class BasePatchModel : IPatchModel
             var values = input.Split(separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             var index = Array.FindIndex(values, v => v.Equals(value, StringComparison.OrdinalIgnoreCase));
             return index;
+        }
+
+        /// <inheritdoc />
+        public void SetTexture(Texture2D texture)
+        {
+            patchModel.path = texture.Name;
+            patchModel.Texture = patchModel.textureManager.TryGetTexture(texture.Name, out var baseTexture)
+                ? baseTexture
+                : null;
         }
 
         /// <inheritdoc />

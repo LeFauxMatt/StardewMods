@@ -27,7 +27,7 @@ public class Runner : global::StardewMods.SpritePatcher.Framework.BasePatchModel
     {
         this.BeforeRun(managedObject);
         this.ActualRun(managedObject.Entity);
-        return this.AfterRun();
+        return this.AfterRun(managedObject);
     }
 
     public void ActualRun(IHaveModData entity)

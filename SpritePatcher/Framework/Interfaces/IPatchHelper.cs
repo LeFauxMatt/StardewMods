@@ -1,5 +1,7 @@
 namespace StardewMods.SpritePatcher.Framework.Interfaces;
 
+using Microsoft.Xna.Framework.Graphics;
+
 /// <summary>The Helper class provides useful methods for performing common operations.</summary>
 public interface IPatchHelper
 {
@@ -14,6 +16,10 @@ public interface IPatchHelper
     /// <param name="separator">The character used to separate the substrings. The default value is ','.</param>
     /// <returns>The index of the first occurrence of the specified value in the array, if found; otherwise, -1.</returns>
     int GetIndexFromString(string input, string value, char separator = ',');
+
+    /// <summary>Sets the texture of an object using the specified texture.</summary>
+    /// <param name="texture">The texture.</param>
+    void SetTexture(Texture2D texture);
 
     /// <summary>Sets the texture of an object using the specified path.</summary>
     /// <param name="path">The path of the texture.</param>

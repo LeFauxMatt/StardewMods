@@ -1,6 +1,8 @@
 namespace StardewMods.SpritePatcher.Framework.Services;
 
+using System.Globalization;
 using System.Reflection;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using StardewModdingAPI.Events;
@@ -33,6 +35,7 @@ internal sealed class CodeManager : BaseService
     private readonly IMonitor monitor;
     private readonly IModRegistry modRegistry;
     private readonly INetFieldManager netFieldManager;
+    private readonly ITextureManager textureManager;
     private readonly string path;
     private readonly List<MetadataReference> references = [];
     private readonly string template;
@@ -46,6 +49,7 @@ internal sealed class CodeManager : BaseService
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
     /// <param name="modRegistry">Dependency used for fetching metadata about loaded mods.</param>
     /// <param name="netFieldManager">Dependency used for managing net field events.</param>
+    /// <param name="textureManager">Dependency used for managing textures.</param>
     public CodeManager(
         IEventManager eventManager,
         IGameContentHelper gameContentHelper,
@@ -54,7 +58,8 @@ internal sealed class CodeManager : BaseService
         IModHelper modHelper,
         IMonitor monitor,
         IModRegistry modRegistry,
-        INetFieldManager netFieldManager)
+        INetFieldManager netFieldManager,
+        ITextureManager textureManager)
         : base(log, manifest)
     {
         this.assetPath = this.ModId + "/Patches";
@@ -64,6 +69,7 @@ internal sealed class CodeManager : BaseService
         this.monitor = monitor;
         this.modRegistry = modRegistry;
         this.netFieldManager = netFieldManager;
+        this.textureManager = textureManager;
         this.template = File.ReadAllText(Path.Join(modHelper.DirectoryPath, "assets/ConditionalTextureTemplate.cs"));
         this.path = Path.Combine(modHelper.DirectoryPath, "_generated");
         if (!Directory.Exists(this.path))
@@ -78,24 +84,31 @@ internal sealed class CodeManager : BaseService
     }
 
     /// <summary>Tries to get the conditional textures for the given target.</summary>
-    /// <param name="target">The target for which the data is requested.</param>
+    /// <param name="key">A key for the original texture method.</param>
     /// <param name="data">When this method returns, contains the data for the target if it is found; otherwise, null.</param>
     /// <returns>true if the data for the target is found; otherwise, false.</returns>
-    public bool TryGet(string target, [NotNullWhen(true)] out IEnumerable<IPatchModel>? data)
+    public bool TryGet(TextureKey key, [NotNullWhen(true)] out IList<IPatchModel>? data)
     {
-        if (!this.patches.TryGetValue(target, out var prioritizedPatches))
+        if (!this.patches.TryGetValue(key.Target, out var prioritizedPatches))
         {
             data = null;
             return false;
         }
 
-        data = prioritizedPatches.SelectMany(patchModels => patchModels.Value);
-        return true;
+        data = prioritizedPatches
+            .SelectMany(patchModels => patchModels.Value)
+            .Where(
+                patch => patch.DrawMethods.Contains(key.DrawMethod)
+                    && (patch.SourceArea is null
+                        || key.Area is null
+                        || patch.SourceArea.Value.Intersects(key.Area.Value)))
+            .ToList();
+
+        return data.Any();
     }
 
     private bool TryCompile(string id, string code, [NotNullWhen(true)] out Assembly? assembly)
     {
-        this.Log.Trace("Compiling code for {0}", id);
         var filename = $"v{this.manifest.Version}_{id}_{code.Length}_{Game1.hash.GetDeterministicHashCode(code)}";
         var fullPath = Path.Combine(this.path, $"{filename}.dll");
         if (File.Exists(fullPath))
@@ -121,8 +134,17 @@ internal sealed class CodeManager : BaseService
 
         if (!result.Success)
         {
-            // TODO - Add back diagnostics
-            this.Log.Error("Failed to compile code for {0}", id);
+            var diagnostics =
+                result.Diagnostics.Where(d => d.IsWarningAsError || d.Severity == DiagnosticSeverity.Error);
+
+            var sb = new StringBuilder();
+            foreach (var diagnostic in diagnostics)
+            {
+                var message = diagnostic.GetMessage(CultureInfo.InvariantCulture);
+                sb.AppendLine(CultureInfo.InvariantCulture, $"{diagnostic.Id}: {message}");
+            }
+
+            this.Log.Error("Failed to compile code for {0}: {1}", id, sb);
             assembly = null;
             return false;
         }
@@ -198,6 +220,7 @@ internal sealed class CodeManager : BaseService
                 continue;
             }
 
+            this.Log.Trace("Compiling code for {0}", key);
             if (!this.TryCompile(modId, contentModel.Code, out var assembly))
             {
                 this.Log.Warn("Failed to load patch: {0}.\nFailed to compile code.", key);
@@ -210,18 +233,20 @@ internal sealed class CodeManager : BaseService
                 var contentPack = (IContentPack)modInfo.GetType().GetProperty("ContentPack")!.GetValue(modInfo)!;
                 var ctor = type!.GetConstructor([typeof(PatchModelCtorArgs)]);
                 var ctorArgs = new PatchModelCtorArgs(
+                    key,
+                    contentModel,
+                    contentPack,
                     this.monitor,
                     this.netFieldManager,
-                    key,
-                    contentPack,
-                    contentModel);
+                    this.textureManager);
 
                 var patchModel = (BasePatchModel)ctor!.Invoke([ctorArgs]);
+                var target = this.gameContentHelper.ParseAssetName(contentModel.Target);
 
-                if (!this.patches.TryGetValue(contentModel.Target, out var prioritizedPatches))
+                if (!this.patches.TryGetValue(target.BaseName, out var prioritizedPatches))
                 {
                     prioritizedPatches = new SortedDictionary<int, IList<IPatchModel>>(CodeManager.Comparer);
-                    this.patches[contentModel.Target] = prioritizedPatches;
+                    this.patches[target.BaseName] = prioritizedPatches;
                 }
 
                 if (!prioritizedPatches.TryGetValue(contentModel.Priority, out var patchModels))

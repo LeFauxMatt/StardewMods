@@ -1,9 +1,7 @@
 namespace StardewMods.SpritePatcher.Framework.Services.Transient;
 
-using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Netcode;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
@@ -12,29 +10,29 @@ using StardewValley.Extensions;
 /// <inheritdoc />
 internal sealed class ManagedObject : IManagedObject
 {
-    private static readonly Dictionary<Type, IDictionary<string, (INetSerializable NetField, EventInfo? EventInfo)>>
-        CachedEvents = [];
-
-    private readonly Dictionary<string, (INetSerializable Target, Delegate Handler)> subscribedEvents =
-        new(StringComparer.OrdinalIgnoreCase);
-
-    private readonly Dictionary<TextureKey, Texture2D> cachedTextures = [];
+    private readonly Dictionary<TextureKey, IManagedTexture> cachedTextures = [];
     private readonly CodeManager codeManager;
-    private readonly TextureBuilder textureBuilder;
+    private readonly IGameContentHelper gameContentHelper;
+    private readonly ITextureManager textureManager;
     private readonly HashSet<TextureKey> disabledTextures = [];
-    private readonly Dictionary<string, HashSet<TextureKey>> fieldTargets = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Type type;
+    private readonly object source;
 
     /// <summary>Initializes a new instance of the <see cref="ManagedObject" /> class.</summary>
-    /// <param name="entity">The entity being managed.</param>
+    /// <param name="source">The entity being managed.</param>
     /// <param name="codeManager">Dependency used for managing icons.</param>
-    /// <param name="textureBuilder">Dependency used for generating textures from patches.</param>
-    public ManagedObject(IHaveModData entity, CodeManager codeManager, TextureBuilder textureBuilder)
+    /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
+    /// <param name="textureManager">Dependency used for managing textures.</param>
+    public ManagedObject(
+        object source,
+        CodeManager codeManager,
+        IGameContentHelper gameContentHelper,
+        ITextureManager textureManager)
     {
-        this.type = entity.GetType();
-        this.Entity = entity;
+        this.source = source;
+        this.Entity = ManagedObject.GetEntity(source);
         this.codeManager = codeManager;
-        this.textureBuilder = textureBuilder;
+        this.gameContentHelper = gameContentHelper;
+        this.textureManager = textureManager;
     }
 
     /// <inheritdoc />
@@ -54,23 +52,24 @@ internal sealed class ManagedObject : IManagedObject
         float layerDepth,
         DrawMethod drawMethod)
     {
+        var target = this.gameContentHelper.ParseAssetName(texture.Name);
         if (!this.TryGetTexture(
             texture,
-            new TextureKey(texture.Name, sourceRectangle, drawMethod, scale),
-            out var newTexture))
+            new TextureKey(target.BaseName, sourceRectangle, drawMethod),
+            out var managedTexture))
         {
             spriteBatch.Draw(texture, position, sourceRectangle, color, rotation, origin, scale, effects, layerDepth);
             return;
         }
 
         spriteBatch.Draw(
-            newTexture,
+            managedTexture.Texture,
             position,
-            new Rectangle(0, 0, newTexture.Width, newTexture.Height),
+            new Rectangle(0, 0, managedTexture.Texture.Width, managedTexture.Texture.Height),
             color,
             rotation,
-            origin,
-            scale,
+            origin * managedTexture.Scale,
+            scale / managedTexture.Scale,
             effects,
             layerDepth);
     }
@@ -90,8 +89,8 @@ internal sealed class ManagedObject : IManagedObject
     {
         if (!this.TryGetTexture(
             texture,
-            new TextureKey(texture.Name, sourceRectangle, drawMethod, 1f),
-            out var newTexture))
+            new TextureKey(texture.Name, sourceRectangle, drawMethod),
+            out var managedTexture))
         {
             spriteBatch.Draw(
                 texture,
@@ -107,9 +106,9 @@ internal sealed class ManagedObject : IManagedObject
         }
 
         spriteBatch.Draw(
-            newTexture,
+            managedTexture.Texture,
             destinationRectangle,
-            new Rectangle(0, 0, newTexture.Width, newTexture.Height),
+            new Rectangle(0, 0, managedTexture.Texture.Width, managedTexture.Texture.Height),
             color,
             rotation,
             origin,
@@ -134,7 +133,19 @@ internal sealed class ManagedObject : IManagedObject
         }
     }
 
-    private bool TryGetTexture(Texture2D baseTexture, TextureKey key, [NotNullWhen(true)] out Texture2D? texture)
+    private static IHaveModData GetEntity(object source) =>
+        source switch
+        {
+            IHaveModData entity => entity,
+            Crop
+            {
+                Dirt:
+                { } dirt,
+            } => dirt,
+            _ => throw new NotSupportedException($"Cannot manage {source.GetType().FullName}"),
+        };
+
+    private bool TryGetTexture(Texture2D baseTexture, TextureKey key, [NotNullWhen(true)] out IManagedTexture? texture)
     {
         texture = null;
 
@@ -151,24 +162,15 @@ internal sealed class ManagedObject : IManagedObject
         }
 
         // Check if any patches should apply to this texture
-        if (!this.codeManager.TryGet(key.Target, out var allPatches))
+        if (!this.codeManager.TryGet(key, out var patches))
         {
             // Prevent future attempts to generate this texture
             this.disabledTextures.Add(key);
             return false;
         }
 
-        // Determine which textures apply
-        var conditionalPatches = allPatches
-            .Where(
-                patch => patch.DrawMethods.Contains(key.DrawMethod)
-                    && (patch.SourceArea is null
-                        || key.Area is null
-                        || patch.SourceArea.Value.Intersects(key.Area.Value)))
-            .ToList();
-
-        var patchesToApply = conditionalPatches.Where(patch => patch.Run(this)).ToList();
-        if (patchesToApply.Any() && this.textureBuilder.TryBuildTexture(key, baseTexture, patchesToApply, out texture))
+        var patchesToApply = patches.Where(patch => patch.Run(this)).ToList();
+        if (patchesToApply.Any() && this.textureManager.TryBuildTexture(key, baseTexture, patchesToApply, out texture))
         {
             this.cachedTextures[key] = texture;
             return true;

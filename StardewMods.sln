@@ -32,11 +32,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomBush", "CustomBush\Cu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FuryCore", "FuryCore\FuryCore.csproj", "{86D15779-C8A5-49C9-8ECD-530298893A52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FindAnything", "FindAnything\FindAnything.csproj", "{83CE3B0E-6A1F-4477-93AE-AFFA9FFDF9CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FindAnything", "FindAnything\FindAnything.csproj", "{83CE3B0E-6A1F-4477-93AE-AFFA9FFDF9CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpritePatcher", "SpritePatcher\SpritePatcher.csproj", "{4632D2C9-A337-461B-9F74-28F779078879}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpritePatcher", "SpritePatcher\SpritePatcher.csproj", "{4632D2C9-A337-461B-9F74-28F779078879}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrystallineJunimoChests", "CrystallineJunimoChests\CrystallineJunimoChests.csproj", "{0C576B26-09D4-4B7B-AA3F-D93CA61865EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrystallineJunimoChests", "CrystallineJunimoChests\CrystallineJunimoChests.csproj", "{0C576B26-09D4-4B7B-AA3F-D93CA61865EE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -96,13 +96,17 @@ Global
 		SolutionGuid = {872F34DC-E657-4732-ABCE-D08C2298FB75}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Common\Common.projitems*{66f2b279-351b-499c-826b-a885c2255334}*SharedItemsImports = 5
+		Common\Common.projitems*{0c576b26-09d4-4b7b-aa3f-d93ca61865ee}*SharedItemsImports = 5
+		Common\Common.projitems*{4632d2c9-a337-461b-9f74-28f779078879}*SharedItemsImports = 5
 		Common\Common.projitems*{774acd31-6138-4707-a747-8c8e35519fc3}*SharedItemsImports = 5
+		Common\Common.projitems*{83ce3b0e-6a1f-4477-93ae-affa9ffdf9cc}*SharedItemsImports = 5
+		Common\Common.projitems*{86d15779-c8a5-49c9-8ecd-530298893a52}*SharedItemsImports = 5
 		Common\Common.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
 		Common\Common.projitems*{9de51a63-31ac-4678-9d40-f9351844bea8}*SharedItemsImports = 5
 		Common\Common.projitems*{aa4cef05-e3da-45b8-80ad-e54ba33ce950}*SharedItemsImports = 5
 		Common\Common.projitems*{da49490d-32dd-4ef1-8f1e-66a5fa68aeb6}*SharedItemsImports = 5
 		Common\Common.projitems*{defce9f7-0b61-4db9-a3d5-794190e4b4e0}*SharedItemsImports = 5
+		Common\Common.projitems*{eecb6271-93fd-4172-bfdd-33e3f169f8e7}*SharedItemsImports = 13
 		Common\Common.projitems*{fde06ce1-ffe3-496a-a482-7e9cd1c7808d}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

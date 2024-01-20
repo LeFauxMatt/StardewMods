@@ -1,5 +1,6 @@
 namespace StardewMods.SpritePatcher.Framework;
 
+using System.Globalization;
 using System.Text;
 using Microsoft.Xna.Framework;
 using StardewMods.SpritePatcher.Framework.Enums;
@@ -11,6 +12,8 @@ public abstract partial class BasePatchModel : IPatchModel
 {
     private readonly IMonitor monitor;
     private readonly INetFieldManager netFieldManager;
+    private readonly ITextureManager textureManager;
+
     private string path = string.Empty;
     private IManagedObject? currentObject;
 
@@ -20,6 +23,8 @@ public abstract partial class BasePatchModel : IPatchModel
     {
         this.monitor = args.Monitor;
         this.netFieldManager = args.NetFieldManager;
+        this.textureManager = args.TextureManager;
+
         this.Id = args.Id;
         this.ContentPack = args.ContentPack;
         this.Target = args.ContentModel.Target;
@@ -79,6 +84,12 @@ public abstract partial class BasePatchModel : IPatchModel
             sb.Append(this.Tint.ToString());
         }
 
+        if ((int)this.Scale != 1)
+        {
+            sb.Append('_');
+            sb.Append(((int)this.Scale).ToString(CultureInfo.InvariantCulture));
+        }
+
         sb.Append('_');
         sb.Append(this.PatchMode.ToString());
         return sb.ToString();
@@ -95,11 +106,13 @@ public abstract partial class BasePatchModel : IPatchModel
         this.Texture = null;
         this.Area = Rectangle.Empty;
         this.Tint = null;
+        this.Scale = 1f;
     }
 
     /// <summary>Validate the Texture, Area, and Tint properties of the object after running.</summary>
+    /// <param name="managedObject">The managed object requesting the patch.</param>
     /// <returns><c>true</c> if the patch should be applied; otherwise, <c>false</c>.</returns>
-    protected bool AfterRun()
+    protected bool AfterRun(IManagedObject managedObject)
     {
         this.currentObject = null;
         if (this.Texture == null)

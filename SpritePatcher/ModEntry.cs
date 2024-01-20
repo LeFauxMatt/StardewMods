@@ -10,11 +10,11 @@ using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Services;
 using StardewMods.SpritePatcher.Framework.Services.Factory;
-using StardewMods.SpritePatcher.Framework.Services.TextureMangers.Buildings;
-using StardewMods.SpritePatcher.Framework.Services.TextureMangers.Characters;
-using StardewMods.SpritePatcher.Framework.Services.TextureMangers.Items;
-using StardewMods.SpritePatcher.Framework.Services.TextureMangers.TerrainFeatures;
-using StardewMods.SpritePatcher.Framework.Services.TextureMangers.Tools;
+using StardewMods.SpritePatcher.Framework.Services.Patchers.Buildings;
+using StardewMods.SpritePatcher.Framework.Services.Patchers.Characters;
+using StardewMods.SpritePatcher.Framework.Services.Patchers.Items;
+using StardewMods.SpritePatcher.Framework.Services.Patchers.TerrainFeatures;
+using StardewMods.SpritePatcher.Framework.Services.Patchers.Tools;
 
 /// <inheritdoc />
 internal sealed class ModEntry : Mod
@@ -60,51 +60,51 @@ internal sealed class ModEntry : Mod
         this.container.RegisterSingleton<IPatchManager, FuryPatcher>();
         this.container.RegisterSingleton<ManagedObjectFactory>();
         this.container.RegisterSingleton<INetFieldManager, NetFieldManager>();
-        this.container.RegisterSingleton<TextureBuilder>();
+        this.container.RegisterSingleton<ITextureManager, TextureManager>();
 
-        this.container.Collection.Register<ITextureManager>(
+        this.container.Collection.Register<IPatcher>(
             new[]
             {
-                typeof(BootsManager),
-                typeof(BuildingManager),
-                typeof(BushManager),
-                typeof(ChestManager),
-                typeof(ChildManager),
-                typeof(ClothingManager),
-                typeof(ColoredObjectManager),
-                typeof(CombinedRingManager),
-                typeof(CosmeticPlantManager),
-                typeof(CrabPotManager),
-                typeof(FarmAnimalManager),
-                typeof(FenceManager),
-                typeof(FishingRodManager),
-                typeof(FishPondManager),
-                typeof(FishTankFurnitureManager),
-                typeof(FlooringManager),
-                typeof(FruitTreeManager),
-                typeof(FurnitureManager),
-                typeof(GiantCropManager),
-                typeof(GrassManager),
-                typeof(HatManager),
-                typeof(HoeDirtManager),
-                typeof(HorseManager),
-                typeof(IndoorPotManager),
-                typeof(ItemPedestalManager),
-                typeof(JunimoHarvesterManager),
-                typeof(JunimoHutManager),
-                typeof(JunimoManager),
-                typeof(MeleeWeaponManager),
-                typeof(ObjectManager),
-                typeof(PetManager),
-                typeof(PetBowlManager),
-                typeof(ResourceClumpManager),
-                typeof(RingManager),
-                typeof(ShippingBinManager),
-                typeof(SlingshotManager),
-                typeof(TreeManager),
-                typeof(WallpaperManager),
-                typeof(WateringCanManager),
-                typeof(WoodChipperManager),
+                typeof(BootsPatcher),
+                typeof(BuildingPatcher),
+                typeof(BushPatcher),
+                typeof(ChestPatcher),
+                typeof(ChildPatcher),
+                typeof(ClothingPatcher),
+                typeof(ColoredObjectPatcher),
+                typeof(CombinedRingPatcher),
+                typeof(CosmeticPlantPatcher),
+                typeof(CrabPotPatcher),
+                typeof(FarmAnimalPatcher),
+                typeof(FencePatcher),
+                typeof(FishingRodPatcher),
+                typeof(FishPondPatcher),
+                typeof(FishTankFurniturePatcher),
+                typeof(FlooringPatcher),
+                typeof(FruitTreePatcher),
+                typeof(FurniturePatcher),
+                typeof(GiantCropPatcher),
+                typeof(GrassPatcher),
+                typeof(HatPatcher),
+                typeof(HoeDirtPatcher),
+                typeof(HorsePatcher),
+                typeof(IndoorPotPatcher),
+                typeof(ItemPedestalPatcher),
+                typeof(JunimoHarvesterPatcher),
+                typeof(JunimoHutPatcher),
+                typeof(JunimoPatcher),
+                typeof(MeleeWeaponPatcher),
+                typeof(ObjectPatcher),
+                typeof(PetPatcher),
+                typeof(PetBowlPatcher),
+                typeof(ResourceClumpPatcher),
+                typeof(RingPatcher),
+                typeof(ShippingBinPatcher),
+                typeof(SlingshotPatcher),
+                typeof(TreePatcher),
+                typeof(WallpaperPatcher),
+                typeof(WateringCanPatcher),
+                typeof(WoodChipperPatcher),
             },
             Lifestyle.Singleton);
 
