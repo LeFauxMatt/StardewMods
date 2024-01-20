@@ -1,4 +1,4 @@
-# Terrain Features
+## Terrain Features
 
 * [Bush](#bush)
 * [CosmeticPlant](#cosmeticplant)
@@ -11,49 +11,49 @@
 * [Tree](#tree)
 
 
-## Bush
+### Bush
 
-### Common Attributes
+#### Common Attributes
 
 | field           | type | description                              |
 |-----------------|------|------------------------------------------|
 | `IsSheltered()` | bool | Get whether the bush is planted indoors. |
 
-## CosmeticPlant
+### CosmeticPlant
 
-## Flooring
+### Flooring
 
 Refer to `Data/FloorsAndPaths.json` in
 the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
 for a complete list of the flooring targets/areas.
 
-## FruitTree
+### FruitTree
 
 Refer to `Data/FruitTrees.json` in
 the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
 for a complete list of the fruit tree targets/areas.
 
-### Common Attributes
+#### Common Attributes
 
 | field                | type                          | description                                |
 |----------------------|-------------------------------|--------------------------------------------|
 | `fruit.Value`        | [Item](./PatchItems#object)[] | Get the fruit.                             |
 
-## GiantCrop
+### GiantCrop
 
 Refer to `Data/GiantCrops.json` in
 the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
 for a complete list of the giant crop targets/areas.
 
-## Grass
+### Grass
 
-## HoeDirt
+### HoeDirt
 
 Refer to `Data/Crops.json` in
 the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
 for a complete list of the crop targets/areas.
 
-### Common Attributes
+#### Common Attributes
 
 | field                | type | description                                |
 |----------------------|------|--------------------------------------------|
@@ -63,15 +63,15 @@ for a complete list of the crop targets/areas.
 | `needsWatering()`    | bool | Get whether the hoe dirt needs watering.   |
 | `readyiForHarvest()` | bool | Get whether the hoe dirt needs watering.   |
 
-## ResourceClump
+### ResourceClump
 
-## Tree
+### Tree
 
 Refer to `Data/WildTrees.json` in
 the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
 for a complete list of the tree targets/areas.
 
-### Common Attributes
+#### Common Attributes
 
 | field                  | type   | description                            |
 |------------------------|--------|----------------------------------------|

@@ -1,4 +1,4 @@
-# Items
+## Items
 
 * [Boots](#boots)
 * [Chest](#chest)
@@ -6,6 +6,7 @@
 * [ColoredObject](#coloredobject)
 * [CombinedRing](#combinedring)
 * [CrabPot](#crabpot)
+* [Craftables](#craftables)
 * [Fence](#fence)
 * [FishTank](#fishtank)
 * [Furniture](#furniture)
@@ -18,71 +19,77 @@
 * [WoodChipper](#woodchipper)
 
 
-## Boots
+### Boots
 
-## Chest
+### Chest
 
-### Common Attributes
+#### Common Attributes
 
 | field                 | type              | description                 |
 |-----------------------|-------------------|-----------------------------|
 | `GetItemsForPlayer()` | [Item](#object)[] | Get the items in the Chest. |
 
-## Clothing
+### Clothing
 
-## ColoredObject
+### ColoredObject
 
-### Common Attributes
+#### Common Attributes
 
 | field         | type  | description                          |
 |---------------|-------|--------------------------------------|
 | `color.Value` | Color | Get the Color of the Colored object. |
 
-## CombinedRing
+### CombinedRing
 
-### Common Attributes
+#### Common Attributes
 
 | field                 | type            | description    |
 |-----------------------|-----------------|----------------|
 | `combinedRings.Value` | [Ring](#ring)[] | Get the rings. |
 
-## CrabPot
+### CrabPot
 
-### Common Attributes
+#### Common Attributes
 
 | field        | type              | description        |
 |--------------|-------------------|--------------------|
 | `bait.Value` | [Object](#object) | Get the bait item. |
 
-## Fence
+### Craftables
+
+#### Common Attributes
+
+
+
+### Fence
 
 Refer to `Data/Fences.json` in
 the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
 for a complete list of the fence targets/areas.
 
-## FishTank
+### FishTank
 
-## Furniture
+### Furniture
 
-## Hat
+### Hat
 
-## IndoorPot
+### IndoorPot
 
-### Common Attributes
+#### Common Attributes
 
 | field           | type                                      | description                  |
 |-----------------|-------------------------------------------|------------------------------|
 | `hoeDirt.Value` | [HoeDirt](./PatchTerrainFeatures#hoedirt) | Get the hoe dirt in the pot. |
 
-## ItemPedestal
+### ItemPedestal
 
-## Object
+### Object
 
 Refer to `Data/Objects.json` in
 the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
 for a complete list of the object targets/areas.
 
-### Common Attributes
+#### Common Attributes
 
 | field              | type   | description          |
 |--------------------|--------|----------------------|
@@ -90,8 +97,8 @@ for a complete list of the object targets/areas.
 
 *Held object is used in many objects such as Casks and Kegs.*
 
-## Ring
+### Ring
 
-## Wallpaper
+### Wallpaper
 
-## WoodChipper
+### WoodChipper

@@ -1,4 +1,4 @@
-# Buildings
+## Buildings
 
 * [Building](#building)
 * [Fish Pond](#fish-pond)
@@ -6,7 +6,7 @@
 * [Pet Bowl](#pet-bowl)
 * [Shipping Bin](#shipping-bin)
 
-## Building
+### Building
 
 Refer to `Data/Buildings.json` in
 the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
@@ -21,7 +21,7 @@ for a complete list of the building targets and areas.
 | `Buildings/Big Coop`    | 0, 0, 96, 112  | The big coop.     |
 | `Buildings/Deluxe Coop` | 0, 0, 96, 112  | The deluxe coop.  |
 
-### Common Attributes
+#### Common Attributes
 
 | field                              | type                                          | description                                  |
 |------------------------------------|-----------------------------------------------|----------------------------------------------|
@@ -29,7 +29,7 @@ for a complete list of the building targets and areas.
 | `GetIndoors().getAllFarmAnimals()` | [FarmAnimals](./PatchCharacters#farmanimal)[] | Get the animals belonging to a barn or coop. |
 
 
-### Code Samples
+#### Code Samples
 
 **Apply patch only if the Building contains Cows.**
 
@@ -40,14 +40,14 @@ this.Path = `{{InternalAssetKey: assets/barn.png}}`;
 return true;
 ```
 
-## Fish Pond
+### Fish Pond
 
 | target                | area          | description                      |
 |-----------------------|---------------|----------------------------------|
 | `Buildings/Fish Pond` | 0, 0, 80, 80  | The stones surrounding the pond. |
 | `Buildings/Fish Pond` | 0, 80, 80, 80 | The pond water.                  |
 
-### Common Attributes
+#### Common Attributes
 
 | field                   | type                        |   | description                                                  |
 |-------------------------|-----------------------------|:--|--------------------------------------------------------------|
@@ -57,7 +57,7 @@ return true;
 | `neededItem.Value`      | [Item](./PatchItems#object) |   | Get the item being requested by the fish.                    |
 | `neededItemCount.Value` | int                         |   | Get how many items are still needed to complete the request. |
 
-### Code Samples
+#### Code Samples
 
 **Apply a patch depending on how many fish there are in the pond.**
 
@@ -75,7 +75,7 @@ return true;
 This patch will replace the texture, and draw from a different area of the
 texture depending on how many fish are in the pond.
 
-## Junimo Hut
+### Junimo Hut
 
 | target                 | area           | description            |
 |------------------------|----------------|------------------------|
@@ -84,13 +84,13 @@ texture depending on how many fish are in the pond.
 | `Buildings/Junimo Hut` | 96, 0, 48, 64  | The autumn Junimo hut. |
 | `Buildings/Junimo Hut` | 144, 0, 48, 64 | The winter Junimo hut. |
 
-### Common Attributes
+#### Common Attributes
 
 | field              | type                        | description             |
 |--------------------|-----------------------------|-------------------------|
 | `GetOutputChest()` | [Chest](./PatchItems#chest) | Get the building chest. |
 
-## Pet Bowl
+### Pet Bowl
 
-## Shipping Bin
+### Shipping Bin
 

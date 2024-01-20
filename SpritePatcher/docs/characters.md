@@ -1,27 +1,30 @@
-# Characters
+## Characters
 
 * [Child](#child)
 * [FarmAnimal](#farmanimal)
 * [Horse](#horse)
 * [JunimoHarvester](#junimoharvester)
 * [Junimo](#junimo)
+* [Monster](#monster)
 * [Pet](#pet)
 
-## Child
+### Child
 
-## FarmAnimal
+### FarmAnimal
 
 Refer to `Data/FarmAnimals.json` in
 the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
 for a complete list of the farm animal targets/areas.
 
-## Horse
+### Horse
 
-## JunimoHarvester
+### JunimoHarvester
 
-## Junimo
+### Junimo
 
-## Pet
+### Monster
+
+### Pet
 
 Refer to `Data/Pets.json` in
 the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)

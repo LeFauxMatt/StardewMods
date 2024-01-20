@@ -1,44 +1,49 @@
-# Tools
+## Tools
 
 * [FishingRod](#fishingrod)
 * [MeleeWeapon](#meleeweapon)
 * [Slingshot](#slingshot)
 * [Tool](#tool)
 * [WateringCan](#wateringcan)
+* [Weapons](#weapons)
 
-## FishingRod
+### FishingRod
 
-### Common Attributes
+#### Common Attributes
 
 | field         | type                            | description              |
 |---------------|---------------------------------|--------------------------|
 | `GetBait()`   | [Object](./PatchItems#object)[] | Get the equipped bait.   |
 | `GetTackle()` | [Object](./PatchItems#object)[] | Get the equipped tackle. |
 
-## MeleeWeapon
+### MeleeWeapon
 
 Refer to `Data/Weapons.json` in
 the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
 for a complete list of the weapon targets/areas.
 
-## Slingshot
+### Slingshot
 
-### Common Attributes
+#### Common Attributes
 
 | field                     | type                            | description     |
 |---------------------------|---------------------------------|-----------------|
 | `attachments[0].getOne()` | [Object](./PatchItems#object)[] | Get ammunition. |
 
-## Tool
+### Tool
 
 Refer to `Data/Tools.json` in
 the [unpacked Content folder](https://stardewvalleywiki.com/Modding:Editing_XNB_files#Unpack_game_files)
 for a complete list of the tool targets/areas.
 
-## WateringCan
+### WateringCan
 
-### Common Attributes
+#### Common Attributes
 
 | field       | type | description                   |
 |-------------|------|-------------------------------|
 | `WaterLeft` | int  | Get the amount of water left. |
+
+### Weapons
+
+#### Common Attributes
