@@ -48,6 +48,8 @@
     <SMAPIDependency Include="spacechase0.SpaceCore" required="true"/>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="docs\screenshots\" />
     <Folder Include="Framework\Services\Patchers\Monsters\" />
+    <Folder Include="templates\" />
   </ItemGroup>
 </Project>

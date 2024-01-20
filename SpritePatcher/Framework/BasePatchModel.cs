@@ -53,9 +53,6 @@ public abstract partial class BasePatchModel : IPatchModel
     public PatchMode PatchMode { get; }
 
     /// <inheritdoc />
-    public float Scale { get; protected set; } = 1f;
-
-    /// <inheritdoc />
     public IRawTextureData? Texture { get; protected set; }
 
     /// <inheritdoc />
@@ -63,6 +60,9 @@ public abstract partial class BasePatchModel : IPatchModel
 
     /// <inheritdoc />
     public Color? Tint { get; protected set; }
+
+    /// <inheritdoc />
+    public float Scale { get; protected set; } = 1f;
 
     /// <summary>Gets a helper that provides useful methods for performing common operations.</summary>
     protected IPatchHelper Helper { get; }

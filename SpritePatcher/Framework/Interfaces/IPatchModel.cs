@@ -15,23 +15,23 @@ public interface IPatchModel
     /// <summary>Gets the target sprite sheet being patched.</summary>
     string Target { get; }
 
-    /// <summary>Gets the draw methods where the texture can be applied.</summary>
+    /// <summary>Gets the source rectangle of the sprite sheet being patched.</summary>
+    Rectangle? SourceArea { get; }
+
+    /// <summary>Gets the draw methods where the patch will be applied.</summary>
     List<DrawMethod> DrawMethods { get; }
 
-    /// <summary>Gets the path to the texture.</summary>
+    /// <summary>Gets the mode that the patch will be applied.</summary>
+    PatchMode PatchMode { get; }
+
+    /// <summary>Gets the raw texture data for the patch.</summary>
     IRawTextureData? Texture { get; }
 
     /// <summary>Gets the area of the texture.</summary>
     Rectangle? Area { get; }
 
-    /// <summary>Gets the source rectangle of the sprite sheet being patched.</summary>
-    Rectangle? SourceArea { get; }
-
     /// <summary>Gets the tint of the texture.</summary>
     Color? Tint { get; }
-
-    /// <summary>Gets the mode that the patch will be applied.</summary>
-    PatchMode PatchMode { get; }
 
     /// <summary>Gets the scale of the texture.</summary>
     float Scale { get; }
