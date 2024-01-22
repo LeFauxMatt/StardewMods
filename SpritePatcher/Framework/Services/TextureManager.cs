@@ -8,6 +8,7 @@ using StardewMods.Common.Interfaces;
 using StardewMods.Common.Models;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
 using StardewMods.SpritePatcher.Framework.Services.Transient;
@@ -94,6 +95,30 @@ internal sealed class TextureManager : BaseService, ITextureManager
             }
         }
 
+        // Expanded the texture to match the highest resolution layer
+        var scale = 1 / layers.Min(layer => layer.Scale);
+        scaledWidth *= (int)scale;
+        scaledHeight *= (int)scale;
+        var textureData = new Color[scaledWidth * scaledHeight];
+
+        // Expand the texture for any animates frames
+        var animatedLayers = layers.Where(layer => layer.Animate != Animate.None && layer.Frames > 1).ToList();
+
+        // Calculate the total duration in ticks based on any animated layers
+        var totalDuration = !animatedLayers.Any()
+            ? 1
+            : animatedLayers.Select(layer => layer.Frames * (int)layer.Animate).Aggregate(1, TextureManager.Lcm);
+
+        // Find the layer with the shortest duration per frame
+        var fastestAnimation = !animatedLayers.Any()
+            ? 1
+            : layers.Where(layer => layer.Animate != Animate.None).Min(layer => (int)layer.Animate);
+
+        var totalFrames = !animatedLayers.Any() ? 1 : totalDuration / fastestAnimation;
+
+        var frameWidth = scaledWidth;
+        scaledWidth *= totalFrames;
+
         // Return from cache if available
         var cacheKey = TextureManager.GetCachedTextureKey(layers, texture, origin, scaledWidth, scaledHeight);
         if (this.cachedTextures.TryGetValue(cacheKey, out managedTexture))
@@ -108,29 +133,26 @@ internal sealed class TextureManager : BaseService, ITextureManager
             this.baseTextures[texture.Name] = baseTexture;
         }
 
-        // Expanded the texture to match the highest resolution layer
-        var scale = 1 / layers.Min(layer => layer.Scale);
-        scaledWidth *= (int)scale;
-        scaledHeight *= (int)scale;
-        var textureData = new Color[scaledWidth * scaledHeight];
-
         // Copy the base texture data if the first layer does not replace the texture
         if (layers.First().PatchMode != PatchMode.Replace)
         {
             var baseTextureData = ((BaseTexture)baseTexture).GetData(key.Area);
             var top = (int)(origin.Y * scale);
             var left = (int)(origin.X * scale);
-            var bottom = top + (key.Area.Height * (int)scale);
-            var right = left + (key.Area.Width * (int)scale);
-            for (var y = top; y < bottom; ++y)
+            var bottom = top + (int)(key.Area.Height * scale);
+            var right = left + (int)(key.Area.Width * scale);
+            for (var frame = 0; frame < totalFrames; ++frame)
             {
-                for (var x = left; x < right; ++x)
+                for (var y = top; y < bottom; ++y)
                 {
-                    var sourceX = (int)((x - left) / scale);
-                    var sourceY = (int)((y - top) / scale);
-                    var sourceIndex = (sourceY * key.Area.Width) + sourceX;
-                    var targetIndex = (y * scaledWidth) + x;
-                    textureData[targetIndex] = baseTextureData[sourceIndex];
+                    for (var x = left; x < right; ++x)
+                    {
+                        var sourceX = (int)((x - left) / scale);
+                        var sourceY = (int)((y - top) / scale);
+                        var sourceIndex = (sourceY * key.Area.Width) + sourceX;
+                        var targetIndex = (y * scaledWidth) + x + (frame * frameWidth);
+                        textureData[targetIndex] = baseTextureData[sourceIndex];
+                    }
                 }
             }
         }
@@ -180,32 +202,39 @@ internal sealed class TextureManager : BaseService, ITextureManager
             var offsetX = scale * (layer.SourceArea.X - key.Area.X + (int)origin.X + (int)layer.Offset.X);
             var offsetY = scale * (layer.SourceArea.Y - key.Area.Y + (int)origin.Y + (int)layer.Offset.Y);
 
-            for (var y = 0; y < scaledHeight; ++y)
+            for (var tick = 0; tick < totalDuration; tick += fastestAnimation)
             {
-                for (var x = 0; x < scaledWidth; ++x)
+                var frame = tick / (int)layer.Animate % layer.Frames;
+
+                for (var y = 0; y < scaledHeight; ++y)
                 {
-                    var targetIndex = x + (y * scaledWidth);
-
-                    // Map to the source index in layerData
-                    var patchX = layer.Area.X + (x * scaleFactor) - offsetX;
-                    var patchY = layer.Area.Y + (y * scaleFactor) - offsetY;
-
-                    // Ensure patchX and patchY are withing the layer's area
-                    if (patchX <= layer.Area.Left
-                        || patchX >= layer.Area.Right
-                        || patchY <= layer.Area.Top
-                        || patchY >= layer.Area.Bottom)
+                    for (var x = 0; x < scaledWidth; ++x)
                     {
-                        continue;
-                    }
+                        // Map to the source index in layerData
+                        var patchX = layer.Area.X
+                            + (x * scaleFactor)
+                            - offsetX
+                            + (frame / layer.Frames * layer.Area.Width);
 
-                    var sourceIndex = (int)patchX + ((int)patchY * layer.Texture.Width);
+                        var patchY = layer.Area.Y + (y * scaleFactor) - offsetY;
 
-                    if (sourceIndex >= 0
-                        && sourceIndex < layerData.Length
-                        && (layer.PatchMode == PatchMode.Replace || layerData[sourceIndex].A > 0))
-                    {
-                        textureData[targetIndex] = layerData[sourceIndex];
+                        // Ensure patchX and patchY are withing the layer's area
+                        if (patchX <= layer.Area.Left
+                            || patchX >= layer.Area.Right
+                            || patchY <= layer.Area.Top
+                            || patchY >= layer.Area.Bottom)
+                        {
+                            continue;
+                        }
+
+                        var sourceIndex = (int)patchX + ((int)patchY * layer.Texture.Width);
+                        var targetIndex = x + (y * scaledWidth);
+                        if (sourceIndex >= 0
+                            && sourceIndex < layerData.Length
+                            && (layer.PatchMode == PatchMode.Replace || layerData[sourceIndex].A > 0))
+                        {
+                            textureData[targetIndex] = layerData[sourceIndex];
+                        }
                     }
                 }
             }
@@ -214,7 +243,7 @@ internal sealed class TextureManager : BaseService, ITextureManager
         var generatedTexture = new Texture2D(texture.GraphicsDevice, scaledWidth, scaledHeight);
         generatedTexture.SetData(textureData);
         generatedTexture.Name = cacheKey;
-        managedTexture = new ManagedTexture(generatedTexture, scale, origin);
+        managedTexture = new ManagedTexture(generatedTexture, scale, origin, totalFrames, fastestAnimation);
         this.cachedTextures[cacheKey] = managedTexture;
         return true;
     }
@@ -238,6 +267,20 @@ internal sealed class TextureManager : BaseService, ITextureManager
 
         return sb.ToString();
     }
+
+    private static int Gcf(int a, int b)
+    {
+        while (b != 0)
+        {
+            var temp = b;
+            b = a % b;
+            a = temp;
+        }
+
+        return a;
+    }
+
+    private static int Lcm(int a, int b) => a * b / TextureManager.Gcf(a, b);
 
     private void OnAssetsInvalidated(AssetsInvalidatedEventArgs e)
     {

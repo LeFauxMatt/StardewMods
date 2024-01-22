@@ -65,7 +65,7 @@ internal sealed class ManagedObject : IManagedObject
         spriteBatch.Draw(
             managedTexture.Texture,
             position - (scale * managedTexture.Offset),
-            new Rectangle(0, 0, managedTexture.Texture.Width, managedTexture.Texture.Height),
+            managedTexture.SourceRectangle,
             color,
             rotation,
             origin * managedTexture.Scale,
@@ -112,7 +112,7 @@ internal sealed class ManagedObject : IManagedObject
                 X = destinationRectangle.X - (int)managedTexture.Offset.X,
                 Y = destinationRectangle.Y - (int)managedTexture.Offset.Y,
             },
-            new Rectangle(0, 0, managedTexture.Texture.Width, managedTexture.Texture.Height),
+            managedTexture.SourceRectangle,
             color,
             rotation,
             origin,

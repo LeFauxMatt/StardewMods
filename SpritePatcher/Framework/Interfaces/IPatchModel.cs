@@ -39,8 +39,8 @@ public interface IPatchModel
     /// <summary>Gets or sets the number of animation frames.</summary>
     int Frames { get; set; }
 
-    /// <summary>Gets or sets the number of ticks per animation frame.</summary>
-    int TicksPerFrame { get; set; }
+    /// <summary>Gets or sets the animation rate.</summary>
+    Animate Animate { get; set; }
 
     /// <summary>Gets or sets the offset for where the patch will be applied.</summary>
     Vector2 Offset { get; set; }

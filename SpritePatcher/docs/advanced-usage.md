@@ -59,9 +59,9 @@ that index.
 ## Animating
 
 Textures can be animated by specifying an area that includes multiple frames,
-and assigning values to the `Frames` and `TicksPerFrame` fields.
+and assigning values to the `Animate` and `Frames` fields.
 
-As the texture is drawn, it will cycle through the frames at the given rate.
+As the texture is drawn, it will cycle through the frames at a given rate.
 
 ### Sample Code
 
@@ -69,10 +69,21 @@ As the texture is drawn, it will cycle through the frames at the given rate.
 Helper.SetTexture(`assets/animated.png`);
 Area = new Rectangle(0, 0, 64, 16);
 Frames = 4;
+Animate = Animate.Fast;
 ```
 
-The default `TicksPerFrame` is 10, so this will cycle through the 4 frames of a
-16x16 texture every 10 ticks. Which is about 2 frames per second.
+For Animate, you have the following choices:
+
+| name             | description                          |
+|------------------|--------------------------------------|
+| `Animate.None`   | The default value is a static frame. |
+| `Animate.Fast`   | Roughly 4 frames per second.         |
+| `Animate.Medium` | Roughly 2 frames per second.         |
+| `Animate.Slow`   | Roughly 1 frame per second.          |
+
+It's recommended that if you use `Animate.Fast`, you have `Frames` that are a
+multiple of 4. If you use `Animate.Medium`, use an even number of `Frames`. this
+helps to optimize when multiple layers are animated at different rates.
 
 ## Expanding
 

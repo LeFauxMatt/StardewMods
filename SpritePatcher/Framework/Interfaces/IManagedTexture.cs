@@ -14,4 +14,7 @@ public interface IManagedTexture
 
     /// <summary>Gets the origin offset of the generated texture.</summary>
     Vector2 Offset { get; }
+
+    /// <summary>Gets the source rectangle of the generated texture.</summary>
+    Rectangle SourceRectangle { get; }
 }

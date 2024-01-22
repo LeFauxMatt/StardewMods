@@ -1,6 +1,5 @@
 namespace StardewMods.SpritePatcher.Framework;
 
-using System.Globalization;
 using System.Text;
 using Microsoft.Xna.Framework;
 using StardewMods.SpritePatcher.Framework.Enums;
@@ -68,7 +67,7 @@ public abstract partial class BasePatchModel : IPatchModel
     public int Frames { get; set; }
 
     /// <inheritdoc />
-    public int TicksPerFrame { get; set; }
+    public Animate Animate { get; set; }
 
     /// <inheritdoc />
     public Vector2 Offset { get; set; }
@@ -82,22 +81,36 @@ public abstract partial class BasePatchModel : IPatchModel
         var sb = new StringBuilder();
         sb.Append(Path.Join(this.Id, this.path));
         sb.Append('_');
-        sb.Append(this.Area.ToString());
+        sb.Append(this.Area);
+        sb.Append('_');
+        sb.Append(this.PatchMode);
+
+        if (this.Offset != Vector2.Zero)
+        {
+            sb.Append('_');
+            sb.Append(this.Offset);
+        }
 
         if (this.Tint != null)
         {
             sb.Append('_');
-            sb.Append(this.Tint.ToString());
+            sb.Append(this.Tint);
         }
 
         if ((int)this.Scale != 1)
         {
             sb.Append('_');
-            sb.Append(((int)this.Scale).ToString(CultureInfo.InvariantCulture));
+            sb.Append((int)this.Scale);
         }
 
-        sb.Append('_');
-        sb.Append(this.PatchMode.ToString());
+        if (this.Animate != Animate.None && this.Frames > 1)
+        {
+            sb.Append('_');
+            sb.Append(this.Animate.ToStringFast());
+            sb.Append('_');
+            sb.Append(this.Frames);
+        }
+
         return sb.ToString();
     }
 
@@ -113,8 +126,8 @@ public abstract partial class BasePatchModel : IPatchModel
         this.Area = Rectangle.Empty;
         this.Tint = null;
         this.Scale = 1f;
-        this.Frames = 0;
-        this.TicksPerFrame = 0;
+        this.Frames = 1;
+        this.Animate = Animate.None;
         this.Offset = Vector2.Zero;
     }
 

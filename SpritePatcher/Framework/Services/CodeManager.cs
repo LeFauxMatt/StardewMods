@@ -70,7 +70,7 @@ internal sealed class CodeManager : BaseService
         this.modRegistry = modRegistry;
         this.netFieldManager = netFieldManager;
         this.textureManager = textureManager;
-        this.template = File.ReadAllText(Path.Join(modHelper.DirectoryPath, "assets/ConditionalTextureTemplate.cs"));
+        this.template = File.ReadAllText(Path.Join(modHelper.DirectoryPath, "assets/PatchTemplate.cs"));
         this.path = Path.Combine(modHelper.DirectoryPath, "_generated");
         if (!Directory.Exists(this.path))
         {

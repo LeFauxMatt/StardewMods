@@ -22,10 +22,10 @@
     </IgnoreModFilePatterns>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="assets\ConditionalTextureTemplate.cs" />
+    <Compile Remove="assets\PatchTemplate.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="assets\ConditionalTextureTemplate.cs">
+    <None Include="assets\PatchTemplate.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
