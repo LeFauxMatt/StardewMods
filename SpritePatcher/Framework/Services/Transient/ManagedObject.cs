@@ -105,13 +105,22 @@ internal sealed class ManagedObject : IManagedObject
             return;
         }
 
+        var valueOrDefault = sourceRectangle.GetValueOrDefault();
+        var width = (int)(destinationRectangle.Width
+            + (((managedTexture.SourceRectangle.Width / managedTexture.Scale) - valueOrDefault.Width)
+                * Game1.pixelZoom));
+
+        var height = (int)(destinationRectangle.Height
+            + (((managedTexture.SourceRectangle.Height / managedTexture.Scale) - valueOrDefault.Height)
+                * Game1.pixelZoom));
+
         spriteBatch.Draw(
             managedTexture.Texture,
-            destinationRectangle with
-            {
-                X = destinationRectangle.X - (int)managedTexture.Offset.X,
-                Y = destinationRectangle.Y - (int)managedTexture.Offset.Y,
-            },
+            new Rectangle(
+                destinationRectangle.X - (int)(managedTexture.Offset.X * Game1.pixelZoom),
+                destinationRectangle.Y - (int)(managedTexture.Offset.Y * Game1.pixelZoom),
+                width,
+                height),
             managedTexture.SourceRectangle,
             color,
             rotation,

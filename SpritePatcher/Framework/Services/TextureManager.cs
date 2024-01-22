@@ -64,42 +64,18 @@ internal sealed class TextureManager : BaseService, ITextureManager
             return false;
         }
 
-        var origin = Vector2.Zero;
-        var scaledWidth = key.Area.Width;
-        var scaledHeight = key.Area.Height;
-
         // Calculate the expanded texture based on the layers offset, area, and scale
-        foreach (var layer in layers)
-        {
-            if (layer.Offset.X < -origin.X)
-            {
-                scaledWidth += (int)(origin.X - layer.Offset.X);
-                origin.X = -layer.Offset.X;
-            }
-
-            if (layer.Offset.Y < -origin.Y)
-            {
-                scaledHeight += (int)(origin.Y - layer.Offset.Y);
-                origin.Y = -layer.Offset.Y;
-            }
-
-            if (layer.Offset.X + (layer.Area.Width * layer.Scale) > origin.X + key.Area.Width)
-            {
-                scaledWidth += (int)(layer.Offset.X + (layer.Area.Width * layer.Scale) - (origin.X + key.Area.Width));
-            }
-
-            if (layer.Offset.Y + (layer.Area.Height * layer.Scale) > origin.Y + key.Area.Height)
-            {
-                scaledHeight +=
-                    (int)(layer.Offset.Y + (layer.Area.Height * layer.Scale) - (origin.Y + key.Area.Height));
-            }
-        }
+        TextureManager.InitializeTextureDimensions(
+            key,
+            layers,
+            out var origin,
+            out var scaledWidth,
+            out var scaledHeight);
 
         // Expanded the texture to match the highest resolution layer
         var scale = 1 / layers.Min(layer => layer.Scale);
         scaledWidth *= (int)scale;
         scaledHeight *= (int)scale;
-        var textureData = new Color[scaledWidth * scaledHeight];
 
         // Expand the texture for any animates frames
         var animatedLayers = layers.Where(layer => layer.Animate != Animate.None && layer.Frames > 1).ToList();
@@ -126,118 +102,33 @@ internal sealed class TextureManager : BaseService, ITextureManager
             return true;
         }
 
-        // Load base texture from cache if available
-        if (!this.baseTextures.TryGetValue(texture.Name, out var baseTexture))
-        {
-            baseTexture = new BaseTexture(texture.Name);
-            this.baseTextures[texture.Name] = baseTexture;
-        }
-
-        // Copy the base texture data if the first layer does not replace the texture
+        var textureData = new Color[scaledWidth * scaledHeight];
         if (layers.First().PatchMode != PatchMode.Replace)
         {
-            var baseTextureData = ((BaseTexture)baseTexture).GetData(key.Area);
-            var top = (int)(origin.Y * scale);
-            var left = (int)(origin.X * scale);
-            var bottom = top + (int)(key.Area.Height * scale);
-            var right = left + (int)(key.Area.Width * scale);
-            for (var frame = 0; frame < totalFrames; ++frame)
-            {
-                for (var y = top; y < bottom; ++y)
-                {
-                    for (var x = left; x < right; ++x)
-                    {
-                        var sourceX = (int)((x - left) / scale);
-                        var sourceY = (int)((y - top) / scale);
-                        var sourceIndex = (sourceY * key.Area.Width) + sourceX;
-                        var targetIndex = (y * scaledWidth) + x + (frame * frameWidth);
-                        textureData[targetIndex] = baseTextureData[sourceIndex];
-                    }
-                }
-            }
+            this.CopyBaseTextureData(
+                key,
+                texture.Name,
+                origin,
+                scaledWidth,
+                scaledHeight,
+                scale,
+                frameWidth,
+                textureData);
         }
 
         // Apply each layer
         foreach (var layer in layers)
         {
-            if (layer.Texture == null)
-            {
-                continue;
-            }
-
-            var layerId = layer.GetCurrentId();
-            if (!this.cachedData.TryGetValue(layerId, out var layerData))
-            {
-                layerData = (Color[])layer.Texture.Data.Clone();
-
-                // Apply tinting if applicable
-                if (layer.Tint != null)
-                {
-                    var hsl = HslColor.FromColor(layer.Tint.Value);
-                    var boostedTint = new HslColor(hsl.H, 2f * hsl.S, 2f * hsl.L).ToRgbColor();
-                    for (var y = layer.Area.Y; y < layer.Area.Y + layer.Area.Height; ++y)
-                    {
-                        for (var x = layer.Area.X; x < layer.Area.X + layer.Area.Width; ++x)
-                        {
-                            var index = (y * layer.Texture.Width) + x;
-                            if (layerData[index].A <= 0)
-                            {
-                                continue;
-                            }
-
-                            var baseTint = new Color(
-                                layerData[index].R / 255f * layer.Tint.Value.R / 255f,
-                                layerData[index].G / 255f * layer.Tint.Value.G / 255f,
-                                layerData[index].B / 255f * layer.Tint.Value.B / 255f);
-
-                            layerData[index] = Color.Lerp(baseTint, boostedTint, 0.3f);
-                        }
-                    }
-                }
-
-                this.cachedData[layerId] = layerData;
-            }
-
-            var scaleFactor = 1f / (scale * layer.Scale);
-            var offsetX = scale * (layer.SourceArea.X - key.Area.X + (int)origin.X + (int)layer.Offset.X);
-            var offsetY = scale * (layer.SourceArea.Y - key.Area.Y + (int)origin.Y + (int)layer.Offset.Y);
-
-            for (var tick = 0; tick < totalDuration; tick += fastestAnimation)
-            {
-                var frame = tick / (int)layer.Animate % layer.Frames;
-
-                for (var y = 0; y < scaledHeight; ++y)
-                {
-                    for (var x = 0; x < scaledWidth; ++x)
-                    {
-                        // Map to the source index in layerData
-                        var patchX = layer.Area.X
-                            + (x * scaleFactor)
-                            - offsetX
-                            + (frame / layer.Frames * layer.Area.Width);
-
-                        var patchY = layer.Area.Y + (y * scaleFactor) - offsetY;
-
-                        // Ensure patchX and patchY are withing the layer's area
-                        if (patchX <= layer.Area.Left
-                            || patchX >= layer.Area.Right
-                            || patchY <= layer.Area.Top
-                            || patchY >= layer.Area.Bottom)
-                        {
-                            continue;
-                        }
-
-                        var sourceIndex = (int)patchX + ((int)patchY * layer.Texture.Width);
-                        var targetIndex = x + (y * scaledWidth);
-                        if (sourceIndex >= 0
-                            && sourceIndex < layerData.Length
-                            && (layer.PatchMode == PatchMode.Replace || layerData[sourceIndex].A > 0))
-                        {
-                            textureData[targetIndex] = layerData[sourceIndex];
-                        }
-                    }
-                }
-            }
+            this.ApplyLayer(
+                layer,
+                key,
+                origin,
+                scaledWidth,
+                scaledHeight,
+                scale,
+                frameWidth,
+                fastestAnimation,
+                textureData);
         }
 
         var generatedTexture = new Texture2D(texture.GraphicsDevice, scaledWidth, scaledHeight);
@@ -281,6 +172,171 @@ internal sealed class TextureManager : BaseService, ITextureManager
     }
 
     private static int Lcm(int a, int b) => a * b / TextureManager.Gcf(a, b);
+
+    private static void InitializeTextureDimensions(
+        TextureKey key,
+        List<IPatchModel> layers,
+        out Vector2 origin,
+        out int scaledWidth,
+        out int scaledHeight)
+    {
+        // Assign originX based on layer with the largest offset
+        var originX = Math.Max(0, layers.Max(layer => key.Area.X - layer.SourceArea.X - layer.Offset.X));
+
+        // Assign originY based on layer with the largest offset
+        var originY = Math.Max(0, layers.Max(layer => key.Area.Y - layer.SourceArea.Y - layer.Offset.Y));
+
+        origin = new Vector2(originX, originY);
+
+        scaledWidth = Math.Max(
+            key.Area.Width,
+            layers.Max(
+                layer => (int)(originX
+                    + layer.Offset.X
+                    + layer.SourceArea.X
+                    - key.Area.X
+                    + (layer.Area.Width * layer.Scale / layer.Frames))));
+
+        scaledHeight = Math.Max(
+            key.Area.Height,
+            layers.Max(
+                layer => (int)(originY
+                    + layer.Offset.Y
+                    + layer.SourceArea.Y
+                    - key.Area.Y
+                    + (layer.Area.Height * layer.Scale))));
+    }
+
+    private static void ApplyTintIfApplicable(IPatchModel layer, Color[] layerData)
+    {
+        if (layer.Texture == null || layer.Tint == null)
+        {
+            return;
+        }
+
+        var hsl = HslColor.FromColor(layer.Tint.Value);
+        var boostedTint = new HslColor(hsl.H, 2f * hsl.S, 2f * hsl.L).ToRgbColor();
+        for (var y = layer.Area.Y; y < layer.Area.Y + layer.Area.Height; ++y)
+        {
+            for (var x = layer.Area.X; x < layer.Area.X + layer.Area.Width; ++x)
+            {
+                var index = (y * layer.Texture.Width) + x;
+                if (layerData[index].A <= 0)
+                {
+                    continue;
+                }
+
+                var baseTint = new Color(
+                    layerData[index].R / 255f * layer.Tint.Value.R / 255f,
+                    layerData[index].G / 255f * layer.Tint.Value.G / 255f,
+                    layerData[index].B / 255f * layer.Tint.Value.B / 255f);
+
+                layerData[index] = Color.Lerp(baseTint, boostedTint, 0.3f);
+            }
+        }
+    }
+
+    private void CopyBaseTextureData(
+        TextureKey key,
+        string textureName,
+        Vector2 origin,
+        int scaledWidth,
+        int scaledHeight,
+        float scale,
+        int frameWidth,
+        IList<Color> textureData)
+    {
+        // Load base texture from cache if available
+        if (!this.baseTextures.TryGetValue(textureName, out var baseTexture))
+        {
+            baseTexture = new BaseTexture(textureName);
+            this.baseTextures[textureName] = baseTexture;
+        }
+
+        // Copy base texture data into each frame of the expanded texture
+        var baseTextureData = ((BaseTexture)baseTexture).GetData(key.Area);
+
+        for (var y = 0; y < scaledHeight; ++y)
+        {
+            for (var x = 0; x < scaledWidth; ++x)
+            {
+                // Map source index to target index
+                var sourceX = (x % frameWidth / scale) - origin.X;
+                var sourceY = (y / scale) - origin.Y;
+
+                // Ensure sourceX and sourceY are within the sourceData
+                if (sourceX < 0 || sourceX >= key.Area.Width || sourceY < 0 || sourceY >= key.Area.Height)
+                {
+                    continue;
+                }
+
+                var sourceIndex = (int)sourceX + ((int)sourceY * key.Area.Width);
+                var targetIndex = x + (y * scaledWidth);
+                textureData[targetIndex] = baseTextureData[sourceIndex];
+            }
+        }
+    }
+
+    private void ApplyLayer(
+        IPatchModel layer,
+        TextureKey key,
+        Vector2 origin,
+        int scaledWidth,
+        int scaledHeight,
+        float scale,
+        int frameWidth,
+        int fastestAnimation,
+        IList<Color> textureData)
+    {
+        if (layer.Texture == null)
+        {
+            return;
+        }
+
+        var layerId = layer.GetCurrentId();
+        if (!this.cachedData.TryGetValue(layerId, out var layerData))
+        {
+            layerData = (Color[])layer.Texture.Data.Clone();
+            TextureManager.ApplyTintIfApplicable(layer, layerData);
+            this.cachedData[layerId] = layerData;
+        }
+
+        var scaleFactor = 1f / (scale * layer.Scale);
+        var offsetX = (int)(scale * (layer.SourceArea.X - key.Area.X + (int)origin.X + (int)layer.Offset.X));
+        var offsetY = (int)(scale * (layer.SourceArea.Y - key.Area.Y + (int)origin.Y + (int)layer.Offset.Y));
+
+        for (var y = offsetY; y < scaledHeight; ++y)
+        {
+            for (var x = 0; x < scaledWidth; ++x)
+            {
+                var frame = layer.Animate == Animate.None
+                    ? 0
+                    : x / frameWidth * fastestAnimation / (int)layer.Animate % layer.Frames;
+
+                // Map layer index to target index
+                var patchX = layer.Area.X
+                    + ((x - offsetX) % (frameWidth * layer.Frames) * scaleFactor)
+                    + (frame / layer.Frames * layer.Area.Width);
+
+                var patchY = layer.Area.Y + ((y - offsetY) * scaleFactor);
+
+                // Ensure patchX and patchY are withing the layer's area
+                if (!layer.Area.Contains(patchX, patchY))
+                {
+                    continue;
+                }
+
+                var sourceIndex = (int)patchX + ((int)patchY * layer.Texture.Width);
+                var targetIndex = x + (y * scaledWidth);
+                if (sourceIndex >= 0
+                    && sourceIndex < layerData.Length
+                    && (layer.PatchMode == PatchMode.Replace || layerData[sourceIndex].A > 0))
+                {
+                    textureData[targetIndex] = layerData[sourceIndex];
+                }
+            }
+        }
+    }
 
     private void OnAssetsInvalidated(AssetsInvalidatedEventArgs e)
     {
