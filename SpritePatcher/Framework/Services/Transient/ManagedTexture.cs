@@ -12,6 +12,9 @@ internal sealed class ManagedTexture(
     int frames,
     int ticksPerFrame) : IManagedTexture
 {
+    private readonly int tickOffset = Game1.random.Next(0, 20);
+    private readonly double tickMultiplier = (Game1.random.NextDouble() * 0.1f) + 0.95f;
+
     /// <inheritdoc />
     public Texture2D Texture { get; } = texture;
 
@@ -26,7 +29,9 @@ internal sealed class ManagedTexture(
         frames == 0
             ? new Rectangle(0, 0, this.Texture.Width, this.Texture.Height)
             : new Rectangle(
-                this.Texture.Width / frames * (Game1.ticks / ticksPerFrame % frames),
+                this.Texture.Width
+                / frames
+                * (int)((Game1.ticks + this.tickOffset) * this.tickMultiplier / ticksPerFrame % frames),
                 0,
                 this.Texture.Width / frames,
                 this.Texture.Height);

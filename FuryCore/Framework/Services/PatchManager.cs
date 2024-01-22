@@ -28,10 +28,7 @@ internal sealed class PatchManager : BaseService<PatchManager>, IPatchManager
             this.savedPatches.Add(id, list);
         }
 
-        foreach (var patch in patches)
-        {
-            list.Add(patch);
-        }
+        list.AddRange(patches);
     }
 
     /// <inheritdoc />

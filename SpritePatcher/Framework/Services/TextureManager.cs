@@ -103,18 +103,7 @@ internal sealed class TextureManager : BaseService, ITextureManager
         }
 
         var textureData = new Color[scaledWidth * scaledHeight];
-        if (layers.First().PatchMode != PatchMode.Replace)
-        {
-            this.CopyBaseTextureData(
-                key,
-                texture.Name,
-                origin,
-                scaledWidth,
-                scaledHeight,
-                scale,
-                frameWidth,
-                textureData);
-        }
+        this.CopyBaseTextureData(key, texture.Name, origin, scaledWidth, scaledHeight, scale, frameWidth, textureData);
 
         // Apply each layer
         foreach (var layer in layers)

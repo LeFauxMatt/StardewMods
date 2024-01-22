@@ -63,13 +63,15 @@ and assigning values to the `Animate` and `Frames` fields.
 
 As the texture is drawn, it will cycle through the frames at a given rate.
 
+![Frames of an animated sprite](screenshots/advanced-usage-animating.png)
+
 ### Sample Code
 
 ```js
 Helper.SetTexture(`assets/animated.png`);
-Area = new Rectangle(0, 0, 64, 16);
+Area = new Rectangle(0, 0, 96, 17);
 Frames = 4;
-Animate = Animate.Fast;
+Animate = Animate.Medium;
 ```
 
 For Animate, you have the following choices:
@@ -96,30 +98,38 @@ conditions are met:
 By playing around with these fields, you can draw to the top, left, right,
 and/or bottom of the original sprite.
 
+![An expanded sprite](screenshots/advanced-usage-expanding.png)
+
 ### Sample Code
 
 ```js
 Helper.SetTexture(`assets/expanded.png`);
-Area = new Rectangle(0, 0, 20, 20);
-Offset = new Vector2(-2, -2);
+Area = new Rectangle(0, 0, 24, 32);
+Offset = new Vector2(-4, 0);
 ```
 
-This will draw a 20x20 texture centered on a sprite which was originally 16x16.
+The furnace is a 16x32 sprite, but the patch is 20x32 and has an offset of -4.
+This will result in 4 extra pixels to the left of the furnace and 4 extra pixels
+to the right of the furnace.
 
 ## Scaling
 
 You can apply higher definition textures to the original sprite by scaling the
 patch's texture.
 
+![A sprite with an HD patch](screenshots/advanced-usage-scaling.png)
+
 ### Sample Code
 
 ```js
-Helper.SetTexture(`assets/scaled.png`, 0, 32, 32);
-Scale = 0.5f;
+Helper.SetTexture(`assets/scaled.png`, 0, 128, 280);
+Offset = new Vector2(0, -3);
+Scale = 0.125f;
 ```
 
-The 32x32 texture will drawn at half the size of the original 16x16 sprite. So
-it occupies the same space, but will be double the resolution.
+The 128x280 texture is added as an overlay to a 16x32 sprite. It is offset 3
+pixels up from the original sprite, and scaled at 1/8th the size of the original
+sprite.
 
 ## Tinting
 
@@ -143,6 +153,8 @@ the patch itself is changed, or in response to a NetField event.
 
 To find an event to trigger the regeneration, you may need
 to [decompile the game code](https://stardewvalleywiki.com/Modding:Modder_Guide/Get_Started#How_do_I_decompile_the_game_code.3F).
+A lot of objects have a method `initNetFields` where all of it's net fields are
+initialized.
 
 ### Sample Code
 
@@ -156,8 +168,9 @@ Area = item.GetSourceRect();
 Scale = 0.5f;
 ```
 
-This will overlay the texture of the big craftable to match the texture of the
-last item that was placed in it.
+This will overlay a texture on top of big craftable objects to match the texture
+of the last item that was placed in it. This works for furnaces, crystalariums,
+and other machines.
 
 The `InvalidateCacheOnChanged` method will cause the patch to be regenerated
 every time another item is placed into or removed from the big craftable.
