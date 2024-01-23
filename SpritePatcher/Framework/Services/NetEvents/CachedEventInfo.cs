@@ -23,14 +23,14 @@ internal sealed partial class NetEventManager
         private readonly ILog log;
 
         private readonly
-            ConditionalWeakTable<object,
-                FieldChange<NetRef<INetObject<INetSerializable>>, INetObject<INetSerializable>>>
-            fieldChangeVisibleEventHandlers = new();
-
-        private readonly
             ConditionalWeakTable<object, NetDictionary<Vector2, SObject, NetRef<SObject>,
                     SerializableDictionary<Vector2, SObject>, NetVector2Dictionary<SObject, NetRef<SObject>>>.
                 ContentsChangeEvent> contentsChangedHandlers = new();
+
+        private readonly ConditionalWeakTable<object, FieldChange<NetRef<Item>, Item>> itemFieldChangeHandlers = new();
+
+        private readonly ConditionalWeakTable<object, FieldChange<NetRef<SObject>, SObject>> objectFieldChangeHandlers =
+            new();
 
         /// <summary>Initializes a new instance of the <see cref="CachedEventInfo" /> class.</summary>
         /// <param name="log">Dependency used for logging debug information to the console.</param>
@@ -55,11 +55,11 @@ internal sealed partial class NetEventManager
             {
                 switch (source)
                 {
-                    case NetRef<SObject> netField when this.eventInfo.Name == "fieldChangeVisibleEvent":
-                        netField.fieldChangeVisibleEvent += this.GetFieldChangeVisibleEvent(netField);
+                    case NetRef<SObject> netRef when this.eventInfo.Name == "fieldChangeVisibleEvent":
+                        netRef.fieldChangeVisibleEvent += this.GetObjectFieldChangeEvent(netRef);
                         break;
-                    case NetRef<Item> netField when this.eventInfo.Name == "fieldChangeVisibleEvent":
-                        netField.fieldChangeVisibleEvent += this.GetFieldChangeVisibleEvent(netField);
+                    case NetRef<Item> netRef when this.eventInfo.Name == "fieldChangeVisibleEvent":
+                        netRef.fieldChangeVisibleEvent += this.GetItemFieldChangeEvent(netRef);
                         break;
                     case NetVector2Dictionary<SObject, NetRef<SObject>> netField
                         when this.eventInfo.Name == "OnValueAdded":
@@ -83,10 +83,10 @@ internal sealed partial class NetEventManager
             switch (source)
             {
                 case NetRef<SObject> netRef when this.eventInfo.Name == "fieldChangeVisibleEvent":
-                    netRef.fieldChangeVisibleEvent -= this.GetFieldChangeVisibleEvent(netRef);
+                    netRef.fieldChangeVisibleEvent -= this.GetObjectFieldChangeEvent(netRef);
                     break;
                 case NetRef<Item> netRef when this.eventInfo.Name == "fieldChangeVisibleEvent":
-                    netRef.fieldChangeVisibleEvent -= this.GetFieldChangeVisibleEvent(netRef);
+                    netRef.fieldChangeVisibleEvent -= this.GetItemFieldChangeEvent(netRef);
                     break;
                 case NetVector2Dictionary<SObject, NetRef<SObject>> netField when this.eventInfo.Name == "OnValueAdded":
                     netField.OnValueAdded -= this.GetContentsChangedEvent(netField);
@@ -116,27 +116,6 @@ internal sealed partial class NetEventManager
             subscribers.Clear();
         }
 
-        private FieldChange<NetRef<T>, T> GetFieldChangeVisibleEvent<T>(NetRef<T> source)
-            where T : class, INetObject<INetSerializable>
-        {
-            if (this.fieldChangeVisibleEventHandlers.TryGetValue(source, out var fieldChangeVisibleEventHandler))
-            {
-                return (FieldChange<NetRef<T>, T>)fieldChangeVisibleEventHandler;
-            }
-
-            fieldChangeVisibleEventHandler = (_, _, newValue) =>
-            {
-                if (source.Value != null && object.ReferenceEquals(source.Value, newValue))
-                {
-                    this.PublishEventOnce(source);
-                }
-            };
-
-            this.fieldChangeVisibleEventHandlers.Add(source, fieldChangeVisibleEventHandler);
-
-            return (FieldChange<NetRef<T>, T>)fieldChangeVisibleEventHandler;
-        }
-
         private NetDictionary<Vector2, SObject, NetRef<SObject>, SerializableDictionary<Vector2, SObject>,
             NetVector2Dictionary<SObject, NetRef<SObject>>>.ContentsChangeEvent GetContentsChangedEvent(
             NetVector2Dictionary<SObject, NetRef<SObject>> source)
@@ -154,6 +133,46 @@ internal sealed partial class NetEventManager
             this.contentsChangedHandlers.Add(source, contentsChanged);
 
             return contentsChanged;
+        }
+
+        private FieldChange<NetRef<Item>, Item> GetItemFieldChangeEvent(NetRef<Item> source)
+        {
+            if (this.itemFieldChangeHandlers.TryGetValue(source, out var fieldChangeHandler))
+            {
+                return fieldChangeHandler;
+            }
+
+            fieldChangeHandler = (_, _, newValue) =>
+            {
+                if (source.Value != null && object.ReferenceEquals(source.Value, newValue))
+                {
+                    this.PublishEventOnce(source);
+                }
+            };
+
+            this.itemFieldChangeHandlers.Add(source, fieldChangeHandler);
+
+            return fieldChangeHandler;
+        }
+
+        private FieldChange<NetRef<SObject>, SObject> GetObjectFieldChangeEvent(NetRef<SObject> source)
+        {
+            if (this.objectFieldChangeHandlers.TryGetValue(source, out var fieldChangeHandler))
+            {
+                return fieldChangeHandler;
+            }
+
+            fieldChangeHandler = (_, _, newValue) =>
+            {
+                if (source.Value != null && object.ReferenceEquals(source.Value, newValue))
+                {
+                    this.PublishEventOnce(source);
+                }
+            };
+
+            this.objectFieldChangeHandlers.Add(source, fieldChangeHandler);
+
+            return fieldChangeHandler;
         }
 
         private Delegate CreateHandler()
