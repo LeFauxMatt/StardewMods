@@ -3,7 +3,7 @@ namespace StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Enums.Patches;
 
 /// <summary>Implementation of draw patches.</summary>
-public interface IPatcher
+public interface ISpritePatcher
 {
     /// <summary>Gets a unique identifier associated the patches.</summary>
     public string Id { get; }

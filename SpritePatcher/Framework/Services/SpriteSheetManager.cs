@@ -1,11 +1,9 @@
 namespace StardewMods.SpritePatcher.Framework.Services;
 
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Interfaces;
-using StardewMods.Common.Models;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Enums;
@@ -13,20 +11,20 @@ using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
 using StardewMods.SpritePatcher.Framework.Services.Transient;
 
-/// <inheritdoc cref="StardewMods.SpritePatcher.Framework.Interfaces.ITextureManager" />
-internal sealed class TextureManager : BaseService, ITextureManager
+/// <inheritdoc cref="ISpriteSheetManager" />
+internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
 {
     private readonly IGameContentHelper gameContentHelper;
     private readonly Dictionary<string, IRawTextureData> baseTextures = [];
-    private readonly Dictionary<string, Color[]> cachedData = [];
-    private readonly Dictionary<string, IManagedTexture> cachedTextures = [];
+    private readonly Dictionary<int, Color[]> cachedData = [];
+    private readonly Dictionary<TextureCacheKey, ISpriteSheet> cachedTextures = [];
 
-    /// <summary>Initializes a new instance of the <see cref="TextureManager" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="SpriteSheetManager" /> class.</summary>
     /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    public TextureManager(
+    public SpriteSheetManager(
         IEventSubscriber eventSubscriber,
         IGameContentHelper gameContentHelper,
         ILog log,
@@ -46,26 +44,33 @@ internal sealed class TextureManager : BaseService, ITextureManager
             return true;
         }
 
-        texture = new BaseTexture(assetName.BaseName);
+        texture = new VanillaTexture(assetName.BaseName);
         this.baseTextures[assetName.BaseName] = texture;
         return true;
     }
 
     /// <inheritdoc />
-    public bool TryBuildTexture(
-        TextureKey key,
+    public bool TryBuildSpriteSheet(
+        SpriteKey key,
         Texture2D texture,
         List<IPatchModel> layers,
-        [NotNullWhen(true)] out IManagedTexture? managedTexture)
+        [NotNullWhen(true)] out ISpriteSheet? spriteSheet)
     {
-        managedTexture = null;
+        spriteSheet = null;
         if (!layers.Any())
         {
             return false;
         }
 
+        // Return from cache if available
+        var cacheKey = new TextureCacheKey(layers.Select(layer => layer.GetCurrentId()).ToList());
+        if (this.cachedTextures.TryGetValue(cacheKey, out spriteSheet))
+        {
+            return true;
+        }
+
         // Calculate the expanded texture based on the layers offset, area, and scale
-        TextureManager.InitializeTextureDimensions(
+        SpriteSheetManager.InitializeTextureDimensions(
             key,
             layers,
             out var origin,
@@ -83,7 +88,7 @@ internal sealed class TextureManager : BaseService, ITextureManager
         // Calculate the total duration in ticks based on any animated layers
         var totalDuration = !animatedLayers.Any()
             ? 1
-            : animatedLayers.Select(layer => layer.Frames * (int)layer.Animate).Aggregate(1, TextureManager.Lcm);
+            : animatedLayers.Select(layer => layer.Frames * (int)layer.Animate).Aggregate(1, SpriteSheetManager.Lcm);
 
         // Find the layer with the shortest duration per frame
         var fastestAnimation = !animatedLayers.Any()
@@ -95,57 +100,21 @@ internal sealed class TextureManager : BaseService, ITextureManager
         var frameWidth = scaledWidth;
         scaledWidth *= totalFrames;
 
-        // Return from cache if available
-        var cacheKey = TextureManager.GetCachedTextureKey(layers, texture, origin, scaledWidth, scaledHeight);
-        if (this.cachedTextures.TryGetValue(cacheKey, out managedTexture))
-        {
-            return true;
-        }
-
         var textureData = new Color[scaledWidth * scaledHeight];
-        this.CopyBaseTextureData(key, texture.Name, origin, scaledWidth, scaledHeight, scale, frameWidth, textureData);
+        this.CopyBaseTextureData(key, texture.Name, origin, scaledWidth, scale, frameWidth, textureData);
 
         // Apply each layer
         foreach (var layer in layers)
         {
-            this.ApplyLayer(
-                layer,
-                key,
-                origin,
-                scaledWidth,
-                scaledHeight,
-                scale,
-                frameWidth,
-                fastestAnimation,
-                textureData);
+            this.ApplyLayer(layer, key, origin, scaledWidth, scale, frameWidth, fastestAnimation, textureData);
         }
 
         var generatedTexture = new Texture2D(texture.GraphicsDevice, scaledWidth, scaledHeight);
         generatedTexture.SetData(textureData);
-        generatedTexture.Name = cacheKey;
-        managedTexture = new ManagedTexture(generatedTexture, scale, origin, totalFrames, fastestAnimation);
-        this.cachedTextures[cacheKey] = managedTexture;
+        generatedTexture.Name = cacheKey.ToString();
+        spriteSheet = new SpriteSheet(generatedTexture, scale, origin, totalFrames, fastestAnimation);
+        this.cachedTextures[cacheKey] = spriteSheet;
         return true;
-    }
-
-    private static string GetCachedTextureKey(
-        List<IPatchModel> layers,
-        GraphicsResource baseTexture,
-        Vector2 origin,
-        int width,
-        int height)
-    {
-        var sb = new StringBuilder();
-        sb.Append(baseTexture.Name);
-        sb.Append('_');
-        sb.Append(new Rectangle((int)origin.X, (int)origin.Y, width, height).ToString());
-        foreach (var layer in layers)
-        {
-            sb.Append('_');
-            sb.Append(layer.GetCurrentId());
-        }
-
-        return sb.ToString();
     }
 
     private static int Gcf(int a, int b)
@@ -160,11 +129,11 @@ internal sealed class TextureManager : BaseService, ITextureManager
         return a;
     }
 
-    private static int Lcm(int a, int b) => a * b / TextureManager.Gcf(a, b);
+    private static int Lcm(int a, int b) => a * b / SpriteSheetManager.Gcf(a, b);
 
     private static void InitializeTextureDimensions(
-        TextureKey key,
-        List<IPatchModel> layers,
+        SpriteKey key,
+        IReadOnlyCollection<IPatchModel> layers,
         out Vector2 origin,
         out int scaledWidth,
         out int scaledHeight)
@@ -203,52 +172,51 @@ internal sealed class TextureManager : BaseService, ITextureManager
             return;
         }
 
-        var hsl = HslColor.FromColor(layer.Tint.Value);
-        var boostedTint = new HslColor(hsl.H, 2f * hsl.S, 2f * hsl.L).ToRgbColor();
-        for (var y = layer.Area.Y; y < layer.Area.Y + layer.Area.Height; ++y)
-        {
-            for (var x = layer.Area.X; x < layer.Area.X + layer.Area.Width; ++x)
+        Utility.RGBtoHSL(layer.Tint.Value.R, layer.Tint.Value.G, layer.Tint.Value.B, out var h, out var s, out var l);
+        Utility.HSLtoRGB(h, s * 2f, l * 2f, out var r, out var g, out var b);
+        var boostedTint = new Color(r, g, b);
+        Parallel.For(
+            0,
+            layer.Area.Width * layer.Area.Height,
+            index =>
             {
-                var index = (y * layer.Texture.Width) + x;
                 if (layerData[index].A <= 0)
                 {
-                    continue;
+                    return;
                 }
 
-                var baseTint = new Color(
-                    layerData[index].R / 255f * layer.Tint.Value.R / 255f,
-                    layerData[index].G / 255f * layer.Tint.Value.G / 255f,
-                    layerData[index].B / 255f * layer.Tint.Value.B / 255f);
-
+                var baseTint = Utility.MultiplyColor(layerData[index], layer.Tint.Value);
                 layerData[index] = Color.Lerp(baseTint, boostedTint, 0.3f);
-            }
-        }
+            });
     }
 
     private void CopyBaseTextureData(
-        TextureKey key,
+        SpriteKey key,
         string textureName,
         Vector2 origin,
         int scaledWidth,
-        int scaledHeight,
         float scale,
         int frameWidth,
-        IList<Color> textureData)
+        Color[] textureData)
     {
         // Load base texture from cache if available
         if (!this.baseTextures.TryGetValue(textureName, out var baseTexture))
         {
-            baseTexture = new BaseTexture(textureName);
+            baseTexture = new VanillaTexture(textureName);
             this.baseTextures[textureName] = baseTexture;
         }
 
         // Copy base texture data into each frame of the expanded texture
-        var baseTextureData = ((BaseTexture)baseTexture).GetData(key.Area);
+        var baseTextureData = ((VanillaTexture)baseTexture).GetData(key.Area);
 
-        for (var y = 0; y < scaledHeight; ++y)
-        {
-            for (var x = 0; x < scaledWidth; ++x)
+        Parallel.For(
+            0,
+            textureData.Length,
+            targetIndex =>
             {
+                var x = targetIndex % scaledWidth;
+                var y = targetIndex / scaledWidth;
+
                 // Map source index to target index
                 var sourceX = (x % frameWidth / scale) - origin.X;
                 var sourceY = (y / scale) - origin.Y;
@@ -256,26 +224,23 @@ internal sealed class TextureManager : BaseService, ITextureManager
                 // Ensure sourceX and sourceY are within the sourceData
                 if (sourceX < 0 || sourceX >= key.Area.Width || sourceY < 0 || sourceY >= key.Area.Height)
                 {
-                    continue;
+                    return;
                 }
 
                 var sourceIndex = (int)sourceX + ((int)sourceY * key.Area.Width);
-                var targetIndex = x + (y * scaledWidth);
                 textureData[targetIndex] = baseTextureData[sourceIndex];
-            }
-        }
+            });
     }
 
     private void ApplyLayer(
         IPatchModel layer,
-        TextureKey key,
+        SpriteKey key,
         Vector2 origin,
         int scaledWidth,
-        int scaledHeight,
         float scale,
         int frameWidth,
         int fastestAnimation,
-        IList<Color> textureData)
+        Color[] textureData)
     {
         if (layer.Texture == null)
         {
@@ -286,7 +251,7 @@ internal sealed class TextureManager : BaseService, ITextureManager
         if (!this.cachedData.TryGetValue(layerId, out var layerData))
         {
             layerData = (Color[])layer.Texture.Data.Clone();
-            TextureManager.ApplyTintIfApplicable(layer, layerData);
+            SpriteSheetManager.ApplyTintIfApplicable(layer, layerData);
             this.cachedData[layerId] = layerData;
         }
 
@@ -294,10 +259,14 @@ internal sealed class TextureManager : BaseService, ITextureManager
         var offsetX = (int)(scale * (layer.SourceArea.X - key.Area.X + (int)origin.X + (int)layer.Offset.X));
         var offsetY = (int)(scale * (layer.SourceArea.Y - key.Area.Y + (int)origin.Y + (int)layer.Offset.Y));
 
-        for (var y = offsetY; y < scaledHeight; ++y)
-        {
-            for (var x = 0; x < scaledWidth; ++x)
+        Parallel.For(
+            0,
+            textureData.Length,
+            targetIndex =>
             {
+                var x = targetIndex % scaledWidth;
+                var y = targetIndex / scaledWidth;
+
                 var frame = layer.Animate == Animate.None
                     ? 0
                     : x / frameWidth * fastestAnimation / (int)layer.Animate % layer.Frames;
@@ -312,19 +281,19 @@ internal sealed class TextureManager : BaseService, ITextureManager
                 // Ensure patchX and patchY are withing the layer's area
                 if (!layer.Area.Contains(patchX, patchY))
                 {
-                    continue;
+                    return;
                 }
 
                 var sourceIndex = (int)patchX + ((int)patchY * layer.Texture.Width);
-                var targetIndex = x + (y * scaledWidth);
                 if (sourceIndex >= 0
                     && sourceIndex < layerData.Length
                     && (layer.PatchMode == PatchMode.Replace || layerData[sourceIndex].A > 0))
                 {
-                    textureData[targetIndex] = layerData[sourceIndex];
+                    textureData[targetIndex] = layer.Alpha >= 0.99f
+                        ? layerData[sourceIndex]
+                        : Color.Lerp(textureData[targetIndex], layerData[sourceIndex], layer.Alpha);
                 }
-            }
-        }
+            });
     }
 
     private void OnAssetsInvalidated(AssetsInvalidatedEventArgs e)
@@ -333,7 +302,7 @@ internal sealed class TextureManager : BaseService, ITextureManager
         {
             if (this.baseTextures.TryGetValue(assetName.BaseName, out var baseTexture))
             {
-                ((BaseTexture)baseTexture).ClearCache();
+                ((VanillaTexture)baseTexture).ClearCache();
             }
         }
     }

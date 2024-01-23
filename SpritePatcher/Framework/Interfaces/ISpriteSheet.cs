@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 /// <summary>Represents a generated texture.</summary>
-public interface IManagedTexture
+public interface ISpriteSheet
 {
     /// <summary>Gets the generated texture.</summary>
     Texture2D Texture { get; }

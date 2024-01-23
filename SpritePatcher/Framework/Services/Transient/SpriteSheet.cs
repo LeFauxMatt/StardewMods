@@ -5,12 +5,12 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 
 /// <inheritdoc />
-internal sealed class ManagedTexture(
+internal sealed class SpriteSheet(
     Texture2D texture,
     float scale,
     Vector2 offset,
     int frames,
-    int ticksPerFrame) : IManagedTexture
+    int ticksPerFrame) : ISpriteSheet
 {
     private readonly int tickOffset = Game1.random.Next(0, 20);
     private readonly double tickMultiplier = (Game1.random.NextDouble() * 0.1f) + 0.95f;

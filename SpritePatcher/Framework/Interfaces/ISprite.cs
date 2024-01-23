@@ -5,10 +5,13 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewMods.SpritePatcher.Framework.Enums;
 
 /// <summary>Represents an object being managed by the mod.</summary>
-public interface IManagedObject
+public interface ISprite
 {
-    /// <summary>Gets the entity associated with this managed object.</summary>
+    /// <summary>Gets the entity associated with this sprite.</summary>
     IHaveModData Entity { get; }
+
+    /// <summary>Gets a weak reference to this sprite.</summary>
+    WeakReference<ISprite> Self { get; }
 
     /// <summary>Submit a sprite for drawing in the current batch.</summary>
     /// <param name="spriteBatch">The SpriteBatch used to draw the sprite.</param>

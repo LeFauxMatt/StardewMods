@@ -34,8 +34,8 @@ internal sealed class CodeManager : BaseService
     private readonly IManifest manifest;
     private readonly IMonitor monitor;
     private readonly IModRegistry modRegistry;
-    private readonly INetFieldManager netFieldManager;
-    private readonly ITextureManager textureManager;
+    private readonly INetEventManager netEventManager;
+    private readonly ISpriteSheetManager spriteSheetManager;
     private readonly string path;
     private readonly List<MetadataReference> references = [];
     private readonly string template;
@@ -48,8 +48,8 @@ internal sealed class CodeManager : BaseService
     /// <param name="modHelper">Dependency for events, input, and content.</param>
     /// <param name="monitor">Dependency used for monitoring and logging.</param>
     /// <param name="modRegistry">Dependency used for fetching metadata about loaded mods.</param>
-    /// <param name="netFieldManager">Dependency used for managing net field events.</param>
-    /// <param name="textureManager">Dependency used for managing textures.</param>
+    /// <param name="netEventManager">Dependency used for managing net field events.</param>
+    /// <param name="spriteSheetManager">Dependency used for managing textures.</param>
     public CodeManager(
         IEventManager eventManager,
         IGameContentHelper gameContentHelper,
@@ -58,8 +58,8 @@ internal sealed class CodeManager : BaseService
         IModHelper modHelper,
         IMonitor monitor,
         IModRegistry modRegistry,
-        INetFieldManager netFieldManager,
-        ITextureManager textureManager)
+        INetEventManager netEventManager,
+        ISpriteSheetManager spriteSheetManager)
         : base(log, manifest)
     {
         this.assetPath = this.ModId + "/Patches";
@@ -68,8 +68,8 @@ internal sealed class CodeManager : BaseService
         this.manifest = manifest;
         this.monitor = monitor;
         this.modRegistry = modRegistry;
-        this.netFieldManager = netFieldManager;
-        this.textureManager = textureManager;
+        this.netEventManager = netEventManager;
+        this.spriteSheetManager = spriteSheetManager;
         this.template = File.ReadAllText(Path.Join(modHelper.DirectoryPath, "assets/PatchTemplate.cs"));
         this.path = Path.Combine(modHelper.DirectoryPath, "_generated");
         if (!Directory.Exists(this.path))
@@ -87,7 +87,7 @@ internal sealed class CodeManager : BaseService
     /// <param name="key">A key for the original texture method.</param>
     /// <param name="data">When this method returns, contains the data for the target if it is found; otherwise, null.</param>
     /// <returns>true if the data for the target is found; otherwise, false.</returns>
-    public bool TryGet(TextureKey key, [NotNullWhen(true)] out IList<IPatchModel>? data)
+    public bool TryGet(SpriteKey key, [NotNullWhen(true)] out IList<IPatchModel>? data)
     {
         if (!this.patches.TryGetValue(key.Target, out var prioritizedPatches))
         {
@@ -114,14 +114,14 @@ internal sealed class CodeManager : BaseService
             return true;
         }
 
-        var output = this.template;
-        output = output.Replace("#REPLACE_namespace", id);
-        output = output.Replace("#REPLACE_code", code);
-        output = output.Replace('`', '"');
+        var output = new StringBuilder(this.template);
+        output.Replace("#REPLACE_namespace", id);
+        output.Replace("#REPLACE_code", code);
+        output.Replace('`', '"');
 
         var compiledCode = CSharpCompilation.Create(
             filename,
-            new[] { CSharpSyntaxTree.ParseText(output) },
+            new[] { CSharpSyntaxTree.ParseText(output.ToString()) },
             this.references,
             CodeManager.CompileOptions);
 
@@ -201,65 +201,70 @@ internal sealed class CodeManager : BaseService
 
         foreach (var (key, contentModel) in contentModels)
         {
-            var parts = PathUtilities.GetSegments(key);
-            if (parts.Length != 2)
-            {
-                this.Log.Warn("Failed to load paatch: {0}.\nInvalid id.", key);
-                continue;
-            }
-
-            var modId = parts[0];
-            var modInfo = this.modRegistry.Get(modId);
-            if (modInfo == null)
-            {
-                this.Log.Warn("Failed to load patch: {0}.\nMod not found.", modInfo);
-                continue;
-            }
-
-            this.Log.Trace("Compiling code for {0}", key);
-            if (!this.TryCompile(modId, contentModel.Code, out var assembly))
-            {
-                this.Log.Warn("Failed to load patch: {0}.\nFailed to compile code.", key);
-                continue;
-            }
-
-            try
-            {
-                var type = assembly.GetType($"{modId}.Runner");
-                var contentPack = (IContentPack)modInfo.GetType().GetProperty("ContentPack")!.GetValue(modInfo)!;
-                var ctor = type!.GetConstructor([typeof(PatchModelCtorArgs)]);
-                var ctorArgs = new PatchModelCtorArgs(
-                    key,
-                    contentModel,
-                    contentPack,
-                    this.monitor,
-                    this.netFieldManager,
-                    this.textureManager);
-
-                var patchModel = (BasePatchModel)ctor!.Invoke([ctorArgs]);
-                var target = this.gameContentHelper.ParseAssetName(contentModel.Target);
-
-                if (!this.patches.TryGetValue(target.BaseName, out var prioritizedPatches))
-                {
-                    prioritizedPatches = new SortedDictionary<int, IList<IPatchModel>>(CodeManager.Comparer);
-                    this.patches[target.BaseName] = prioritizedPatches;
-                }
-
-                if (!prioritizedPatches.TryGetValue(contentModel.Priority, out var patchModels))
-                {
-                    patchModels = new List<IPatchModel>();
-                    prioritizedPatches[contentModel.Priority] = patchModels;
-                }
-
-                patchModels.Add(patchModel);
-            }
-            catch (Exception ex)
-            {
-                this.Log.Warn("Failed to load patch: {0}.\nError: {1}", key, ex.Message);
-            }
+            this.ProcessContentModel(key, contentModel);
         }
 
         this.eventManager.Publish(new PatchesChangedEventArgs(this.patches.Keys.ToList()));
+    }
+
+    private void ProcessContentModel(string key, ContentModel contentModel)
+    {
+        var parts = PathUtilities.GetSegments(key);
+        if (parts.Length != 2)
+        {
+            this.Log.Warn("Failed to load patch: {0}.\nInvalid id.", key);
+            return;
+        }
+
+        var modId = parts[0];
+        var modInfo = this.modRegistry.Get(modId);
+        if (modInfo == null)
+        {
+            this.Log.Warn("Failed to load patch: {0}.\nMod not found.", modId);
+            return;
+        }
+
+        this.Log.Trace("Compiling code for {0}.", key);
+        if (!this.TryCompile(modId, contentModel.Code, out var assembly))
+        {
+            this.Log.Warn("Failed to load patch: {0}.\nFailed to compile code.", key);
+            return;
+        }
+
+        try
+        {
+            var type = assembly.GetType($"{modId}.Runner");
+            var contentPack = (IContentPack)modInfo.GetType().GetProperty("ContentPack")!.GetValue(modInfo)!;
+            var ctor = type!.GetConstructor([typeof(PatchModelCtorArgs)]);
+            var ctorArgs = new PatchModelCtorArgs(
+                key,
+                contentModel,
+                contentPack,
+                this.monitor,
+                this.netEventManager,
+                this.spriteSheetManager);
+
+            var patchModel = (BasePatchModel)ctor!.Invoke([ctorArgs]);
+            var target = this.gameContentHelper.ParseAssetName(contentModel.Target);
+
+            if (!this.patches.TryGetValue(target.BaseName, out var prioritizedPatches))
+            {
+                prioritizedPatches = new SortedDictionary<int, IList<IPatchModel>>(CodeManager.Comparer);
+                this.patches[target.BaseName] = prioritizedPatches;
+            }
+
+            if (!prioritizedPatches.TryGetValue(contentModel.Priority, out var patchModels))
+            {
+                patchModels = new List<IPatchModel>();
+                prioritizedPatches[contentModel.Priority] = patchModels;
+            }
+
+            patchModels.Add(patchModel);
+        }
+        catch (Exception ex)
+        {
+            this.Log.Warn("Failed to load patch: {0}.\nError: {1}", key, ex.Message);
+        }
     }
 
     private sealed class DescendingComparer : IComparer<int>

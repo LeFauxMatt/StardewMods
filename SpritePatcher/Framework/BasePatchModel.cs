@@ -10,19 +10,19 @@ using StardewMods.SpritePatcher.Framework.Models;
 public abstract partial class BasePatchModel : IPatchModel
 {
     private readonly IMonitor monitor;
-    private readonly INetFieldManager netFieldManager;
-    private readonly ITextureManager textureManager;
+    private readonly INetEventManager netEventManager;
+    private readonly ISpriteSheetManager spriteSheetManager;
 
     private string path = string.Empty;
-    private IManagedObject? currentObject;
+    private ISprite? currentObject;
 
     /// <summary>Initializes a new instance of the <see cref="BasePatchModel" /> class.</summary>
     /// <param name="args">The patch model arguments.</param>
     protected BasePatchModel(PatchModelCtorArgs args)
     {
         this.monitor = args.Monitor;
-        this.netFieldManager = args.NetFieldManager;
-        this.textureManager = args.TextureManager;
+        this.netEventManager = args.NetEventManager;
+        this.spriteSheetManager = args.SpriteSheetManager;
 
         this.Id = args.Id;
         this.ContentPack = args.ContentPack;
@@ -61,6 +61,9 @@ public abstract partial class BasePatchModel : IPatchModel
     public Color? Tint { get; set; }
 
     /// <inheritdoc />
+    public float Alpha { get; set; }
+
+    /// <inheritdoc />
     public float Scale { get; set; }
 
     /// <inheritdoc />
@@ -76,7 +79,25 @@ public abstract partial class BasePatchModel : IPatchModel
     protected IPatchHelper Helper { get; }
 
     /// <inheritdoc />
-    public string GetCurrentId()
+    public int GetCurrentId()
+    {
+        var hash = default(HashCode);
+        hash.Add(this.Id);
+        hash.Add(this.Target);
+        hash.Add(this.path);
+        hash.Add(this.Area);
+        hash.Add(this.PatchMode);
+        hash.Add(this.Offset);
+        hash.Add(this.Tint);
+        hash.Add(this.Scale);
+        hash.Add(this.Animate);
+        hash.Add(this.Frames);
+        hash.Add(this.Alpha);
+        return hash.ToHashCode();
+    }
+
+    /// <inheritdoc />
+    public override string ToString()
     {
         var sb = new StringBuilder();
         sb.Append(Path.Join(this.Id, this.path));
@@ -111,17 +132,23 @@ public abstract partial class BasePatchModel : IPatchModel
             sb.Append(this.Frames);
         }
 
+        if (this.Alpha < 0.99f)
+        {
+            sb.Append('_');
+            sb.Append(this.Alpha);
+        }
+
         return sb.ToString();
     }
 
     /// <inheritdoc />
-    public abstract bool Run(IManagedObject managedObject);
+    public abstract bool Run(ISprite sprite);
 
     /// <summary>Resets the Texture, Area, and Tint properties of the object before running.</summary>
-    /// <param name="managedObject">The managed object requesting the patch.</param>
-    protected void BeforeRun(IManagedObject managedObject)
+    /// <param name="sprite">The managed object requesting the patch.</param>
+    protected void BeforeRun(ISprite sprite)
     {
-        this.currentObject = managedObject;
+        this.currentObject = sprite;
         this.Texture = null;
         this.Area = Rectangle.Empty;
         this.Tint = null;
@@ -129,12 +156,13 @@ public abstract partial class BasePatchModel : IPatchModel
         this.Frames = 1;
         this.Animate = Animate.None;
         this.Offset = Vector2.Zero;
+        this.Alpha = 1f;
     }
 
     /// <summary>Validate the Texture, Area, and Tint properties of the object after running.</summary>
-    /// <param name="managedObject">The managed object requesting the patch.</param>
+    /// <param name="sprite">The managed object requesting the patch.</param>
     /// <returns><c>true</c> if the patch should be applied; otherwise, <c>false</c>.</returns>
-    protected bool AfterRun(IManagedObject managedObject)
+    protected bool AfterRun(ISprite sprite)
     {
         this.currentObject = null;
         return this.Texture != null;

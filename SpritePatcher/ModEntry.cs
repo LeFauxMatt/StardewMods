@@ -10,6 +10,7 @@ using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Services;
 using StardewMods.SpritePatcher.Framework.Services.Factory;
+using StardewMods.SpritePatcher.Framework.Services.NetEvents;
 using StardewMods.SpritePatcher.Framework.Services.Patchers.Buildings;
 using StardewMods.SpritePatcher.Framework.Services.Patchers.Characters;
 using StardewMods.SpritePatcher.Framework.Services.Patchers.Items;
@@ -58,11 +59,11 @@ internal sealed class ModEntry : Mod
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<ILog, FuryLogger>();
         this.container.RegisterSingleton<IPatchManager, FuryPatcher>();
-        this.container.RegisterSingleton<ManagedObjectFactory>();
-        this.container.RegisterSingleton<INetFieldManager, NetFieldManager>();
-        this.container.RegisterSingleton<ITextureManager, TextureManager>();
+        this.container.RegisterSingleton<SpriteFactory>();
+        this.container.RegisterSingleton<INetEventManager, NetEventManager>();
+        this.container.RegisterSingleton<ISpriteSheetManager, SpriteSheetManager>();
 
-        this.container.Collection.Register<IPatcher>(
+        this.container.Collection.Register<ISpritePatcher>(
             new[]
             {
                 typeof(BootsPatcher),

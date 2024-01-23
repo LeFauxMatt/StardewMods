@@ -16,7 +16,7 @@ using StardewMods.SpritePatcher.Framework.Models;
 using StardewMods.SpritePatcher.Framework.Services.Factory;
 
 /// <summary>Base class for texture patches.</summary>
-internal abstract class BasePatcher : BaseService, IPatcher
+internal abstract class BasePatcher : BaseService, ISpritePatcher
 {
     private static readonly CodeInstruction BackgroundDrawMethod = new(OpCodes.Ldc_I4_0);
     private static readonly CodeInstruction ConstructionDrawMethod = new(OpCodes.Ldc_I4_1);
@@ -67,27 +67,27 @@ internal abstract class BasePatcher : BaseService, IPatcher
 #nullable enable
 
     private readonly ConfigManager config;
-    private readonly ManagedObjectFactory managedObjectFactory;
+    private readonly SpriteFactory spriteFactory;
 
     /// <summary>Initializes a new instance of the <see cref="BasePatcher" /> class.</summary>
     /// <param name="configManager">Dependency used for managing config data.</param>
     /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="managedObjectFactory">Dependency used for getting managed objects.</param>
+    /// <param name="spriteFactory">Dependency used for getting managed objects.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="patchManager">Dependency used for managing patches.</param>
     protected BasePatcher(
         ConfigManager configManager,
         IEventSubscriber eventSubscriber,
         ILog log,
-        ManagedObjectFactory managedObjectFactory,
+        SpriteFactory spriteFactory,
         IManifest manifest,
         IPatchManager patchManager)
         : base(log, manifest)
     {
         BasePatcher.instance = this;
         this.config = configManager;
-        this.managedObjectFactory = managedObjectFactory;
+        this.spriteFactory = spriteFactory;
         this.Patches = patchManager;
         eventSubscriber.Subscribe<ConfigChangedEventArgs<DefaultConfig>>(this.OnConfigChanged);
     }
@@ -176,7 +176,7 @@ internal abstract class BasePatcher : BaseService, IPatcher
         object entity,
         DrawMethod drawMethod)
     {
-        var managedObject = BasePatcher.instance.managedObjectFactory.GetOrAdd(entity);
+        var managedObject = BasePatcher.instance.spriteFactory.GetOrAdd(entity);
         managedObject.Draw(
             spriteBatch,
             texture,
@@ -204,7 +204,7 @@ internal abstract class BasePatcher : BaseService, IPatcher
         IHaveModData entity,
         DrawMethod drawMethod)
     {
-        var managedObject = BasePatcher.instance.managedObjectFactory.GetOrAdd(entity);
+        var managedObject = BasePatcher.instance.spriteFactory.GetOrAdd(entity);
         managedObject.Draw(
             spriteBatch,
             texture,

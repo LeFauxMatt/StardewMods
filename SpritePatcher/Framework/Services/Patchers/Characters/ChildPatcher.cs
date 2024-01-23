@@ -17,17 +17,17 @@ internal sealed class ChildPatcher : BasePatcher
     /// <param name="configManager">Dependency used for managing config data.</param>
     /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
-    /// <param name="managedObjectFactory">Dependency used for getting managed objects.</param>
+    /// <param name="spriteFactory">Dependency used for getting managed objects.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="patchManager">Dependency used for managing patches.</param>
     public ChildPatcher(
         ConfigManager configManager,
         IEventSubscriber eventSubscriber,
         ILog log,
-        ManagedObjectFactory managedObjectFactory,
+        SpriteFactory spriteFactory,
         IManifest manifest,
         IPatchManager patchManager)
-        : base(configManager, eventSubscriber, log, managedObjectFactory, manifest, patchManager) =>
+        : base(configManager, eventSubscriber, log, spriteFactory, manifest, patchManager) =>
         this.Patches.Add(
             this.Id,
             new SavedPatch(

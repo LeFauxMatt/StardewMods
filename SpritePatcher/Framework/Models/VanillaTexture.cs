@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 /// <inheritdoc />
-internal sealed class BaseTexture : IRawTextureData
+internal sealed class VanillaTexture : IRawTextureData
 {
     private readonly string path;
 
@@ -12,9 +12,9 @@ internal sealed class BaseTexture : IRawTextureData
     private int? width;
     private int? height;
 
-    /// <summary>Initializes a new instance of the <see cref="BaseTexture" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="VanillaTexture" /> class.</summary>
     /// <param name="path">The path to the texture.</param>
-    public BaseTexture(string path) => this.path = path;
+    public VanillaTexture(string path) => this.path = path;
 
     /// <inheritdoc />
     public Color[] Data
@@ -83,20 +83,21 @@ internal sealed class BaseTexture : IRawTextureData
         }
 
         var areaData = new Color[area.Width * area.Height];
-        var dataIndex = 0;
-
-        for (var y = area.Y; y < area.Y + area.Height; y++)
-        {
-            for (var x = area.X; x < area.X + area.Width; x++)
+        Parallel.For(
+            0,
+            area.Width * area.Height,
+            targetIndex =>
             {
-                areaData[dataIndex++] = this.Data[(y * this.Width) + x];
-            }
-        }
+                var x = (targetIndex % area.Width) + area.X;
+                var y = (targetIndex / area.Width) + area.Y;
+                var sourceIndex = (y * this.Width) + x;
+                areaData[targetIndex] = this.Data[sourceIndex];
+            });
 
         return areaData;
     }
 
-    [MemberNotNull(nameof(BaseTexture.data), nameof(BaseTexture.width), nameof(BaseTexture.height))]
+    [MemberNotNull(nameof(VanillaTexture.data), nameof(VanillaTexture.width), nameof(VanillaTexture.height))]
     private void Reinitialize()
     {
         var texture = Game1.content.Load<Texture2D>(this.path);

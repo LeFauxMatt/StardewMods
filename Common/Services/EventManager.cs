@@ -380,17 +380,6 @@ internal sealed class EventManager : BaseEventManager
             case nameof(TerrainFeatureListChangedEventArgs):
                 this.modEvents.World.TerrainFeatureListChanged -= this.PublishEvent;
                 return;
-
-            // Specialized
-            case nameof(LoadStageChangedEventArgs):
-                this.modEvents.Specialized.LoadStageChanged -= this.PublishEvent;
-                return;
-            case nameof(UnvalidatedUpdateTickedEventArgs):
-                this.modEvents.Specialized.UnvalidatedUpdateTicked -= this.PublishEvent;
-                return;
-            case nameof(UnvalidatedUpdateTickingEventArgs):
-                this.modEvents.Specialized.UnvalidatedUpdateTicking -= this.PublishEvent;
-                return;
         }
     }
 

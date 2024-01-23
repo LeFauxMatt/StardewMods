@@ -2,6 +2,7 @@
 
 * [Fields](#fields)
 * [Helper](#helper)
+* [State](#state)
 * [Animating](#animating)
 * [Expanding](#expanding)
 * [Scaling](#scaling)
@@ -10,51 +11,73 @@
 
 ## Fields
 
-| name            | description                                                        |
-|-----------------|--------------------------------------------------------------------|
-| `Id`            | The unique identifier for the mod.                                 |
-| `ContentPack`   | The content pack associated with the mod.                          |
-| `Target`        | The target sprite sheet being patched.                             |
-| `SourceArea`    | The source rectangle of the sprite sheet being patched.            |
-| `DrawMethods`   | The draw methods where the patch will be applied.                  |
-| `PatchMode`     | The mode that the patch will be applied.                           |
-| `Texture`       | The raw texture data of the patch.                                 |
-| `Area`          | The area of the patch's texture that will be used.                 |
-| `Tint`          | Any tinting that will be applied to the patch's texture.           |
-| `Scale`         | How the patch will be scaled relative to the original texture.     |
-| `Frames`        | How many animation frames the texture has.                         |
-| `TicksPerFrame` | How many ticks will cycle the texture to the next animation frame. |
-| `Offset`        | An offset that determines where the patch will be drawn to.        |
+| name          | description                                                    |
+|---------------|----------------------------------------------------------------|
+| `Id`          | The unique identifier for the mod.                             |
+| `ContentPack` | The content pack associated with the mod.                      |
+| `Target`      | The target sprite sheet being patched.                         |
+| `SourceArea`  | The source rectangle of the sprite sheet being patched.        |
+| `DrawMethods` | The draw methods where the patch will be applied.              |
+| `PatchMode`   | The mode that the patch will be applied.                       |
+| `Texture`     | The raw texture data of the patch.                             |
+| `Area`        | The area of the patch's texture that will be used.             |
+| `Tint`        | Any tinting that will be applied to the patch's texture.       |
+| `Alpha`       | The alpha that will be applied to the patch's texture.         |
+| `Scale`       | How the patch will be scaled relative to the original texture. |
+| `Frames`      | How many animation frames the texture has.                     |
+| `Animate`     | How fast an animated sprite will cycle through it's frames.    |
+| `Offset`      | An offset that determines where the patch will be drawn to.    |
 
 ## Helper
 
 The mod provides a `Helper` class with some useful methods for patching.
 
-You can view the [source](../Framework/PatchHelper.cs) for more information, or
+You can view the [source](../Framework/Interfaces/IPatchHelper.cs) for more information, or
 refer to the table below:
 
-| method                                                                    | description                                                                                                                     |
-|---------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
-| `InvalidateCacheOnChanged(object field, string eventName)`                | Causes all patches to be regenerated whenever a NetField event is triggered.                                                    |
-| `GetIndexFromString(string input, string value, char separator = ',')`    | Splits a string out by `separator`, and then find the index of `value` in that split string.                                    |
-| `SetTexture(Texture2D texture)`                                           | Set the patch to the texture of a vanilla sprite sheet.                                                                         |
-| `SetTexture(string path, int index = 0, int width = 16, int height = 16)` | Set the patch to a texture in the mod's folder, optionally for the given index based on a given width and height of the sprite. |
-| `Log(string message)`                                                     | Send a message to SMAPI's console for debugging or information purposes.                                                        |
+| method                                                                                              | description                                                                                                                     |
+|-----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `Log(string message)`                                                                               | Send a message to SMAPI's console for debugging or information purposes.                                                        |
+| `InvalidateCacheOnChanged(object field, string eventName)`                                          | Causes all patches to be regenerated whenever a NetField event is triggered.                                                    |
+| `GetIndexFromString(string input, string value, char separator = ',')`                              | Splits a string out by `separator`, and then find the index of `value` in that split string.                                    |
+| `SetAnimation(Animate animate, int frames)`                                                         | Set the animation and frames.                                                                                                   |
+| `SetTexture(ParsedItemData data, float scale = 1f)`                                                 | Set the texture and area of a patch to an item based on its data.                                                               |
+| `SetTexture(string path, int index = 0, int width = 16, int height = 16, float scale = 1f)`         | Set the patch to a texture in the mod's folder, optionally for the given index based on a given width and height of the sprite. |
+| `WithHeldObject(IHaveModData entity, Action<SObject, ParsedItemData> action, bool monitor = false)` | Perform an action on an object's heldObject if it has one.                                                                      |
+| `WithLastInputItem(IHaveModData entity, Action<Item, ParsedItemData> action, bool monitor = false)` | Perform an action on an object's lastInputItem if it has one.                                                                   | 
+| `WithPreserve(IHaveModData entity, Action<SObject, ParsedItemData> action, bool monitor = false)`   | Perform an action on an object's preserve if it has one.                                                                        | 
 
 ### Sample Code
 
 ```js
-if (entity is not SObject obj) return;
-if (obj.preserve.Value != SObject.PreserveType.Honey || obj.preservedParentSheetIndex.Value == null) return;
-var preserve = ItemRegistry.GetDataOrErrorItem(`(O)` + obj.preservedParentSheetIndex.Value).InternalName;
-var index = Helper.GetIndexFromString(`{{Flowers}}`, preserve);
-Helper.SetTexture(`{{Honey}}`, index);
+Helper.WithPreserve(entity, preserve => {
+    var index = Helper.GetIndexFromString(`{{Flowers}}`, preserve.InternalName);
+    Helper.SetTexture(`{{Honey}}`, index);
+});
 ```
 
 This will split a string of Flower names by space and then find the index of the
 flower that matches the honey's preserve type.  
 Then it will assign the texture of the honey to the texture of the flower at
 that index.
+
+## State
+
+You can save and access state for an `entity` by using it's `modData` field.
+It's recommended that you prefix any keys with your mod's unique identifier to
+prevent a collision.
+
+### Sample Code
+
+```js
+// Storing state
+entity.modData[`{{ModId}}.myKey`] = `myValue`;
+
+// Retrieving state
+if (entity.modData.TryGetValue(`{{ModId}}.myKey`, out var value)) {
+    // Do something with value
+}
+```
 
 ## Animating
 
@@ -69,9 +92,8 @@ As the texture is drawn, it will cycle through the frames at a given rate.
 
 ```js
 Helper.SetTexture(`assets/animated.png`);
+Helper.SetAnimation(Animate.Medium, 4);
 Area = new Rectangle(0, 0, 96, 17);
-Frames = 4;
-Animate = Animate.Medium;
 ```
 
 For Animate, you have the following choices:
@@ -159,18 +181,24 @@ initialized.
 ### Sample Code
 
 ```js
+// Automatic updates when held object changes
 if (entity is not SObject { bigCraftable.Value: true } obj) return;
 Helper.InvalidateCacheOnChanged(obj.heldObject, `fieldChangeVisibleEvent`);
 if (obj.heldObject.Value == null || obj.lastInputItem.Value == null) return;
 var item = ItemRegistry.GetDataOrErrorItem(obj.lastInputItem.Value.QualifiedItemId);
-Helper.SetTexture(item.GetTexture());
-Area = item.GetSourceRect();
-Scale = 0.5f;
+Helper.SetTexture(item, scale: 0.5f);
 ```
-
-This will overlay a texture on top of big craftable objects to match the texture
-of the last item that was placed in it. This works for furnaces, crystalariums,
-and other machines.
 
 The `InvalidateCacheOnChanged` method will cause the patch to be regenerated
 every time another item is placed into or removed from the big craftable.
+
+```js
+// Automatic updates using a Helper method.
+Helper.WithHeldObject(entity,
+    monitor: true,
+    action: (obj, data) => Helper.SetTexture(data, scale: 0.5f));
+```
+
+Alternatively, some helper methods include a `monitor` parameter that will
+handle the event for you. The code above does the exact same thing as the
+previous example.

@@ -1,6 +1,9 @@
 namespace StardewMods.SpritePatcher.Framework.Enums;
 
+using NetEscapades.EnumGenerators;
+
 /// <summary>Specifies the different draw methods for rendering.</summary>
+[EnumExtensions]
 public enum DrawMethod
 {
     /// <summary>The method for a building which has DrawInBackground enabled.</summary>

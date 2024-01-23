@@ -33,6 +33,9 @@ public interface IPatchModel
     /// <summary>Gets or sets the tint of the texture.</summary>
     Color? Tint { get; set; }
 
+    /// <summary>Gets or sets the alpha of the texture.</summary>
+    float Alpha { get; set; }
+
     /// <summary>Gets or sets the scale of the texture.</summary>
     float Scale { get; set; }
 
@@ -47,10 +50,10 @@ public interface IPatchModel
 
     /// <summary>Retrieves a unique identifier for the current patch.</summary>
     /// <returns>The current ID as a string.</returns>
-    string GetCurrentId();
+    int GetCurrentId();
 
     /// <summary>Runs code necessary to update the texture.</summary>
-    /// <param name="managedObject">The managed object requesting the patch.</param>
+    /// <param name="sprite">The managed object requesting the patch.</param>
     /// <returns>True if the texture should be applied.</returns>
-    bool Run(IManagedObject managedObject);
+    bool Run(ISprite sprite);
 }
