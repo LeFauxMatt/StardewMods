@@ -66,6 +66,7 @@ internal sealed class ModEntry : Mod
         this.container.Collection.Register<ISpritePatcher>(
             new[]
             {
+                typeof(AnimatedSpritePatcher),
                 typeof(BootsPatcher),
                 typeof(BuildingPatcher),
                 typeof(BushPatcher),

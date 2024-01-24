@@ -63,7 +63,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         }
 
         // Return from cache if available
-        var cacheKey = new TextureCacheKey(layers.Select(layer => layer.GetCurrentId()).ToList());
+        var cacheKey = new TextureCacheKey(key, layers.Select(layer => layer.GetCurrentId()).ToList());
         if (this.cachedTextures.TryGetValue(cacheKey, out spriteSheet))
         {
             return true;
@@ -139,15 +139,15 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         out int scaledHeight)
     {
         // Assign originX based on layer with the largest offset
-        var originX = Math.Max(0, layers.Max(layer => key.Area.X - layer.SourceArea.X - layer.Offset.X));
+        var originX = (int)Math.Max(0, layers.Max(layer => key.Area.X - layer.SourceArea.X - layer.Offset.X));
 
         // Assign originY based on layer with the largest offset
-        var originY = Math.Max(0, layers.Max(layer => key.Area.Y - layer.SourceArea.Y - layer.Offset.Y));
+        var originY = (int)Math.Max(0, layers.Max(layer => key.Area.Y - layer.SourceArea.Y - layer.Offset.Y));
 
         origin = new Vector2(originX, originY);
 
         scaledWidth = Math.Max(
-            key.Area.Width,
+            originX + key.Area.Width,
             layers.Max(
                 layer => (int)(originX
                     + layer.Offset.X
@@ -156,7 +156,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
                     + (layer.Area.Width * layer.Scale / layer.Frames))));
 
         scaledHeight = Math.Max(
-            key.Area.Height,
+            originY + key.Area.Height,
             layers.Max(
                 layer => (int)(originY
                     + layer.Offset.Y

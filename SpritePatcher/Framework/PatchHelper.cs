@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewValley.ItemTypeDefinitions;
-using StardewValley.TerrainFeatures;
 
 /// <inheritdoc cref="IPatchModel" />
 public abstract partial class BasePatchModel
@@ -65,11 +64,21 @@ public abstract partial class BasePatchModel
         }
 
         /// <inheritdoc />
-        public void SetTexture(string path, int index = 0, int width = 16, int height = 16, float scale = -1f)
+        public void SetTexture(string path, int index = 0, int width = -1, int height = -1, float scale = -1f)
         {
             if (index == -1)
             {
                 return;
+            }
+
+            if (width == -1)
+            {
+                width = patchModel.spriteKey.GetValueOrDefault().Area.Width;
+            }
+
+            if (height == -1)
+            {
+                height = patchModel.spriteKey.GetValueOrDefault().Area.Height;
             }
 
             patchModel.path = path;
@@ -83,8 +92,8 @@ public abstract partial class BasePatchModel
             if (patchModel.Area == Rectangle.Empty)
             {
                 patchModel.Area = new Rectangle(
-                    width * (index % (patchModel.Texture.Width / width)),
-                    height * (index / (patchModel.Texture.Width / width)),
+                    patchModel.Texture.Width > width ? width * (index % (patchModel.Texture.Width / width)) : 0,
+                    patchModel.Texture.Width > width ? height * (index / (patchModel.Texture.Width / width)) : 0,
                     width,
                     height);
             }

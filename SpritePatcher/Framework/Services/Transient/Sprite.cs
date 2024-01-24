@@ -96,9 +96,10 @@ internal sealed class Sprite : ISprite
         float layerDepth,
         DrawMethod drawMethod)
     {
+        var target = this.gameContentHelper.ParseAssetName(texture.Name);
         if (!this.TryGetTexture(
             texture,
-            new SpriteKey(texture.Name, sourceRectangle.GetValueOrDefault(), drawMethod),
+            new SpriteKey(target.BaseName, sourceRectangle.GetValueOrDefault(), drawMethod),
             out var managedTexture))
         {
             spriteBatch.Draw(
@@ -137,6 +138,42 @@ internal sealed class Sprite : ISprite
     }
 
     /// <inheritdoc />
+    public void Draw(
+        SpriteBatch spriteBatch,
+        Texture2D texture,
+        Vector2 position,
+        Rectangle? sourceRectangle,
+        Color color,
+        float rotation,
+        Vector2 origin,
+        Vector2 scale,
+        SpriteEffects effects,
+        float layerDepth,
+        DrawMethod drawMethod)
+    {
+        var target = this.gameContentHelper.ParseAssetName(texture.Name);
+        if (!this.TryGetTexture(
+            texture,
+            new SpriteKey(target.BaseName, sourceRectangle.GetValueOrDefault(), drawMethod),
+            out var managedTexture))
+        {
+            spriteBatch.Draw(texture, position, sourceRectangle, color, rotation, origin, scale, effects, layerDepth);
+            return;
+        }
+
+        spriteBatch.Draw(
+            managedTexture.Texture,
+            position - (scale * managedTexture.Offset),
+            managedTexture.SourceRectangle,
+            color,
+            rotation,
+            origin * managedTexture.Scale,
+            scale / managedTexture.Scale,
+            effects,
+            layerDepth);
+    }
+
+    /// <inheritdoc />
     public void ClearCache()
     {
         this.cachedTextures.Clear();
@@ -162,6 +199,7 @@ internal sealed class Sprite : ISprite
                 Dirt:
                 { } dirt,
             } => dirt,
+            AnimatedSprite sprite => sprite.Owner,
             _ => throw new NotSupportedException($"Cannot manage {source.GetType().FullName}"),
         };
 
@@ -196,7 +234,7 @@ internal sealed class Sprite : ISprite
             bool success;
             try
             {
-                success = patch.Run(this);
+                success = patch.Run(this, key);
             }
             catch (Exception e)
             {

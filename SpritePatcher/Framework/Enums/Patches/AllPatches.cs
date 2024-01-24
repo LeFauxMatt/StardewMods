@@ -11,6 +11,9 @@ using StardewValley.Tools;
 [EnumExtensions]
 public enum AllPatches
 {
+    /// <summary>An object of type <see cref="AnimatedSprite" />.</summary>
+    PatchedAnimatedSprite,
+
     /// <summary>An object of type <see cref="Boots" />.</summary>
     PatchedBoots,
 

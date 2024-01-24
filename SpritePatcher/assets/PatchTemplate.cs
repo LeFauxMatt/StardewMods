@@ -23,10 +23,19 @@ public class Runner : global::StardewMods.SpritePatcher.Framework.BasePatchModel
 {
     public Runner(PatchModelCtorArgs args) : base(args) { }
 
-    public override bool Run(ISprite sprite)
+    public override bool Run(ISprite sprite, SpriteKey key)
     {
-        this.BeforeRun(sprite);
-        this.ActualRun(sprite.Entity);
+        this.BeforeRun(sprite, key);
+        try
+        {
+            this.ActualRun(sprite.Entity);
+        }
+        catch
+        {
+            this.AfterRun(sprite);
+            throw;
+        }
+        
         return this.AfterRun(sprite);
     }
 

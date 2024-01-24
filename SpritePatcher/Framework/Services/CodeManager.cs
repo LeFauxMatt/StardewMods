@@ -97,7 +97,7 @@ internal sealed class CodeManager : BaseService
 
         data = prioritizedPatches
             .SelectMany(patchModels => patchModels.Value)
-            .Where(patch => patch.DrawMethods.Contains(key.DrawMethod) && patch.SourceArea.Intersects(key.Area))
+            .Where(patch => patch.DrawMethods.Contains(key.DrawMethod) && patch.Intersects(key.Area))
             .ToList();
 
         return data.Any();
@@ -207,7 +207,7 @@ internal sealed class CodeManager : BaseService
         this.eventManager.Publish(new PatchesChangedEventArgs(this.patches.Keys.ToList()));
     }
 
-    private void ProcessContentModel(string key, ContentModel contentModel)
+    private void ProcessContentModel(string key, IContentModel contentModel)
     {
         var parts = PathUtilities.GetSegments(key);
         if (parts.Length != 2)

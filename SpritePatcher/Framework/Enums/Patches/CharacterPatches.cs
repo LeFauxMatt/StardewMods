@@ -7,6 +7,9 @@ using StardewValley.Characters;
 [EnumExtensions]
 internal enum CharacterPatches
 {
+    /// <summary>An object of type <see cref="AnimatedSprite" />.</summary>
+    PatchedAnimatedSprite,
+
     /// <summary>An object of type <see cref="Child" />.</summary>
     PatchedChild,
 

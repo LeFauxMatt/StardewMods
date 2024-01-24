@@ -2,6 +2,7 @@ namespace StardewMods.SpritePatcher.Framework.Interfaces;
 
 using Microsoft.Xna.Framework;
 using StardewMods.SpritePatcher.Framework.Enums;
+using StardewMods.SpritePatcher.Framework.Models;
 
 /// <summary>Represents a conditional patch.</summary>
 public interface IPatchModel
@@ -48,12 +49,18 @@ public interface IPatchModel
     /// <summary>Gets or sets the offset for where the patch will be applied.</summary>
     Vector2 Offset { get; set; }
 
+    /// <summary>Determines whether the source area intersects with the specified rectangle.</summary>
+    /// <param name="area">The rectangle to check for intersection.</param>
+    /// <returns>True if the source area intersects with the specified rectangle, otherwise false.</returns>
+    bool Intersects(Rectangle area);
+
     /// <summary>Retrieves a unique identifier for the current patch.</summary>
     /// <returns>The current ID as a string.</returns>
     int GetCurrentId();
 
     /// <summary>Runs code necessary to update the texture.</summary>
     /// <param name="sprite">The managed object requesting the patch.</param>
+    /// <param name="key">A key for the original texture method.</param>
     /// <returns>True if the texture should be applied.</returns>
-    bool Run(ISprite sprite);
+    bool Run(ISprite sprite, SpriteKey key);
 }

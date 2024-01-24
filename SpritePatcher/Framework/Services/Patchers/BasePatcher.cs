@@ -33,6 +33,10 @@ internal abstract class BasePatcher : BaseService, ISpritePatcher
         typeof(BasePatcher),
         nameof(BasePatcher.DrawCustom2));
 
+    private static readonly CodeInstruction CallDraw3 = CodeInstruction.Call(
+        typeof(BasePatcher),
+        nameof(BasePatcher.DrawCustom3));
+
     private static readonly MethodInfo SpriteBatchDraw1 = AccessTools.DeclaredMethod(
         typeof(SpriteBatch),
         nameof(SpriteBatch.Draw),
@@ -57,6 +61,21 @@ internal abstract class BasePatcher : BaseService, ISpritePatcher
             typeof(Rectangle),
             typeof(Color),
             typeof(float),
+            typeof(Vector2),
+            typeof(SpriteEffects),
+            typeof(float),
+        ]);
+
+    private static readonly MethodInfo SpriteBatchDraw3 = AccessTools.DeclaredMethod(
+        typeof(SpriteBatch),
+        nameof(SpriteBatch.Draw),
+        [
+            typeof(Texture2D),
+            typeof(Vector2),
+            typeof(Rectangle),
+            typeof(Color),
+            typeof(float),
+            typeof(Vector2),
             typeof(Vector2),
             typeof(SpriteEffects),
             typeof(float),
@@ -137,32 +156,7 @@ internal abstract class BasePatcher : BaseService, ISpritePatcher
     protected static IEnumerable<CodeInstruction> DrawWhenHeld(IEnumerable<CodeInstruction> instructions) =>
         BasePatcher.DrawTranspiler(instructions, BasePatcher.HeldDrawMethod);
 
-    private static IEnumerable<CodeInstruction> DrawTranspiler(
-        IEnumerable<CodeInstruction> instructions,
-        CodeInstruction drawMethod)
-    {
-        foreach (var instruction in instructions)
-        {
-            if (instruction.Calls(BasePatcher.SpriteBatchDraw1))
-            {
-                yield return new CodeInstruction(OpCodes.Ldarg_0);
-                yield return drawMethod;
-                yield return BasePatcher.CallDraw1;
-            }
-            else if (instruction.Calls(BasePatcher.SpriteBatchDraw2))
-            {
-                yield return new CodeInstruction(OpCodes.Ldarg_0);
-                yield return drawMethod;
-                yield return BasePatcher.CallDraw2;
-            }
-            else
-            {
-                yield return instruction;
-            }
-        }
-    }
-
-    private static void DrawCustom1(
+    protected static void DrawCustom1(
         SpriteBatch spriteBatch,
         Texture2D texture,
         Vector2 position,
@@ -191,7 +185,7 @@ internal abstract class BasePatcher : BaseService, ISpritePatcher
             drawMethod);
     }
 
-    private static void DrawCustom2(
+    protected static void DrawCustom2(
         SpriteBatch spriteBatch,
         Texture2D texture,
         Rectangle destinationRectangle,
@@ -216,6 +210,66 @@ internal abstract class BasePatcher : BaseService, ISpritePatcher
             effects,
             layerDepth,
             drawMethod);
+    }
+
+    protected static void DrawCustom3(
+        SpriteBatch spriteBatch,
+        Texture2D texture,
+        Vector2 position,
+        Rectangle? sourceRectangle,
+        Color color,
+        float rotation,
+        Vector2 origin,
+        Vector2 scale,
+        SpriteEffects effects,
+        float layerDepth,
+        object entity,
+        DrawMethod drawMethod)
+    {
+        var managedObject = BasePatcher.instance.spriteFactory.GetOrAdd(entity);
+        managedObject.Draw(
+            spriteBatch,
+            texture,
+            position,
+            sourceRectangle,
+            color,
+            rotation,
+            origin,
+            scale,
+            effects,
+            layerDepth,
+            drawMethod);
+    }
+
+    private static IEnumerable<CodeInstruction> DrawTranspiler(
+        IEnumerable<CodeInstruction> instructions,
+        CodeInstruction drawMethod)
+    {
+        foreach (var instruction in instructions)
+        {
+            if (instruction.Calls(BasePatcher.SpriteBatchDraw1))
+            {
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return drawMethod;
+                yield return BasePatcher.CallDraw1;
+            }
+            else if (instruction.Calls(BasePatcher.SpriteBatchDraw2))
+            {
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return drawMethod;
+                yield return BasePatcher.CallDraw2;
+            }
+            else if (instruction.Calls(BasePatcher.SpriteBatchDraw3))
+            {
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return drawMethod;
+                yield return BasePatcher.CallDraw3;
+            }
+            else
+            {
+                yield return instruction;
+            }
+        }
     }
 
     private void OnConfigChanged(ConfigChangedEventArgs<DefaultConfig> obj)

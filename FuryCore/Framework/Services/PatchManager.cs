@@ -70,7 +70,10 @@ internal sealed class PatchManager : BaseService<PatchManager>, IPatchManager
             }
             catch (Exception e)
             {
-                this.Log.Warn("Patch {0} failed with exception: {1}", patch.LogId ?? patch.Patch.Name, e.Message);
+                this.Log.Warn(
+                    "Patching {0} failed with.\nError: {1}",
+                    patch.LogId ?? $"{patch.Original.DeclaringType!.Name}.{patch.Original.Name}",
+                    e.Message);
             }
         }
     }

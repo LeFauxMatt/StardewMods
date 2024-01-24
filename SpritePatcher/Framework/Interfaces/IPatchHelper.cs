@@ -2,7 +2,6 @@ namespace StardewMods.SpritePatcher.Framework.Interfaces;
 
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewValley.ItemTypeDefinitions;
-using StardewValley.TerrainFeatures;
 
 /// <summary>The Helper class provides useful methods for performing common operations.</summary>
 public interface IPatchHelper
@@ -39,10 +38,10 @@ public interface IPatchHelper
     /// <summary>Sets the texture of an object using the specified path.</summary>
     /// <param name="path">The path of the texture.</param>
     /// <param name="index">The index of the icon within the texture.</param>
-    /// <param name="width">The width of each icon within the texture. Default value is 16.</param>
-    /// <param name="height">The height of each icon within the texture. Default value is 16.</param>
+    /// <param name="width">The width of each icon within the texture.</param>
+    /// <param name="height">The height of each icon within the texture.</param>
     /// <param name="scale">The scale of the texture.</param>
-    void SetTexture(string path, int index = 0, int width = 16, int height = 16, float scale = -1f);
+    void SetTexture(string path, int index = 0, int width = -1, int height = -1, float scale = -1f);
 
     /// <summary>Invokes the specified action with the provided entity's heldObject value.</summary>
     /// <param name="entity">The entity with the heldObject.</param>

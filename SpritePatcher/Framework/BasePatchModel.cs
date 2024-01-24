@@ -12,9 +12,11 @@ public abstract partial class BasePatchModel : IPatchModel
     private readonly IMonitor monitor;
     private readonly INetEventManager netEventManager;
     private readonly ISpriteSheetManager spriteSheetManager;
+    private Rectangle sourceArea;
 
     private string path = string.Empty;
     private ISprite? currentObject;
+    private SpriteKey? spriteKey;
 
     /// <summary>Initializes a new instance of the <see cref="BasePatchModel" /> class.</summary>
     /// <param name="args">The patch model arguments.</param>
@@ -27,6 +29,7 @@ public abstract partial class BasePatchModel : IPatchModel
         this.Id = args.Id;
         this.ContentPack = args.ContentPack;
         this.Target = args.ContentModel.Target;
+        this.sourceArea = args.ContentModel.SourceArea;
         this.SourceArea = args.ContentModel.SourceArea;
         this.DrawMethods = args.ContentModel.DrawMethods;
         this.PatchMode = args.ContentModel.PatchMode;
@@ -43,13 +46,13 @@ public abstract partial class BasePatchModel : IPatchModel
     public string Target { get; }
 
     /// <inheritdoc />
-    public Rectangle SourceArea { get; }
-
-    /// <inheritdoc />
     public List<DrawMethod> DrawMethods { get; }
 
     /// <inheritdoc />
     public PatchMode PatchMode { get; }
+
+    /// <inheritdoc />
+    public Rectangle SourceArea { get; private set; }
 
     /// <inheritdoc />
     public IRawTextureData? Texture { get; set; }
@@ -77,6 +80,9 @@ public abstract partial class BasePatchModel : IPatchModel
 
     /// <summary>Gets a helper that provides useful methods for performing common operations.</summary>
     protected IPatchHelper Helper { get; }
+
+    /// <inheritdoc />
+    public bool Intersects(Rectangle area) => this.sourceArea.Intersects(area);
 
     /// <inheritdoc />
     public int GetCurrentId()
@@ -142,13 +148,16 @@ public abstract partial class BasePatchModel : IPatchModel
     }
 
     /// <inheritdoc />
-    public abstract bool Run(ISprite sprite);
+    public abstract bool Run(ISprite sprite, SpriteKey key);
 
     /// <summary>Resets the Texture, Area, and Tint properties of the object before running.</summary>
     /// <param name="sprite">The managed object requesting the patch.</param>
-    protected void BeforeRun(ISprite sprite)
+    /// <param name="key">A key for the original texture method.</param>
+    protected void BeforeRun(ISprite sprite, SpriteKey key)
     {
         this.currentObject = sprite;
+        this.spriteKey = key;
+        this.SourceArea = Rectangle.Intersect(this.sourceArea, key.Area);
         this.Texture = null;
         this.Area = Rectangle.Empty;
         this.Tint = null;
@@ -165,6 +174,7 @@ public abstract partial class BasePatchModel : IPatchModel
     protected bool AfterRun(ISprite sprite)
     {
         this.currentObject = null;
+        this.spriteKey = null;
         return this.Texture != null;
     }
 }
