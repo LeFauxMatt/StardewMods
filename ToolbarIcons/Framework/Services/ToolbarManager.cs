@@ -70,8 +70,10 @@ internal sealed class ToolbarManager : BaseService
     }
 
     private static bool ShowToolbar =>
-        Game1.displayHUD
-        && Context.IsPlayerFree
+        Context.IsPlayerFree
+        && !Game1.eventUp
+        && Game1.farmEvent == null
+        && Game1.displayHUD
         && Game1.activeClickableMenu is null
         && Game1.onScreenMenus.OfType<Toolbar>().Any();
 

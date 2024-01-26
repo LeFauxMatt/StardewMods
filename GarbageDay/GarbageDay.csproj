@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Garbage Day</Name>
     <Description>Turns the town trash cans into chests.</Description>
-    <Version>3.1.0-alpha.20240116</Version>
+    <Version>3.1.0-alpha.20240124</Version>
     <RootNamespace>StardewMods.GarbageDay</RootNamespace>
     <UniqueId>furyx639.GarbageDay</UniqueId>
     <UpdateKeys>Nexus:8204@SMAPI</UpdateKeys>

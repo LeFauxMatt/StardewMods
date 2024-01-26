@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Toolbar Icons</Name>
     <Description>Adds icons above or below the toolbar.</Description>
-    <Version>2.6.0-alpha.20240116</Version>
+    <Version>2.6.0-alpha.20240124</Version>
     <RootNamespace>StardewMods.ToolbarIcons</RootNamespace>
     <UniqueId>furyx639.ToolbarIcons</UniqueId>
     <UpdateKeys>Nexus:11026@SMAPI</UpdateKeys>

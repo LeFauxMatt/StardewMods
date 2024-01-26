@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Better Chests</Name>
     <Description>Framework that adds new features to chests.</Description>
-    <Version>2.9.0-alpha.20240116</Version>
+    <Version>2.9.0-alpha.20240124</Version>
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.BetterChests</RootNamespace>
     <UniqueId>furyx639.BetterChests</UniqueId>
