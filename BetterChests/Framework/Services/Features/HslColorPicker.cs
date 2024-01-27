@@ -21,9 +21,7 @@ using StardewValley.Objects;
 /// <summary>Adds a color picker that support hue, saturation, and lightness.</summary>
 internal sealed class HslColorPicker : BaseFeature<HslColorPicker>
 {
-#nullable disable
-    private static HslColorPicker instance;
-#nullable enable
+    private static HslColorPicker instance = null!;
 
     private readonly PerScreen<ClickableTextureComponent> copyButton = new();
     private readonly PerScreen<Rectangle> copyButtonArea = new();

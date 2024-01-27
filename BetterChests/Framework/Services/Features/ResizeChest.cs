@@ -11,9 +11,7 @@ using StardewValley.Objects;
 /// <summary>Expand the capacity of chests and add scrolling to access extra items.</summary>
 internal sealed class ResizeChest : BaseFeature<ResizeChest>
 {
-#nullable disable
-    private static ResizeChest instance;
-#nullable enable
+    private static ResizeChest instance = null!;
 
     private readonly ContainerFactory containerFactory;
     private readonly Harmony harmony;

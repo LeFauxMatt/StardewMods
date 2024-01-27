@@ -15,9 +15,7 @@ using StardewValley.Objects;
 /// <summary>Allows a placed chest full of items to be picked up by the farmer.</summary>
 internal sealed class CarryChest : BaseFeature<CarryChest>
 {
-#nullable disable
-    private static CarryChest instance;
-#nullable enable
+    private static CarryChest instance = null!;
 
     private readonly ContainerFactory containerFactory;
     private readonly Harmony harmony;

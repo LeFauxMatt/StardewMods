@@ -5,8 +5,8 @@ using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 /// <inheritdoc />
 internal sealed class TemporaryStorageOptions : DefaultStorageOptions
 {
-    private readonly IStorageOptions storageOptions;
     private readonly IStorageOptions defaultOptions;
+    private readonly IStorageOptions storageOptions;
 
     /// <summary>Initializes a new instance of the <see cref="TemporaryStorageOptions" /> class.</summary>
     /// <param name="storageOptions">The storage options to copy.</param>

@@ -19,9 +19,7 @@ using StardewValley.Menus;
 /// <summary>Configure storages individually.</summary>
 internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
 {
-#nullable disable
-    private static ConfigureChest instance;
-#nullable enable
+    private static ConfigureChest instance = null!;
 
     private readonly PerScreen<ClickableTextureComponent> configButton;
     private readonly ConfigManager configManager;

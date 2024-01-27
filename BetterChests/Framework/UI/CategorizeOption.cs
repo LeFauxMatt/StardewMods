@@ -31,19 +31,19 @@ internal sealed class CategorizeOption : BaseComplexOption
         });
 
     private readonly List<ClickableComponent> allComponents = [];
+    private readonly ClickableTextureComponent downArrow;
     private readonly IEventSubscriber eventSubscriber;
     private readonly IGameContentHelper gameContentHelper;
     private readonly IInputHelper inputHelper;
     private readonly Dictionary<string, InventoryTabData> inventoryTabData;
     private readonly ItemMatcher itemMatcherForFiltering;
     private readonly ItemMatcher itemMatcherForSorting;
-    private readonly ClickableTextureComponent upArrow;
-    private readonly ClickableTextureComponent downArrow;
     private readonly ITranslationHelper translationHelper;
+    private readonly ClickableTextureComponent upArrow;
 
     private string? hoverText;
-    private int indexItems;
     private int indexCategories;
+    private int indexItems;
     private int indexQuality;
     private bool initialized;
     private List<Item> items = [];

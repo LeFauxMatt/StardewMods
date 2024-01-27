@@ -13,11 +13,11 @@ using StardewValley.Menus;
 /// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IInventoryMenuManager" />
 internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
 {
+    private readonly ClickableTextureComponent downArrow;
     private readonly HashSet<InventoryMenu.highlightThisItem> highlightMethods = [];
     private readonly HashSet<Func<IEnumerable<Item>, IEnumerable<Item>>> operations = [];
     private readonly WeakReference<InventoryMenu?> source = new(null);
     private readonly ClickableTextureComponent upArrow;
-    private readonly ClickableTextureComponent downArrow;
     private List<Item>? cachedItems;
 
     /// <summary>Initializes a new instance of the <see cref="InventoryMenuManager" /> class.</summary>
@@ -39,6 +39,9 @@ internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
             Game1.pixelZoom) { myID = 5318009 };
     }
 
+    /// <summary>Gets or sets the method used to highlight an item in the inventory menu.</summary>
+    public InventoryMenu.highlightThisItem OriginalHighlightMethod { get; set; } = InventoryMenu.highlightAllItems;
+
     /// <inheritdoc />
     public InventoryMenu? Menu => this.source.TryGetTarget(out var target) ? target : null;
 
@@ -50,9 +53,6 @@ internal sealed class InventoryMenuManager : BaseService, IInventoryMenuManager
 
     /// <inheritdoc />
     public int Columns => this.Capacity / this.Rows;
-
-    /// <summary>Gets or sets the method used to highlight an item in the inventory menu.</summary>
-    public InventoryMenu.highlightThisItem OriginalHighlightMethod { get; set; } = InventoryMenu.highlightAllItems;
 
     /// <inheritdoc />
     public IStorageContainer? Container { get; set; }

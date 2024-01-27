@@ -18,16 +18,14 @@ using StardewValley.Objects;
 /// <summary>Manages the item grab menu in the game.</summary>
 internal sealed class ItemGrabMenuManager : BaseService
 {
-#nullable disable
-    private static ItemGrabMenuManager instance;
-#nullable enable
+    private static ItemGrabMenuManager instance = null!;
 
     private readonly PerScreen<InventoryMenuManager> bottomMenu;
     private readonly ContainerFactory containerFactory;
     private readonly PerScreen<IClickableMenu?> currentMenu = new();
     private readonly IEventManager eventManager;
-    private readonly IModConfig modConfig;
     private readonly IInputHelper inputHelper;
+    private readonly IModConfig modConfig;
     private readonly PerScreen<InventoryMenuManager> topMenu;
 
     /// <summary>Initializes a new instance of the <see cref="ItemGrabMenuManager" /> class.</summary>

@@ -15,9 +15,7 @@ using StardewValley.Menus;
 /// <summary>Sort items in a chest using a customized criteria.</summary>
 internal sealed class OrganizeItems : BaseFeature<OrganizeItems>
 {
-#nullable disable
-    private static OrganizeItems instance;
-#nullable enable
+    private static OrganizeItems instance = null!;
 
     private readonly ContainerHandler containerHandler;
     private readonly Harmony harmony;

@@ -26,14 +26,14 @@ internal abstract class BaseFeature<TFeature> : BaseService<TFeature>, IFeature
         this.Events.Subscribe<ConfigChangedEventArgs<DefaultConfig>>(this.OnConfigChanged);
     }
 
-    /// <inheritdoc />
-    public abstract bool ShouldBeActive { get; }
-
     /// <summary>Gets the dependency used for managing events.</summary>
     protected IEventManager Events { get; }
 
     /// <summary>Gets the dependency used for accessing config data.</summary>
     protected IModConfig Config { get; }
+
+    /// <inheritdoc />
+    public abstract bool ShouldBeActive { get; }
 
     /// <summary>Activate this feature.</summary>
     protected abstract void Activate();

@@ -20,9 +20,7 @@ using StardewValley.Objects;
 /// <summary>Craft using items from placed chests and chests in the farmer's inventory.</summary>
 internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
 {
-#nullable disable
-    private static CraftFromChest instance;
-#nullable enable
+    private static CraftFromChest instance = null!;
 
     private readonly AssetHandler assetHandler;
     private readonly ContainerFactory containerFactory;

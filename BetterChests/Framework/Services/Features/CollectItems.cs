@@ -13,9 +13,7 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 /// <summary>Debris such as mined or farmed items can be collected into a Chest in the farmer's inventory.</summary>
 internal sealed class CollectItems : BaseFeature<CollectItems>
 {
-#nullable disable
-    private static CollectItems instance;
-#nullable enable
+    private static CollectItems instance = null!;
 
     private readonly PerScreen<List<IStorageContainer>> cachedContainers = new(() => []);
     private readonly ContainerFactory containerFactory;

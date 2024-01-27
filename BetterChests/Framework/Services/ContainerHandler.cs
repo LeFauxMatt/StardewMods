@@ -16,9 +16,7 @@ using StardewValley.Objects;
 /// <summary>Responsible for handling containers.</summary>
 internal sealed class ContainerHandler : BaseService
 {
-#nullable disable
-    private static ContainerHandler instance;
-#nullable enable
+    private static ContainerHandler instance = null!;
 
     private readonly ContainerFactory containerFactory;
     private readonly IReflectionHelper reflectionHelper;

@@ -9,8 +9,8 @@ using StardewMods.GarbageDay.Services.Integrations.BetterChests;
 /// <inheritdoc />
 public sealed class BetterChestsApi : IBetterChestsApi
 {
-    private readonly ContainerHandler containerHandler;
     private readonly ContainerFactory containerFactory;
+    private readonly ContainerHandler containerHandler;
     private readonly IModInfo modInfo;
 
     /// <summary>Initializes a new instance of the <see cref="BetterChestsApi" /> class.</summary>

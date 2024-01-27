@@ -12,9 +12,8 @@ using StardewValley.Menus;
 /// <summary>Draw chest label to the screen.</summary>
 internal sealed class LabelChest : BaseFeature<LabelChest>
 {
-    private readonly ContainerFactory containerFactory;
-
     private readonly PerScreen<IStorageContainer?> containerFacing = new();
+    private readonly ContainerFactory containerFactory;
 
     /// <summary>Initializes a new instance of the <see cref="LabelChest" /> class.</summary>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>

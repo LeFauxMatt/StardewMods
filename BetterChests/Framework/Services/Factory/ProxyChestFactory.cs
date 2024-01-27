@@ -17,9 +17,7 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
     private const string ColorKey = "PlayerChoiceColor";
     private const string GlobalInventoryIdKey = "GlobalInventoryId";
 
-#nullable disable
-    private static ProxyChestFactory instance;
-#nullable enable
+    private static ProxyChestFactory instance = null!;
 
     private readonly Dictionary<string, Chest> proxyChests = new();
 

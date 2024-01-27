@@ -7,9 +7,9 @@ using StardewValley.Extensions;
 internal sealed class ItemMatcher : IItemFilter
 {
     private readonly Dictionary<string, ParsedTerm> parsedTerms = new();
-    private readonly ITranslationHelper translation;
     private readonly char searchNegationSymbol;
     private readonly char searchTagSymbol;
+    private readonly ITranslationHelper translation;
     private string searchText = string.Empty;
 
     private ParsedTerm[] terms = Array.Empty<ParsedTerm>();
