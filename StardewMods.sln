@@ -38,6 +38,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpritePatcher", "SpritePatc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrystallineJunimoChests", "CrystallineJunimoChests\CrystallineJunimoChests.csproj", "{0C576B26-09D4-4B7B-AA3F-D93CA61865EE}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StardewWidgets", "StardewWidgets\StardewWidgets.csproj", "{2B33F6C3-8DE0-45A9-A2CA-AEE5700A2FCB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FarmAnimalDiets", "FarmAnimalDiets\FarmAnimalDiets.csproj", "{5FA7F9AF-45C9-4D5E-B566-DAAED72F8887}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,6 +92,14 @@ Global
 		{0C576B26-09D4-4B7B-AA3F-D93CA61865EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C576B26-09D4-4B7B-AA3F-D93CA61865EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C576B26-09D4-4B7B-AA3F-D93CA61865EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B33F6C3-8DE0-45A9-A2CA-AEE5700A2FCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B33F6C3-8DE0-45A9-A2CA-AEE5700A2FCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B33F6C3-8DE0-45A9-A2CA-AEE5700A2FCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B33F6C3-8DE0-45A9-A2CA-AEE5700A2FCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FA7F9AF-45C9-4D5E-B566-DAAED72F8887}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FA7F9AF-45C9-4D5E-B566-DAAED72F8887}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FA7F9AF-45C9-4D5E-B566-DAAED72F8887}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FA7F9AF-45C9-4D5E-B566-DAAED72F8887}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,6 +109,7 @@ Global
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Common\Common.projitems*{0c576b26-09d4-4b7b-aa3f-d93ca61865ee}*SharedItemsImports = 5
+		Common\Common.projitems*{2b33f6c3-8de0-45a9-a2ca-aee5700a2fcb}*SharedItemsImports = 5
 		Common\Common.projitems*{4632d2c9-a337-461b-9f74-28f779078879}*SharedItemsImports = 5
 		Common\Common.projitems*{774acd31-6138-4707-a747-8c8e35519fc3}*SharedItemsImports = 5
 		Common\Common.projitems*{83ce3b0e-6a1f-4477-93ae-affa9ffdf9cc}*SharedItemsImports = 5
