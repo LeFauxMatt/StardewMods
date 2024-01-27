@@ -81,9 +81,7 @@ internal abstract class BasePatcher : BaseService, ISpritePatcher
             typeof(float),
         ]);
 
-#nullable disable
-    private static BasePatcher instance;
-#nullable enable
+    private static BasePatcher instance = null!;
 
     private readonly ConfigManager config;
     private readonly SpriteFactory spriteFactory;
@@ -111,14 +109,14 @@ internal abstract class BasePatcher : BaseService, ISpritePatcher
         eventSubscriber.Subscribe<ConfigChangedEventArgs<DefaultConfig>>(this.OnConfigChanged);
     }
 
+    /// <summary>Gets the dependency used for managing patches.</summary>
+    protected IPatchManager Patches { get; }
+
     /// <inheritdoc />
     public string Id => this.ModId + "." + this.Type.ToStringFast();
 
     /// <inheritdoc />
     public abstract AllPatches Type { get; }
-
-    /// <summary>Gets the dependency used for managing patches.</summary>
-    protected IPatchManager Patches { get; }
 
     /// <summary>Transpiles the given set of code instructions by replacing calls to a specific draw method.</summary>
     /// <param name="instructions">The original set of code instructions.</param>

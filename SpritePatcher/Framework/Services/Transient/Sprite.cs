@@ -11,13 +11,13 @@ using StardewValley.Extensions;
 /// <inheritdoc />
 internal sealed class Sprite : ISprite
 {
-    private readonly Dictionary<SpriteKey, ISpriteSheet> cachedTextures = [];
+    private readonly Dictionary<SpriteKey, WeakReference<ISpriteSheet>> cachedSpriteSheets = [];
     private readonly CodeManager codeManager;
+    private readonly HashSet<SpriteKey> disabledTextures = [];
     private readonly IGameContentHelper gameContentHelper;
     private readonly ILog log;
-    private readonly ISpriteSheetManager spriteSheetManager;
-    private readonly HashSet<SpriteKey> disabledTextures = [];
     private readonly object source;
+    private readonly ISpriteSheetManager spriteSheetManager;
 
     /// <summary>Initializes a new instance of the <see cref="Sprite" /> class.</summary>
     /// <param name="source">The entity being managed.</param>
@@ -176,7 +176,7 @@ internal sealed class Sprite : ISprite
     /// <inheritdoc />
     public void ClearCache()
     {
-        this.cachedTextures.Clear();
+        this.cachedSpriteSheets.Clear();
         this.disabledTextures.Clear();
     }
 
@@ -185,7 +185,9 @@ internal sealed class Sprite : ISprite
     {
         foreach (var target in targets)
         {
-            this.cachedTextures.RemoveWhere(kvp => kvp.Key.Target.Equals(target, StringComparison.OrdinalIgnoreCase));
+            this.cachedSpriteSheets.RemoveWhere(
+                kvp => kvp.Key.Target.Equals(target, StringComparison.OrdinalIgnoreCase));
+
             this.disabledTextures.RemoveWhere(key => key.Target.Equals(target, StringComparison.OrdinalIgnoreCase));
         }
     }
@@ -203,9 +205,9 @@ internal sealed class Sprite : ISprite
             _ => throw new NotSupportedException($"Cannot manage {source.GetType().FullName}"),
         };
 
-    private bool TryGetTexture(Texture2D baseTexture, SpriteKey key, [NotNullWhen(true)] out ISpriteSheet? texture)
+    private bool TryGetTexture(Texture2D baseTexture, SpriteKey key, [NotNullWhen(true)] out ISpriteSheet? spriteSheet)
     {
-        texture = null;
+        spriteSheet = null;
 
         // Check if patching is disabled for this object
         if (this.disabledTextures.Contains(key))
@@ -214,8 +216,10 @@ internal sealed class Sprite : ISprite
         }
 
         // Return texture from cache if it exists
-        if (this.cachedTextures.TryGetValue(key, out texture))
+        if (this.cachedSpriteSheets.TryGetValue(key, out var cachedSpriteSheet)
+            && cachedSpriteSheet.TryGetTarget(out spriteSheet))
         {
+            spriteSheet.WasAccessed = true;
             return true;
         }
 
@@ -234,7 +238,7 @@ internal sealed class Sprite : ISprite
             bool success;
             try
             {
-                success = patch.Run(this, key);
+                success = patch.Run(this);
             }
             catch (Exception e)
             {
@@ -249,9 +253,9 @@ internal sealed class Sprite : ISprite
         }
 
         if (patchesToApply.Any()
-            && this.spriteSheetManager.TryBuildSpriteSheet(key, baseTexture, patchesToApply, out texture))
+            && this.spriteSheetManager.TryBuildSpriteSheet(key, baseTexture, patchesToApply, out spriteSheet))
         {
-            this.cachedTextures[key] = texture;
+            this.cachedSpriteSheets[key] = new WeakReference<ISpriteSheet>(spriteSheet);
             return true;
         }
 

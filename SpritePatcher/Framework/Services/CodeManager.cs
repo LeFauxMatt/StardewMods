@@ -18,6 +18,8 @@ using StardewMods.SpritePatcher.Framework.Models.Events;
 /// <summary>Manages the code which is compiled by this mod from content pack data.</summary>
 internal sealed class CodeManager : BaseService
 {
+    private const string FormatKey = "SpritePatcher.Format";
+
     private static readonly CSharpCompilationOptions CompileOptions = new(
         OutputKind.DynamicallyLinkedLibrary,
         generalDiagnosticOption: ReportDiagnostic.Error,
@@ -25,19 +27,20 @@ internal sealed class CodeManager : BaseService
 
     private static readonly IComparer<int> Comparer = new DescendingComparer();
 
-    private readonly IDictionary<string, SortedDictionary<int, IList<IPatchModel>>> patches =
-        new Dictionary<string, SortedDictionary<int, IList<IPatchModel>>>(StringComparer.OrdinalIgnoreCase);
-
     private readonly string assetPath;
     private readonly IEventManager eventManager;
     private readonly IGameContentHelper gameContentHelper;
     private readonly IManifest manifest;
-    private readonly IMonitor monitor;
+    private readonly IEnumerable<IMigration> migrations;
     private readonly IModRegistry modRegistry;
     private readonly INetEventManager netEventManager;
-    private readonly ISpriteSheetManager spriteSheetManager;
+
+    private readonly IDictionary<string, SortedDictionary<int, IList<IPatchModel>>> patches =
+        new Dictionary<string, SortedDictionary<int, IList<IPatchModel>>>(StringComparer.OrdinalIgnoreCase);
+
     private readonly string path;
     private readonly List<MetadataReference> references = [];
+    private readonly ISpriteSheetManager spriteSheetManager;
     private readonly string template;
 
     /// <summary>Initializes a new instance of the <see cref="CodeManager" /> class.</summary>
@@ -45,8 +48,8 @@ internal sealed class CodeManager : BaseService
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="migrations">Dependency used for migrating patches to a given format version.</param>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
-    /// <param name="monitor">Dependency used for monitoring and logging.</param>
     /// <param name="modRegistry">Dependency used for fetching metadata about loaded mods.</param>
     /// <param name="netEventManager">Dependency used for managing net field events.</param>
     /// <param name="spriteSheetManager">Dependency used for managing textures.</param>
@@ -55,18 +58,18 @@ internal sealed class CodeManager : BaseService
         IGameContentHelper gameContentHelper,
         ILog log,
         IManifest manifest,
+        IEnumerable<IMigration> migrations,
         IModHelper modHelper,
-        IMonitor monitor,
         IModRegistry modRegistry,
         INetEventManager netEventManager,
         ISpriteSheetManager spriteSheetManager)
         : base(log, manifest)
     {
-        this.assetPath = this.ModId + "/Patches";
+        this.assetPath = Path.Join(this.ModId, "Patches");
         this.eventManager = eventManager;
         this.gameContentHelper = gameContentHelper;
         this.manifest = manifest;
-        this.monitor = monitor;
+        this.migrations = migrations;
         this.modRegistry = modRegistry;
         this.netEventManager = netEventManager;
         this.spriteSheetManager = spriteSheetManager;
@@ -95,17 +98,18 @@ internal sealed class CodeManager : BaseService
             return false;
         }
 
-        data = prioritizedPatches
-            .SelectMany(patchModels => patchModels.Value)
-            .Where(patch => patch.DrawMethods.Contains(key.DrawMethod) && patch.Intersects(key.Area))
-            .ToList();
+        data = prioritizedPatches.SelectMany(patchModels => patchModels.Value).Where(patch => patch.Test(key)).ToList();
 
         return data.Any();
     }
 
-    private bool TryCompile(string id, string code, [NotNullWhen(true)] out Assembly? assembly)
+    private bool TryCompile(
+        string id,
+        ISemanticVersion version,
+        string code,
+        [NotNullWhen(true)] out Assembly? assembly)
     {
-        var filename = $"v{this.manifest.Version}_{id}_{code.Length}_{Game1.hash.GetDeterministicHashCode(code)}";
+        var filename = $"{id}-{this.manifest.Version}-{version}_{Game1.hash.GetDeterministicHashCode(code)}";
         var fullPath = Path.Combine(this.path, $"{filename}.dll");
         if (File.Exists(fullPath))
         {
@@ -176,7 +180,7 @@ internal sealed class CodeManager : BaseService
 
     private void OnAssetRequested(AssetRequestedEventArgs e)
     {
-        if (e.Name.IsEquivalentTo(this.assetPath))
+        if (e.NameWithoutLocale.IsEquivalentTo(this.assetPath))
         {
             e.LoadFrom(static () => new Dictionary<string, ContentModel>(), AssetLoadPriority.Exclusive);
         }
@@ -184,7 +188,7 @@ internal sealed class CodeManager : BaseService
 
     private void OnAssetsInvalidated(AssetsInvalidatedEventArgs e)
     {
-        if (e.Names.Any(assetName => assetName.IsEquivalentTo(this.assetPath)))
+        if (e.NamesWithoutLocale.Any(assetName => assetName.IsEquivalentTo(this.assetPath)))
         {
             this.eventManager.Subscribe<UpdateTickedEventArgs>(this.OnUpdateTicked);
         }
@@ -224,8 +228,47 @@ internal sealed class CodeManager : BaseService
             return;
         }
 
+        if (!modInfo.Manifest.ExtraFields.TryGetValue(CodeManager.FormatKey, out var formatObject))
+        {
+            this.Log.WarnOnce("Failed to load patch: {0}.\nMissing format version.", modInfo.Manifest.UniqueID);
+            return;
+        }
+
+        if (formatObject is not string formatString)
+        {
+            this.Log.WarnOnce("Failed to load patch: {0}.\nInvalid format version.", modInfo.Manifest.UniqueID);
+            return;
+        }
+
+        if (!SemanticVersion.TryParse(formatString, out var formatVersion))
+        {
+            this.Log.WarnOnce(
+                "Failed to load patch: {0}.\nInvalid format version: {1}.",
+                modInfo.Manifest.UniqueID,
+                formatString);
+
+            return;
+        }
+
+        if (!this.migrations.Any(migration => migration.Version.Equals(formatVersion)))
+        {
+            this.Log.Warn(
+                "Failed to load patch: {0}.\nInvalid format version: {1}.",
+                modInfo.Manifest.UniqueID,
+                formatVersion);
+
+            return;
+        }
+
+        foreach (var migration in this.migrations)
+        {
+            if (!migration.Version.IsNewerThan(formatVersion)) { }
+
+            // In the future add migration steps here
+        }
+
         this.Log.Trace("Compiling code for {0}.", key);
-        if (!this.TryCompile(modId, contentModel.Code, out var assembly))
+        if (!this.TryCompile(modId, formatVersion, contentModel.Code, out var assembly))
         {
             this.Log.Warn("Failed to load patch: {0}.\nFailed to compile code.", key);
             return;
@@ -240,7 +283,7 @@ internal sealed class CodeManager : BaseService
                 key,
                 contentModel,
                 contentPack,
-                this.monitor,
+                this.Log,
                 this.netEventManager,
                 this.spriteSheetManager);
 

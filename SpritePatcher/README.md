@@ -59,22 +59,180 @@ on [Nexus Mods](https://www.nexusmods.com/stardewvalley).
 
 Some commonly targeted sprite sheets are:
 
-| name                                              | path                            |
-|---------------------------------------------------|---------------------------------|
-| [Animals](docs/characters.md#farmanimal)          | `Animals/[FarmAnimal]`          |
-| [Buildings](docs/buildings.md)                    | `Buildings/[Building]`          |
-| [Characters](docs/characters.md)                  | `Characters/[Character]`        |
-| [Craftables](docs/items.md#craftables)            | `TileSheets/[Craftables]`       |
-| [Crops](docs/crops.md)                            | `TileSheets/crops`              |
-| [Fruit Trees](docs/terrain-features.md#fruittree) | `TileSheets/fruitTrees`         |
-| [Furniture](docs/items.md#furniture)              | `TileSheets/furniture`          |
-| [Grass](docs/terrain-features.md#grass)           | `TerrainFeatures/grass`         |
-| [Items](docs/items.md)                            | `Maps/springobjects`            |
-| [Monsters](docs/characters.md#monster)            | `Characters/Monsters/[Monster]` |
-| [Tools](docs/tools.md)                            | `TileSheets/tools`              |
-| [Trees](docs/terrain-features.md#tree)            | `TerrainFeatures/[Tree]`        |
-| [Weapons](docs/tools.md#weapons)                  | `TileSheets/weapons`            |
-| [UI](docs/ui.md)                                  | `LooseSprites/Cursors`          |
+<table>
+<thead>
+<th>name</th>
+<th>path</th>
+</thead>
+<tr>
+<td>
+
+[Animals](docs/characters.md#farmanimal)
+
+</td>
+<td>
+
+`Animals/[FarmAnimal]`
+
+</td>
+</tr>
+<tr>
+<td>
+
+[Buildings](docs/buildings.md)
+
+</td>
+<td>
+
+`Buildings/[Building]`
+
+</td>
+</tr>
+<tr>
+<td>
+
+[Characters](docs/characters.md)
+
+</td>
+<td>
+
+`Characters/[Character]`
+
+</td>
+</tr>
+<tr>
+<td>
+
+[Craftables](docs/items.md#craftables)
+
+</td>
+<td>
+
+`TileSheets/[Craftables]`
+
+</td>
+</tr>
+<tr>
+<td>
+
+[Crops](docs/crops.md)
+
+</td>
+<td>
+
+`TileSheets/crops`
+
+</td>
+</tr>
+<tr>
+<td>
+
+[Fruit Trees](docs/terrain-features.md#fruittree)
+
+</td>
+<td>
+
+`TileSheets/fruitTrees`
+
+</td>
+</tr>
+<tr>
+<td>
+
+[Furniture](docs/items.md#furniture)
+
+</td>
+<td>
+
+`TileSheets/furniture`
+
+</td>
+</tr>
+<tr>
+<td>
+
+[Grass](docs/terrain-features.md#grass)
+
+</td>
+<td>
+
+`TerrainFeatures/grass`
+
+</td>
+</tr>
+<tr>
+<td>
+
+[Items](docs/items.md)
+
+</td>
+<td>
+
+`Maps/springobjects`
+
+</td>
+</tr>
+<tr>
+<td>
+
+[Monsters](docs/characters.md#monster)
+
+</td>
+<td>
+
+`Characters/Monsters/[Monster]`
+
+</td>
+</tr>
+<tr>
+<td>
+
+[Tools](docs/tools.md)
+
+</td>
+<td>
+
+`TileSheets/tools`
+
+</td>
+</tr>
+<tr>
+<td>
+
+[Trees](docs/terrain-features.md#tree)
+
+</td>
+<td>
+
+`TerrainFeatures/[Tree]`
+
+</td>
+</tr>
+<tr>
+<td>
+
+[Weapons](docs/tools.md#weapons)
+
+</td>
+<td>
+
+`TileSheets/weapons`
+
+</td>
+</tr>
+<tr>
+<td>
+
+[UI](docs/ui.md)
+
+</td>
+<td>
+
+`LooseSprites/Cursors`
+
+</td>
+</tr>
+</table>
 
 ### Area
 

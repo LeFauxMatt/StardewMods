@@ -17,4 +17,7 @@ public interface ISpriteSheet
 
     /// <summary>Gets the source rectangle of the generated texture.</summary>
     Rectangle SourceRectangle { get; }
+
+    /// <summary>Gets or sets a value indicating whether the sprite sheet was accessed.</summary>
+    bool WasAccessed { get; set; }
 }

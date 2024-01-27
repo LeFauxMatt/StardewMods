@@ -8,9 +8,7 @@ using StardewMods.SpritePatcher.Framework.Interfaces;
 /// <inheritdoc cref="INetEventManager" />
 internal sealed partial class NetEventManager : BaseService, INetEventManager
 {
-#nullable disable
-    private static NetEventManager instance;
-#nullable enable
+    private static NetEventManager instance = null!;
 
     private readonly CachedEvents cachedEvents;
     private readonly ConditionalWeakTable<object, Type> cachedTypes = [];

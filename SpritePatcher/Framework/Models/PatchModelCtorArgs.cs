@@ -1,5 +1,6 @@
 namespace StardewMods.SpritePatcher.Framework.Models;
 
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 
 /// <summary>Represents the constructor arguments for creating a PatchModel instance.</summary>
@@ -9,21 +10,21 @@ public sealed class PatchModelCtorArgs
     /// <param name="id">The unique identifier for the mod.</param>
     /// <param name="contentModel">The content data model for the patch.</param>
     /// <param name="contentPack">The content pack associated with the mod.</param>
-    /// <param name="monitor">Dependency used for monitoring and logging.</param>
+    /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="netEventManager">Dependency used for managing net field events.</param>
     /// <param name="spriteSheetManager">Dependency used for managing sprite sheets.</param>
     public PatchModelCtorArgs(
         string id,
         IContentModel contentModel,
         IContentPack contentPack,
-        IMonitor monitor,
+        ILog log,
         INetEventManager netEventManager,
         ISpriteSheetManager spriteSheetManager)
     {
         this.Id = id;
         this.ContentModel = contentModel;
         this.ContentPack = contentPack;
-        this.Monitor = monitor;
+        this.Log = log;
         this.NetEventManager = netEventManager;
         this.SpriteSheetManager = spriteSheetManager;
     }
@@ -38,7 +39,7 @@ public sealed class PatchModelCtorArgs
     public IContentPack ContentPack { get; }
 
     /// <summary>Gets the dependency used for monitoring and logging.</summary>
-    public IMonitor Monitor { get; }
+    public ILog Log { get; }
 
     /// <summary>Gets the dependency used for managing net field events.</summary>
     public INetEventManager NetEventManager { get; }

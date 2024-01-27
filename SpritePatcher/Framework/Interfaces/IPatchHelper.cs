@@ -1,5 +1,6 @@
 namespace StardewMods.SpritePatcher.Framework.Interfaces;
 
+using Microsoft.Xna.Framework.Graphics;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewValley.ItemTypeDefinitions;
 
@@ -31,6 +32,11 @@ public interface IPatchHelper
     void SetAnimation(Animate animate, int frames);
 
     /// <summary>Sets the texture of an object using the specified texture.</summary>
+    /// <param name="texture">The texture data.</param>
+    /// <param name="scale">The scale of the texture.</param>
+    void SetTexture(Texture2D texture, float scale = -1f);
+
+    /// <summary>Sets the texture of an object using the specified texture.</summary>
     /// <param name="data">The data.</param>
     /// <param name="scale">The scale of the texture.</param>
     void SetTexture(ParsedItemData data, float scale = -1f);
@@ -44,29 +50,35 @@ public interface IPatchHelper
     void SetTexture(string path, int index = 0, int width = -1, int height = -1, float scale = -1f);
 
     /// <summary>Invokes the specified action with the provided entity's heldObject value.</summary>
-    /// <param name="entity">The entity with the heldObject.</param>
     /// <param name="action">The action to be invoked.</param>
     /// <param name="monitor">Whether to monitor the field for changes or not.</param>
-    public void WithHeldObject(IHaveModData entity, Action<SObject, ParsedItemData> action, bool monitor = false);
+    /// <param name="entity">The entity with the heldObject.</param>
+    public void WithHeldObject(
+        Action<SObject, ParsedItemData> action,
+        bool monitor = true,
+        IHaveModData? entity = null);
 
     /// <summary>Invokes the specified action with the provided entity's lastInputItem value.</summary>
-    /// <param name="entity">The entity with the lastInputItem.</param>
     /// <param name="action">The action to be invoked.</param>
     /// <param name="monitor">Whether to monitor the field for changes or not.</param>
-    public void WithLastInputItem(IHaveModData entity, Action<Item, ParsedItemData> action, bool monitor = false);
+    /// <param name="entity">The entity with the lastInputItem.</param>
+    public void WithLastInputItem(
+        Action<Item, ParsedItemData> action,
+        bool monitor = true,
+        IHaveModData? entity = null);
 
     /// <summary>Invokes the specified action with the provided entity's neighbor values..</summary>
-    /// <param name="entity">The entity to get the neighbor of.</param>
     /// <param name="action">The action to be invoked.</param>
     /// <param name="monitor">Whether to monitor the field for changes or not.</param>
+    /// <param name="entity">The entity to get the neighbor of.</param>
     public void WithNeighbors(
-        IHaveModData entity,
         Action<Dictionary<Direction, SObject?>> action,
-        bool monitor = false);
+        bool monitor = false,
+        IHaveModData? entity = null);
 
     /// <summary>Invokes the specified action with the provided entity's preserve value.</summary>
-    /// <param name="entity">The entity with the preserve.</param>
     /// <param name="action">The action to be invoked.</param>
     /// <param name="monitor">Whether to monitor the field for changes or not.</param>
-    public void WithPreserve(IHaveModData entity, Action<ParsedItemData> action, bool monitor = false);
+    /// <param name="entity">The entity with the preserve.</param>
+    public void WithPreserve(Action<ParsedItemData> action, bool monitor = true, IHaveModData? entity = null);
 }

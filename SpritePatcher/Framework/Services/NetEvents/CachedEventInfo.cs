@@ -16,11 +16,11 @@ internal sealed partial class NetEventManager
     /// <summary>Represents cached information about an event.</summary>
     private sealed class CachedEventInfo
     {
+        private readonly ConditionalWeakTable<object, HashSet<WeakReference<ISprite>>> cachedSubscribers = new();
         private readonly Type eventHandlerType;
         private readonly EventInfo eventInfo;
         private readonly Lazy<Delegate> genericHandler;
         private readonly ConditionalWeakTable<object, object> handlers = new();
-        private readonly ConditionalWeakTable<object, HashSet<WeakReference<ISprite>>> subscribers = new();
         private readonly ILog log;
 
         /// <summary>Initializes a new instance of the <see cref="CachedEventInfo" /> class.</summary>
@@ -36,10 +36,10 @@ internal sealed partial class NetEventManager
 
         public void AddHandler(object source, ISprite target)
         {
-            if (!this.subscribers.TryGetValue(source, out var subscribers))
+            if (!this.cachedSubscribers.TryGetValue(source, out var subscribers))
             {
                 subscribers = new HashSet<WeakReference<ISprite>>();
-                this.subscribers.Add(source, subscribers);
+                this.cachedSubscribers.Add(source, subscribers);
             }
 
             if (!subscribers.Any())
@@ -86,7 +86,7 @@ internal sealed partial class NetEventManager
                     break;
             }
 
-            if (!this.subscribers.TryGetValue(source, out var subscribers))
+            if (!this.cachedSubscribers.TryGetValue(source, out var subscribers))
             {
                 return;
             }

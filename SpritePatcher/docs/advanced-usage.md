@@ -30,7 +30,7 @@
 
 ## Helper
 
-The mod provides a `Helper` class with some useful methods for patching.
+The mod provides Helper methods to assist with common tasks used for patches.
 
 You can view the [source](../Framework/Interfaces/IPatchHelper.cs) for more information, or
 refer to the table below:
@@ -50,9 +50,9 @@ refer to the table below:
 ### Sample Code
 
 ```js
-Helper.WithPreserve(entity, preserve => {
-    var index = Helper.GetIndexFromString(`{{Flowers}}`, preserve.InternalName);
-    Helper.SetTexture(`{{Honey}}`, index);
+WithPreserve(entity, preserve => {
+    var index = GetIndexFromString(`{{Flowers}}`, preserve.InternalName);
+    SetTexture(`{{Honey}}`, index);
 });
 ```
 
@@ -91,8 +91,8 @@ As the texture is drawn, it will cycle through the frames at a given rate.
 ### Sample Code
 
 ```js
-Helper.SetTexture(`assets/animated.png`);
-Helper.SetAnimation(Animate.Medium, 4);
+SetTexture(`assets/animated.png`);
+SetAnimation(Animate.Medium, 4);
 Area = new Rectangle(0, 0, 96, 17);
 ```
 
@@ -125,7 +125,7 @@ and/or bottom of the original sprite.
 ### Sample Code
 
 ```js
-Helper.SetTexture(`assets/expanded.png`);
+SetTexture(`assets/expanded.png`);
 Area = new Rectangle(0, 0, 24, 32);
 Offset = new Vector2(-4, 0);
 ```
@@ -144,7 +144,7 @@ patch's texture.
 ### Sample Code
 
 ```js
-Helper.SetTexture(`assets/scaled.png`, 0, 128, 280);
+SetTexture(`assets/scaled.png`, 0, 128, 280);
 Offset = new Vector2(0, -3);
 Scale = 0.125f;
 ```
@@ -162,7 +162,7 @@ to `Tint`.
 
 ```js
 if (entity is not Crop crop) return;
-Helper.SetTexture(`assets/tinted.png`);
+SetTexture(`assets/tinted.png`);
 Tint = crop.tintColor.Value;
 ```
 
@@ -183,10 +183,10 @@ initialized.
 ```js
 // Automatic updates when held object changes
 if (entity is not SObject { bigCraftable.Value: true } obj) return;
-Helper.InvalidateCacheOnChanged(obj.heldObject, `fieldChangeVisibleEvent`);
+InvalidateCacheOnChanged(obj.heldObject, `fieldChangeVisibleEvent`);
 if (obj.heldObject.Value == null || obj.lastInputItem.Value == null) return;
 var item = ItemRegistry.GetDataOrErrorItem(obj.lastInputItem.Value.QualifiedItemId);
-Helper.SetTexture(item, scale: 0.5f);
+SetTexture(item, scale: 0.5f);
 ```
 
 The `InvalidateCacheOnChanged` method will cause the patch to be regenerated
@@ -194,9 +194,9 @@ every time another item is placed into or removed from the big craftable.
 
 ```js
 // Automatic updates using a Helper method.
-Helper.WithHeldObject(entity,
+WithHeldObject(entity,
     monitor: true,
-    action: (obj, data) => Helper.SetTexture(data, scale: 0.5f));
+    action: (obj, data) => SetTexture(data, scale: 0.5f));
 ```
 
 Alternatively, some helper methods include a `monitor` parameter that will

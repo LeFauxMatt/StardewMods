@@ -9,8 +9,8 @@ internal sealed partial class NetEventManager
     /// <summary>Represents a cache of events.</summary>
     private sealed class CachedEvents
     {
-        private readonly ILog log;
         private readonly Dictionary<Type, Dictionary<string, CachedEventInfo?>> events = new();
+        private readonly ILog log;
 
         /// <summary>Initializes a new instance of the <see cref="CachedEvents" /> class.</summary>
         /// <param name="log">Dependency used for logging debug information to the console.</param>

@@ -6,33 +6,41 @@ using StardewModdingAPI.Events;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.Profiler;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
 using StardewMods.SpritePatcher.Framework.Services.Transient;
+using StardewValley.Extensions;
 
 /// <inheritdoc cref="ISpriteSheetManager" />
 internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
 {
-    private readonly IGameContentHelper gameContentHelper;
     private readonly Dictionary<string, IRawTextureData> baseTextures = [];
     private readonly Dictionary<int, Color[]> cachedData = [];
     private readonly Dictionary<TextureCacheKey, ISpriteSheet> cachedTextures = [];
+    private readonly IGameContentHelper gameContentHelper;
+    private readonly ProfilerIntegration profilerIntegration;
 
     /// <summary>Initializes a new instance of the <see cref="SpriteSheetManager" /> class.</summary>
     /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="profilerIntegration">Dependency used for integration with Profiler.</param>
     public SpriteSheetManager(
         IEventSubscriber eventSubscriber,
         IGameContentHelper gameContentHelper,
         ILog log,
-        IManifest manifest)
+        IManifest manifest,
+        ProfilerIntegration profilerIntegration)
         : base(log, manifest)
     {
         this.gameContentHelper = gameContentHelper;
+        this.profilerIntegration = profilerIntegration;
         eventSubscriber.Subscribe<AssetsInvalidatedEventArgs>(this.OnAssetsInvalidated);
+        eventSubscriber.Subscribe<DayStartedEventArgs>(this.OnDayStarted);
+        eventSubscriber.Subscribe<DayEndingEventArgs>(this.OnDayEnding);
     }
 
     /// <inheritdoc />
@@ -101,18 +109,34 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         scaledWidth *= totalFrames;
 
         var textureData = new Color[scaledWidth * scaledHeight];
-        this.CopyBaseTextureData(key, texture.Name, origin, scaledWidth, scale, frameWidth, textureData);
+        this.CopyBaseTextureData(key, texture.Name, origin, scaledWidth, scaledHeight, scale, frameWidth, textureData);
 
         // Apply each layer
         foreach (var layer in layers)
         {
-            this.ApplyLayer(layer, key, origin, scaledWidth, scale, frameWidth, fastestAnimation, textureData);
+            this.ApplyLayer(
+                layer,
+                key,
+                origin,
+                scaledWidth,
+                scaledHeight,
+                scale,
+                frameWidth,
+                fastestAnimation,
+                textureData);
         }
 
-        var generatedTexture = new Texture2D(texture.GraphicsDevice, scaledWidth, scaledHeight);
-        generatedTexture.SetData(textureData);
-        generatedTexture.Name = cacheKey.ToString();
-        spriteSheet = new SpriteSheet(generatedTexture, scale, origin, totalFrames, fastestAnimation);
+        spriteSheet = new SpriteSheet(
+            key,
+            texture,
+            textureData,
+            scaledWidth,
+            scaledHeight,
+            scale,
+            origin,
+            totalFrames,
+            fastestAnimation);
+
         this.cachedTextures[cacheKey] = spriteSheet;
         return true;
     }
@@ -175,19 +199,35 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         Utility.RGBtoHSL(layer.Tint.Value.R, layer.Tint.Value.G, layer.Tint.Value.B, out var h, out var s, out var l);
         Utility.HSLtoRGB(h, s * 2f, l * 2f, out var r, out var g, out var b);
         var boostedTint = new Color(r, g, b);
-        Parallel.For(
-            0,
-            layer.Area.Width * layer.Area.Height,
-            index =>
+        for (var index = 0; index < layer.Area.Width * layer.Area.Height; ++index)
+        {
+            if (layerData[index].A <= 0)
             {
-                if (layerData[index].A <= 0)
-                {
-                    return;
-                }
+                continue;
+            }
 
-                var baseTint = Utility.MultiplyColor(layerData[index], layer.Tint.Value);
-                layerData[index] = Color.Lerp(baseTint, boostedTint, 0.3f);
-            });
+            var baseTint = Utility.MultiplyColor(layerData[index], layer.Tint.Value);
+            layerData[index] = Color.Lerp(baseTint, boostedTint, 0.3f);
+        }
+    }
+
+    private void OnDayEnding(DayEndingEventArgs e)
+    {
+        var count = this.cachedTextures.Count;
+        this.cachedTextures.RemoveWhere(kvp => !kvp.Value.WasAccessed);
+        var removed = count - this.cachedTextures.Count;
+        if (removed > 0)
+        {
+            this.Log.Trace("Removed {0} cached textures.", removed);
+        }
+    }
+
+    private void OnDayStarted(DayStartedEventArgs e)
+    {
+        foreach (var sprite in this.cachedTextures.Values)
+        {
+            sprite.WasAccessed = false;
+        }
     }
 
     private void CopyBaseTextureData(
@@ -195,6 +235,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         string textureName,
         Vector2 origin,
         int scaledWidth,
+        int scaledHeight,
         float scale,
         int frameWidth,
         Color[] textureData)
@@ -207,29 +248,27 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         }
 
         // Copy base texture data into each frame of the expanded texture
-        var baseTextureData = ((VanillaTexture)baseTexture).GetData(key.Area);
+        var baseTextureData = new Span<Color>(baseTexture.Data);
 
-        Parallel.For(
-            0,
-            textureData.Length,
-            targetIndex =>
+        for (var x = 0; x < scaledWidth; ++x)
+        {
+            for (var y = 0; y < scaledHeight; ++y)
             {
-                var x = targetIndex % scaledWidth;
-                var y = targetIndex / scaledWidth;
-
-                // Map source index to target index
+                var targetIndex = (y * scaledWidth) + x;
                 var sourceX = (x % frameWidth / scale) - origin.X;
                 var sourceY = (y / scale) - origin.Y;
+
+                var sourceIndex = ((int)(sourceY + key.Area.Y) * baseTexture.Width) + (int)(sourceX + key.Area.X);
 
                 // Ensure sourceX and sourceY are within the sourceData
                 if (sourceX < 0 || sourceX >= key.Area.Width || sourceY < 0 || sourceY >= key.Area.Height)
                 {
-                    return;
+                    continue;
                 }
 
-                var sourceIndex = (int)sourceX + ((int)sourceY * key.Area.Width);
                 textureData[targetIndex] = baseTextureData[sourceIndex];
-            });
+            }
+        }
     }
 
     private void ApplyLayer(
@@ -237,6 +276,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         SpriteKey key,
         Vector2 origin,
         int scaledWidth,
+        int scaledHeight,
         float scale,
         int frameWidth,
         int fastestAnimation,
@@ -258,15 +298,14 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         var scaleFactor = 1f / (scale * layer.Scale);
         var offsetX = (int)(scale * (layer.SourceArea.X - key.Area.X + (int)origin.X + (int)layer.Offset.X));
         var offsetY = (int)(scale * (layer.SourceArea.Y - key.Area.Y + (int)origin.Y + (int)layer.Offset.Y));
+        var endX = Math.Min(scaledWidth, offsetX + layer.Area.Width);
+        var endY = Math.Min(scaledHeight, offsetY + layer.Area.Height);
 
-        Parallel.For(
-            0,
-            textureData.Length,
-            targetIndex =>
+        for (var x = offsetX; x < endX; ++x)
+        {
+            for (var y = offsetY; y < endY; ++y)
             {
-                var x = targetIndex % scaledWidth;
-                var y = targetIndex / scaledWidth;
-
+                var targetIndex = (y * scaledWidth) + x;
                 var frame = layer.Animate == Animate.None
                     ? 0
                     : x / frameWidth * fastestAnimation / (int)layer.Animate % layer.Frames;
@@ -278,12 +317,6 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
 
                 var patchY = layer.Area.Y + ((y - offsetY) * scaleFactor);
 
-                // Ensure patchX and patchY are withing the layer's area
-                if (!layer.Area.Contains(patchX, patchY))
-                {
-                    return;
-                }
-
                 var sourceIndex = (int)patchX + ((int)patchY * layer.Texture.Width);
                 if (sourceIndex >= 0
                     && sourceIndex < layerData.Length
@@ -293,7 +326,8 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
                         ? layerData[sourceIndex]
                         : Color.Lerp(textureData[targetIndex], layerData[sourceIndex], layer.Alpha);
                 }
-            });
+            }
+        }
     }
 
     private void OnAssetsInvalidated(AssetsInvalidatedEventArgs e)

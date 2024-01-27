@@ -7,6 +7,7 @@ using System.Text;
 using StardewModdingAPI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
@@ -23,9 +24,9 @@ public class Runner : global::StardewMods.SpritePatcher.Framework.BasePatchModel
 {
     public Runner(PatchModelCtorArgs args) : base(args) { }
 
-    public override bool Run(ISprite sprite, SpriteKey key)
+    public override bool Run(ISprite sprite)
     {
-        this.BeforeRun(sprite, key);
+        this.BeforeRun(sprite);
         try
         {
             this.ActualRun(sprite.Entity);

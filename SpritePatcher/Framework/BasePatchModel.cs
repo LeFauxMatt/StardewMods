@@ -2,29 +2,31 @@ namespace StardewMods.SpritePatcher.Framework;
 
 using System.Text;
 using Microsoft.Xna.Framework;
+using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
 
-/// <inheritdoc />
+/// <inheritdoc cref="StardewMods.SpritePatcher.Framework.Interfaces.IPatchModel" />
 public abstract partial class BasePatchModel : IPatchModel
 {
-    private readonly IMonitor monitor;
+    private readonly ILog log;
     private readonly INetEventManager netEventManager;
     private readonly ISpriteSheetManager spriteSheetManager;
-    private Rectangle sourceArea;
 
-    private string path = string.Empty;
     private ISprite? currentObject;
-    private SpriteKey? spriteKey;
+    private string currentPath = string.Empty;
+    private Rectangle sourceArea;
+    private SpriteKey spriteKey;
 
     /// <summary>Initializes a new instance of the <see cref="BasePatchModel" /> class.</summary>
     /// <param name="args">The patch model arguments.</param>
     protected BasePatchModel(PatchModelCtorArgs args)
     {
-        this.monitor = args.Monitor;
+        this.log = args.Log;
         this.netEventManager = args.NetEventManager;
         this.spriteSheetManager = args.SpriteSheetManager;
+        this.spriteKey = default(SpriteKey);
 
         this.Id = args.Id;
         this.ContentPack = args.ContentPack;
@@ -33,7 +35,6 @@ public abstract partial class BasePatchModel : IPatchModel
         this.SourceArea = args.ContentModel.SourceArea;
         this.DrawMethods = args.ContentModel.DrawMethods;
         this.PatchMode = args.ContentModel.PatchMode;
-        this.Helper = new PatchHelper(this);
     }
 
     /// <inheritdoc />
@@ -78,19 +79,13 @@ public abstract partial class BasePatchModel : IPatchModel
     /// <inheritdoc />
     public Vector2 Offset { get; set; }
 
-    /// <summary>Gets a helper that provides useful methods for performing common operations.</summary>
-    protected IPatchHelper Helper { get; }
-
-    /// <inheritdoc />
-    public bool Intersects(Rectangle area) => this.sourceArea.Intersects(area);
-
     /// <inheritdoc />
     public int GetCurrentId()
     {
         var hash = default(HashCode);
         hash.Add(this.Id);
         hash.Add(this.Target);
-        hash.Add(this.path);
+        hash.Add(this.currentPath);
         hash.Add(this.Area);
         hash.Add(this.PatchMode);
         hash.Add(this.Offset);
@@ -103,10 +98,21 @@ public abstract partial class BasePatchModel : IPatchModel
     }
 
     /// <inheritdoc />
+    public abstract bool Run(ISprite sprite);
+
+    /// <inheritdoc />
+    public bool Test(SpriteKey key)
+    {
+        this.spriteKey = key;
+        this.SourceArea = Rectangle.Intersect(this.sourceArea, key.Area);
+        return this.sourceArea.Intersects(key.Area) && this.DrawMethods.Contains(key.DrawMethod);
+    }
+
+    /// <inheritdoc />
     public override string ToString()
     {
         var sb = new StringBuilder();
-        sb.Append(Path.Join(this.Id, this.path));
+        sb.Append(Path.Join(this.Id, this.currentPath));
         sb.Append('_');
         sb.Append(this.Area);
         sb.Append('_');
@@ -147,17 +153,11 @@ public abstract partial class BasePatchModel : IPatchModel
         return sb.ToString();
     }
 
-    /// <inheritdoc />
-    public abstract bool Run(ISprite sprite, SpriteKey key);
-
     /// <summary>Resets the Texture, Area, and Tint properties of the object before running.</summary>
     /// <param name="sprite">The managed object requesting the patch.</param>
-    /// <param name="key">A key for the original texture method.</param>
-    protected void BeforeRun(ISprite sprite, SpriteKey key)
+    protected void BeforeRun(ISprite sprite)
     {
         this.currentObject = sprite;
-        this.spriteKey = key;
-        this.SourceArea = Rectangle.Intersect(this.sourceArea, key.Area);
         this.Texture = null;
         this.Area = Rectangle.Empty;
         this.Tint = null;
@@ -174,7 +174,7 @@ public abstract partial class BasePatchModel : IPatchModel
     protected bool AfterRun(ISprite sprite)
     {
         this.currentObject = null;
-        this.spriteKey = null;
+        this.spriteKey = default(SpriteKey);
         return this.Texture != null;
     }
 }

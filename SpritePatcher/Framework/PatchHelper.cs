@@ -1,218 +1,238 @@
 namespace StardewMods.SpritePatcher.Framework;
 
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewValley.ItemTypeDefinitions;
 
-/// <inheritdoc cref="IPatchModel" />
-public abstract partial class BasePatchModel
+/// <inheritdoc cref="IPatchHelper" />
+[SuppressMessage("SMAPI.CommonErrors", "AvoidImplicitNetFieldCast", Justification = "Reviewed.")]
+public abstract partial class BasePatchModel : IPatchHelper
 {
     /// <inheritdoc />
-    private class PatchHelper(BasePatchModel patchModel) : IPatchHelper
+    public void Log(string message) => this.log.Trace($"{this.Id}: {message}");
+
+    /// <inheritdoc />
+    public void InvalidateCacheOnChanged(object field, string eventName)
     {
-        /// <inheritdoc />
-        public void Log(string message) => patchModel.monitor.Log($"{patchModel.Id}: {message}", LogLevel.Info);
-
-        /// <inheritdoc />
-        public void InvalidateCacheOnChanged(object field, string eventName)
+        if (this.currentObject is not null)
         {
-            if (patchModel.currentObject is not null)
-            {
-                patchModel.netEventManager.Subscribe(patchModel.currentObject, field, eventName);
-            }
+            this.netEventManager.Subscribe(this.currentObject, field, eventName);
+        }
+    }
+
+    /// <inheritdoc />
+    public int GetIndexFromString(string input, string value, char separator = ',')
+    {
+        var values = input.Split(separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var index = Array.FindIndex(values, v => v.Equals(value, StringComparison.OrdinalIgnoreCase));
+        return index;
+    }
+
+    /// <inheritdoc />
+    public void SetAnimation(Animate animate, int frames)
+    {
+        if (animate == Animate.None || frames <= 1)
+        {
+            return;
         }
 
-        /// <inheritdoc />
-        public int GetIndexFromString(string input, string value, char separator = ',')
+        this.Animate = animate;
+        this.Frames = frames;
+    }
+
+    /// <inheritdoc />
+    public void SetTexture(Texture2D texture, float scale = -1)
+    {
+        this.Texture = this.spriteSheetManager.TryGetTexture(texture.Name, out var baseTexture) ? baseTexture : null;
+        if (this.Texture is null)
         {
-            var values = input.Split(separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            var index = Array.FindIndex(values, v => v.Equals(value, StringComparison.OrdinalIgnoreCase));
-            return index;
+            return;
         }
 
-        public void SetAnimation(Animate animate, int frames)
-        {
-            if (animate == Animate.None || frames <= 1)
-            {
-                return;
-            }
+        this.currentPath = texture.Name;
+        this.Area = texture.Bounds;
 
-            patchModel.Animate = animate;
-            patchModel.Frames = frames;
+        if (scale > 0)
+        {
+            this.Scale = scale;
+        }
+    }
+
+    /// <inheritdoc />
+    public void SetTexture(ParsedItemData data, float scale = -1f)
+    {
+        if (data.IsErrorItem)
+        {
+            return;
         }
 
-        /// <inheritdoc />
-        public void SetTexture(ParsedItemData data, float scale = -1f)
+        this.currentPath = data.GetTexture().Name;
+        this.Area = data.GetSourceRect();
+        this.Texture = this.spriteSheetManager.TryGetTexture(data.GetTexture().Name, out var baseTexture)
+            ? baseTexture
+            : null;
+
+        if (scale > 0)
         {
-            if (data.IsErrorItem)
-            {
-                return;
-            }
+            this.Scale = scale;
+        }
+    }
 
-            patchModel.path = data.GetTexture().Name;
-            patchModel.Area = data.GetSourceRect();
-            patchModel.Texture =
-                patchModel.spriteSheetManager.TryGetTexture(data.GetTexture().Name, out var baseTexture)
-                    ? baseTexture
-                    : null;
-
-            if (scale > 0)
-            {
-                patchModel.Scale = scale;
-            }
+    /// <inheritdoc />
+    public void SetTexture(string path, int index = 0, int width = -1, int height = -1, float scale = -1f)
+    {
+        if (index == -1)
+        {
+            return;
         }
 
-        /// <inheritdoc />
-        public void SetTexture(string path, int index = 0, int width = -1, int height = -1, float scale = -1f)
+        if (width == -1)
         {
-            if (index == -1)
-            {
-                return;
-            }
-
-            if (width == -1)
-            {
-                width = patchModel.spriteKey.GetValueOrDefault().Area.Width;
-            }
-
-            if (height == -1)
-            {
-                height = patchModel.spriteKey.GetValueOrDefault().Area.Height;
-            }
-
-            patchModel.path = path;
-            patchModel.Texture = patchModel.ContentPack.ModContent.Load<IRawTextureData>(path);
-
-            if (scale > 0)
-            {
-                patchModel.Scale = scale;
-            }
-
-            if (patchModel.Area == Rectangle.Empty)
-            {
-                patchModel.Area = new Rectangle(
-                    patchModel.Texture.Width > width ? width * (index % (patchModel.Texture.Width / width)) : 0,
-                    patchModel.Texture.Width > width ? height * (index / (patchModel.Texture.Width / width)) : 0,
-                    width,
-                    height);
-            }
+            width = this.spriteKey.Area.Width;
         }
 
-        /// <inheritdoc />
-        public void WithHeldObject(IHaveModData entity, Action<SObject, ParsedItemData> action, bool monitor = false)
+        if (height == -1)
         {
-            if (entity is not SObject obj)
-            {
-                return;
-            }
-
-            if (monitor)
-            {
-                this.InvalidateCacheOnChanged(obj.heldObject, "fieldChangeVisibleEvent");
-            }
-
-            if (obj.heldObject.Value == null)
-            {
-                return;
-            }
-
-            var data = ItemRegistry.GetDataOrErrorItem(obj.heldObject.Value.QualifiedItemId);
-            if (!data.IsErrorItem)
-            {
-                action(obj.heldObject.Value, data);
-            }
+            height = this.spriteKey.Area.Height;
         }
 
-        /// <inheritdoc />
-        public void WithLastInputItem(IHaveModData entity, Action<Item, ParsedItemData> action, bool monitor = false)
+        this.currentPath = path;
+        this.Texture = this.ContentPack.ModContent.Load<IRawTextureData>(path);
+
+        if (scale > 0)
         {
-            if (entity is not SObject obj)
-            {
-                return;
-            }
-
-            if (monitor)
-            {
-                this.InvalidateCacheOnChanged(obj.lastInputItem, "fieldChangeVisibleEvent");
-            }
-
-            if (obj.lastInputItem.Value == null)
-            {
-                return;
-            }
-
-            var data = ItemRegistry.GetDataOrErrorItem(obj.lastInputItem.Value.QualifiedItemId);
-            if (!data.IsErrorItem)
-            {
-                action(obj.lastInputItem.Value, data);
-            }
+            this.Scale = scale;
         }
 
-        /// <inheritdoc />
-        public void WithNeighbors(
-            IHaveModData entity,
-            Action<Dictionary<Direction, SObject?>> action,
-            bool monitor = false)
+        if (this.Area == Rectangle.Empty)
         {
-            if (entity is not SObject
-                {
-                    Location: not null,
-                } obj)
-            {
-                return;
-            }
+            this.Area = new Rectangle(
+                this.Texture.Width > width ? width * (index % (this.Texture.Width / width)) : 0,
+                this.Texture.Width > width ? height * (index / (this.Texture.Width / width)) : 0,
+                width,
+                height);
+        }
+    }
 
-            if (monitor)
-            {
-                this.InvalidateCacheOnChanged(obj.Location.netObjects, "OnValueAdded");
-                this.InvalidateCacheOnChanged(obj.Location.netObjects, "OnValueRemoved");
-            }
-
-            var neighbors = new Dictionary<Direction, SObject?>();
-            foreach (var direction in DirectionExtensions.GetValues())
-            {
-                var position = direction switch
-                {
-                    Direction.Up => obj.TileLocation with { Y = obj.TileLocation.Y - 1 },
-                    Direction.Down => obj.TileLocation with { Y = obj.TileLocation.Y + 1 },
-                    Direction.Left => obj.TileLocation with { X = obj.TileLocation.X - 1 },
-                    Direction.Right => obj.TileLocation with { X = obj.TileLocation.X + 1 },
-                    _ => obj.TileLocation,
-                };
-
-                neighbors[direction] = obj.Location.Objects.TryGetValue(position, out var neighbor) ? neighbor : null;
-            }
-
-            if (neighbors.Values.OfType<SObject>().Any())
-            {
-                action(neighbors);
-            }
+    /// <inheritdoc />
+    public void WithHeldObject(Action<SObject, ParsedItemData> action, bool monitor = true, IHaveModData? entity = null)
+    {
+        entity ??= this.currentObject?.Entity;
+        if (entity is not SObject obj)
+        {
+            return;
         }
 
-        /// <inheritdoc />
-        public void WithPreserve(IHaveModData entity, Action<ParsedItemData> action, bool monitor = false)
+        if (monitor)
         {
-            if (entity is not SObject obj)
-            {
-                return;
-            }
+            this.InvalidateCacheOnChanged(obj.heldObject, "fieldChangeVisibleEvent");
+        }
 
-            if (monitor)
-            {
-                this.InvalidateCacheOnChanged(obj.preservedParentSheetIndex, "fieldChangeVisibleEvent");
-            }
+        if (obj.heldObject.Value == null)
+        {
+            return;
+        }
 
-            if (obj.preservedParentSheetIndex.Value == null)
-            {
-                return;
-            }
+        var data = ItemRegistry.GetDataOrErrorItem(obj.heldObject.Value.QualifiedItemId);
+        if (!data.IsErrorItem)
+        {
+            action(obj.heldObject.Value, data);
+        }
+    }
 
-            var data = ItemRegistry.GetDataOrErrorItem("(O)" + obj.preservedParentSheetIndex.Value);
-            if (!data.IsErrorItem)
+    /// <inheritdoc />
+    public void WithLastInputItem(Action<Item, ParsedItemData> action, bool monitor = true, IHaveModData? entity = null)
+    {
+        entity ??= this.currentObject?.Entity;
+        if (entity is not SObject obj)
+        {
+            return;
+        }
+
+        if (monitor)
+        {
+            this.InvalidateCacheOnChanged(obj.lastInputItem, "fieldChangeVisibleEvent");
+        }
+
+        if (obj.lastInputItem.Value == null)
+        {
+            return;
+        }
+
+        var data = ItemRegistry.GetDataOrErrorItem(obj.lastInputItem.Value.QualifiedItemId);
+        if (!data.IsErrorItem)
+        {
+            action(obj.lastInputItem.Value, data);
+        }
+    }
+
+    /// <inheritdoc />
+    public void WithNeighbors(
+        Action<Dictionary<Direction, SObject?>> action,
+        bool monitor = true,
+        IHaveModData? entity = null)
+    {
+        entity ??= this.currentObject?.Entity;
+        if (entity is not SObject
             {
-                action(data);
-            }
+                Location: not null,
+            } obj)
+        {
+            return;
+        }
+
+        if (monitor)
+        {
+            this.InvalidateCacheOnChanged(obj.Location.netObjects, "OnValueAdded");
+            this.InvalidateCacheOnChanged(obj.Location.netObjects, "OnValueRemoved");
+        }
+
+        var neighbors = new Dictionary<Direction, SObject?>();
+        foreach (var direction in DirectionExtensions.GetValues())
+        {
+            var position = direction switch
+            {
+                Direction.Up => obj.TileLocation with { Y = obj.TileLocation.Y - 1 },
+                Direction.Down => obj.TileLocation with { Y = obj.TileLocation.Y + 1 },
+                Direction.Left => obj.TileLocation with { X = obj.TileLocation.X - 1 },
+                Direction.Right => obj.TileLocation with { X = obj.TileLocation.X + 1 },
+                _ => obj.TileLocation,
+            };
+
+            neighbors[direction] = obj.Location.Objects.TryGetValue(position, out var neighbor) ? neighbor : null;
+        }
+
+        if (neighbors.Values.OfType<SObject>().Any())
+        {
+            action(neighbors);
+        }
+    }
+
+    /// <inheritdoc />
+    public void WithPreserve(Action<ParsedItemData> action, bool monitor = true, IHaveModData? entity = null)
+    {
+        entity ??= this.currentObject?.Entity;
+        if (entity is not SObject obj)
+        {
+            return;
+        }
+
+        if (monitor)
+        {
+            this.InvalidateCacheOnChanged(obj.preservedParentSheetIndex, "fieldChangeVisibleEvent");
+        }
+
+        if (obj.preservedParentSheetIndex.Value == null)
+        {
+            return;
+        }
+
+        var data = ItemRegistry.GetDataOrErrorItem("(O)" + obj.preservedParentSheetIndex.Value);
+        if (!data.IsErrorItem)
+        {
+            action(data);
         }
     }
 }

@@ -7,9 +7,11 @@ using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
+using StardewMods.Common.Services.Integrations.Profiler;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Services;
 using StardewMods.SpritePatcher.Framework.Services.Factory;
+using StardewMods.SpritePatcher.Framework.Services.Migrations;
 using StardewMods.SpritePatcher.Framework.Services.NetEvents;
 using StardewMods.SpritePatcher.Framework.Services.Patchers.Buildings;
 using StardewMods.SpritePatcher.Framework.Services.Patchers.Characters;
@@ -20,9 +22,7 @@ using StardewMods.SpritePatcher.Framework.Services.Patchers.Tools;
 /// <inheritdoc />
 internal sealed class ModEntry : Mod
 {
-#nullable disable
-    private Container container;
-#nullable enable
+    private Container container = null!;
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)
@@ -61,6 +61,7 @@ internal sealed class ModEntry : Mod
         this.container.RegisterSingleton<IPatchManager, FuryPatcher>();
         this.container.RegisterSingleton<SpriteFactory>();
         this.container.RegisterSingleton<INetEventManager, NetEventManager>();
+        this.container.RegisterSingleton<ProfilerIntegration>();
         this.container.RegisterSingleton<ISpriteSheetManager, SpriteSheetManager>();
 
         this.container.Collection.Register<ISpritePatcher>(
@@ -109,6 +110,8 @@ internal sealed class ModEntry : Mod
                 typeof(WoodChipperPatcher),
             },
             Lifestyle.Singleton);
+
+        this.container.Collection.Register<IMigration>(new[] { typeof(Migration_1_0) }, Lifestyle.Singleton);
 
         // Verify
         this.container.Verify();
