@@ -19,17 +19,17 @@ using StardewValley.Menus;
 /// <summary>Service for handling the toolbar icons on the screen.</summary>
 internal sealed class ToolbarManager : BaseService
 {
+    private readonly AssetHandler assetHandler;
     private readonly Dictionary<string, ClickableTextureComponent> components;
-    private readonly IEventManager eventManager;
-    private readonly IModConfig modConfig;
     private readonly PerScreen<string> currentHoverText = new();
+    private readonly IEventManager eventManager;
     private readonly IGameContentHelper gameContentHelper;
     private readonly IInputHelper inputHelper;
     private readonly PerScreen<ComponentArea> lastArea = new(() => ComponentArea.Custom);
     private readonly PerScreen<ClickableComponent> lastButton = new();
     private readonly PerScreen<Toolbar> lastToolbar = new();
-    private readonly AssetHandler assetHandler;
     private readonly ILog log;
+    private readonly IModConfig modConfig;
     private readonly IReflectionHelper reflectionHelper;
 
     /// <summary>Initializes a new instance of the <see cref="ToolbarManager" /> class.</summary>

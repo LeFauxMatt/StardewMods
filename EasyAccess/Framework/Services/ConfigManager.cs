@@ -9,8 +9,8 @@ using StardewMods.EasyAccess.Framework.Models;
 /// <inheritdoc cref="StardewMods.EasyAccess.Framework.Interfaces.IModConfig" />
 internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
 {
-    private readonly IManifest manifest;
     private readonly GenericModConfigMenuIntegration genericModConfigMenuIntegration;
+    private readonly IManifest manifest;
 
     /// <summary>Initializes a new instance of the <see cref="ConfigManager" /> class.</summary>
     /// <param name="eventPublisher">Dependency used for publishing events.</param>

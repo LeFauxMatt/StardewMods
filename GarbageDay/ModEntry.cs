@@ -14,9 +14,7 @@ using StardewMods.GarbageDay.Framework.Services;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-#nullable disable
-    private Container container;
-#nullable enable
+    private Container container = null!;
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)

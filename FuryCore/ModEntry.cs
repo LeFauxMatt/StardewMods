@@ -14,9 +14,7 @@ using ThemeHelper = StardewMods.FuryCore.Framework.Services.ThemeHelper;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-#nullable disable
-    private Container container;
-#nullable enable
+    private Container container = null!;
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)

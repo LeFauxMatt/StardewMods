@@ -18,16 +18,16 @@ using StardewValley.Objects;
 internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
 {
     private readonly PerScreen<NPC?> currentNpc = new();
-    private readonly Dictionary<string, GarbageCan> garbageCans = [];
-    private readonly PerScreen<GarbageCan?> garbageCanOpened = new();
+    private readonly Definitions definitions;
     private readonly Dictionary<string, FoundGarbageCan> foundGarbageCans = [];
     private readonly Dictionary<string, GameLocation?> foundLocations = [];
-    private readonly HashSet<string> invalidGarbageCans = [];
-    private readonly Definitions definitions;
+    private readonly PerScreen<GarbageCan?> garbageCanOpened = new();
+    private readonly Dictionary<string, GarbageCan> garbageCans = [];
     private readonly IInputHelper inputHelper;
+    private readonly HashSet<string> invalidGarbageCans = [];
     private readonly IModConfig modConfig;
-    private readonly ToolbarIconsIntegration toolbarIconsIntegration;
     private readonly IReflectedField<Multiplayer> multiplayer;
+    private readonly ToolbarIconsIntegration toolbarIconsIntegration;
 
     /// <summary>Initializes a new instance of the <see cref="GarbageCanManager" /> class.</summary>
     /// <param name="definitions">Dependency used for defining common variables.</param>

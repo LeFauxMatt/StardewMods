@@ -18,13 +18,11 @@ using StardewValley.TerrainFeatures;
 /// <summary>Responsible for handling tea logic.</summary>
 internal sealed class BushManager : BaseService
 {
-#nullable disable
-    private static BushManager instance;
-#nullable enable
-
-    private readonly IGameContentHelper gameContentHelper;
+    private static BushManager instance = null!;
     private readonly MethodInfo checkItemPlantRules;
     private readonly Lazy<Dictionary<string, BushModel>> data;
+
+    private readonly IGameContentHelper gameContentHelper;
     private readonly string modDataId;
     private readonly string modDataItem;
     private readonly string modDataQuality;
@@ -332,11 +330,9 @@ internal sealed class BushManager : BaseService
             return;
         }
 
-#nullable disable
-        var parameters = new object[] { bushModel!.PlantableLocationRules, isGardenPot, defaultAllowed, null };
+        var parameters = new object[] { bushModel!.PlantableLocationRules, isGardenPot, defaultAllowed, null! };
         __result = (bool)BushManager.instance.checkItemPlantRules.Invoke(__instance, parameters)!;
         deniedMessage = (string)parameters[3];
-#nullable enable
     }
 
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]

@@ -10,9 +10,7 @@ using StardewValley.Objects;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-#nullable disable
-    private Texture2D texture;
-#nullable enable
+    private Texture2D texture = null!;
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper)

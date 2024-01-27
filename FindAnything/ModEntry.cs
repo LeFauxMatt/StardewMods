@@ -10,9 +10,7 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 /// <inheritdoc />
 internal sealed class ModEntry : Mod
 {
-#nullable disable
-    private Container container;
-#nullable enable
+    private Container container = null!;
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper) =>

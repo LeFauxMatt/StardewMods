@@ -8,8 +8,8 @@ using StardewMods.Common.Services.Integrations.FuryCore;
 /// <inheritdoc cref="StardewMods.Common.Services.Integrations.FuryCore.IPatchManager" />
 internal sealed class PatchManager : BaseService<PatchManager>, IPatchManager
 {
-    private readonly Lazy<Harmony> harmony;
     private readonly HashSet<string> appliedPatches = [];
+    private readonly Lazy<Harmony> harmony;
     private readonly Dictionary<string, List<ISavedPatch>> savedPatches = new();
 
     /// <summary>Initializes a new instance of the <see cref="PatchManager" /> class.</summary>

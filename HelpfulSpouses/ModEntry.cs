@@ -15,9 +15,7 @@ using StardewMods.HelpfulSpouses.Framework.Services.Chores;
 /// <inheritdoc />
 public sealed class ModEntry : Mod
 {
-#nullable disable
-    private Container container;
-#nullable enable
+    private Container container = null!;
 
     /// <inheritdoc />
     public override void Entry(IModHelper helper) => this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;

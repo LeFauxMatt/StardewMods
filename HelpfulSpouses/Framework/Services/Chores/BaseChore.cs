@@ -17,11 +17,11 @@ internal abstract class BaseChore<TChore> : BaseService<TChore>, IChore
         : base(log, manifest) =>
         this.Config = modConfig;
 
-    /// <inheritdoc />
-    public abstract ChoreOption Option { get; }
-
     /// <summary>Gets the dependency used for accessing config data.</summary>
     protected IModConfig Config { get; }
+
+    /// <inheritdoc />
+    public abstract ChoreOption Option { get; }
 
     /// <inheritdoc />
     public virtual void AddTokens(Dictionary<string, object> tokens) { }

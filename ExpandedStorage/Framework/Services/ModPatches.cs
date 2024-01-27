@@ -22,9 +22,7 @@ internal sealed class ModPatches : BaseService
     private const string LidCloseSound = "doorCreakReverse";
     private const string MiniShippingBinOpenSound = "shwip";
 
-#nullable disable
-    private static ModPatches instance;
-#nullable enable
+    private static ModPatches instance = null!;
 
     private readonly IEventPublisher eventPublisher;
     private readonly StorageManager storageManager;

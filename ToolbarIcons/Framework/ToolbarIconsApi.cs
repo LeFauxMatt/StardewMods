@@ -12,9 +12,9 @@ using StardewMods.ToolbarIcons.Framework.Services;
 public sealed class ToolbarIconsApi : IToolbarIconsApi
 {
     private readonly BaseEventManager eventManager;
-    private readonly string prefix;
     private readonly ILog log;
     private readonly IModInfo modInfo;
+    private readonly string prefix;
     private readonly ToolbarManager toolbarManager;
 
     private EventHandler<string>? toolbarIconPressed;
