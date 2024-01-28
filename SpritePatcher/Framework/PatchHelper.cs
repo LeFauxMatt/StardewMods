@@ -43,7 +43,7 @@ public abstract partial class BasePatchModel : IPatchHelper
     }
 
     /// <inheritdoc />
-    public void SetTexture(Texture2D texture, float scale = -1)
+    public void SetTexture(Texture2D texture, float scale = -1, float alpha = -1f)
     {
         this.Texture = this.spriteSheetManager.TryGetTexture(texture.Name, out var baseTexture) ? baseTexture : null;
         if (this.Texture is null)
@@ -58,10 +58,46 @@ public abstract partial class BasePatchModel : IPatchHelper
         {
             this.Scale = scale;
         }
+
+        if (alpha > 0)
+        {
+            this.Alpha = alpha;
+        }
     }
 
     /// <inheritdoc />
-    public void SetTexture(ParsedItemData data, float scale = -1f)
+    public void SetTexture(Item? item, float scale = -1f, float alpha = -1f)
+    {
+        if (item is null)
+        {
+            return;
+        }
+
+        var data = ItemRegistry.GetDataOrErrorItem(item.QualifiedItemId);
+        if (data.IsErrorItem)
+        {
+            return;
+        }
+
+        this.currentPath = data.GetTexture().Name;
+        this.Area = data.GetSourceRect();
+        this.Texture = this.spriteSheetManager.TryGetTexture(data.GetTexture().Name, out var baseTexture)
+            ? baseTexture
+            : null;
+
+        if (scale > 0)
+        {
+            this.Scale = scale;
+        }
+
+        if (alpha > 0)
+        {
+            this.Alpha = alpha;
+        }
+    }
+
+    /// <inheritdoc />
+    public void SetTexture(ParsedItemData data, float scale = -1f, float alpha = -1f)
     {
         if (data.IsErrorItem)
         {
@@ -78,10 +114,21 @@ public abstract partial class BasePatchModel : IPatchHelper
         {
             this.Scale = scale;
         }
+
+        if (alpha > 0)
+        {
+            this.Alpha = alpha;
+        }
     }
 
     /// <inheritdoc />
-    public void SetTexture(string path, int index = 0, int width = -1, int height = -1, float scale = -1f)
+    public void SetTexture(
+        string path,
+        int index = 0,
+        int width = -1,
+        int height = -1,
+        float scale = -1f,
+        float alpha = -1f)
     {
         if (index == -1)
         {
@@ -104,6 +151,11 @@ public abstract partial class BasePatchModel : IPatchHelper
         if (scale > 0)
         {
             this.Scale = scale;
+        }
+
+        if (alpha > 0)
+        {
+            this.Alpha = alpha;
         }
 
         if (this.Area == Rectangle.Empty)

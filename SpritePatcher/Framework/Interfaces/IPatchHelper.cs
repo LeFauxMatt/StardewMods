@@ -34,12 +34,20 @@ public interface IPatchHelper
     /// <summary>Sets the texture of an object using the specified texture.</summary>
     /// <param name="texture">The texture data.</param>
     /// <param name="scale">The scale of the texture.</param>
-    void SetTexture(Texture2D texture, float scale = -1f);
+    /// <param name="alpha">The alpha of the texture.</param>
+    void SetTexture(Texture2D texture, float scale = -1f, float alpha = -1f);
+
+    /// <summary>Sets the texture of an object using the specified texture.</summary>
+    /// <param name="item">The item.</param>
+    /// <param name="scale">The scale of the texture.</param>
+    /// <param name="alpha">The alpha of the texture.</param>
+    void SetTexture(Item? item, float scale = -1f, float alpha = -1f);
 
     /// <summary>Sets the texture of an object using the specified texture.</summary>
     /// <param name="data">The data.</param>
     /// <param name="scale">The scale of the texture.</param>
-    void SetTexture(ParsedItemData data, float scale = -1f);
+    /// <param name="alpha">The alpha of the texture.</param>
+    void SetTexture(ParsedItemData data, float scale = -1f, float alpha = -1f);
 
     /// <summary>Sets the texture of an object using the specified path.</summary>
     /// <param name="path">The path of the texture.</param>
@@ -47,7 +55,8 @@ public interface IPatchHelper
     /// <param name="width">The width of each icon within the texture.</param>
     /// <param name="height">The height of each icon within the texture.</param>
     /// <param name="scale">The scale of the texture.</param>
-    void SetTexture(string path, int index = 0, int width = -1, int height = -1, float scale = -1f);
+    /// <param name="alpha">The alpha of the texture.</param>
+    void SetTexture(string path, int index = 0, int width = -1, int height = -1, float scale = -1f, float alpha = -1f);
 
     /// <summary>Invokes the specified action with the provided entity's heldObject value.</summary>
     /// <param name="action">The action to be invoked.</param>

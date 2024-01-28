@@ -32,6 +32,7 @@ internal sealed class CodeManager : BaseService
     private readonly IGameContentHelper gameContentHelper;
     private readonly IManifest manifest;
     private readonly IEnumerable<IMigration> migrations;
+    private readonly IModConfig modConfig;
     private readonly IModRegistry modRegistry;
     private readonly INetEventManager netEventManager;
 
@@ -49,6 +50,7 @@ internal sealed class CodeManager : BaseService
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
     /// <param name="migrations">Dependency used for migrating patches to a given format version.</param>
+    /// <param name="modConfig">Dependency used for managing config data.</param>
     /// <param name="modHelper">Dependency for events, input, and content.</param>
     /// <param name="modRegistry">Dependency used for fetching metadata about loaded mods.</param>
     /// <param name="netEventManager">Dependency used for managing net field events.</param>
@@ -59,6 +61,7 @@ internal sealed class CodeManager : BaseService
         ILog log,
         IManifest manifest,
         IEnumerable<IMigration> migrations,
+        IModConfig modConfig,
         IModHelper modHelper,
         IModRegistry modRegistry,
         INetEventManager netEventManager,
@@ -70,6 +73,7 @@ internal sealed class CodeManager : BaseService
         this.gameContentHelper = gameContentHelper;
         this.manifest = manifest;
         this.migrations = migrations;
+        this.modConfig = modConfig;
         this.modRegistry = modRegistry;
         this.netEventManager = netEventManager;
         this.spriteSheetManager = spriteSheetManager;
@@ -111,7 +115,7 @@ internal sealed class CodeManager : BaseService
     {
         var filename = $"{id}-{this.manifest.Version}-{version}_{Game1.hash.GetDeterministicHashCode(code)}";
         var fullPath = Path.Combine(this.path, $"{filename}.dll");
-        if (File.Exists(fullPath))
+        if (File.Exists(fullPath) && !this.modConfig.DeveloperMode)
         {
             this.Log.Trace("Code already compiled for {0}", id);
             assembly = Assembly.LoadFrom(fullPath);

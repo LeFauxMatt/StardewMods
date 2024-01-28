@@ -44,6 +44,9 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
         }
     }
 
+    /// <inheritdoc/>
+    public bool DeveloperMode => this.Config.DeveloperMode;
+
     /// <inheritdoc />
     public Dictionary<AllPatches, bool> PatchedObjects => this.Config.PatchedObjects;
 
@@ -105,6 +108,13 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
         var gmcm = this.genericModConfigMenuIntegration.Api;
         var config = this.GetNew();
         this.genericModConfigMenuIntegration.Register(this.Reset, () => this.Save(config));
+
+        gmcm.AddBoolOption(
+            this.manifest,
+            () => this.Config.DeveloperMode,
+            value => this.Config.DeveloperMode = value,
+            I18n.Config_DeveloperMode_Name,
+            I18n.Config_DeveloperMode_Tooltip);
 
         gmcm.AddPageLink(this.manifest, "Buildings", I18n.Section_Buildings_Name, I18n.Section_Buildings_Description);
         gmcm.AddParagraph(this.manifest, I18n.Section_Buildings_Description);

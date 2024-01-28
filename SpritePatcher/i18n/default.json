@@ -9,6 +9,8 @@
   "section.terrain-features.description": "Patches for TerrainFeature objects",
   "section.tools.name": "Tools",
   "section.tools.description": "Patches for Tool objects",
+  "config.DeveloperMode.name": "Developer Mode",
+  "config.DeveloperMode.tooltip": "Enable developer mode",
   "config.PatchedBoots.name": "Boots",
   "config.PatchedBoots.tooltip": "Enable Boots patches",
   "config.PatchedBuilding.name": "Building",
