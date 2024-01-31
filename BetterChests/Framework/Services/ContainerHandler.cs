@@ -7,10 +7,8 @@ using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.Automate;
-using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
-using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>Responsible for handling containers.</summary>
@@ -72,93 +70,6 @@ internal sealed class ContainerHandler : BaseService
     {
         add => this.itemTransferring += value;
         remove => this.itemTransferring -= value;
-    }
-
-    /// <summary>Arranges items in container according to group by and sort by options.</summary>
-    /// <param name="container">The container to organize.</param>
-    /// <param name="reverse">Whether to sort the items in reverse order.</param>
-    public void OrganizeItems(IStorageContainer container, bool reverse = false)
-    {
-        if (container.Options is
-            {
-                OrganizeItemsGroupBy: GroupBy.Default,
-                OrganizeItemsSortBy: SortBy.Default,
-            })
-        {
-            ItemGrabMenu.organizeItemsInList(container.Items);
-            return;
-        }
-
-        var items = container.Items.ToArray();
-        Array.Sort(
-            items,
-            (i1, i2) =>
-            {
-                if (i2 == null)
-                {
-                    return -1;
-                }
-
-                if (i1 == null)
-                {
-                    return 1;
-                }
-
-                if (i1.Equals(i2))
-                {
-                    return 0;
-                }
-
-                var g1 = container.Options.OrganizeItemsGroupBy switch
-                    {
-                        GroupBy.Category => i1
-                            .GetContextTags()
-                            .FirstOrDefault(tag => tag.StartsWith("category_", StringComparison.OrdinalIgnoreCase)),
-                        GroupBy.Color => i1
-                            .GetContextTags()
-                            .FirstOrDefault(tag => tag.StartsWith("color_", StringComparison.OrdinalIgnoreCase)),
-                        GroupBy.Name => i1.DisplayName,
-                        _ => null,
-                    }
-                    ?? string.Empty;
-
-                var g2 = container.Options.OrganizeItemsGroupBy switch
-                    {
-                        GroupBy.Category => i2
-                            .GetContextTags()
-                            .FirstOrDefault(tag => tag.StartsWith("category_", StringComparison.OrdinalIgnoreCase)),
-                        GroupBy.Color => i2
-                            .GetContextTags()
-                            .FirstOrDefault(tag => tag.StartsWith("color_", StringComparison.OrdinalIgnoreCase)),
-                        GroupBy.Name => i2.DisplayName,
-                        _ => null,
-                    }
-                    ?? string.Empty;
-
-                if (!g1.Equals(g2, StringComparison.OrdinalIgnoreCase))
-                {
-                    return string.Compare(g1, g2, StringComparison.OrdinalIgnoreCase);
-                }
-
-                var o1 = container.Options.OrganizeItemsSortBy switch
-                {
-                    SortBy.Type => i1.Category, SortBy.Quality => i1.Quality, SortBy.Quantity => i1.Stack, _ => 0,
-                };
-
-                var o2 = container.Options.OrganizeItemsSortBy switch
-                {
-                    SortBy.Type => i2.Category, SortBy.Quality => i2.Quality, SortBy.Quantity => i2.Stack, _ => 0,
-                };
-
-                return o1.CompareTo(o2);
-            });
-
-        if (reverse)
-        {
-            Array.Reverse(items);
-        }
-
-        container.Items.OverwriteWith(items);
     }
 
     /// <summary>Transfers items from one container to another.</summary>

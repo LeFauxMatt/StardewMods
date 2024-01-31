@@ -84,15 +84,11 @@ public sealed class ModEntry : Mod
                 typeof(CraftFromChest),
                 typeof(HslColorPicker),
                 typeof(InventoryTabs),
-                typeof(LabelChest),
                 typeof(LockItem),
                 typeof(OpenHeldChest),
-                typeof(OrganizeItems),
                 typeof(ResizeChest),
                 typeof(SearchItems),
                 typeof(StashToChest),
-                typeof(TransferItems),
-                typeof(UnloadChest),
             },
             Lifestyle.Singleton);
 

@@ -9,9 +9,6 @@ using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 internal sealed class DefaultConfig : IModConfig
 {
     /// <inheritdoc />
-    public bool UnloadChestSwap { get; } = true;
-
-    /// <inheritdoc />
     public DefaultStorageOptions DefaultOptions { get; set; } = new();
 
     /// <inheritdoc />
@@ -36,13 +33,7 @@ internal sealed class DefaultConfig : IModConfig
     public int CraftFromWorkbenchDistance { get; set; } = -1;
 
     /// <inheritdoc />
-    public bool Experimental { get; set; }
-
-    /// <inheritdoc />
     public Method InventoryTabMethod { get; set; } = Method.Hidden;
-
-    /// <inheritdoc />
-    public bool LabelChest { get; set; } = true;
 
     /// <inheritdoc />
     public FeatureOption LockItem { get; set; }

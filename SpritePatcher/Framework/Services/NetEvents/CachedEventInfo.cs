@@ -138,7 +138,7 @@ internal sealed partial class NetEventManager
             handler = new FieldChange<NetRef<T>, T>(
                 (_, _, newValue) =>
                 {
-                    if (source.Value != null && object.ReferenceEquals(source.Value, newValue))
+                    if (source.Value != null && ReferenceEquals(source.Value, newValue))
                     {
                         this.PublishEventOnce(source);
                     }

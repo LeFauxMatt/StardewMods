@@ -35,14 +35,8 @@ internal interface IModConfig
     /// <summary>Gets a value indicating the distance in tiles that the workbench can be remotely crafted from.</summary>
     public int CraftFromWorkbenchDistance { get; }
 
-    /// <summary>Gets a value indicating whether experimental features will be enabled.</summary>
-    public bool Experimental { get; }
-
     /// <summary>Gets a value indicating how tab items will be displayed.</summary>
     public Method InventoryTabMethod { get; }
-
-    /// <summary>Gets a value indicating whether chests can be labeled.</summary>
-    public bool LabelChest { get; }
 
     /// <summary>Gets a value indicating whether the slot lock feature is enabled.</summary>
     public FeatureOption LockItem { get; }
@@ -67,7 +61,4 @@ internal interface IModConfig
 
     /// <summary>Gets a value indicating whether stashing into the chest will fill existing item stacks.</summary>
     public bool StashToChestStacks { get; }
-
-    /// <summary>Gets a value indicating whether chests will swap out with unloaded chests.</summary>
-    public bool UnloadChestSwap { get; }
 }

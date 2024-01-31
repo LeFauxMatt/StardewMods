@@ -25,9 +25,6 @@ internal class DefaultStorageOptions : IStorageOptions
     public FeatureOption ChestInfo { get; set; } = FeatureOption.Disabled;
 
     /// <inheritdoc />
-    public string ChestLabel { get; set; } = string.Empty;
-
-    /// <inheritdoc />
     public FeatureOption CollectItems { get; set; } = FeatureOption.Disabled;
 
     /// <inheritdoc />
@@ -55,15 +52,6 @@ internal class DefaultStorageOptions : IStorageOptions
     public FeatureOption OpenHeldChest { get; set; } = FeatureOption.Enabled;
 
     /// <inheritdoc />
-    public FeatureOption OrganizeItems { get; set; } = FeatureOption.Disabled;
-
-    /// <inheritdoc />
-    public GroupBy OrganizeItemsGroupBy { get; set; } = GroupBy.Default;
-
-    /// <inheritdoc />
-    public SortBy OrganizeItemsSortBy { get; set; } = SortBy.Default;
-
-    /// <inheritdoc />
     public CapacityOption ResizeChest { get; set; } = CapacityOption.Large;
 
     /// <inheritdoc />
@@ -77,12 +65,6 @@ internal class DefaultStorageOptions : IStorageOptions
 
     /// <inheritdoc />
     public int StashToChestPriority { get; set; }
-
-    /// <inheritdoc />
-    public FeatureOption TransferItems { get; set; } = FeatureOption.Enabled;
-
-    /// <inheritdoc />
-    public FeatureOption UnloadChest { get; set; } = FeatureOption.Disabled;
 
     /// <inheritdoc />
     public virtual string GetDescription() => I18n.Storage_Other_Tooltip();

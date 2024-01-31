@@ -7,6 +7,7 @@ using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewValley.Menus;
 
 /// <summary>Automatically organizes items between chests during sleep.</summary>
 internal sealed class AutoOrganize : BaseFeature<AutoOrganize>
@@ -107,7 +108,7 @@ internal sealed class AutoOrganize : BaseFeature<AutoOrganize>
                         }
                     }
 
-                    this.containerHandler.OrganizeItems(containerTo);
+                    ItemGrabMenu.organizeItemsInList(containerTo.Items);
                 }
             }
         }

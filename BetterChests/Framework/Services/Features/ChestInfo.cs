@@ -154,9 +154,6 @@ internal sealed class ChestInfo : BaseFeature<ChestInfo>
             return;
         }
 
-        // Add label
-        this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_Name(), container.Options.ChestLabel));
-
         // Add type
         this.cachedInfo.Value.Add(new Info(I18n.ChestInfo_Type(), container.DisplayName));
 

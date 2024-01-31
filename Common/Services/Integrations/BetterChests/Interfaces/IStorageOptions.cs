@@ -23,9 +23,6 @@ public interface IStorageOptions
     /// <summary>Gets or sets a value indicating whether chest info will be displayed next to the chest menu.</summary>
     public FeatureOption ChestInfo { get; set; }
 
-    /// <summary>Gets or sets a value indicating the label for a chest.</summary>
-    public string ChestLabel { get; set; }
-
     /// <summary>Gets or sets a value indicating if the chest can collect dropped items.</summary>
     public FeatureOption CollectItems { get; set; }
 
@@ -50,15 +47,6 @@ public interface IStorageOptions
     /// <summary>Gets or sets a value indicating if the chest can be opened while it's being carried in the players inventory.</summary>
     public FeatureOption OpenHeldChest { get; set; }
 
-    /// <summary>Gets or sets a value indicating if the chest can be organized with custom sorting/grouping.</summary>
-    public FeatureOption OrganizeItems { get; set; }
-
-    /// <summary>Gets or sets a value indicating how items will be grouped when organized.</summary>
-    public GroupBy OrganizeItemsGroupBy { get; set; }
-
-    /// <summary>Gets or sets a value indicating how items will be sorted when organized.</summary>
-    public SortBy OrganizeItemsSortBy { get; set; }
-
     /// <summary>Gets or sets a value the chest's carrying capacity.</summary>
     public CapacityOption ResizeChest { get; set; }
 
@@ -73,12 +61,6 @@ public interface IStorageOptions
 
     /// <summary>Gets or sets a value indicating the priority that chests will be stashed into.</summary>
     public int StashToChestPriority { get; set; }
-
-    /// <summary>Gets or sets a value indicating whether to add button for transferring items to/from a chest.</summary>
-    public FeatureOption TransferItems { get; set; }
-
-    /// <summary>Gets or sets a value indicating if the chest can have its inventory unloaded into another chest.</summary>
-    public FeatureOption UnloadChest { get; set; }
 
     /// <summary>Gets the name of the storage.</summary>
     /// <returns>Returns the name.</returns>

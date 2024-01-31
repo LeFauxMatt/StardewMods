@@ -18,6 +18,40 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     private readonly Dictionary<string, CachedValue<RangeOption>> cachedRangeOption = new();
 
     /// <inheritdoc />
+    public string ChestLabel
+    {
+        get => this.Get(StringKey.ChestLabel);
+        set => this.Set(StringKey.ChestLabel, value);
+    }
+
+    /// <inheritdoc />
+    public FeatureOption OrganizeItems
+    {
+        get => this.Get(OptionKey.OrganizeItems);
+        set => this.Set(OptionKey.OrganizeItems, value);
+    }
+
+    /// <inheritdoc />
+    public GroupBy OrganizeItemsGroupBy { get; set; }
+
+    /// <inheritdoc />
+    public SortBy OrganizeItemsSortBy { get; set; }
+
+    /// <inheritdoc />
+    public FeatureOption TransferItems
+    {
+        get => this.Get(OptionKey.TransferItems);
+        set => this.Set(OptionKey.TransferItems, value);
+    }
+
+    /// <inheritdoc />
+    public FeatureOption UnloadChest
+    {
+        get => this.Get(OptionKey.UnloadChest);
+        set => this.Set(OptionKey.UnloadChest, value);
+    }
+
+    /// <inheritdoc />
     public FeatureOption AutoOrganize
     {
         get => this.Get(OptionKey.AutoOrganize);
@@ -57,13 +91,6 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     {
         get => this.Get(OptionKey.ChestInfo);
         set => this.Set(OptionKey.ChestInfo, value);
-    }
-
-    /// <inheritdoc />
-    public string ChestLabel
-    {
-        get => this.Get(StringKey.ChestLabel);
-        set => this.Set(StringKey.ChestLabel, value);
     }
 
     /// <inheritdoc />
@@ -123,19 +150,6 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public FeatureOption OrganizeItems
-    {
-        get => this.Get(OptionKey.OrganizeItems);
-        set => this.Set(OptionKey.OrganizeItems, value);
-    }
-
-    /// <inheritdoc />
-    public GroupBy OrganizeItemsGroupBy { get; set; }
-
-    /// <inheritdoc />
-    public SortBy OrganizeItemsSortBy { get; set; }
-
-    /// <inheritdoc />
     public CapacityOption ResizeChest
     {
         get =>
@@ -171,20 +185,6 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     {
         get => this.Get(IntegerKey.StashToChestPriority);
         set => this.Set(IntegerKey.StashToChestPriority, value);
-    }
-
-    /// <inheritdoc />
-    public FeatureOption TransferItems
-    {
-        get => this.Get(OptionKey.TransferItems);
-        set => this.Set(OptionKey.TransferItems, value);
-    }
-
-    /// <inheritdoc />
-    public FeatureOption UnloadChest
-    {
-        get => this.Get(OptionKey.UnloadChest);
-        set => this.Set(OptionKey.UnloadChest, value);
     }
 
     /// <inheritdoc />

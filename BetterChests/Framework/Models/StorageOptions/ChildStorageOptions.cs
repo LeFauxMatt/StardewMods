@@ -47,13 +47,6 @@ internal class ChildStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public string ChestLabel
-    {
-        get => this.child.ChestLabel;
-        set => this.child.ChestLabel = value;
-    }
-
-    /// <inheritdoc />
     public FeatureOption CollectItems
     {
         get => this.Get(storage => storage.CollectItems);
@@ -127,33 +120,6 @@ internal class ChildStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
-    public FeatureOption OrganizeItems
-    {
-        get => this.Get(storage => storage.OrganizeItems);
-        set => this.child.OrganizeItems = value;
-    }
-
-    /// <inheritdoc />
-    public GroupBy OrganizeItemsGroupBy
-    {
-        get =>
-            this.child.OrganizeItemsGroupBy == GroupBy.Default
-                ? this.parent.OrganizeItemsGroupBy
-                : this.child.OrganizeItemsGroupBy;
-        set => this.child.OrganizeItemsGroupBy = value;
-    }
-
-    /// <inheritdoc />
-    public SortBy OrganizeItemsSortBy
-    {
-        get =>
-            this.child.OrganizeItemsSortBy == SortBy.Default
-                ? this.parent.OrganizeItemsSortBy
-                : this.child.OrganizeItemsSortBy;
-        set => this.child.OrganizeItemsSortBy = value;
-    }
-
-    /// <inheritdoc />
     public CapacityOption ResizeChest
     {
         get => this.Get(storage => storage.ResizeChest);
@@ -188,20 +154,6 @@ internal class ChildStorageOptions : IStorageOptions
         get =>
             this.child.StashToChestPriority == 0 ? this.parent.StashToChestPriority : this.child.StashToChestPriority;
         set => this.child.StashToChestPriority = value;
-    }
-
-    /// <inheritdoc />
-    public FeatureOption TransferItems
-    {
-        get => this.Get(storage => storage.TransferItems);
-        set => this.child.TransferItems = value;
-    }
-
-    /// <inheritdoc />
-    public FeatureOption UnloadChest
-    {
-        get => this.Get(storage => storage.UnloadChest);
-        set => this.child.UnloadChest = value;
     }
 
     /// <inheritdoc />

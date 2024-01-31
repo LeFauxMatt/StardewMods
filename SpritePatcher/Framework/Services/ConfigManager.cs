@@ -44,7 +44,7 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool DeveloperMode => this.Config.DeveloperMode;
 
     /// <inheritdoc />

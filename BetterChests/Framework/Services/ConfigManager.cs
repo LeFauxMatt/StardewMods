@@ -71,13 +71,7 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
     public int CraftFromWorkbenchDistance => this.Config.CraftFromWorkbenchDistance;
 
     /// <inheritdoc />
-    public bool Experimental => this.Config.Experimental;
-
-    /// <inheritdoc />
     public Method InventoryTabMethod => this.Config.InventoryTabMethod;
-
-    /// <inheritdoc />
-    public bool LabelChest => this.Config.LabelChest;
 
     /// <inheritdoc />
     public FeatureOption LockItem => this.Config.LockItem;
@@ -99,9 +93,6 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
 
     /// <inheritdoc />
     public bool StashToChestStacks => this.Config.StashToChestStacks;
-
-    /// <inheritdoc />
-    public bool UnloadChestSwap => this.Config.UnloadChestSwap;
 
     /// <summary>Setup the main config options.</summary>
     public void SetupMainConfig()
@@ -350,43 +341,6 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
                 this.localizedTextManager.FormatOption);
         }
 
-        // Organize Items
-        if (options == this.DefaultOptions || this.DefaultOptions.OrganizeItems != FeatureOption.Disabled)
-        {
-            gmcm.AddTextOption(
-                this.manifest,
-                () => options.OrganizeItems.ToStringFast(),
-                value => options.OrganizeItems = FeatureOptionExtensions.TryParse(value, out var option)
-                    ? option
-                    : FeatureOption.Default,
-                I18n.Config_OrganizeItems_Name,
-                I18n.Config_OrganizeItems_Tooltip,
-                FeatureOptionExtensions.GetNames(),
-                this.localizedTextManager.FormatOption);
-
-            gmcm.AddTextOption(
-                this.manifest,
-                () => options.OrganizeItemsGroupBy.ToStringFast(),
-                value => options.OrganizeItemsGroupBy = GroupByExtensions.TryParse(value, out var groupBy)
-                    ? groupBy
-                    : GroupBy.Default,
-                I18n.Config_OrganizeItemsGroupBy_Name,
-                I18n.Config_OrganizeItemsGroupBy_Tooltip,
-                GroupByExtensions.GetNames(),
-                this.localizedTextManager.FormatGroupBy);
-
-            gmcm.AddTextOption(
-                this.manifest,
-                () => options.OrganizeItemsSortBy.ToStringFast(),
-                value => options.OrganizeItemsSortBy = SortByExtensions.TryParse(value, out var sortBy)
-                    ? sortBy
-                    : SortBy.Default,
-                I18n.Config_OrganizeItemsSortBy_Name,
-                I18n.Config_OrganizeItemsSortBy_Tooltip,
-                SortByExtensions.GetNames(),
-                this.localizedTextManager.FormatSortBy);
-        }
-
         // Resize Chest
         if (options == this.DefaultOptions || this.DefaultOptions.ResizeChest != CapacityOption.Disabled)
         {
@@ -463,36 +417,6 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
                 (int)RangeOption.World,
                 1,
                 this.localizedTextManager.Distance);
-        }
-
-        // Transfer Items
-        if (options == this.DefaultOptions || this.DefaultOptions.TransferItems != FeatureOption.Disabled)
-        {
-            gmcm.AddTextOption(
-                this.manifest,
-                () => options.TransferItems.ToStringFast(),
-                value => options.TransferItems = FeatureOptionExtensions.TryParse(value, out var option)
-                    ? option
-                    : FeatureOption.Default,
-                I18n.Config_TransferItems_Name,
-                I18n.Config_TransferItems_Tooltip,
-                FeatureOptionExtensions.GetNames(),
-                this.localizedTextManager.FormatOption);
-        }
-
-        // Unload Chest
-        if (options == this.DefaultOptions || this.DefaultOptions.UnloadChest != FeatureOption.Disabled)
-        {
-            gmcm.AddTextOption(
-                this.manifest,
-                () => options.UnloadChest.ToStringFast(),
-                value => options.UnloadChest = FeatureOptionExtensions.TryParse(value, out var option)
-                    ? option
-                    : FeatureOption.Default,
-                I18n.Config_UnloadChest_Name,
-                I18n.Config_UnloadChest_Tooltip,
-                FeatureOptionExtensions.GetNames(),
-                this.localizedTextManager.FormatOption);
         }
     }
 
@@ -711,13 +635,6 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
             1,
             this.localizedTextManager.Distance);
 
-        gmcm.AddBoolOption(
-            this.manifest,
-            () => config.Experimental,
-            value => config.Experimental = value,
-            I18n.Config_Experimental_Name,
-            I18n.Config_Experimental_Tooltip);
-
         // Inventory Tab Method
         gmcm.AddTextOption(
             this.manifest,
@@ -728,14 +645,6 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
             I18n.Config_CategorizeChestMethod_Tooltip,
             MethodExtensions.GetNames(),
             this.localizedTextManager.FormatMethod);
-
-        // Label Chest
-        gmcm.AddBoolOption(
-            this.manifest,
-            () => config.LabelChest,
-            value => config.LabelChest = value,
-            I18n.Config_LabelChest_Name,
-            I18n.Config_LabelChest_Tooltip);
 
         // Lock Item
         gmcm.AddTextOption(

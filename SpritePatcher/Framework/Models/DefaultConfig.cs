@@ -6,7 +6,7 @@ using StardewMods.SpritePatcher.Framework.Interfaces;
 /// <inheritdoc />
 public class DefaultConfig : IModConfig
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public bool DeveloperMode { get; set; }
 
     /// <inheritdoc />

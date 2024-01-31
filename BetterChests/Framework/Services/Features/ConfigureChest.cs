@@ -292,16 +292,6 @@ internal sealed class ConfigureChest : BaseFeature<ConfigureChest>
         var options = new TemporaryStorageOptions(container.Options, defaultOptions);
         this.genericModConfigMenuIntegration.Register(options.Reset, options.Save);
 
-        if (this.configManager.LabelChest)
-        {
-            gmcm.AddTextOption(
-                this.manifest,
-                () => options.ChestLabel,
-                value => options.ChestLabel = value,
-                I18n.Config_ChestLabel_Name,
-                I18n.Config_ChestLabel_Tooltip);
-        }
-
         if (container.Options.StashToChest is not (RangeOption.Disabled or RangeOption.Default))
         {
             gmcm.AddNumberOption(
