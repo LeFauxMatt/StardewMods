@@ -14,10 +14,27 @@ using StardewMods.SpritePatcher.Framework.Models;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Characters;
+using StardewValley.GameData.BigCraftables;
+using StardewValley.GameData.Buildings;
+using StardewValley.GameData.Characters;
+using StardewValley.GameData.Crafting;
+using StardewValley.GameData.Crops;
+using StardewValley.GameData.FarmAnimals;
+using StardewValley.GameData.Fences;
+using StardewValley.GameData.FishPonds;
+using StardewValley.GameData.FloorsAndPaths;
+using StardewValley.GameData.FruitTrees;
+using StardewValley.GameData.GiantCrops;
+using StardewValley.GameData.Locations;
+using StardewValley.GameData.Objects;
+using StardewValley.GameData.Pets;
+using StardewValley.GameData.Tools;
+using StardewValley.GameData.Weapons;
+using StardewValley.GameData.WildTrees;
+using StardewValley.Menus;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
-using IHaveModData = StardewValley.IHaveModData;
 using SObject = StardewValley.Object;
 
 public class Runner : global::StardewMods.SpritePatcher.Framework.BasePatchModel

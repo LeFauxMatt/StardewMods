@@ -46,6 +46,12 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
     /// <inheritdoc />
     public bool TryGetTexture(string path, [NotNullWhen(true)] out IRawTextureData? texture)
     {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            texture = null;
+            return false;
+        }
+
         var assetName = this.gameContentHelper.ParseAssetName(path);
         if (this.baseTextures.TryGetValue(assetName.BaseName, out texture))
         {

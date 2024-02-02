@@ -1,10 +1,12 @@
 namespace StardewMods.SpritePatcher.Framework;
 
+using System.Globalization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewValley.ItemTypeDefinitions;
+using StardewValley.Mods;
 
 /// <inheritdoc cref="IPatchHelper" />
 [SuppressMessage("SMAPI.CommonErrors", "AvoidImplicitNetFieldCast", Justification = "Reviewed.")]
@@ -12,6 +14,42 @@ public abstract partial class BasePatchModel : IPatchHelper
 {
     /// <inheritdoc />
     public void Log(string message) => this.log.Trace($"{this.Id}: {message}");
+
+    /// <inheritdoc />
+    public int GetOrSetData(string key, int value)
+    {
+        if (this.currentObject is null)
+        {
+            return value;
+        }
+
+        if (this.currentObject.Entity.modData.TryGetValue(key, out var stringResult)
+            && int.TryParse(stringResult, out var result))
+        {
+            return result;
+        }
+
+        this.currentObject.Entity.modData[key] = value.ToString(CultureInfo.InvariantCulture);
+        return value;
+    }
+
+    /// <inheritdoc />
+    public double GetOrSetData(string key, double value)
+    {
+        if (this.currentObject is null)
+        {
+            return value;
+        }
+
+        if (this.currentObject.Entity.modData.TryGetValue(key, out var stringResult)
+            && int.TryParse(stringResult, out var result))
+        {
+            return result;
+        }
+
+        this.currentObject.Entity.modData[key] = value.ToString(CultureInfo.InvariantCulture);
+        return value;
+    }
 
     /// <inheritdoc />
     public void InvalidateCacheOnChanged(object field, string eventName)
@@ -123,14 +161,15 @@ public abstract partial class BasePatchModel : IPatchHelper
 
     /// <inheritdoc />
     public void SetTexture(
-        string path,
+        string? path,
         int index = 0,
         int width = -1,
         int height = -1,
         float scale = -1f,
-        float alpha = -1f)
+        float alpha = -1f,
+        bool vanilla = false)
     {
-        if (index == -1)
+        if (string.IsNullOrWhiteSpace(path) || index == -1)
         {
             return;
         }
@@ -146,7 +185,9 @@ public abstract partial class BasePatchModel : IPatchHelper
         }
 
         this.currentPath = path;
-        this.Texture = this.ContentPack.ModContent.Load<IRawTextureData>(path);
+        this.Texture = vanilla && this.spriteSheetManager.TryGetTexture(path, out var baseTexture)
+            ? baseTexture
+            : this.ContentPack.ModContent.Load<IRawTextureData>(path);
 
         if (scale > 0)
         {
@@ -286,5 +327,41 @@ public abstract partial class BasePatchModel : IPatchHelper
         {
             action(data);
         }
+    }
+}
+
+/// <summary>Common extension methods.</summary>
+public static class Extensions
+{
+    /// <summary>Gets the value with the specified key or add if it does not exist.</summary>
+    /// <param name="modData">The ModDataDictionary instance.</param>
+    /// <param name="key">The key of the value to get or set.</param>
+    /// <param name="value">The value to set if the key does not exist.</param>
+    /// <returns>The value associated with the specified key if the key.</returns>
+    public static int GetOrSet(this ModDataDictionary modData, string key, int value)
+    {
+        if (modData.TryGetValue(key, out var stringResult) && int.TryParse(stringResult, out var result))
+        {
+            return result;
+        }
+
+        modData[key] = value.ToString(CultureInfo.InvariantCulture);
+        return value;
+    }
+
+    /// <summary>Gets the value with the specified key or add if it does not exist.</summary>
+    /// <param name="modData">The ModDataDictionary instance.</param>
+    /// <param name="key">The key of the value to get or set.</param>
+    /// <param name="value">The value to set if the key does not exist.</param>
+    /// <returns>The value associated with the specified key if the key.</returns>
+    public static double GetOrSet(this ModDataDictionary modData, string key, double value)
+    {
+        if (modData.TryGetValue(key, out var stringResult) && int.TryParse(stringResult, out var result))
+        {
+            return result;
+        }
+
+        modData[key] = value.ToString(CultureInfo.InvariantCulture);
+        return value;
     }
 }

@@ -78,6 +78,7 @@ internal sealed class ModEntry : Mod
                 typeof(CombinedRingPatcher),
                 typeof(CosmeticPlantPatcher),
                 typeof(CrabPotPatcher),
+                typeof(CropPatcher),
                 typeof(FarmAnimalPatcher),
                 typeof(FencePatcher),
                 typeof(FishingRodPatcher),

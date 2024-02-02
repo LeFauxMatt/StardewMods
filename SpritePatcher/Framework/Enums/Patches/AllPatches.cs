@@ -44,6 +44,9 @@ public enum AllPatches
     /// <summary>An object of type <see cref="CrabPot" />.</summary>
     PatchedCrabPot,
 
+    /// <summary>An object of type <see cref="Crop" />.</summary>
+    PatchedCrop,
+
     /// <summary>An object of type <see cref="FarmAnimal" />.</summary>
     PatchedFarmAnimal,
 

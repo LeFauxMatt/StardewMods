@@ -11,6 +11,18 @@ public interface IPatchHelper
     /// <param name="message">The message to be logged.</param>
     void Log(string message);
 
+    /// <summary>Gets the value with the specified key or add if it does not exist.</summary>
+    /// <param name="key">The key of the value to get or set.</param>
+    /// <param name="value">The value to set if the key does not exist.</param>
+    /// <returns>The value associated with the specified key if the key.</returns>
+    public int GetOrSetData(string key, int value);
+
+    /// <summary>Gets the value with the specified key or add if it does not exist.</summary>
+    /// <param name="key">The key of the value to get or set.</param>
+    /// <param name="value">The value to set if the key does not exist.</param>
+    /// <returns>The value associated with the specified key if the key.</returns>
+    public double GetOrSetData(string key, double value);
+
     /// <summary>Invalidates the cached texture of the target sprite sheet.</summary>
     /// <param name="field">The field to monitor.</param>
     /// <param name="eventName">The name of the event..</param>
@@ -56,7 +68,15 @@ public interface IPatchHelper
     /// <param name="height">The height of each icon within the texture.</param>
     /// <param name="scale">The scale of the texture.</param>
     /// <param name="alpha">The alpha of the texture.</param>
-    void SetTexture(string path, int index = 0, int width = -1, int height = -1, float scale = -1f, float alpha = -1f);
+    /// <param name="vanilla">Indicates the path is to a vanilla texture.</param>
+    void SetTexture(
+        string? path,
+        int index = 0,
+        int width = -1,
+        int height = -1,
+        float scale = -1f,
+        float alpha = -1f,
+        bool vanilla = false);
 
     /// <summary>Invokes the specified action with the provided entity's heldObject value.</summary>
     /// <param name="action">The action to be invoked.</param>

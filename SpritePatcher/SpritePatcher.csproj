@@ -23,6 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="assets\PatchTemplate.cs" />
+    <Compile Remove="assets\PatchModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\PatchTemplate.cs">

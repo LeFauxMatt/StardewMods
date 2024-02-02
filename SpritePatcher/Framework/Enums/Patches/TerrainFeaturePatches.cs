@@ -13,6 +13,9 @@ public enum TerrainFeaturePatches
     /// <summary>An object of type <see cref="CosmeticPlant" />.</summary>
     PatchedCosmeticPlant,
 
+    /// <summary>An object of type <see cref="Crop" />.</summary>
+    PatchedCrop,
+
     /// <summary>An object of type <see cref="Flooring" />.</summary>
     PatchedFlooring,
 
