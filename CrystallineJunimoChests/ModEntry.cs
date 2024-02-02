@@ -41,7 +41,7 @@ public sealed class ModEntry : Mod
         var area = new Rectangle(
             chestColorPicker.xPositionOnScreen + (IClickableMenu.borderWidth / 2),
             chestColorPicker.yPositionOnScreen + (IClickableMenu.borderWidth / 2),
-            36 * chestColorPicker.totalColors,
+            36 * DiscreteColorPicker.totalColors,
             28);
 
         if (!area.Contains(x, y))
@@ -56,10 +56,7 @@ public sealed class ModEntry : Mod
             return;
         }
 
-        var currentSelection = Array.FindIndex(
-            data.Colors,
-            dataModel => dataModel.Color.Equals(chest.playerChoiceColor.Value));
-
+        var currentSelection = DiscreteColorPicker.getSelectionFromColor(chest.playerChoiceColor.Value);
         --selection;
 
         if (selection == currentSelection)
@@ -97,12 +94,12 @@ public sealed class ModEntry : Mod
                     Game1.playSound(data.Sound);
                     who.Items.ReduceId(item.QualifiedItemId, data.Cost);
                     chest.GlobalInventoryId = $"{this.ModManifest.UniqueID}-{data.Colors[selection].Name}";
-                    chest.playerChoiceColor.Value = data.Colors[selection].Color;
+                    chest.playerChoiceColor.Value = DiscreteColorPicker.getColorFromSelection(selection);
                     chest.Location.temporarySprites.Add(
                         new TemporaryAnimatedSprite(
                             5,
                             (chest.TileLocation * Game1.tileSize) - new Vector2(0, 32),
-                            data.Colors[selection].Color)
+                            DiscreteColorPicker.getColorFromSelection(selection))
                         {
                             layerDepth = 1f,
                         });
