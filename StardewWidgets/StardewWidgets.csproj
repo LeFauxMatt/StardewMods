@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Stardew Widgets</Name>
     <Description>Framework for adding information to the HUD and other various UI elements..</Description>
-    <Version>1.0.0-alpha.20240127</Version>
+    <Version>1.0.0-alpha.20240202</Version>
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.StardewWidgets</RootNamespace>
     <UniqueId>furyx639.StardewWidgets</UniqueId>
