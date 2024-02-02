@@ -1,0 +1,38 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Crop Patches",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/CropErase": {
+                    "Target": "TileSheets/crops",
+                    "Area": {"X": 0, "Y": 0, "Width": 256, "Height": 1024},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Replace",
+                    "Priority": 10,
+                    "Code": "
+                    if (entity is not HoeDirt { crop: not null }) return;
+                    SetTexture(`assets/empty.png`);
+                    "
+                },
+                "{{ModId}}/MessyCrops": {
+                    "Target": "TileSheets/crops",
+                    "Area": {"X": 0, "Y": 0, "Width": 256, "Height": 1024},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Overlay",
+                    "Code": "
+                    if (entity is not HoeDirt { crop: { } crop } hoeDirt) return;
+                    var xOffset = GetOrSetData(`{{ModId}}/XOffset`, Game1.random.Next(-4, 4));
+                    var yOffset = GetOrSetData(`{{ModId}}/YOffset`, Game1.random.Next(-4, 4));
+                    var scale = GetOrSetData(`{{ModId}}/Scale`, Game1.random.NextDouble() * 0.2 + 0.9);
+                    var data = crop.GetData();
+                    SetTexture(data.Texture, scale: (float)scale, vanilla: true);
+                    Area = crop.getSourceRect((int)hoeDirt.Tile.X * 7 + (int)hoeDirt.Tile.Y * 11);
+                    Offset = new Vector2(xOffset, yOffset);
+                    "
+                }
+            }
+        }
+    ]
+}

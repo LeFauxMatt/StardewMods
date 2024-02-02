@@ -1,0 +1,90 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Juice Icons",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "When": {
+                "HasValue: {{Vegetables}}": "true"
+            },
+            "Entries": {
+                "{{ModId}}/JuiceIcons": {
+                    "Target": "Maps/springobjects",
+                    "Area": {"X": 224, "Y": 224, "Width": 16, "Height": 16},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Replace",
+                    "Code": "WithPreserve(preserve => SetTexture(`{{Juice}}`, GetIndexFromString(`{{Vegetables}}`, preserve.InternalName)));"
+                }
+            }
+        },
+        {
+            "LogName": "Load Beer Icon",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "When": {
+                "HasValue: {{Vegetables}}": "true",
+                "Vegetables |contains=Beer": "true"
+            },
+            "Entries": {
+                "{{ModId}}/BeerIcon": {
+                    "Target": "Maps/springobjects",
+                    "Area": {"X": 160, "Y": 224, "Width": 16, "Height": 16},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Replace",
+                    "Code": "WithPreserve(preserve => SetTexture(`{{Juice}}`, GetIndexFromString(`{{Vegetables}}`, preserve.InternalName)));"
+                }
+            }
+        },
+        {
+            "LogName": "Load Pale Ale Icon",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "When": {
+                "HasValue: {{Vegetables}}": "true",
+                "Vegetables |contains=Beer": "true"
+            },
+            "Entries": {
+                "{{ModId}}/PaleAleIcon": {
+                    "Target": "Maps/springobjects",
+                    "Area": {"X": 240, "Y": 192, "Width": 16, "Height": 16},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Replace",
+                    "Code": "WithPreserve(preserve => SetTexture(`{{Juice}}`, GetIndexFromString(`{{Vegetables}}`, preserve.InternalName)));"
+                }
+            }
+        },
+        {
+            "LogName": "Load Green Tea Icon",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "When": {
+                "HasValue: {{Vegetables}}": "true",
+                "Vegetables |contains=Beer": "true"
+            },
+            "Entries": {
+                "{{ModId}}/GreenTeaIcon": {
+                    "Target": "Maps/springobjects",
+                    "Area": {"X": 224, "Y": 400, "Width": 16, "Height": 16},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Replace",
+                    "Code": "WithPreserve(preserve => SetTexture(`{{Juice}}`, GetIndexFromString(`{{Vegetables}}`, preserve.InternalName)));"
+                }
+            }
+        },
+        {
+            "LogName": "Load Juice Icon Overlay",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/JuiceIconOverlay": {
+                    "Target": "Maps/springobjects",
+                    "Area": {"X": 229, "Y": 231, "Width": 4, "Height": 4},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Overlay",
+                    "Priority": -1,
+                    "Code": "WithPreserve(preserve => SetTexture(preserve, scale:0.25f));"
+                }
+            }
+        }
+    ]
+}

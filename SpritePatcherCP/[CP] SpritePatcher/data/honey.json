@@ -1,0 +1,54 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Honey Icons",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "When": {
+                "HasValue: {{Flowers}}": "true"
+            },
+            "Entries": {
+                "{{ModId}}/HoneyIcons": {
+                    "Target": "Maps/springobjects",
+                    "Area": {"X": 64, "Y": 224, "Width": 16, "Height": 16},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Replace",
+                    "Code": "WithPreserve(preserve => SetTexture(`{{Honey}}`, GetIndexFromString(`{{Flowers}}`, preserve.InternalName)));"
+                }
+            }
+        },
+        {
+            "LogName": "Load Wild Honey Icon",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "When": {
+                "HasValue: {{Flowers}}": "true",
+                "Flowers |contains=Wild": "true"
+            },
+            "Entries": {
+                "{{ModId}}/WildHoneyIcon": {
+                    "Target": "Maps/springobjects",
+                    "Area": {"X": 64, "Y": 224, "Width": 16, "Height": 16},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Replace",
+                    "Code": "if (entity is SObject { preservedParentSheetIndex.Value: `-1` }) SetTexture(`{{Honey}}`, GetIndexFromString(`{{Flowers}}`, `Wild`));"
+                }
+            }
+        },
+        {
+            "LogName": "Load Honey Icon Overlay",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/HoneyIconOverlay": {
+                    "Target": "Maps/springobjects",
+                    "Area": {"X": 70, "Y": 232, "Width": 4, "Height": 4},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Overlay",
+                    "Priority": -1,
+                    "Code": "WithPreserve(preserve => SetTexture(preserve, scale:0.25f));"
+                }
+            }
+        }
+    ]
+}

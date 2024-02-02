@@ -1,0 +1,76 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Sloth Skeleton Patches",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/SlothSkeletonL": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 80, "Y": 320, "Width": 16, "Height": 32},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Replace",
+                    "Code": "
+                    WithNeighbors(neighbors => {
+                        if (neighbors[Direction.Right]?.Name == `Sloth Skeleton M`)
+                        {
+                            SetTexture(`assets/sloth-skeleton.png`, 0, height: 32);
+                        }
+                    });
+                    "
+                },
+                "{{ModId}}/SlothSkeletonM": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 96, "Y": 320, "Width": 16, "Height": 32},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Replace",
+                    "Code": "
+                    WithNeighbors(neighbors => {
+                        if (neighbors[Direction.Left]?.Name == `Sloth Skeleton L` && neighbors[Direction.Right]?.Name == `Sloth Skeleton R`)
+                        {
+                            SetTexture(`assets/sloth-skeleton.png`, 2, height: 32);
+                        }
+                        else if (neighbors[Direction.Left]?.Name == `Sloth Skeleton L`)
+                        {
+                            SetTexture(`assets/sloth-skeleton.png`, 1, height: 32);
+                        }
+                        else if (neighbors[Direction.Right]?.Name == `Sloth Skeleton R`)
+                        {
+                            SetTexture(`assets/sloth-skeleton.png`, 3, height: 32);
+                        }
+                    });
+                    "
+                },
+                "{{ModId}}/SlothSkeletonR": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 112, "Y": 320, "Width": 16, "Height": 32},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Replace",
+                    "Code": "
+                    WithNeighbors(neighbors => {
+                        if (neighbors[Direction.Left]?.Name == `Sloth Skeleton M`)
+                        {
+                            SetTexture(`assets/sloth-skeleton.png`, 4, height: 32);
+                        }
+                    });
+                    "
+                },
+                "{{ModId}}/SlothSkeletonHat": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 96, "Y": 320, "Width": 16, "Height": 16},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Overlay",
+                    "Code": "
+                    WithNeighbors(neighbors => {
+                        if (neighbors[Direction.Left]?.Name == `Sloth Skeleton L` && neighbors[Direction.Right]?.Name == `Sloth Skeleton R`)
+                        {
+                            SetTexture(`assets/hat.png`, 0);
+                            Offset = new Vector2(-21, -4);
+                        }
+                    });
+                    "
+                }
+            }
+        }
+    ]
+}

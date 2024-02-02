@@ -1,0 +1,65 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Tapper Patches",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/TapperDrip": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 16, "Y": 416, "Width": 16, "Height": 32},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Overlay",
+                    "Code": "
+                    WithHeldObject((obj, data) =>
+                    {
+                        if (obj.minutesUntilReady.Value != 0) return;
+                        if (data.RawData is not ObjectData objectData) return;
+                        if (!objectData.CustomFields.TryGetValue(`{{ModId}}/TapperDripColor`, out var color)) return;
+                        SetTexture(`assets/tapper.png`);
+                        SetAnimation(Animate.Medium, 8);
+                        Area = new Rectangle(0, 0, 128, 32);
+                        Tint = Utility.StringToColor(color);
+                    });
+                    "
+                }
+            }
+        },
+        {
+            "LogName": "Load Tapper Color for Sap",
+            "Action": "EditData",
+            "Target": "Data/Objects",
+            "TargetField": ["92", "CustomFields"],
+            "Entries": {
+                "{{ModId}}/TapperDripColor": "139 69 19"
+            }
+        },
+        {
+            "LogName": "Load Tapper Color for Oak Resin",
+            "Action": "EditData",
+            "Target": "Data/Objects",
+            "TargetField": ["725", "CustomFields"],
+            "Entries": {
+                "{{ModId}}/TapperDripColor": "165 42 42"
+            }
+        },
+        {
+            "LogName": "Load Tapper Color for Maple Syrup",
+            "Action": "EditData",
+            "Target": "Data/Objects",
+            "TargetField": ["724", "CustomFields"],
+            "Entries": {
+                "{{ModId}}/TapperDripColor": "255 0 0"
+            }
+        },
+        {
+            "LogName": "Load Tapper Color for Pine Tar",
+            "Action": "EditData",
+            "Target": "Data/Objects",
+            "TargetField": ["726", "CustomFields"],
+            "Entries": {
+                "{{ModId}}/TapperDripColor": "34 139 34"
+            }
+        }
+    ]
+}

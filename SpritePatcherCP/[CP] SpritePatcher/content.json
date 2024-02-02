@@ -1,45 +1,113 @@
 {
     "Format": "2.0",
-    "ConfigSchema": {
-        "WineEnabled": {
-            "AllowValues": "true, false",
-            "Default": "true",
-            "Section": "Wine"
+    "DynamicTokens": [
+        {
+            "Name": "Fruits",
+            "Value": "Ancient Fruit, Apple, Apricot, Blackberry, Blueberry, Cactus Fruit, Cherry, Coconut, Cranberries, Crystal Fruit, Grape, Hot Pepper, Melon, Orange, Peach, Pomegranate, Rhubarb, Salmonberry, Spice Berry, Starfruit, Strawberry, Wild Plum"
         },
-        "QualityWineBottles": {
-            "Allowvalues": "true, false",
-            "Default": "true",
-            "Section": "Wine"
+        {
+            "Name": "Vegetables",
+            "Value": "Amaranth, Artichoke, Beet, Bok Choy, Cauliflower, Corn, Eggplant, Fiddlehead Fern, Garlic, Green Bean, Hops, Kale, Parsnip, Potato, Pumpkin, Radish, Red Cabbage, Tomato, Wheat, Yam"
         },
-        "TintedWineBottles": {
-            "AllowValues": "true, false",
-            "Default": "true",
-            "Section": "Wine"
+        {
+            "Name": "Flowers",
+            "Value": "Blue Jazz, Fairy Rose, Poppy, Summer Spangle, Tulip, Wild"
         },
-        "CustomWineLabels": {
-            "AllowValues": "true, false",
-            "Default": "true",
-            "Section": "Wine"
+        {
+            "Name": "Honey",
+            "Value": "assets/honey.png"
         },
-        "BarnEnabled": {
-            "AllowValues": "true, false",
-            "Default": "true",
-            "Section": "Barn"
+        {
+            "Name": "Jelly",
+            "Value": "assets/jelly.png"
+        },
+        {
+            "Name": "Juice",
+            "Value": "assets/juice.png"
+        },
+        {
+            "Name": "Pickles",
+            "Value": "assets/pickles.png"
+        },
+        {
+            "Name": "Wine",
+            "Value": "assets/wine.png"
         }
-    },
+    ],
     "Changes": [
         {
             "Action": "Include",
-            "FromFile": "data/wine.json",
+            "FromFile": "data/chests.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/cow.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/crops.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/crystalarium.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/furnace.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/grass.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/honey.json",
             "When": {
-                "WineEnabled": "true"
+                "HasValue:{{Honey}}": "true"
             }
         },
         {
             "Action": "Include",
-            "FromFile": "data/barn.json",
+            "FromFile": "data/jar.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/jelly.json",
             "When": {
-                "BarnEnabled": "true"
+                "HasValue:{{Jelly}}": "true"
+            }
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/juice.json",
+            "When": {
+                "HasValue:{{Juice}}": "true"
+            }
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/pickles.json",
+            "When": {
+                "HasValue:{{Pickles}}": "true"
+            }
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/rarecrow.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/sloth-skeleton.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/tapper.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/wine.json",
+            "When": {
+                "HasValue:{{Wine}}": "true"
             }
         }
     ]

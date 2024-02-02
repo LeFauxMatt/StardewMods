@@ -1,11 +1,2 @@
 {
-    "config.section.Barn.name": "Barn Options",
-    "config.section.Barn.description": "Config options for the Barn",
-    "config.section.Wine.name": "Wine Options",
-    "config.section.Wine.description": "Config options for Wine",
-    "config.BarnEnabled.name": "Enable Barn Textures",
-    "config.WineEnabled.name": "Enable Wine Textures",
-    "config.QualityWineBottles.name": "Quality Wine Bottles",
-    "config.TintedWineBottles.name": "Tinted Wine Bottles",
-    "config.CustomWineLabels.name": "Custom Wine Labels"
 }

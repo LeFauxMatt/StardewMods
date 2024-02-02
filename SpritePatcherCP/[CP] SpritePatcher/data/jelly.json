@@ -1,30 +1,30 @@
 {
     "Changes": [
         {
-            "LogName": "Load Wine Icons",
+            "LogName": "Load Jelly Icons",
             "Action": "EditData",
             "Target": "furyx639.SpritePatcher/Patches",
             "When": {
                 "HasValue: {{Fruits}}": "true"
             },
             "Entries": {
-                "{{ModId}}/WineIcons": {
+                "{{ModId}}/JellyIcons": {
                     "Target": "Maps/springobjects",
-                    "Area": {"X": 192, "Y": 224, "Width": 16, "Height": 16},
+                    "Area": {"X": 128, "Y": 224, "Width": 16, "Height": 16},
                     "DrawMethods": ["Menu", "Held", "World"],
                     "PatchMode": "Replace",
-                    "Code": "WithPreserve(preserve => SetTexture(`{{Wine}}`, GetIndexFromString(`{{Fruits}}`, preserve.InternalName)));"
+                    "Code": "WithPreserve(preserve => SetTexture(`{{Jelly}}`, GetIndexFromString(`{{Fruits}}`, preserve.InternalName)));"
                 }
             }
         },
         {
-            "LogName": "Load Wine Icon Overlay",
+            "LogName": "Load Jelly Icon Overlay",
             "Action": "EditData",
             "Target": "furyx639.SpritePatcher/Patches",
             "Entries": {
-                "{{ModId}}/WineIconOverlay": {
+                "{{ModId}}/JellyIconOverlay": {
                     "Target": "Maps/springobjects",
-                    "Area": {"X": 197, "Y": 231, "Width": 4, "Height": 4},
+                    "Area": {"X": 134, "Y": 233, "Width": 4, "Height": 4},
                     "DrawMethods": ["Menu", "Held", "World"],
                     "PatchMode": "Overlay",
                     "Priority": -1,

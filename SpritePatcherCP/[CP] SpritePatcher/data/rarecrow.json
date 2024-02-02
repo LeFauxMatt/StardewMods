@@ -1,0 +1,33 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Rarecrow Patches",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/ScarecrowErase": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 96, "Y": 480, "Width": 16, "Height": 12},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Replace",
+                    "Priority": 10,
+                    "Code": "
+                    SetTexture(`assets/empty.png`);
+                    Area = new Rectangle(0, 0, 16, 12);
+                    "
+                },
+                "{{ModId}}/ScarecrowHandsomeHD": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 96, "Y": 480, "Width": 16, "Height": 12},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Overlay",
+                    "Code": "
+                    SetTexture(`assets/scarecrow.png`, scale:0.125f);
+                    Offset = new Vector2(0, -3);
+                    Area = new Rectangle(0, 0, 128, 144);
+                    "
+                }
+            }
+        }
+    ]
+}

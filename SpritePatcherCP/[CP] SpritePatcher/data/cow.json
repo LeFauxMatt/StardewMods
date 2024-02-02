@@ -1,0 +1,24 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Cow Patches",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/CowLoveLabel": {
+                    "Target": "Animals/White Cow",
+                    "Area": {"X": 0, "Y": 0, "Width": 128, "Height": 160},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Overlay",
+                    "Code": "
+                    if (entity is not FarmAnimal animal) return;
+                    InvalidateCacheOnChanged(animal.wasPet, `fieldChangeVisibleEvent`);
+                    if (animal.wasPet.Value || animal.wasAutoPet.Value) return;
+                    SetTexture(`assets/love-label.png`, 0, 15, 20);
+                    Offset = new Vector2(9, -6);
+                    "
+                }
+            }
+        }
+    ]
+}

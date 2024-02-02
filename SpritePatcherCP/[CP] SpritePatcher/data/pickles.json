@@ -1,30 +1,30 @@
 {
     "Changes": [
         {
-            "LogName": "Load Wine Icons",
+            "LogName": "Load Pickles Icons",
             "Action": "EditData",
             "Target": "furyx639.SpritePatcher/Patches",
             "When": {
-                "HasValue: {{Fruits}}": "true"
+                "HasValue: {{Vegetables}}": "true"
             },
             "Entries": {
-                "{{ModId}}/WineIcons": {
+                "{{ModId}}/PickleIcons": {
                     "Target": "Maps/springobjects",
-                    "Area": {"X": 192, "Y": 224, "Width": 16, "Height": 16},
+                    "Area": {"X": 96, "Y": 224, "Width": 16, "Height": 16},
                     "DrawMethods": ["Menu", "Held", "World"],
                     "PatchMode": "Replace",
-                    "Code": "WithPreserve(preserve => SetTexture(`{{Wine}}`, GetIndexFromString(`{{Fruits}}`, preserve.InternalName)));"
+                    "Code": "WithPreserve(preserve => SetTexture(`{{Pickles}}`, GetIndexFromString(`{{Vegetables}}`, preserve.InternalName)));"
                 }
             }
         },
         {
-            "LogName": "Load Wine Icon Overlay",
+            "LogName": "Load Pickles Icon Overlay",
             "Action": "EditData",
             "Target": "furyx639.SpritePatcher/Patches",
             "Entries": {
-                "{{ModId}}/WineIconOverlay": {
+                "{{ModId}}/PickleIconOverlay": {
                     "Target": "Maps/springobjects",
-                    "Area": {"X": 197, "Y": 231, "Width": 4, "Height": 4},
+                    "Area": {"X": 102, "Y": 233, "Width": 4, "Height": 4},
                     "DrawMethods": ["Menu", "Held", "World"],
                     "PatchMode": "Overlay",
                     "Priority": -1,

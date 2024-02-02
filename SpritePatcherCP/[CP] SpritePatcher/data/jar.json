@@ -1,0 +1,24 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Preserves Jar Patches",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/PreservesJarDrip": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 112, "Y": 32, "Width": 16, "Height": 32},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Overlay",
+                    "Code": "
+                    WithHeldObject((obj, data) => {
+                        if (obj.ItemId != `344`) return;
+                        SetTexture(`assets/jar.png`, height: 32);
+                        Tint = new Color(0, 0, 255);
+                    });
+                    "
+                }
+            }
+        }
+    ]
+}
