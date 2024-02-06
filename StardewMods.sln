@@ -46,6 +46,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NpcsHaveInventory", "NpcsHa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PickpocketSkill", "PickpocketSkill\PickpocketSkill.csproj", "{172700DA-69CC-47AC-9AEE-168CA60BF344}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FullHouse", "FullHouse\FullHouse.csproj", "{5221BFBE-9F9A-41CD-B6F8-2F52A9A11E5C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -112,6 +114,10 @@ Global
 		{172700DA-69CC-47AC-9AEE-168CA60BF344}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{172700DA-69CC-47AC-9AEE-168CA60BF344}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{172700DA-69CC-47AC-9AEE-168CA60BF344}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5221BFBE-9F9A-41CD-B6F8-2F52A9A11E5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5221BFBE-9F9A-41CD-B6F8-2F52A9A11E5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5221BFBE-9F9A-41CD-B6F8-2F52A9A11E5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5221BFBE-9F9A-41CD-B6F8-2F52A9A11E5C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

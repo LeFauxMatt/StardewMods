@@ -15,9 +15,6 @@ public interface IContentModel
     /// <summary>Gets the draw methods where the texture can be applied.</summary>
     List<DrawMethod> DrawMethods { get; }
 
-    /// <summary>Gets the mode that the patch will be applied.</summary>
-    PatchMode PatchMode { get; }
-
     /// <summary>Gets the priority of the patch which determines the order in which patches are applied.</summary>
     int Priority { get; }
 

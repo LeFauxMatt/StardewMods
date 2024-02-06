@@ -74,12 +74,12 @@ internal sealed class Sprite : ISprite
         spriteBatch.Draw(
             managedTexture.Texture,
             position - (scale * managedTexture.Offset),
-            managedTexture.SourceRectangle,
+            managedTexture.SourceArea,
             color,
-            rotation,
+            rotation * managedTexture.Rotation,
             origin * managedTexture.Scale,
             scale / managedTexture.Scale,
-            effects,
+            effects | managedTexture.Effects,
             layerDepth);
     }
 
@@ -119,21 +119,21 @@ internal sealed class Sprite : ISprite
         var x = destinationRectangle.X - (int)(managedTexture.Offset.X * Game1.pixelZoom);
         var y = destinationRectangle.Y - (int)(managedTexture.Offset.Y * Game1.pixelZoom);
         var width = (int)(destinationRectangle.Width
-            + (((managedTexture.SourceRectangle.Width / managedTexture.Scale) - valueOrDefault.Width)
+            + (((managedTexture.SourceArea.Width / managedTexture.Scale) - valueOrDefault.Width)
                 * Game1.pixelZoom));
 
         var height = (int)(destinationRectangle.Height
-            + (((managedTexture.SourceRectangle.Height / managedTexture.Scale) - valueOrDefault.Height)
+            + (((managedTexture.SourceArea.Height / managedTexture.Scale) - valueOrDefault.Height)
                 * Game1.pixelZoom));
 
         spriteBatch.Draw(
             managedTexture.Texture,
             new Rectangle(x, y, width, height),
-            managedTexture.SourceRectangle,
+            managedTexture.SourceArea,
             color,
-            rotation,
+            rotation * managedTexture.Rotation,
             origin * managedTexture.Scale,
-            effects,
+            effects | managedTexture.Effects,
             layerDepth);
     }
 
@@ -164,12 +164,12 @@ internal sealed class Sprite : ISprite
         spriteBatch.Draw(
             managedTexture.Texture,
             position - (scale * managedTexture.Offset),
-            managedTexture.SourceRectangle,
+            managedTexture.SourceArea,
             color,
-            rotation,
+            rotation * managedTexture.Rotation,
             origin * managedTexture.Scale,
             scale / managedTexture.Scale,
-            effects,
+            effects | managedTexture.Effects,
             layerDepth);
     }
 
@@ -205,7 +205,10 @@ internal sealed class Sprite : ISprite
             _ => throw new NotSupportedException($"Cannot manage {source.GetType().FullName}"),
         };
 
-    private bool TryGetTexture(Texture2D baseTexture, SpriteKey key, [NotNullWhen(true)] out ISpriteSheet? spriteSheet)
+    private bool TryGetTexture(
+        Texture2D baseTexture,
+        SpriteKey key,
+        [NotNullWhen(true)] out ISpriteSheet? spriteSheet)
     {
         spriteSheet = null;
 
@@ -232,13 +235,31 @@ internal sealed class Sprite : ISprite
         }
 
         // Apply patches and generate texture
-        var patchesToApply = new List<IPatchModel>();
+        var color = Color.White;
+        var rotation = 1f;
+        var effects = SpriteEffects.None;
+        if (this.spriteSheetManager.TryBuildSpriteSheet(this, key, baseTexture, patches, out spriteSheet))
+        {
+            spriteSheet.Color = color;
+            spriteSheet.Rotation = rotation;
+            spriteSheet.Effects = effects;
+            this.cachedSpriteSheets[key] = new WeakReference<ISpriteSheet>(spriteSheet);
+            return true;
+        }
+
+        this.disabledTextures.Add(key);
+        return false;
+
+        var patchesToApply = new List<ISpritePatch>();
         foreach (var patch in patches)
         {
             bool success;
             try
             {
                 success = patch.Run(this);
+                color = patch.Color.GetValueOrDefault(color);
+                rotation = patch.Rotation.GetValueOrDefault(rotation);
+                effects = patch.Effects.GetValueOrDefault(effects);
             }
             catch (Exception e)
             {
@@ -255,11 +276,11 @@ internal sealed class Sprite : ISprite
         if (patchesToApply.Any()
             && this.spriteSheetManager.TryBuildSpriteSheet(key, baseTexture, patchesToApply, out spriteSheet))
         {
+            spriteSheet.Color = color;
+            spriteSheet.Rotation = rotation;
+            spriteSheet.Effects = effects;
             this.cachedSpriteSheets[key] = new WeakReference<ISpriteSheet>(spriteSheet);
             return true;
         }
-
-        this.disabledTextures.Add(key);
-        return false;
     }
 }

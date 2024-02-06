@@ -37,13 +37,13 @@ using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
 using SObject = StardewValley.Object;
 
-public class Runner : global::StardewMods.SpritePatcher.Framework.BasePatchModel
+public class Runner : global::StardewMods.SpritePatcher.Framework.BaseSpritePatch
 {
     public Runner(PatchModelCtorArgs args) : base(args) { }
 
-    public override bool Run(ISprite sprite)
+    public override bool Run(ISprite sprite, SpriteKey key)
     {
-        this.BeforeRun(sprite);
+        this.BeforeRun(sprite, key);
         try
         {
             this.ActualRun(sprite.Entity);

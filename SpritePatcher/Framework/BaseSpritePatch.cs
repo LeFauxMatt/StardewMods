@@ -2,13 +2,14 @@ namespace StardewMods.SpritePatcher.Framework;
 
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewMods.Common.Services.Integrations.FuryCore;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
 
-/// <inheritdoc cref="StardewMods.SpritePatcher.Framework.Interfaces.IPatchModel" />
-public abstract partial class BasePatchModel : IPatchModel
+/// <inheritdoc cref="ISpritePatch" />
+public abstract partial class BaseSpritePatch : ISpritePatch
 {
     private readonly ILog log;
     private readonly INetEventManager netEventManager;
@@ -16,12 +17,11 @@ public abstract partial class BasePatchModel : IPatchModel
 
     private ISprite? currentObject;
     private string currentPath = string.Empty;
-    private Rectangle sourceArea;
     private SpriteKey spriteKey;
 
-    /// <summary>Initializes a new instance of the <see cref="BasePatchModel" /> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="BaseSpritePatch" /> class.</summary>
     /// <param name="args">The patch model arguments.</param>
-    protected BasePatchModel(PatchModelCtorArgs args)
+    protected BaseSpritePatch(PatchModelCtorArgs args)
     {
         this.log = args.Log;
         this.netEventManager = args.NetEventManager;
@@ -30,11 +30,7 @@ public abstract partial class BasePatchModel : IPatchModel
 
         this.Id = args.Id;
         this.ContentPack = args.ContentPack;
-        this.Target = args.ContentModel.Target;
-        this.sourceArea = args.ContentModel.SourceArea;
-        this.SourceArea = args.ContentModel.SourceArea;
-        this.DrawMethods = args.ContentModel.DrawMethods;
-        this.PatchMode = args.ContentModel.PatchMode;
+        this.ContentModel = args.ContentModel;
     }
 
     /// <inheritdoc />
@@ -43,14 +39,8 @@ public abstract partial class BasePatchModel : IPatchModel
     /// <inheritdoc />
     public IContentPack ContentPack { get; }
 
-    /// <inheritdoc />
-    public string Target { get; }
-
-    /// <inheritdoc />
-    public List<DrawMethod> DrawMethods { get; }
-
-    /// <inheritdoc />
-    public PatchMode PatchMode { get; }
+    /// <inheritdoc/>
+    public IContentModel ContentModel { get; }
 
     /// <inheritdoc />
     public Rectangle SourceArea { get; private set; }
@@ -79,15 +69,23 @@ public abstract partial class BasePatchModel : IPatchModel
     /// <inheritdoc />
     public Vector2 Offset { get; set; }
 
+    /// <inheritdoc/>
+    public Color? Color { get; set; }
+
+    /// <inheritdoc/>
+    public float? Rotation { get; set; }
+
+    /// <inheritdoc/>
+    public SpriteEffects? Effects { get; set; }
+
     /// <inheritdoc />
     public int GetCurrentId()
     {
         var hash = default(HashCode);
         hash.Add(this.Id);
-        hash.Add(this.Target);
+        hash.Add(this.ContentModel.Target);
         hash.Add(this.currentPath);
         hash.Add(this.Area);
-        hash.Add(this.PatchMode);
         hash.Add(this.Offset);
         hash.Add(this.Tint);
         hash.Add(this.Scale);
@@ -98,15 +96,7 @@ public abstract partial class BasePatchModel : IPatchModel
     }
 
     /// <inheritdoc />
-    public abstract bool Run(ISprite sprite);
-
-    /// <inheritdoc />
-    public bool Test(SpriteKey key)
-    {
-        this.spriteKey = key;
-        this.SourceArea = Rectangle.Intersect(this.sourceArea, key.Area);
-        return this.sourceArea.Intersects(key.Area) && this.DrawMethods.Contains(key.DrawMethod);
-    }
+    public abstract bool Run(ISprite sprite, SpriteKey key);
 
     /// <inheritdoc />
     public override string ToString()
@@ -115,8 +105,6 @@ public abstract partial class BasePatchModel : IPatchModel
         sb.Append(Path.Join(this.Id, this.currentPath));
         sb.Append('_');
         sb.Append(this.Area);
-        sb.Append('_');
-        sb.Append(this.PatchMode);
 
         if (this.Offset != Vector2.Zero)
         {
@@ -155,8 +143,10 @@ public abstract partial class BasePatchModel : IPatchModel
 
     /// <summary>Resets the Texture, Area, and Tint properties of the object before running.</summary>
     /// <param name="sprite">The managed object requesting the patch.</param>
-    protected void BeforeRun(ISprite sprite)
+    protected void BeforeRun(ISprite sprite, SpriteKey key)
     {
+        this.spriteKey = key;
+        this.SourceArea = Rectangle.Intersect(this.ContentModel.SourceArea, key.Area);
         this.currentObject = sprite;
         this.Texture = null;
         this.Area = Rectangle.Empty;
@@ -166,6 +156,9 @@ public abstract partial class BasePatchModel : IPatchModel
         this.Animate = Animate.None;
         this.Offset = Vector2.Zero;
         this.Alpha = 1f;
+        this.Color = null;
+        this.Rotation = null;
+        this.Effects = null;
     }
 
     /// <summary>Validate the Texture, Area, and Tint properties of the object after running.</summary>

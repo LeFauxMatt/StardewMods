@@ -1,110 +1,57 @@
 namespace StardewMods.SpritePatcher.Framework;
 
-using System.Globalization;
+using System.ComponentModel;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
+using StardewMods.SpritePatcher.Framework.Models;
 using StardewValley.ItemTypeDefinitions;
-using StardewValley.Mods;
 
 /// <inheritdoc cref="IPatchHelper" />
 [SuppressMessage("SMAPI.CommonErrors", "AvoidImplicitNetFieldCast", Justification = "Reviewed.")]
-public abstract partial class BasePatchModel : IPatchHelper
+public abstract partial class BaseSpritePatch : IPatchHelper
 {
     /// <inheritdoc />
-    public void Log(string message) => this.log.Trace($"{this.Id}: {message}");
-
-    /// <inheritdoc />
-    public int GetOrSetData(string key, int value)
+    public void ApplyTexture(
+        Texture2D texture,
+        Rectangle sourceArea,
+        float scale = -1f,
+        float alpha = -1f)
     {
-        if (this.currentObject is null)
-        {
-            return value;
-        }
-
-        if (this.currentObject.Entity.modData.TryGetValue(key, out var stringResult)
-            && int.TryParse(stringResult, out var result))
-        {
-            return result;
-        }
-
-        this.currentObject.Entity.modData[key] = value.ToString(CultureInfo.InvariantCulture);
-        return value;
-    }
-
-    /// <inheritdoc />
-    public double GetOrSetData(string key, double value)
-    {
-        if (this.currentObject is null)
-        {
-            return value;
-        }
-
-        if (this.currentObject.Entity.modData.TryGetValue(key, out var stringResult)
-            && int.TryParse(stringResult, out var result))
-        {
-            return result;
-        }
-
-        this.currentObject.Entity.modData[key] = value.ToString(CultureInfo.InvariantCulture);
-        return value;
-    }
-
-    /// <inheritdoc />
-    public void InvalidateCacheOnChanged(object field, string eventName)
-    {
-        if (this.currentObject is not null)
-        {
-            this.netEventManager.Subscribe(this.currentObject, field, eventName);
-        }
-    }
-
-    /// <inheritdoc />
-    public int GetIndexFromString(string input, string value, char separator = ',')
-    {
-        var values = input.Split(separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var index = Array.FindIndex(values, v => v.Equals(value, StringComparison.OrdinalIgnoreCase));
-        return index;
-    }
-
-    /// <inheritdoc />
-    public void SetAnimation(Animate animate, int frames)
-    {
-        if (animate == Animate.None || frames <= 1)
+        if (!this.spriteSheetManager.TryGetTexture(texture.Name, out var rawTexture))
         {
             return;
         }
 
-        this.Animate = animate;
-        this.Frames = frames;
+        this.ApplyTexture(rawTexture, texture.Name, sourceArea, scale, alpha);
     }
 
     /// <inheritdoc />
-    public void SetTexture(Texture2D texture, float scale = -1, float alpha = -1f)
+    public void ApplyTexture(
+        string? path,
+        Rectangle sourceArea,
+        float scale = -1f,
+        float alpha = -1f)
     {
-        this.Texture = this.spriteSheetManager.TryGetTexture(texture.Name, out var baseTexture) ? baseTexture : null;
-        if (this.Texture is null)
+        if (string.IsNullOrWhiteSpace(path))
         {
             return;
         }
 
-        this.currentPath = texture.Name;
-        this.Area = texture.Bounds;
-
-        if (scale > 0)
+        try
         {
-            this.Scale = scale;
+            var rawTexture = this.ContentPack.ModContent.Load<IRawTextureData>(path);
+            this.ApplyTexture(rawTexture, path, sourceArea, scale, alpha);
         }
-
-        if (alpha > 0)
+        catch (Exception e)
         {
-            this.Alpha = alpha;
+            // Do nothing
         }
     }
 
     /// <inheritdoc />
-    public void SetTexture(Item? item, float scale = -1f, float alpha = -1f)
+    public void ApplyTexture(Item? item, float scale = -1f, float alpha = -1f)
     {
         if (item is null)
         {
@@ -112,66 +59,31 @@ public abstract partial class BasePatchModel : IPatchHelper
         }
 
         var data = ItemRegistry.GetDataOrErrorItem(item.QualifiedItemId);
-        if (data.IsErrorItem)
-        {
-            return;
-        }
-
-        this.currentPath = data.GetTexture().Name;
-        this.Area = data.GetSourceRect();
-        this.Texture = this.spriteSheetManager.TryGetTexture(data.GetTexture().Name, out var baseTexture)
-            ? baseTexture
-            : null;
-
-        if (scale > 0)
-        {
-            this.Scale = scale;
-        }
-
-        if (alpha > 0)
-        {
-            this.Alpha = alpha;
-        }
+        this.ApplyTexture(data, scale, alpha);
     }
 
     /// <inheritdoc />
-    public void SetTexture(ParsedItemData data, float scale = -1f, float alpha = -1f)
+    public void ApplyTexture(ParsedItemData data, float scale = -1f, float alpha = -1f)
     {
         if (data.IsErrorItem)
         {
             return;
         }
 
-        this.currentPath = data.GetTexture().Name;
-        this.Area = data.GetSourceRect();
-        this.Texture = this.spriteSheetManager.TryGetTexture(data.GetTexture().Name, out var baseTexture)
-            ? baseTexture
-            : null;
-
-        if (scale > 0)
-        {
-            this.Scale = scale;
-        }
-
-        if (alpha > 0)
-        {
-            this.Alpha = alpha;
-        }
-    }
-
-    /// <inheritdoc />
-    public void SetTexture(
-        string? path,
-        int index = 0,
-        int width = -1,
-        int height = -1,
-        float scale = -1f,
-        float alpha = -1f,
-        bool vanilla = false)
-    {
-        if (string.IsNullOrWhiteSpace(path) || index == -1)
+        var path = data.GetTextureName();
+        if (!this.spriteSheetManager.TryGetTexture(path, out var rawTexture))
         {
             return;
+        }
+
+        this.ApplyTexture(rawTexture, path, data.GetSourceRect(), scale, alpha);
+    }
+
+    public Rectangle GetAreaFromIndex(int index, int width = -1, int height = -1)
+    {
+        if (index < 0)
+        {
+            return this.spriteKey.Area;
         }
 
         if (width == -1)
@@ -184,88 +96,90 @@ public abstract partial class BasePatchModel : IPatchHelper
             height = this.spriteKey.Area.Height;
         }
 
-        this.currentPath = path;
-        this.Texture = vanilla && this.spriteSheetManager.TryGetTexture(path, out var baseTexture)
-            ? baseTexture
-            : this.ContentPack.ModContent.Load<IRawTextureData>(path);
-
-        if (scale > 0)
-        {
-            this.Scale = scale;
-        }
-
-        if (alpha > 0)
-        {
-            this.Alpha = alpha;
-        }
-
-        if (this.Area == Rectangle.Empty)
-        {
-            this.Area = new Rectangle(
-                this.Texture.Width > width ? width * (index % (this.Texture.Width / width)) : 0,
-                this.Texture.Width > width ? height * (index / (this.Texture.Width / width)) : 0,
-                width,
-                height);
-        }
+        return new Rectangle(width * index, 0, width, height);
     }
 
     /// <inheritdoc />
-    public void WithHeldObject(Action<SObject, ParsedItemData> action, bool monitor = true, IHaveModData? entity = null)
+    public int GetIndexFromString(string input, string value, char separator = ',')
+    {
+        var values = input.Split(separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var index = Array.FindIndex(values, v => v.Equals(value, StringComparison.OrdinalIgnoreCase));
+        return index;
+    }
+
+    /// <inheritdoc />
+    public T GetOrSetData<T>(string key, T value)
+    {
+        if (this.currentObject is null)
+        {
+            return value;
+        }
+
+        if (this.currentObject.Entity.modData.TryGetValue(key, out var stringResult))
+        {
+            var typeConverter = TypeDescriptor.GetConverter(typeof(T));
+            if (typeConverter.IsValid(stringResult))
+            {
+                return (T)typeConverter.ConvertFromInvariantString(stringResult)!;
+            }
+        }
+
+        this.currentObject.Entity.modData[key] = value!.ToString();
+        return value;
+    }
+
+    /// <inheritdoc />
+    public (SObject Object, ParsedItemData Data) GetHeldObject(IHaveModData? entity = null)
     {
         entity ??= this.currentObject?.Entity;
         if (entity is not SObject obj)
         {
-            return;
+            throw new InapplicableContextException();
         }
 
-        if (monitor)
-        {
-            this.InvalidateCacheOnChanged(obj.heldObject, "fieldChangeVisibleEvent");
-        }
+        this.InvalidateCacheOnChanged(obj.heldObject, "fieldChangeVisibleEvent");
 
         if (obj.heldObject.Value == null)
         {
-            return;
+            throw new InapplicableContextException();
         }
 
         var data = ItemRegistry.GetDataOrErrorItem(obj.heldObject.Value.QualifiedItemId);
         if (!data.IsErrorItem)
         {
-            action(obj.heldObject.Value, data);
+            return (obj.heldObject.Value, data);
         }
+
+        throw new InapplicableContextException();
     }
 
     /// <inheritdoc />
-    public void WithLastInputItem(Action<Item, ParsedItemData> action, bool monitor = true, IHaveModData? entity = null)
+    public (Item Item, ParsedItemData Data) GetLastInputItem(IHaveModData? entity = null)
     {
         entity ??= this.currentObject?.Entity;
         if (entity is not SObject obj)
         {
-            return;
+            throw new InapplicableContextException();
         }
 
-        if (monitor)
-        {
-            this.InvalidateCacheOnChanged(obj.lastInputItem, "fieldChangeVisibleEvent");
-        }
+        this.InvalidateCacheOnChanged(obj.lastInputItem, "fieldChangeVisibleEvent");
 
         if (obj.lastInputItem.Value == null)
         {
-            return;
+            throw new InapplicableContextException();
         }
 
         var data = ItemRegistry.GetDataOrErrorItem(obj.lastInputItem.Value.QualifiedItemId);
         if (!data.IsErrorItem)
         {
-            action(obj.lastInputItem.Value, data);
+            return (obj.lastInputItem.Value, data);
         }
+
+        throw new InapplicableContextException();
     }
 
     /// <inheritdoc />
-    public void WithNeighbors(
-        Action<Dictionary<Direction, SObject?>> action,
-        bool monitor = true,
-        IHaveModData? entity = null)
+    public Dictionary<Direction, SObject?> GetNeighbors(IHaveModData? entity = null)
     {
         entity ??= this.currentObject?.Entity;
         if (entity is not SObject
@@ -273,14 +187,11 @@ public abstract partial class BasePatchModel : IPatchHelper
                 Location: not null,
             } obj)
         {
-            return;
+            throw new InapplicableContextException();
         }
 
-        if (monitor)
-        {
-            this.InvalidateCacheOnChanged(obj.Location.netObjects, "OnValueAdded");
-            this.InvalidateCacheOnChanged(obj.Location.netObjects, "OnValueRemoved");
-        }
+        this.InvalidateCacheOnChanged(obj.Location.netObjects, "OnValueAdded");
+        this.InvalidateCacheOnChanged(obj.Location.netObjects, "OnValueRemoved");
 
         var neighbors = new Dictionary<Direction, SObject?>();
         foreach (var direction in DirectionExtensions.GetValues())
@@ -299,69 +210,97 @@ public abstract partial class BasePatchModel : IPatchHelper
 
         if (neighbors.Values.OfType<SObject>().Any())
         {
-            action(neighbors);
+            return neighbors;
         }
+
+        throw new InapplicableContextException();
     }
 
     /// <inheritdoc />
-    public void WithPreserve(Action<ParsedItemData> action, bool monitor = true, IHaveModData? entity = null)
+    public ParsedItemData GetPreserve(IHaveModData? entity = null)
     {
         entity ??= this.currentObject?.Entity;
         if (entity is not SObject obj)
         {
-            return;
+            throw new InapplicableContextException();
         }
 
-        if (monitor)
-        {
-            this.InvalidateCacheOnChanged(obj.preservedParentSheetIndex, "fieldChangeVisibleEvent");
-        }
-
+        this.InvalidateCacheOnChanged(obj.preservedParentSheetIndex, "fieldChangeVisibleEvent");
         if (obj.preservedParentSheetIndex.Value == null)
         {
-            return;
+            throw new InapplicableContextException();
         }
 
         var data = ItemRegistry.GetDataOrErrorItem("(O)" + obj.preservedParentSheetIndex.Value);
         if (!data.IsErrorItem)
         {
-            action(data);
-        }
-    }
-}
-
-/// <summary>Common extension methods.</summary>
-public static class Extensions
-{
-    /// <summary>Gets the value with the specified key or add if it does not exist.</summary>
-    /// <param name="modData">The ModDataDictionary instance.</param>
-    /// <param name="key">The key of the value to get or set.</param>
-    /// <param name="value">The value to set if the key does not exist.</param>
-    /// <returns>The value associated with the specified key if the key.</returns>
-    public static int GetOrSet(this ModDataDictionary modData, string key, int value)
-    {
-        if (modData.TryGetValue(key, out var stringResult) && int.TryParse(stringResult, out var result))
-        {
-            return result;
+            return data;
         }
 
-        modData[key] = value.ToString(CultureInfo.InvariantCulture);
-        return value;
+        throw new InapplicableContextException();
     }
 
-    /// <summary>Gets the value with the specified key or add if it does not exist.</summary>
-    /// <param name="modData">The ModDataDictionary instance.</param>
-    /// <param name="key">The key of the value to get or set.</param>
-    /// <param name="value">The value to set if the key does not exist.</param>
-    /// <returns>The value associated with the specified key if the key.</returns>
-    public static double GetOrSet(this ModDataDictionary modData, string key, double value)
+    /// <inheritdoc />
+    public void InvalidateCacheOnChanged(object field, string eventName)
     {
-        if (modData.TryGetValue(key, out var stringResult) && int.TryParse(stringResult, out var result))
+        if (this.currentObject is not null)
         {
-            return result;
+            this.netEventManager.Subscribe(this.currentObject, field, eventName);
+        }
+    }
+
+    /// <inheritdoc />
+    public void Log(string message) => this.log.Trace($"{this.Id}: {message}");
+
+    /// <inheritdoc />
+    public void SetAnimation(Animate animate, int frames)
+    {
+        if (animate == Animate.None || frames <= 1)
+        {
+            return;
         }
 
-        modData[key] = value.ToString(CultureInfo.InvariantCulture);
-        return value;
+        this.Animate = animate;
+        this.Frames = frames;
+    }
+
+    private void ApplyTexture(
+        IRawTextureData texture,
+        string path,
+        Rectangle sourceArea,
+        float scale = -1f,
+        float alpha = -1f)
+    {
+        this.Texture = texture;
+        this.currentPath = path;
+
+        if (scale > 0)
+        {
+            this.Scale = scale;
+        }
+
+        if (alpha > 0)
+        {
+            this.Alpha = alpha;
+        }
+
+        if (this.Area != Rectangle.Empty)
+        {
+            return;
+        }
+
+        if (sourceArea.X > texture.Width && texture.Width >= sourceArea.Width)
+        {
+            var index = sourceArea.X / sourceArea.Width;
+            this.Area = sourceArea with
+            {
+                X = sourceArea.Width * (index % texture.Width / sourceArea.Width),
+                Y = sourceArea.Height * (index / (texture.Width / sourceArea.Width)),
+            };
+
+            return;
+        }
+
+        this.Area = sourceArea;
     }
 }

@@ -12,16 +12,13 @@ internal sealed class SpriteSheet : ISpriteSheet, IDisposable
 
     private static int lastTicks;
     private static int counter;
-    private readonly Color[] data;
     private readonly int frames;
-    private readonly int height;
     private readonly SpriteKey key;
     private readonly Vector2 offset;
     private readonly float scale;
     private readonly double tickMultiplier = (Game1.random.NextDouble() * 0.1f) + 0.95f;
     private readonly int tickOffset = Game1.random.Next(0, 20);
     private readonly int ticksPerFrame;
-    private readonly int width;
     private bool initialized;
 
     private Texture2D texture;
@@ -49,18 +46,15 @@ internal sealed class SpriteSheet : ISpriteSheet, IDisposable
     {
         this.key = key;
         this.texture = texture;
-        this.data = data;
-        this.width = width;
-        this.height = height;
+        this.Data = data;
+        this.Width = width;
+        this.Height = height;
         this.scale = scale;
         this.offset = offset;
         this.frames = frames;
         this.ticksPerFrame = ticksPerFrame;
         this.WasAccessed = true;
     }
-
-    /// <inheritdoc />
-    public void Dispose() => this.texture.Dispose();
 
     /// <inheritdoc />
     public Texture2D Texture
@@ -79,8 +73,8 @@ internal sealed class SpriteSheet : ISpriteSheet, IDisposable
             }
 
             SpriteSheet.counter++;
-            this.texture = new Texture2D(this.texture.GraphicsDevice, this.width, this.height);
-            this.texture.SetData(this.data);
+            this.texture = new Texture2D(this.texture.GraphicsDevice, this.Width, this.Height);
+            this.texture.SetData(this.Data);
             this.initialized = true;
             return this.texture;
         }
@@ -93,7 +87,7 @@ internal sealed class SpriteSheet : ISpriteSheet, IDisposable
     public Vector2 Offset => this.initialized ? this.offset : Vector2.Zero;
 
     /// <inheritdoc />
-    public Rectangle SourceRectangle =>
+    public Rectangle SourceArea =>
         this.initialized
             ? this.frames == 0
                 ? new Rectangle(0, 0, this.Texture.Width, this.Texture.Height)
@@ -106,6 +100,42 @@ internal sealed class SpriteSheet : ISpriteSheet, IDisposable
                     this.Texture.Height)
             : this.key.Area;
 
+    /// <inheritdoc/>
+    public Color Color { get; set; }
+
+    /// <inheritdoc/>
+    public float Rotation { get; set; }
+
+    /// <inheritdoc/>
+    public SpriteEffects Effects { get; set; }
+
     /// <inheritdoc />
     public bool WasAccessed { get; set; }
+
+    /// <inheritdoc/>
+    public Color[] Data { get; private set; }
+
+    /// <inheritdoc/>
+    public int Width { get; private set; }
+
+    /// <inheritdoc/>
+    public int Height { get; private set; }
+
+    /// <inheritdoc />
+    public void Dispose() => this.texture.Dispose();
+
+    /// <inheritdoc/>
+    public int GetCurrentId()
+    {
+        var hash = default(HashCode);
+        return hash.ToHashCode();
+    }
+
+    /// <inheritdoc/>
+    public void SetData(IRawTextureData data)
+    {
+        this.Data = data.Data;
+        this.Width = data.Width;
+        this.Height = data.Height;
+    }
 }

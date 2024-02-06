@@ -36,8 +36,8 @@ internal sealed class CodeManager : BaseService
     private readonly IModRegistry modRegistry;
     private readonly INetEventManager netEventManager;
 
-    private readonly IDictionary<string, SortedDictionary<int, IList<IPatchModel>>> patches =
-        new Dictionary<string, SortedDictionary<int, IList<IPatchModel>>>(StringComparer.OrdinalIgnoreCase);
+    private readonly IDictionary<string, SortedDictionary<int, IList<ISpritePatch>>> patches =
+        new Dictionary<string, SortedDictionary<int, IList<ISpritePatch>>>(StringComparer.OrdinalIgnoreCase);
 
     private readonly string path;
     private readonly List<MetadataReference> references = [];
@@ -94,7 +94,7 @@ internal sealed class CodeManager : BaseService
     /// <param name="key">A key for the original texture method.</param>
     /// <param name="data">When this method returns, contains the data for the target if it is found; otherwise, null.</param>
     /// <returns>true if the data for the target is found; otherwise, false.</returns>
-    public bool TryGet(SpriteKey key, [NotNullWhen(true)] out IList<IPatchModel>? data)
+    public bool TryGet(SpriteKey key, [NotNullWhen(true)] out IList<ISpritePatch>? data)
     {
         if (!this.patches.TryGetValue(key.Target, out var prioritizedPatches))
         {
@@ -102,7 +102,10 @@ internal sealed class CodeManager : BaseService
             return false;
         }
 
-        data = prioritizedPatches.SelectMany(patchModels => patchModels.Value).Where(patch => patch.Test(key)).ToList();
+        data = prioritizedPatches
+            .SelectMany(patchModels => patchModels.Value)
+            .Where(patch => patch.ContentModel.SourceArea.Intersects(key.Area))
+            .ToList();
 
         return data.Any();
     }
@@ -291,18 +294,18 @@ internal sealed class CodeManager : BaseService
                 this.netEventManager,
                 this.spriteSheetManager);
 
-            var patchModel = (BasePatchModel)ctor!.Invoke([ctorArgs]);
+            var patchModel = (BaseSpritePatch)ctor!.Invoke([ctorArgs]);
             var target = this.gameContentHelper.ParseAssetName(contentModel.Target);
 
             if (!this.patches.TryGetValue(target.BaseName, out var prioritizedPatches))
             {
-                prioritizedPatches = new SortedDictionary<int, IList<IPatchModel>>(CodeManager.Comparer);
+                prioritizedPatches = new SortedDictionary<int, IList<ISpritePatch>>(CodeManager.Comparer);
                 this.patches[target.BaseName] = prioritizedPatches;
             }
 
             if (!prioritizedPatches.TryGetValue(contentModel.Priority, out var patchModels))
             {
-                patchModels = new List<IPatchModel>();
+                patchModels = new List<ISpritePatch>();
                 prioritizedPatches[contentModel.Priority] = patchModels;
             }
 

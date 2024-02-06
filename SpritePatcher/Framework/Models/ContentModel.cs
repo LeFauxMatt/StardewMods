@@ -11,36 +11,30 @@ internal sealed class ContentModel : IContentModel
     /// <param name="target">The target asset.</param>
     /// <param name="area">The target area.</param>
     /// <param name="drawMethods">The draw methods.</param>
-    /// <param name="patchMode">The patch mode.</param>
     /// <param name="priority">The priority.</param>
     /// <param name="code">The code.</param>
     public ContentModel(
         string target,
         Rectangle area,
         List<DrawMethod> drawMethods,
-        PatchMode patchMode,
         int priority,
         string code)
     {
-        this.SourceArea = area;
         this.Target = target;
+        this.SourceArea = area;
         this.DrawMethods = drawMethods;
-        this.PatchMode = patchMode;
         this.Priority = priority;
         this.Code = code;
     }
 
     /// <inheritdoc />
-    public Rectangle SourceArea { get; }
-
-    /// <inheritdoc />
     public string Target { get; set; }
 
     /// <inheritdoc />
-    public List<DrawMethod> DrawMethods { get; set; }
+    public Rectangle SourceArea { get; }
 
     /// <inheritdoc />
-    public PatchMode PatchMode { get; set; }
+    public List<DrawMethod> DrawMethods { get; set; }
 
     /// <inheritdoc />
     public int Priority { get; set; }

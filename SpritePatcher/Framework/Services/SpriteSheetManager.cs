@@ -18,7 +18,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
 {
     private readonly Dictionary<string, IRawTextureData> baseTextures = [];
     private readonly Dictionary<int, Color[]> cachedData = [];
-    private readonly Dictionary<TextureCacheKey, ISpriteSheet> cachedTextures = [];
+    private readonly Dictionary<TextureCacheKey, IRawTextureData> cachedTextures = [];
     private readonly IGameContentHelper gameContentHelper;
     private readonly ProfilerIntegration profilerIntegration;
 
@@ -65,19 +65,47 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
 
     /// <inheritdoc />
     public bool TryBuildSpriteSheet(
+        ISprite sprite,
         SpriteKey key,
         Texture2D texture,
-        List<IPatchModel> layers,
+        IList<ISpritePatch> patches,
         [NotNullWhen(true)] out ISpriteSheet? spriteSheet)
     {
         spriteSheet = null;
-        if (!layers.Any())
+        if (!patches.Any())
         {
             return false;
         }
 
+        spriteSheet = new SpriteSheet(key, texture);
+        foreach (var patch in patches)
+        {
+            try
+            {
+                patch.Run(sprite, key);
+            }
+            catch (InapplicableContextException)
+            {
+                // Ignored
+            }
+            catch (Exception e)
+            {
+                this.Log.WarnOnce("Patch {0} failed to run.\nError: {1}", patch.Id, e.Message);
+                continue;
+            }
+
+            // Check if the texture is already cached
+            if (this.cachedTextures.TryGetValue(spriteSheet.GetCurrentId(), out var cachedData))
+            {
+                spriteSheet.SetData(cachedData);
+                continue;
+            }
+
+            // Build the texture and store in cache
+        }
+
         // Return from cache if available
-        var cacheKey = new TextureCacheKey(key, layers.Select(layer => layer.GetCurrentId()).ToList());
+        var cacheKey = new TextureCacheKey(key, patches.Select(layer => layer.GetCurrentId()).ToList());
         if (this.cachedTextures.TryGetValue(cacheKey, out spriteSheet))
         {
             return true;
@@ -86,18 +114,18 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         // Calculate the expanded texture based on the layers offset, area, and scale
         SpriteSheetManager.InitializeTextureDimensions(
             key,
-            layers,
+            patches,
             out var origin,
             out var scaledWidth,
             out var scaledHeight);
 
         // Expanded the texture to match the highest resolution layer
-        var scale = 1 / layers.Min(layer => layer.Scale);
+        var scale = 1 / patches.Min(layer => layer.Scale);
         scaledWidth *= (int)scale;
         scaledHeight *= (int)scale;
 
         // Expand the texture for any animates frames
-        var animatedLayers = layers.Where(layer => layer.Animate != Animate.None && layer.Frames > 1).ToList();
+        var animatedLayers = patches.Where(layer => layer.Animate != Animate.None && layer.Frames > 1).ToList();
 
         // Calculate the total duration in ticks based on any animated layers
         var totalDuration = !animatedLayers.Any()
@@ -107,7 +135,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         // Find the layer with the shortest duration per frame
         var fastestAnimation = !animatedLayers.Any()
             ? 1
-            : layers.Where(layer => layer.Animate != Animate.None).Min(layer => (int)layer.Animate);
+            : patches.Where(layer => layer.Animate != Animate.None).Min(layer => (int)layer.Animate);
 
         var totalFrames = !animatedLayers.Any() ? 1 : totalDuration / fastestAnimation;
 
@@ -118,7 +146,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         this.CopyBaseTextureData(key, texture.Name, origin, scaledWidth, scaledHeight, scale, frameWidth, textureData);
 
         // Apply each layer
-        foreach (var layer in layers)
+        foreach (var layer in patches)
         {
             this.ApplyLayer(
                 layer,
@@ -163,7 +191,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
 
     private static void InitializeTextureDimensions(
         SpriteKey key,
-        IReadOnlyCollection<IPatchModel> layers,
+        IList<ISpritePatch> layers,
         out Vector2 origin,
         out int scaledWidth,
         out int scaledHeight)
@@ -195,7 +223,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
                     + (layer.Area.Height * layer.Scale))));
     }
 
-    private static void ApplyTintIfApplicable(IPatchModel layer, Color[] layerData)
+    private static void ApplyTintIfApplicable(ISpritePatch layer, Color[] layerData)
     {
         if (layer.Texture == null || layer.Tint == null)
         {
@@ -278,7 +306,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
     }
 
     private void ApplyLayer(
-        IPatchModel layer,
+        ISpritePatch layer,
         SpriteKey key,
         Vector2 origin,
         int scaledWidth,
