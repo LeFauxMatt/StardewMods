@@ -1,16 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\build\common.targets"/>
-    <Import Project="..\Common\Common.projitems" Label="Shared"/>
-    <PropertyGroup>
-        <Name>Garbage Day</Name>
-        <Description>Turns the town trash cans into chests.</Description>
-        <Version>3.0.2</Version>
-        <EnableHarmony>true</EnableHarmony>
-        <RootNamespace>StardewMods.GarbageDay</RootNamespace>
-        <UniqueId>furyx639.GarbageDay</UniqueId>
-        <UpdateKeys>Nexus:8204</UpdateKeys>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
-    </ItemGroup>
+  <PropertyGroup>
+    <Name>Garbage Day</Name>
+    <Description>Turns the town trash cans into chests.</Description>
+    <Version>3.1.0</Version>
+    <RootNamespace>StardewMods.GarbageDay</RootNamespace>
+    <UniqueId>furyx639.GarbageDay</UniqueId>
+    <UpdateKeys>Nexus:8204@SMAPI</UpdateKeys>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
+    <PackageReference Include="SimpleInjector">
+      <HintPath>$(GameModsPath)\FauxCore\SimpleInjector.dll</HintPath>
+      <Version>5.4.2</Version>
+      <Private>false</Private>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <SMAPIDependency Include="furyx639.FauxCore" Version="1.0.0" required="true"/>
+    <SMAPIDependency Include="furyx639.ExpandedStorage" required="true"/>
+    <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
+  </ItemGroup>
 </Project>

@@ -1,0 +1,90 @@
+{
+  "Format": "1.29.0",
+  "ConfigSchema":  {
+
+  },
+  "Changes": [
+    {
+      "LogName": "Blacksmith Garbage Can",
+      "Action": "EditData",
+      "Target": "Data/GarbageCans",
+      "TargetField": ["GarbageCans", "Blacksmith", "CustomFields"],
+      "Entries": {
+        "furyx639.GarbageDay/Enabled": "true"
+      }
+    },
+    {
+      "LogName": "EmilyAndHaley Garbage Can",
+      "Action": "EditData",
+      "Target": "Data/GarbageCans",
+      "TargetField": ["GarbageCans", "EmilyAndHaley", "CustomFields"],
+      "Entries": {
+        "furyx639.GarbageDay/Enabled": "true"
+      }
+    },
+    {
+      "LogName": "Evelyn Garbage Can",
+      "Action": "EditData",
+      "Target": "Data/GarbageCans",
+      "TargetField": ["GarbageCans", "Evelyn", "CustomFields"],
+      "Entries": {
+        "furyx639.GarbageDay/Enabled": "true"
+      }
+    },
+    {
+      "LogName": "JodiAndKent Garbage Can",
+      "Action": "EditData",
+      "Target": "Data/GarbageCans",
+      "TargetField": ["GarbageCans", "JodiAndKent", "CustomFields"],
+      "Entries": {
+        "furyx639.GarbageDay/Enabled": "true"
+      }
+    },
+    {
+      "LogName": "JojaMart Garbage Can",
+      "Action": "EditData",
+      "Target": "Data/GarbageCans",
+      "TargetField": ["GarbageCans", "JojaMart", "CustomFields"],
+      "Entries": {
+        "furyx639.GarbageDay/Enabled": "true"
+      }
+    },
+    {
+      "LogName": "Mayor Garbage Can",
+      "Action": "EditData",
+      "Target": "Data/GarbageCans",
+      "TargetField": ["GarbageCans", "Mayor", "CustomFields"],
+      "Entries": {
+        "furyx639.GarbageDay/Enabled": "true"
+      }
+    },
+    {
+      "LogName": "Museum Garbage Can",
+      "Action": "EditData",
+      "Target": "Data/GarbageCans",
+      "TargetField": ["GarbageCans", "Museum", "CustomFields"],
+      "Entries": {
+        "furyx639.GarbageDay/Enabled": "true"
+      }
+    },
+    {
+      "LogName": "Saloon Garbage Can",
+      "Action": "EditData",
+      "Target": "Data/GarbageCans",
+      "TargetField": ["GarbageCans", "Saloon", "CustomFields"],
+      "Entries": {
+        "furyx639.GarbageDay/Enabled": "true"
+      }
+    },
+    {
+      "LogName": "DesertFestival Garbage Can",
+      "Action": "EditData",
+      "Target": "Data/GarbageCans",
+      "TargetField": ["GarbageCans", "DesertFestival", "CustomFields"],
+      "Entries": {
+        "furyx639.GarbageDay/Enabled": "true"
+      }
+    }
+  ],
+  "$schema": "https://smapi.io/schemas/content-patcher.json"
+}

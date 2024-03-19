@@ -1,0 +1,102 @@
+{
+  "Changes": [
+    {
+      "LogName": "Load Alexa Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Alexa",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/LoveThePets": 1.0,
+        "furyx639.HelpfulSpouses/FeedTheAnimals": 0.6,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.6
+      }
+    },
+    {
+      "LogName": "Load Elayne Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Elayne",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/BirthdayGift": 0.6,
+        "furyx639.HelpfulSpouses/MakeBreakfast": 0.7,
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.6
+      }
+    },
+    {
+      "LogName": "Load Harley Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Harley",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/LoveThePets": 0.8,
+        "furyx639.HelpfulSpouses/WaterTheCrops": 0.6,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.6
+      }
+    },
+    {
+      "LogName": "Load Sabrina Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Sabrina",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/BirthdayGift": 0.4,
+        "furyx639.HelpfulSpouses/LoveThePets": 0.6,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.6
+      }
+    },
+    {
+      "LogName": "Load Shania Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Shania",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/FeedTheAnimals": 0.8,
+        "furyx639.HelpfulSpouses/LoveThePets": 1.0,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.8
+      }
+    },
+    {
+      "LogName": "Load Winnie Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Winnie",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/FeedThePet": 0.4,
+        "furyx639.HelpfulSpouses/FeedTheAnimals": 0.9,
+        "furyx639.HelpfulSpouses/WaterTheSlimes": 0.3
+      }
+    },
+    {
+      "LogName": "Load Rasmodia Chores",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "TargetField": [
+        "Rasmodia",
+        "CustomFields"
+      ],
+      "Entries": {
+        "furyx639.HelpfulSpouses/FeedThePet": 0.7,
+        "furyx639.HelpfulSpouses/RepairTheFences": 0.7,
+        "furyx639.HelpfulSpouses/PetTheAnimals": 0.3
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  // Message displayed when the player does not have the required cost
+  "message.alert": "You need {{cost}} {{item}} to infuse this {{chest}} to dye it {{color}}.",
+  // Message displayed when the player has the required cost
+  "message.confirm": "Spend {{cost}} {{item}} to make this {{chest}} {{color}}?",
+  "color.Dark Blue": "dark blue",
+  "color.Blue": "blue",
+  "color.Teal": "teal",
+  "color.Turquoise": "turquoise",
+  "color.Green": "green",
+  "color.Light Green": "light green",
+  "color.Yellow": "yellow",
+  "color.Gold": "gold",
+  "color.Orange": "orange",
+  "color.Red": "red",
+  "color.Maroon": "maroon",
+  "color.Pink": "pink",
+  "color.Hot Pink": "hot pink",
+  "color.Magenta": "magenta",
+  "color.Indigo": "indigo",
+  "color.Purple": "purple",
+  "color.Black": "black",
+  "color.Gray": "gray",
+  "color.Silver": "silver",
+  "color.White": "white"
+}

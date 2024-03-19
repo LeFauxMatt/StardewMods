@@ -2,9 +2,7 @@
 
 using NetEscapades.EnumGenerators;
 
-/// <summary>
-///     Align a component to an area around the menu.
-/// </summary>
+/// <summary>Align a component to an area around the menu.</summary>
 [EnumExtensions]
 public enum ComponentArea
 {

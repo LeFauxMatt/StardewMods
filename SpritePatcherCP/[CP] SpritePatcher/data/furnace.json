@@ -1,0 +1,33 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Furnace Patches",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/FurnaceOre": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 100, "Y": 50, "Width": 8, "Height": 8},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Overlay",
+                    "Code": "WithHeldObject((obj, data) => SetTexture(obj.lastInputItem.Value, scale: 0.5f));"
+                },
+                "{{ModId}}/FurnaceFace": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 96, "Y": 36, "Width": 16, "Height": 17},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Overlay",
+                    "Priority": 10,
+                    "Code": "
+                    WithHeldObject((obj, data) => {
+                        SetTexture(`assets/furnace.png`);
+                        SetAnimation(Animate.Slow, 4);
+                        Offset = new Vector2(-4, 0);
+                        Area = new Rectangle(0,  0, 96, 23);
+                    });
+                    "
+                }
+            }
+        }
+    ]
+}

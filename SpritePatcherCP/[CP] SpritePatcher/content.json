@@ -1,0 +1,114 @@
+{
+    "Format": "2.0",
+    "DynamicTokens": [
+        {
+            "Name": "Fruits",
+            "Value": "Ancient Fruit, Apple, Apricot, Blackberry, Blueberry, Cactus Fruit, Cherry, Coconut, Cranberries, Crystal Fruit, Grape, Hot Pepper, Melon, Orange, Peach, Pomegranate, Rhubarb, Salmonberry, Spice Berry, Starfruit, Strawberry, Wild Plum"
+        },
+        {
+            "Name": "Vegetables",
+            "Value": "Amaranth, Artichoke, Beet, Bok Choy, Cauliflower, Corn, Eggplant, Fiddlehead Fern, Garlic, Green Bean, Hops, Kale, Parsnip, Potato, Pumpkin, Radish, Red Cabbage, Tomato, Wheat, Yam"
+        },
+        {
+            "Name": "Flowers",
+            "Value": "Blue Jazz, Fairy Rose, Poppy, Summer Spangle, Tulip, Wild"
+        },
+        {
+            "Name": "Honey",
+            "Value": "assets/honey.png"
+        },
+        {
+            "Name": "Jelly",
+            "Value": "assets/jelly.png"
+        },
+        {
+            "Name": "Juice",
+            "Value": "assets/juice.png"
+        },
+        {
+            "Name": "Pickles",
+            "Value": "assets/pickles.png"
+        },
+        {
+            "Name": "Wine",
+            "Value": "assets/wine.png"
+        }
+    ],
+    "Changes": [
+        {
+            "Action": "Include",
+            "FromFile": "data/chests.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/cow.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/crops.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/crystalarium.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/furnace.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/grass.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/honey.json",
+            "When": {
+                "HasValue:{{Honey}}": "true"
+            }
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/jar.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/jelly.json",
+            "When": {
+                "HasValue:{{Jelly}}": "true"
+            }
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/juice.json",
+            "When": {
+                "HasValue:{{Juice}}": "true"
+            }
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/pickles.json",
+            "When": {
+                "HasValue:{{Pickles}}": "true"
+            }
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/rarecrow.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/sloth-skeleton.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/tapper.json"
+        },
+        {
+            "Action": "Include",
+            "FromFile": "data/wine.json",
+            "When": {
+                "HasValue:{{Wine}}": "true"
+            }
+        }
+    ]
+}

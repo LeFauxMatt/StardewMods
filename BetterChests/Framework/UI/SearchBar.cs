@@ -1,116 +1,134 @@
-﻿namespace StardewMods.BetterChests.Framework.UI;
+namespace StardewMods.BetterChests.Framework.UI;
 
-using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using StardewValley.Menus;
 
-/// <summary>
-///     Menu for searching for chests which contain specific items.
-/// </summary>
-internal sealed class SearchBar : IClickableMenu
+/// <summary>Represents a search overlay control that allows the user to input text.</summary>
+internal sealed class SearchBar
 {
-    private readonly ClickableComponent _searchArea;
-    private readonly TextBox _searchField;
-    private readonly ClickableTextureComponent _searchIcon;
+    private const int CountdownTimer = 20;
+    private readonly ClickableTextureComponent icon;
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="SearchBar" /> class.
-    /// </summary>
-    public SearchBar()
+    private readonly Action<string> setMethod;
+    private readonly TextBox textBox;
+    private Rectangle area;
+    private string previousText;
+    private int timeout;
+
+    /// <summary>Initializes a new instance of the <see cref="SearchBar" /> class.</summary>
+    /// <param name="getMethod">The function that gets the current search text.</param>
+    /// <param name="setMethod">The action that sets the search text.</param>
+    public SearchBar(Func<string> getMethod, Action<string> setMethod)
     {
+        this.previousText = getMethod();
+        this.setMethod = setMethod;
         var texture = Game1.content.Load<Texture2D>("LooseSprites\\textBox");
-        this.width = Math.Min(12 * Game1.tileSize, Game1.uiViewport.Width);
-        this.height = texture.Height;
-
-        var origin = Utility.getTopLeftPositionForCenteringOnScreen(this.width, this.height);
-        this.xPositionOnScreen = (int)origin.X;
-        this.yPositionOnScreen = Game1.tileSize;
-
-        this._searchField = new(texture, null, Game1.smallFont, Game1.textColor)
+        this.area = new Rectangle(0, 0, 100, texture.Height);
+        this.textBox = new TextBox(texture, null, Game1.smallFont, Game1.textColor)
         {
-            X = this.xPositionOnScreen,
-            Y = this.yPositionOnScreen,
-            Width = this.width,
+            X = this.area.X,
+            Y = this.area.Y,
+            Width = this.area.Width,
             Selected = true,
         };
 
-        this._searchArea = new(Rectangle.Empty, string.Empty)
-        {
-            visible = true,
-            bounds = new(this._searchField.X, this._searchField.Y, this._searchField.Width, this._searchField.Height),
-        };
-
-        this._searchIcon = new(Rectangle.Empty, Game1.mouseCursors, new(80, 0, 13, 13), 2.5f)
-        {
-            bounds = new(this._searchField.X + this._searchField.Width - 38, this._searchField.Y + 6, 32, 32),
-        };
+        this.icon = new ClickableTextureComponent(
+            new Rectangle(this.area.X + this.textBox.Width - 38, this.area.Y + 6, 32, 32),
+            Game1.mouseCursors,
+            new Rectangle(80, 0, 13, 13),
+            2.5f);
     }
 
-    /// <summary>
-    ///     Gets the current search text.
-    /// </summary>
-    public string SearchText => this._searchField.Text;
+    /// <summary>Gets the area in which the search bar is displayed.</summary>
+    public Rectangle Area => this.area;
 
-    /// <inheritdoc />
-    public override void draw(SpriteBatch b)
+    /// <summary>Gets or sets a value indicating whether the search bar is currently selected.</summary>
+    public bool Selected
     {
-        this._searchField.Draw(b);
-        this._searchIcon.draw(b);
-        this.drawMouse(b);
+        get => this.textBox.Selected;
+        set => this.textBox.Selected = value;
     }
 
-    /// <inheritdoc />
-    public override void receiveKeyPress(Keys key)
+    /// <summary>Moves the search bar to the specified coordinates.</summary>
+    /// <param name="x">The x-coordinate to move to.</param>
+    /// <param name="y">The y-coordinate to move to.</param>
+    public void MoveTo(int x, int y)
     {
-        switch (key)
+        this.area.X = x;
+        this.area.Y = y;
+        this.textBox.X = x;
+        this.textBox.Y = y;
+        this.icon.bounds.X = x + this.textBox.Width - 38;
+        this.icon.bounds.Y = y + 6;
+    }
+
+    /// <summary>Sets the width of the search bar.</summary>
+    /// <param name="width">The width to set.</param>
+    public void SetWidth(int width)
+    {
+        this.area.Width = width;
+        this.textBox.Width = width;
+        this.icon.bounds.X = this.area.X + this.textBox.Width - 38;
+    }
+
+    /// <summary>Clears the text.</summary>
+    public void Clear()
+    {
+        this.textBox.Text = string.Empty;
+        this.setMethod(this.textBox.Text);
+    }
+
+    /// <summary>Draws the search overlay to the screen.</summary>
+    /// <param name="spriteBatch">The SpriteBatch used for drawing.</param>
+    public void Draw(SpriteBatch spriteBatch)
+    {
+        this.textBox.Draw(spriteBatch);
+        this.icon.draw(spriteBatch);
+    }
+
+    /// <summary>Performs a left click at the specified coordinates on the screen.</summary>
+    /// <param name="mouseX">The X-coordinate of the mouse click.</param>
+    /// <param name="mouseY">The Y-coordinate of the mouse click.</param>
+    /// <returns>Returns true if the search bar was clicked; otherwise, false.</returns>
+    public bool LeftClick(int mouseX, int mouseY)
+    {
+        this.Selected = this.area.Contains(mouseX, mouseY);
+        return this.Selected;
+    }
+
+    /// <summary>Performs a right click at the specified coordinates on the screen.</summary>
+    /// <param name="mouseX">The X-coordinate of the mouse click.</param>
+    /// <param name="mouseY">The Y-coordinate of the mouse click.</param>
+    /// <returns>Returns true if the search bar was clicked; otherwise, false.</returns>
+    public bool RightClick(int mouseX, int mouseY)
+    {
+        if (this.area.Contains(mouseX, mouseY))
         {
-            case Keys.Enter:
-                this.exitThisMenuNoSound();
-                return;
-            case Keys.Escape:
-                this._searchField.Text = string.Empty;
-                this.exitThisMenuNoSound();
-                return;
-            default:
-                return;
+            this.Selected = true;
+            this.textBox.Text = string.Empty;
         }
+
+        return this.Selected;
     }
 
-    /// <inheritdoc />
-    public override void receiveLeftClick(int x, int y, bool playSound = true)
+    /// <summary>Updates the search bar based on the mouse position.</summary>
+    /// <param name="mouseX">The x-coordinate of the mouse position.</param>
+    /// <param name="mouseY">The y-coordinate of the mouse position.</param>
+    public void Update(int mouseX, int mouseY)
     {
-        if (this._searchArea.containsPoint(x, y))
+        this.textBox.Hover(mouseX, mouseY);
+        if (this.timeout > 0 && --this.timeout == 0)
         {
-            this.SetFocus();
+            this.setMethod(this.textBox.Text);
+        }
+
+        if (this.textBox.Text.Equals(this.previousText, StringComparison.Ordinal))
+        {
             return;
         }
 
-        this._searchField.Selected = false;
-        this.exitThisMenuNoSound();
-    }
-
-    /// <inheritdoc />
-    public override void receiveRightClick(int x, int y, bool playSound = true)
-    {
-        if (this._searchArea.containsPoint(x, y))
-        {
-            this.SetFocus();
-            this._searchField.Text = string.Empty;
-            return;
-        }
-
-        this._searchField.Selected = false;
-        this.exitThisMenuNoSound();
-    }
-
-    /// <summary>
-    ///     Assigns focus to the search field.
-    /// </summary>
-    public void SetFocus()
-    {
-        Game1.activeClickableMenu = this;
-        this._searchField.Selected = true;
+        this.timeout = SearchBar.CountdownTimer;
+        this.previousText = this.textBox.Text;
     }
 }

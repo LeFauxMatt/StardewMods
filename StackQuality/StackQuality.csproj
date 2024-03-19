@@ -1,13 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\build\common.targets"/>
-    <Import Project="..\Common\Common.projitems" Label="Shared"/>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
     <PropertyGroup>
-        <Name>Stack Quality</Name>
-        <Description>Allows multiple qualities of the same item to occupy one stack.</Description>
-        <Version>1.0.0-beta.7</Version>
-        <EnableHarmony>true</EnableHarmony>
-        <RootNamespace>StardewMods.StackQuality</RootNamespace>
-        <UniqueId>furyx639.StackQuality</UniqueId>
-        <UpdateKeys>Nexus:13724</UpdateKeys>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
+
 </Project>

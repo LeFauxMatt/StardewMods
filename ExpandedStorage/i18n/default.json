@@ -1,3 +1,4 @@
 {
-  "command.xs_shop.description": "Opens a shop menu listing all Expanded Storage chests."
+  "config.section.general.title": "General",
+  "config.section.general.description": "General settings for this mod."
 }

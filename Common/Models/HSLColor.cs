@@ -1,6 +1,5 @@
 namespace StardewMods.Common.Models;
 
-using System;
 using Microsoft.Xna.Framework;
 
 internal struct HslColor
@@ -24,9 +23,7 @@ internal struct HslColor
         this.L = l;
     }
 
-    /// <summary>
-    ///     Gets or sets hue: the 'color' of the color!
-    /// </summary>
+    /// <summary>Gets or sets hue: the 'color' of the color.</summary>
     public float H { get; set; }
 
     /// <summary>Gets or sets luminance: The brightness or lightness of the color.</summary>
@@ -35,10 +32,7 @@ internal struct HslColor
     /// <summary>Gets or sets saturation: How grey or vivid/colorful a color is.</summary>
     public float S { get; set; }
 
-    public static HslColor FromColor(Color color)
-    {
-        return HslColor.FromRgb(color.R, color.G, color.B);
-    }
+    public static HslColor FromColor(Color color) => HslColor.FromRgb(color.R, color.G, color.B);
 
     public static HslColor FromRgb(byte r, byte g, byte b)
     {
@@ -58,43 +52,45 @@ internal struct HslColor
         // luminance is the ave of max and min
         hsl.L = (max + min) / 2f;
 
-        if (delta > 0)
+        if (delta <= 0)
         {
-            if (hsl.L < 0.5f)
-            {
-                hsl.S = delta / (max + min);
-            }
-            else
-            {
-                hsl.S = delta / (2 - max - min);
-            }
+            return hsl;
+        }
 
-            var deltaR = ((max - fR) / 6f + delta / 2f) / delta;
-            var deltaG = ((max - fG) / 6f + delta / 2f) / delta;
-            var deltaB = ((max - fB) / 6f + delta / 2f) / delta;
+        if (hsl.L < 0.5f)
+        {
+            hsl.S = delta / (max + min);
+        }
+        else
+        {
+            hsl.S = delta / (2 - max - min);
+        }
 
-            if (Math.Abs(fR - max) < HslColor.Tolerance)
-            {
-                hsl.H = deltaB - deltaG;
-            }
-            else if (Math.Abs(fG - max) < HslColor.Tolerance)
-            {
-                hsl.H = 1f / 3f + deltaR - deltaB;
-            }
-            else if (Math.Abs(fB - max) < HslColor.Tolerance)
-            {
-                hsl.H = 2f / 3f + deltaG - deltaR;
-            }
+        var deltaR = (((max - fR) / 6f) + (delta / 2f)) / delta;
+        var deltaG = (((max - fG) / 6f) + (delta / 2f)) / delta;
+        var deltaB = (((max - fB) / 6f) + (delta / 2f)) / delta;
 
-            if (hsl.H < 0)
-            {
-                hsl.H += 1;
-            }
+        if (Math.Abs(fR - max) < HslColor.Tolerance)
+        {
+            hsl.H = deltaB - deltaG;
+        }
+        else if (Math.Abs(fG - max) < HslColor.Tolerance)
+        {
+            hsl.H = (1f / 3f) + deltaR - deltaB;
+        }
+        else if (Math.Abs(fB - max) < HslColor.Tolerance)
+        {
+            hsl.H = (2f / 3f) + deltaG - deltaR;
+        }
 
-            if (hsl.H > 1)
-            {
-                hsl.H -= 1;
-            }
+        if (hsl.H < 0)
+        {
+            hsl.H += 1;
+        }
+
+        if (hsl.H > 1)
+        {
+            hsl.H -= 1;
         }
 
         return hsl;
@@ -111,7 +107,7 @@ internal struct HslColor
             h -= 1;
         }
 
-        return new(h, this.S, this.L);
+        return new HslColor(h, this.S, this.L);
     }
 
     public Color ToRgbColor()
@@ -126,17 +122,17 @@ internal struct HslColor
         }
         else
         {
-            var v2 = this.L + this.S - this.S * this.L;
+            var v2 = this.L + this.S - (this.S * this.L);
             if (this.L < 0.5f)
             {
                 v2 = this.L * (1 + this.S);
             }
 
-            var v1 = 2f * this.L - v2;
+            var v1 = (2f * this.L) - v2;
 
-            c.R = (byte)(255f * HslColor.HueToRgb(v1, v2, this.H + 1f / 3f));
+            c.R = (byte)(255f * HslColor.HueToRgb(v1, v2, this.H + (1f / 3f)));
             c.G = (byte)(255f * HslColor.HueToRgb(v1, v2, this.H));
-            c.B = (byte)(255f * HslColor.HueToRgb(v1, v2, this.H - 1f / 3f));
+            c.B = (byte)(255f * HslColor.HueToRgb(v1, v2, this.H - (1f / 3f)));
         }
 
         c.A = 255;
@@ -151,7 +147,7 @@ internal struct HslColor
 
         if (6 * vH < 1)
         {
-            ret = v1 + (v2 - v1) * 6 * vH;
+            ret = v1 + ((v2 - v1) * 6 * vH);
         }
         else if (2 * vH < 1)
         {
@@ -159,7 +155,7 @@ internal struct HslColor
         }
         else if (3 * vH < 2)
         {
-            ret = v1 + (v2 - v1) * (2f / 3f - vH) * 6f;
+            ret = v1 + ((v2 - v1) * ((2f / 3f) - vH) * 6f);
         }
 
         return MathHelper.Clamp(ret, 0, 1);

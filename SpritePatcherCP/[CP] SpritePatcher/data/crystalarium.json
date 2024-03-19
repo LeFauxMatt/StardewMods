@@ -1,0 +1,18 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Crystalarium Patches",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/CrystalariumMineral": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 84, "Y": 81, "Width": 16, "Height": 32},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Overlay",
+                    "Code": "WithHeldObject((obj, data) => SetTexture(data, scale: 0.5f, alpha: 0.5f));"
+                }
+            }
+        }
+    ]
+}

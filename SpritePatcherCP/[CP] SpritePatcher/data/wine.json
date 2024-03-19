@@ -1,0 +1,36 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Wine Icons",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "When": {
+                "HasValue: {{Fruits}}": "true"
+            },
+            "Entries": {
+                "{{ModId}}/WineIcons": {
+                    "Target": "Maps/springobjects",
+                    "Area": {"X": 192, "Y": 224, "Width": 16, "Height": 16},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Replace",
+                    "Code": "WithPreserve(preserve => SetTexture(`{{Wine}}`, GetIndexFromString(`{{Fruits}}`, preserve.InternalName)));"
+                }
+            }
+        },
+        {
+            "LogName": "Load Wine Icon Overlay",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/WineIconOverlay": {
+                    "Target": "Maps/springobjects",
+                    "Area": {"X": 197, "Y": 231, "Width": 4, "Height": 4},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Overlay",
+                    "Priority": -1,
+                    "Code": "WithPreserve(preserve => SetTexture(preserve, scale:0.25f));"
+                }
+            }
+        }
+    ]
+}

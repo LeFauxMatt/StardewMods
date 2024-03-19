@@ -1,11 +1,10 @@
 # Garbage Day Change Log
 
-## 3.0.2 (Unreleased)
+## 3.1.0 (March 19, 2024)
 
 ### Changed
 
-* `garbage_clear` command removes all garbage cans placed by this mod.
-* Internal refactoring.
+* Updated for SDV 1.6 and .NET 6
 
 ## 3.0.1 (August 21, 2022)
 

@@ -1,0 +1,36 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Pickles Icons",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "When": {
+                "HasValue: {{Vegetables}}": "true"
+            },
+            "Entries": {
+                "{{ModId}}/PickleIcons": {
+                    "Target": "Maps/springobjects",
+                    "Area": {"X": 96, "Y": 224, "Width": 16, "Height": 16},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Replace",
+                    "Code": "WithPreserve(preserve => SetTexture(`{{Pickles}}`, GetIndexFromString(`{{Vegetables}}`, preserve.InternalName)));"
+                }
+            }
+        },
+        {
+            "LogName": "Load Pickles Icon Overlay",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/PickleIconOverlay": {
+                    "Target": "Maps/springobjects",
+                    "Area": {"X": 102, "Y": 233, "Width": 4, "Height": 4},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Overlay",
+                    "Priority": -1,
+                    "Code": "WithPreserve(preserve => SetTexture(preserve, scale:0.25f));"
+                }
+            }
+        }
+    ]
+}

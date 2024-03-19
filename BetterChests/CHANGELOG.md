@@ -1,5 +1,11 @@
 ﻿# Better Chests Change Log
 
+## 2.9.0 (March 19, 2024)
+
+### Changed
+
+* Updated for SDV 1.6 and .NET 6
+
 ## 2.8.0 (September 19, 2022)
 
 ### Added
@@ -130,7 +136,8 @@
 ### Added
 
 * Added multiple options for the Configure Menu.
-    * Simple (Default) only shows Chest Label, Categorize, and Stash to Chest Priority/Stacks.
+    * Simple (Default) only shows Chest Label, Categorize, and Stash to Chest
+      Priority/Stacks.
     * Categorize will load the Categorize Menu directly.
     * Full will show all the config options.
     * Advanced is full, and some options will be open text fields.
@@ -351,7 +358,8 @@
 
 ### Added
 
-* Added integration with [Better Crafting](https://www.nexusmods.com/stardewvalley/mods/11115).
+* Added integration
+  with [Better Crafting](https://www.nexusmods.com/stardewvalley/mods/11115).
 
 ### Fixed
 
@@ -374,7 +382,8 @@
 ### Added
 
 * Added AutoOrganize feature.
-* Shipping Bin on Island is now recognized by Better Chests and uses Shipping Bin as it's chest type.
+* Shipping Bin on Island is now recognized by Better Chests and uses Shipping
+  Bin as it's chest type.
 * Integrate Configurator using new FuryCore service.
 
 ### Changed
@@ -442,7 +451,8 @@
 
 ### Added
 
-* Added CarryChestLimit option to limit the number of chests that can be carried at once.
+* Added CarryChestLimit option to limit the number of chests that can be carried
+  at once.
 * Added red text alerts to certain features.
     * When CarryChestLimit is reached and attempting to carry another chest.
     * When attempting to Craft from Chests and no eligible chests were found.

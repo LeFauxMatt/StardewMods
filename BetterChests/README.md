@@ -7,7 +7,6 @@ Adds enhanced chest features to the game.
 * [Features](#features)
     * [Auto Organize](#auto-organize)
     * [Better Color Picker](#better-color-picker)
-    * [Better Shipping Bin](#better-shipping-bin)
     * [Carry Chest](#carry-chest)
     * [Chest Finder](#chest-finder)
     * [Chest Info](#chest-info)
@@ -21,7 +20,6 @@ Adds enhanced chest features to the game.
     * [Open Held Chest](#open-held-chest)
     * [Organize Chest](#organize-chest)
     * [Resize Chest](#resize-chest)
-    * [Resize Chest Menu](#resize-chest-menu)
     * [Search Items](#search-items)
     * [Slot Lock](#slot-lock)
     * [Stash To Chest](#stash-to-chest)
@@ -50,19 +48,22 @@ Adds enhanced chest features to the game.
 
 ### Auto Organize
 
-Every night, after going to bed, your chests will automatically organize items based on the same rules
-as [Stash to Chest](#stash-to-chest). Items will only move from/to chests with the feature enabled, and only if the
+Every night, after going to bed, your chests will automatically organize items
+based on the same rules
+as [Stash to Chest](#stash-to-chest). Items will only move from/to chests with
+the feature enabled, and only if the
 other chest has a higher priority.
 
 It also applies your [Organize Chest](#organize-chest) rules at the end.
 
-| Config          | Description                         | Default Value | Other Value(s)                                                       |
-|:----------------|:------------------------------------|:--------------|:---------------------------------------------------------------------|
-| AutoOrganize    | Enables the  Auto Organize feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup>                                |
+| Config       | Description                         | Default Value | Other Value(s)                        |
+|:-------------|:------------------------------------|:--------------|:--------------------------------------|
+| AutoOrganize | Enables the  Auto Organize feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
 
 ### Better Color Picker
 
-Replaces the Chest Color Picker with a more precise version that lets you pick a color with sliders for hue, saturation,
+Replaces the Chest Color Picker with a more precise version that lets you pick a
+color with sliders for hue, saturation,
 and lightness.
 
 | Config                | Description                                   | Default Value | Other Value(s)                        |
@@ -72,17 +73,10 @@ and lightness.
 
 1. See [Option Values](#option-values).
 
-### Better Shipping Bin
-
-Relaunches the Shipping Bin menu as a regular Chest inventory menu so that items can be retrieved.
-
-| Config            | Description                              | Default Value | Other Value(s)      |
-|:------------------|:-----------------------------------------|:--------------|:--------------------|
-| BetterShippingBin | Enables the Better Shipping Bin feature. | `"true"`      | `"true"`, `"false"` |
-
 ### Carry Chest
 
-With Carry Chest enabled, you can hit the Use Tool button to pick up chests into your inventory even if it has items.
+With Carry Chest enabled, you can hit the Use Tool button to pick up chests into
+your inventory even if it has items.
 
 | Config               | Description                             | Default Value | Other Value(s)                                                       |
 |:---------------------|:----------------------------------------|:--------------|:---------------------------------------------------------------------|
@@ -106,7 +100,9 @@ Search for which chest(s) have the item you're looking for.
 | OpenFoundChest   | Assigns a keybind to open a found chest.        | `"Enter"`                             | Any valid button code.<sup>1</sup> |
 | OpenNextChest    | Assigns a keybind to open the next found chest. | `"Tab"`                               | Any valid button code.<sup>1</sup> |
 
-1. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+1.
+
+See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 
 ### Chest Info
 
@@ -118,11 +114,14 @@ Show stats to the left of the currently opened chest.
 | ToggleInfo | Assigns a keybind to show/hide chest info. | `"F1"`        | Any valid button code.<sup>2</sup>    |
 
 1. See [Option Values](#option-values).
-2. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+2.
+
+See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 
 ### Chest Menu Tabs
 
-Tabs are added to the Chest Menu to allow you to quickly toggle between categories of items.<sup>1</sup>
+Tabs are added to the Chest Menu to allow you to quickly toggle between
+categories of items.<sup>1</sup>
 
 | Config          | Description                                    | Default Value    | Other Value(s)                        |
 |:----------------|:-----------------------------------------------|------------------|:--------------------------------------|
@@ -134,11 +133,14 @@ Tabs are added to the Chest Menu to allow you to quickly toggle between categori
 1. See [Customized Tabs](#customized-tabs).
 2. See [Option Values](#option-values).
 3. An empty string array shows all available tabs.
-4. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+4.
+
+See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 
 ### Collect Items
 
-While you are carrying a chest in your inventory, any items you pick up may be collected directly into the chest,
+While you are carrying a chest in your inventory, any items you pick up may be
+collected directly into the chest,
 bypassing your inventory.<sup>1</sup>
 
 | Config       | Description                        | Default Value | Other Value(s)                        |
@@ -149,7 +151,8 @@ bypassing your inventory.<sup>1</sup>
 
 ### Configurator
 
-Configure chests individually using a hotkey, configuration tool, or toolbar icon.
+Configure chests individually using a hotkey, configuration tool, or toolbar
+icon.
 
 | Config        | Description                                   | Default Value | Other Value(s)                                                  |
 |:--------------|:----------------------------------------------|:--------------|:----------------------------------------------------------------|
@@ -157,12 +160,16 @@ Configure chests individually using a hotkey, configuration tool, or toolbar ico
 | Configure     | Assigns the keybind for configuring a chest.  | `"End"`       | Any valid button code.<sup>1</sup>                              |
 | ConfigureMenu | The type of config menu to open from a chest. | `"Simple"`    | `"Default"`, `"Categorize"`, `"Full"`, `"Advanced"`<sup>2</sup> |
 
-1. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+1.
+
+See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+
 2. See [In Game Menus](#in-game-menus).
 
 ### Craft From Chest
 
-Hit a configurable key to bring up a crafting menu that uses items stored in nearby chests.
+Hit a configurable key to bring up a crafting menu that uses items stored in
+nearby chests.
 
 | Config                         | Description                                               | Default Value | Other Value(s)                                                                 |
 |:-------------------------------|:----------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
@@ -172,7 +179,10 @@ Hit a configurable key to bring up a crafting menu that uses items stored in nea
 | CraftFromChestDistance         | Limits the distance that a chest can be crafted from.     | -1            | Any positive integer or `-1`.<sup>4</sup>                                      |
 
 1. See [Range Values](#range-values).
-2. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+2.
+
+See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+
 3. Add `"UndergroundMine"` to the list to disable in Mine and Skull Cavern.
 4. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
 
@@ -190,7 +200,8 @@ Allows the Workbench to craft from chests within a configurable range.
 
 ### Filter Items
 
-Impose restrictions on what types of items are allowed to go into a chest. With this enabled, items that are not part of
+Impose restrictions on what types of items are allowed to go into a chest. With
+this enabled, items that are not part of
 the allowed list will be blocked.
 
 | Config          | Description                                          | Default Value | Other Value(s)                        |
@@ -203,7 +214,8 @@ the allowed list will be blocked.
 
 ### Label Chest
 
-Add a label to a chest and have it appear in the menu and in-game while holding shift.
+Add a label to a chest and have it appear in the menu and in-game while holding
+shift.
 
 | Config     | Description                      | Default Value | Other Value(s)  |
 |:-----------|:---------------------------------|:--------------|:----------------|
@@ -211,7 +223,8 @@ Add a label to a chest and have it appear in the menu and in-game while holding 
 
 ### Open Held Chest
 
-With a chest as your active item, you can hit the action button to bring up the chest menu and access the chests
+With a chest as your active item, you can hit the action button to bring up the
+chest menu and access the chests
 contents.
 
 | Config        | Description                          | Default Value | Other Value(s)                        |
@@ -222,7 +235,8 @@ contents.
 
 ### Organize Chest
 
-Organize Chest allows you to group and sort items by a configurable property of those items.
+Organize Chest allows you to group and sort items by a configurable property of
+those items.
 
 | Config Option        | Description                         | Default Value | Other Value(s)                           |
 |:---------------------|:------------------------------------|:--------------|:-----------------------------------------|
@@ -234,7 +248,8 @@ Organize Chest allows you to group and sort items by a configurable property of 
 
 ### Resize Chest
 
-The default storage for a chest is 36 items. With Resize Chest enabled you can increase storage space up to virtually
+The default storage for a chest is 36 items. With Resize Chest enabled you can
+increase storage space up to virtually
 unlimited storage.<sup>1</sup>
 
 | Config              | Description                              | Default Value | Other Value(s)                            |
@@ -244,26 +259,19 @@ unlimited storage.<sup>1</sup>
 | ScrollDown          | Assigns a keybind to scroll down.        | `"DPadDown"`  | Any valid button code.<sup>4</sup>        |
 | ScrollUp            | Assigns a keybind to scroll up.          | `"DPadUp"`    | Any valid button code.<sup>4</sup>        |
 
-1. If the number of items exceeds the menu space, you can scroll to access the overflow.
+1. If the number of items exceeds the menu space, you can scroll to access the
+   overflow.
 2. See [Option Values](#option-values).
-3. Use `-1` for "unlimited" items or a positive multiple of 12 for limited storage.
-4. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+3. Use `-1` for "unlimited" items or a positive multiple of 12 for limited
+   storage.
+4.
 
-### Resize Chest Menu
-
-The default chest menu can show 3 rows of items at once. With Resize Chest Menu enabled you can display anywhere between
-3 and 6 rows of items.
-
-| Config              | Description                            | Default Value | Other Value(s)                        |
-|:--------------------|:---------------------------------------|:--------------|:--------------------------------------|
-| ResizeChestMenu     | Enables the Resize Chest Menu feature. | `"Enabled"`   | `"Disabled"`, `"Default"`<sup>1</sup> |
-| ResizeChestMenuRows | The number of rows to show.            | `5`           | `3`, `4`, `5`, `6`                    |
-
-1. See [Option Values](#option-values).
+See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 
 ### Search Items
 
-Adds a search bar to the top of the Chest Menu to only display items that meet a search criteria.
+Adds a search bar to the top of the Chest Menu to only display items that meet a
+search criteria.
 
 | Config          | Description                                              | Default Value | Other Value(s)                        |
 |:----------------|:---------------------------------------------------------|:--------------|:--------------------------------------|
@@ -275,7 +283,8 @@ Adds a search bar to the top of the Chest Menu to only display items that meet a
 
 ### Slot Lock
 
-Hover over an item slot in your backpack, and hit a configurable key to lock the item in its slot which prevents it from
+Hover over an item slot in your backpack, and hit a configurable key to lock the
+item in its slot which prevents it from
 being stashed into a chest.
 
 | Config        | Description                                     | Default Value | Other Value(s)                        |
@@ -287,11 +296,14 @@ being stashed into a chest.
 
 1. See [Option Values](#option-values).
 2. See [Slot Lock Colors](#slot-lock-colors).
-3. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+3.
+
+See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
 
 ### Stash To Chest
 
-Hit a configurable key to instantly stash items from your inventory into nearby chests.<sup>1</sup>
+Hit a configurable key to instantly stash items from your inventory into nearby
+chests.<sup>1</sup>
 
 | Config Option                | Description                                               | Default Value | Other Value(s)                                                                |
 |:-----------------------------|:----------------------------------------------------------|:--------------|:------------------------------------------------------------------------------|
@@ -304,7 +316,10 @@ Hit a configurable key to instantly stash items from your inventory into nearby 
 
 1. Included chests are determined by config options.
 2. See [Range Values](#range-values).
-3. See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+3.
+
+See [Button Codes](https://stardewvalleywiki.com/Modding:Player_Guide/Key_Bindings#Button_codes).
+
 4. Add `"UndergroundMine"` to the list to disable in Mine and Skull Cavern.
 5. Measured in tiles away from the player. Use `-1` for "unlimited" distance.
 
@@ -312,19 +327,20 @@ Hit a configurable key to instantly stash items from your inventory into nearby 
 
 Adds buttons that transfer all items into or out of the currently opened chest.
 
-| Config        | Description                         | Default Value | Other Value(s)  |
-|:--------------|:------------------------------------|:--------------|:----------------|
-| TransferItems | Enables the Transfer Items feature. | `"Enabled"`   | `"Disabled"`    |
+| Config        | Description                         | Default Value | Other Value(s) |
+|:--------------|:------------------------------------|:--------------|:---------------|
+| TransferItems | Enables the Transfer Items feature. | `"Enabled"`   | `"Disabled"`   |
 
 ### Unload Chest
 
-While carrying a chest and facing another chest, hit the Use Tool button to unload the carried chests contents into the
+While carrying a chest and facing another chest, hit the Use Tool button to
+unload the carried chests contents into the
 placed chest.
 
-| Config Option      | Description                       | Default Value | Other Value(s)                        |
-|:-------------------|:----------------------------------|:---------------|:-------------------------------------|
-| UnloadChest        | Enables the Unload Chest feature. | `"Disabled"`   | `"Enabled"`, `"Default"`<sup>1</sup> |
-| UnloadChestCombine | Combine source chest with target  | `"Disabled"`   | `"Enabled"`                          |
+| Config Option      | Description                       | Default Value | Other Value(s)                       |
+|:-------------------|:----------------------------------|:--------------|:-------------------------------------|
+| UnloadChest        | Enables the Unload Chest feature. | `"Disabled"`  | `"Enabled"`, `"Default"`<sup>1</sup> |
+| UnloadChestCombine | Combine source chest with target  | `"Disabled"`  | `"Enabled"`                          |
 
 1. See [Option Values](#option-values).
 
@@ -332,16 +348,21 @@ placed chest.
 
 ### Item Tags
 
-The game adds various [Context Tags](https://stardewvalleywiki.com/Modding:Items#Context_tags)
+The game adds
+various [Context Tags](https://stardewvalleywiki.com/Modding:Items#Context_tags)
 to each item which are used throughout this mod.
 
 There are a few ways to see what context tags each item contains:
 
-* Enter the console command `debug listtags` to show all tags for the currently held item.
-* Refer to the [Modding Docs](https://stardewvalleywiki.com/Modding:Items#Context_tags) for some tags (note may be
+* Enter the console command `debug listtags` to show all tags for the currently
+  held item.
+* Refer to
+  the [Modding Docs](https://stardewvalleywiki.com/Modding:Items#Context_tags)
+  for some tags (note may be
   outdated).
 * Install [Lookup Anything](https://www.nexusmods.com/stardewvalley/mods/541),
-  enable [ShowDataMiningField](https://github.com/Pathoschild/StardewMods/tree/stable/LookupAnything#configure) in its
+  enable [ShowDataMiningField](https://github.com/Pathoschild/StardewMods/tree/stable/LookupAnything#configure)
+  in its
   config and hit F1 while hovering over any item.
 
 Here are examples of some useful tags:
@@ -372,7 +393,8 @@ from [Generic Mod Config Menu](https://www.nexusmods.com/stardewvalley/mods/5098
 
 ### Config Inheritance
 
-For some config options, the same options can be applied to multiple levels. The lowest level config will always take
+For some config options, the same options can be applied to multiple levels. The
+lowest level config will always take
 precedence.
 
 * **Default Chest** - Every chest inherits from the Default Chest options.
@@ -385,9 +407,11 @@ precedence.
     * Mini-Shipping Bin
     * Fridge
     * Custom chests added by other mods.<sup>1</sup>
-* **Individual Chest** - A single instance of a chest can be configured individually.
+* **Individual Chest** - A single instance of a chest can be configured
+  individually.
 
-1. External mod must "opt-in" by [registering custom chest](#api) with Better Chests.
+1. External mod must "opt-in" by [registering custom chest](#api) with Better
+   Chests.
 
 ### Group By Values
 
@@ -410,7 +434,8 @@ The types of in-game menus.
 
 ### Option Values
 
-The option value determines whether a feature will be enabled or disabled for a chest.
+The option value determines whether a feature will be enabled or disabled for a
+chest.
 
 * **Default** - The value will be inherited from a parent config.<sup>1</sup>
 * **Disabled** - The feature will be disabled.
@@ -420,7 +445,8 @@ The option value determines whether a feature will be enabled or disabled for a 
 
 ### Range Values
 
-The Range value limits which chests will be selected for a feature relative to the player.
+The Range value limits which chests will be selected for a feature relative to
+the player.
 
 * **Default** - The value will be inherited from a parent config.<sup>1</sup>
 * **Disabled** - The feature will be disabled.
@@ -466,33 +492,41 @@ Sort by is a numerical property of the item that organize will order by second.
 
 ### Automate
 
-When [Filter Items](#filter-items) is enabled, then any categorizations that a chest has will be applied to
-[Automate](https://www.nexusmods.com/stardewvalley/mods/1063). This means that Automate will be blocked from adding
+When [Filter Items](#filter-items) is enabled, then any categorizations that a
+chest has will be applied to
+[Automate](https://www.nexusmods.com/stardewvalley/mods/1063). This means that
+Automate will be blocked from adding
 items into the chest if the Filter list does not allow it.
 
 ### Better Crafting
 
-Craft from Chest will launch a Better Crafting Page and it will correctly include all chests with the feature enabled.
+Craft from Chest will launch a Better Crafting Page and it will correctly
+include all chests with the feature enabled.
 
 ### Horse Overhaul
 
-Better Chests automatically integrates with [Horse Overhaul](https://www.nexusmods.com/stardewvalley/mods/7911)
-saddlebags. The distance to the player's Horse will be considered for features such
+Better Chests automatically integrates
+with [Horse Overhaul](https://www.nexusmods.com/stardewvalley/mods/7911)
+saddlebags. The distance to the player's Horse will be considered for features
+such
 as [Craft from Chest](#craft-from-chest) and
 [Stash to Chest](#stash-to-chest).
 
-The SaddleBag can have its own Better Chest config by adding an entry for a chest named `"SaddleBag"` to the
+The SaddleBag can have its own Better Chest config by adding an entry for a
+chest named `"SaddleBag"` to the
 `BetterChests/assets/chests.json` file.
 
 ## Customization
 
 ### API
 
-Register your chest using the [Better Chests API](../Common/Integrations/BetterChests/IBetterChestsApi.cs).
+Register your chest using
+the [Better Chests API](../Common/Integrations/BetterChests/IBetterChestsApi.cs).
 
 ### Customized Tabs
 
-The default tabs are defined by the `tabs.json` and `tabs.png` files which are both found under the `assets` folder.
+The default tabs are defined by the `tabs.json` and `tabs.png` files which are
+both found under the `assets` folder.
 
 If `tabs.json` is not found, a default one is automatically generated:
 
@@ -513,7 +547,8 @@ You can edit these files directly for personal usage.
 
 #### Icons
 
-Replace any or all of the icons for the Configure, Craft from Chest, and Stash to Chest buttons by editing the
+Replace any or all of the icons for the Configure, Craft from Chest, and Stash
+to Chest buttons by editing the
 image<sup>1</sup>:
 
 `furyx639.BetterChests/Icons`.

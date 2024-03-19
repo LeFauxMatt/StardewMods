@@ -1,0 +1,86 @@
+{
+  "Cost": 1,
+  "Sound": "wand",
+  "Colors": [
+    {
+      "Name": "Dark Blue",
+      "Item": "(O)550"
+    },
+    {
+      "Name": "Blue",
+      "Item": "(O)72"
+    },
+    {
+      "Name": "Teal",
+      "Item": "(O)84"
+    },
+    {
+      "Name": "Turquoise",
+      "Item": "(O)62"
+    },
+    {
+      "Name": "Green",
+      "Item": "(O)60"
+    },
+    {
+      "Name": "Light Green",
+      "Item": "(O)70"
+    },
+    {
+      "Name": "Yellow",
+      "Item": "(O)68"
+    },
+    {
+      "Name": "Gold",
+      "Item": "(O)86"
+    },
+    {
+      "Name": "Orange",
+      "Item": "(O)554"
+    },
+    {
+      "Name": "Red",
+      "Item": "(O)82"
+    },
+    {
+      "Name": "Maroon",
+      "Item": "(O)64"
+    },
+    {
+      "Name": "Pink",
+      "Item": "(O)578"
+    },
+    {
+      "Name": "Hot Pink",
+      "Item": "(O)848"
+    },
+    {
+      "Name": "Magenta",
+      "Item": "(O)575"
+    },
+    {
+      "Name": "Indigo",
+      "Item": "(O)577"
+    },
+    {
+      "Name": "Purple",
+      "Item": "(O)66"
+    },
+    {
+      "Name": "Black",
+      "Item": "(O)382"
+    },
+    {
+      "Name": "Gray",
+      "Item": "(O)539"
+    },
+    {
+      "Name": "Silver",
+      "Item": "(O)571"
+    },
+    {
+      "Name": "White",
+      "Item": "(O)80"
+    }
+  ]
+}

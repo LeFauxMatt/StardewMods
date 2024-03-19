@@ -1,0 +1,22 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Grass Patches",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/RandomGrass": {
+                    "Target": "TerrainFeatures/grass",
+                    "Area": {"X": 0, "Y": 0, "Width": 66, "Height": 240},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Replace",
+                    "Code": "
+                    var selection = GetOrSetData(`{{ModId}}/Tint`, Game1.random.Next(0, 17));
+                    SetTexture(`assets/grass.png`);
+                    Tint = selection switch { >= 1 and <= 16 => DiscreteColorPicker.getColorFromSelection(selection), _ => null, };
+                    "
+                }
+            }
+        }
+    ]
+}

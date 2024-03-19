@@ -1,3 +1,0 @@
-<component name="DependencyValidationManager">
-  <scope name="BetterChests" pattern="file[rider.module]:BetterChests//*&amp;&amp;!file:BetterChests/GlobalSuppressions.cs" />
-</component>

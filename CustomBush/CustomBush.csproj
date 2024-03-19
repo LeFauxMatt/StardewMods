@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Name>Custom Bush</Name>
+    <Description>Custom Bush is a framework which allows custom bushes to be added to the game which work like the tea sapling.</Description>
+    <Version>1.0.0</Version>
+    <EnableHarmony>true</EnableHarmony>
+    <RootNamespace>StardewMods.CustomBush</RootNamespace>
+    <UniqueId>furyx639.CustomBush</UniqueId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>
+    <PackageReference Include="SimpleInjector">
+      <HintPath>$(GameModsPath)\FauxCore\SimpleInjector.dll</HintPath>
+      <Version>5.4.2</Version>
+      <Private>false</Private>
+    </PackageReference>
+    <Reference Include="HarmonyLib">
+      <HintPath>$(GamePath)\smapi-internal\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <SMAPIDependency Include="furyx639.FauxCore" Version="1.0.0" required="true"/>
+    <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
+  </ItemGroup>
+</Project>

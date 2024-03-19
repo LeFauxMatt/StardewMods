@@ -1,0 +1,20 @@
+{
+  /*
+   | This file is automatically updated by ModManifestBuilder
+   | when the project is compiled.
+   | 
+   | Changes made to this file may be overwritten.
+   | 
+   */
+  "$schema": "https://smapi.io/schemas/manifest.json",
+  "UniqueID": "furyx639.CycleTools",
+  "Name": "Cycle Tools",
+  "Author": "furyx639",
+  "Version": "1.1.0-alpha.1",
+  "Description": "Quickly cycle between tools from the active item slot.",
+  "MinimumApiVersion": "4.0.0-alpha.20231101",
+  "EntryDll": "CycleTools.dll",
+  "UpdateKeys": [
+    "Nexus:13973"
+  ]
+}

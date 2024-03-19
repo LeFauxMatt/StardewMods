@@ -1,7 +1,7 @@
 {
   "Name": "[CP] Toolbar Icons",
   "Author": "furyx639",
-  "Version": "2.5.0",
+  "Version": "2.6.0",
   "Description": "Adds toolbar icons as shortcuts to other popular mods.",
   "UniqueID": "furyx639.ToolbarIconsCP",
   "UpdateKeys": [
@@ -13,8 +13,8 @@
   "Dependencies": [
     {
       "UniqueID": "furyx639.ToolbarIcons",
-      "IsRequired": true,
-      "MinimumVersion": "2.4.0"
+      "IsRequired": true
     }
-  ]
+  ],
+  "$schema": "https://smapi.io/schemas/manifest.json"
 }

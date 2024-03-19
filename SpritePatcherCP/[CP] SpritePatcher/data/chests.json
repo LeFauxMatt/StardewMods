@@ -1,0 +1,77 @@
+{
+    "Changes": [
+        {
+            "LogName": "Load Chest Patches",
+            "Action": "EditData",
+            "Target": "furyx639.SpritePatcher/Patches",
+            "Entries": {
+                "{{ModId}}/ChestItem": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 52, "Y": 525, "Width": 8, "Height": 8},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Overlay",
+                    "Code": "
+                    if (entity is not Chest chest) return;
+                    InvalidateCacheOnChanged(chest.Items, `OnSlotChanged`);
+                    InvalidateCacheOnChanged(chest.Items, `OnInventoryReplaced`);
+                    var item = chest.Items.First();
+                    SetTexture(item, scale: 0.5f);
+                    Offset = new Vector2(0, 4);
+                    "
+                },
+                "{{ModId}}/ColoredChestItem": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 4, "Y": 722, "Width": 8, "Height": 8},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Overlay",
+                    "Code": "
+                    if (entity is not Chest chest) return;
+                    InvalidateCacheOnChanged(chest.Items, `OnSlotChanged`);
+                    InvalidateCacheOnChanged(chest.Items, `OnInventoryReplaced`);
+                    var item = chest.Items.First();
+                    SetTexture(item, scale: 0.5f);
+                    "
+                },
+                "{{ModId}}/StoneChestItem": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 20, "Y": 947, "Width": 8, "Height": 8},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Overlay",
+                    "Code": "
+                    if (entity is not Chest chest) return;
+                    InvalidateCacheOnChanged(chest.Items, `OnSlotChanged`);
+                    InvalidateCacheOnChanged(chest.Items, `OnInventoryReplaced`);
+                    var item = chest.Items.First();
+                    SetTexture(item, scale: 0.5f);
+                    "
+                },
+                "{{ModId}}/ColoredStoneChestItem": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 4, "Y": 978, "Width": 8, "Height": 8},
+                    "DrawMethods": ["Menu", "Held", "World"],
+                    "PatchMode": "Overlay",
+                    "Code": "
+                    if (entity is not Chest chest) return;
+                    InvalidateCacheOnChanged(chest.Items, `OnSlotChanged`);
+                    InvalidateCacheOnChanged(chest.Items, `OnInventoryReplaced`);
+                    var item = chest.Items.First();
+                    SetTexture(item, scale: 0.5f);
+                    "
+                },
+                "{{ModId}}/FridgeItem": {
+                    "Target": "TileSheets/Craftables",
+                    "Area": {"X": 20, "Y": 883, "Width": 8, "Height": 8},
+                    "DrawMethods": ["World"],
+                    "PatchMode": "Overlay",
+                    "Code": "
+                    if (entity is not Chest chest) return;
+                    InvalidateCacheOnChanged(chest.Items, `OnSlotChanged`);
+                    InvalidateCacheOnChanged(chest.Items, `OnInventoryReplaced`);
+                    var item = chest.Items.First();
+                    SetTexture(item, scale: 0.5f);
+                    "
+                }
+            }
+        }
+    ]
+}
