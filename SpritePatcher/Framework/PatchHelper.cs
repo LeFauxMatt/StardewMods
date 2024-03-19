@@ -83,17 +83,17 @@ public abstract partial class BaseSpritePatch : IPatchHelper
     {
         if (index < 0)
         {
-            return this.spriteKey.Area;
+            return this.spriteKey.SourceRectangle;
         }
 
         if (width == -1)
         {
-            width = this.spriteKey.Area.Width;
+            width = this.spriteKey.SourceRectangle.Width;
         }
 
         if (height == -1)
         {
-            height = this.spriteKey.Area.Height;
+            height = this.spriteKey.SourceRectangle.Height;
         }
 
         return new Rectangle(width * index, 0, width, height);
@@ -110,12 +110,12 @@ public abstract partial class BaseSpritePatch : IPatchHelper
     /// <inheritdoc />
     public T GetOrSetData<T>(string key, T value)
     {
-        if (this.currentObject is null)
+        if (this.currentSprite is null)
         {
             return value;
         }
 
-        if (this.currentObject.Entity.modData.TryGetValue(key, out var stringResult))
+        if (this.currentSprite.Entity.modData.TryGetValue(key, out var stringResult))
         {
             var typeConverter = TypeDescriptor.GetConverter(typeof(T));
             if (typeConverter.IsValid(stringResult))
@@ -124,14 +124,14 @@ public abstract partial class BaseSpritePatch : IPatchHelper
             }
         }
 
-        this.currentObject.Entity.modData[key] = value!.ToString();
+        this.currentSprite.Entity.modData[key] = value!.ToString();
         return value;
     }
 
     /// <inheritdoc />
     public (SObject Object, ParsedItemData Data) GetHeldObject(IHaveModData? entity = null)
     {
-        entity ??= this.currentObject?.Entity;
+        entity ??= this.currentSprite?.Entity;
         if (entity is not SObject obj)
         {
             throw new InapplicableContextException();
@@ -156,7 +156,7 @@ public abstract partial class BaseSpritePatch : IPatchHelper
     /// <inheritdoc />
     public (Item Item, ParsedItemData Data) GetLastInputItem(IHaveModData? entity = null)
     {
-        entity ??= this.currentObject?.Entity;
+        entity ??= this.currentSprite?.Entity;
         if (entity is not SObject obj)
         {
             throw new InapplicableContextException();
@@ -181,7 +181,7 @@ public abstract partial class BaseSpritePatch : IPatchHelper
     /// <inheritdoc />
     public Dictionary<Direction, SObject?> GetNeighbors(IHaveModData? entity = null)
     {
-        entity ??= this.currentObject?.Entity;
+        entity ??= this.currentSprite?.Entity;
         if (entity is not SObject
             {
                 Location: not null,
@@ -219,7 +219,7 @@ public abstract partial class BaseSpritePatch : IPatchHelper
     /// <inheritdoc />
     public ParsedItemData GetPreserve(IHaveModData? entity = null)
     {
-        entity ??= this.currentObject?.Entity;
+        entity ??= this.currentSprite?.Entity;
         if (entity is not SObject obj)
         {
             throw new InapplicableContextException();
@@ -243,9 +243,9 @@ public abstract partial class BaseSpritePatch : IPatchHelper
     /// <inheritdoc />
     public void InvalidateCacheOnChanged(object field, string eventName)
     {
-        if (this.currentObject is not null)
+        if (this.currentSprite is not null)
         {
-            this.netEventManager.Subscribe(this.currentObject, field, eventName);
+            this.netEventManager.Subscribe(this.currentSprite, field, eventName);
         }
     }
 

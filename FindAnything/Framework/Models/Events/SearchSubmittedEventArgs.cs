@@ -2,7 +2,7 @@ namespace StardewMods.FindAnything.Framework.Models.Events;
 
 using StardewMods.Common.Services.Integrations.FindAnything;
 
-/// <inheritdoc cref="StardewMods.Common.Services.Integrations.FindAnything.ISearchSubmitted" />
+/// <inheritdoc cref="ISearchSubmitted" />
 internal sealed class SearchSubmittedEventArgs(string searchTerm, GameLocation location) : EventArgs, ISearchSubmitted
 {
     /// <summary>Gets the search results.</summary>

@@ -3,7 +3,7 @@ namespace StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewMods.Common.Services;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 
 /// <summary>Represents a factory class for creating instances of the ItemMatcher class.</summary>
 internal sealed class ItemMatcherFactory : BaseService

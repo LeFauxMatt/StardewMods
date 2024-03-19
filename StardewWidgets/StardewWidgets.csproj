@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Stardew Widgets</Name>
     <Description>Framework for adding information to the HUD and other various UI elements..</Description>
-    <Version>1.0.0-alpha.20240202</Version>
+    <Version>1.0.0</Version>
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.StardewWidgets</RootNamespace>
     <UniqueId>furyx639.StardewWidgets</UniqueId>
@@ -10,7 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SimpleInjector">
-      <HintPath>$(GameModsPath)\FuryCore\SimpleInjector.dll</HintPath>
+      <HintPath>$(GameModsPath)\FauxCore\SimpleInjector.dll</HintPath>
       <Version>5.4.2</Version>
       <Private>false</Private>
     </PackageReference>
@@ -20,7 +20,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <SMAPIDependency Include="furyx639.FuryCore" required="true"/>
+    <SMAPIDependency Include="furyx639.FauxCore" Version="1.0.0" required="true"/>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Framework\Interfaces\" />

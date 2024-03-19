@@ -8,7 +8,7 @@ using StardewMods.BetterChests.Framework.Services.Transient;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 
 /// <summary>Restricts what items can be added into a chest.</summary>
 internal sealed class CategorizeChest : BaseFeature<CategorizeChest>

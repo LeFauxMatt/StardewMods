@@ -4,7 +4,7 @@ using System.Globalization;
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 
 /// <summary>Helper methods to convert between different text formats.</summary>
 internal sealed class LocalizedTextManager : BaseService

@@ -1,7 +1,7 @@
 namespace StardewMods.GarbageDay.Framework.Services;
 
 using StardewMods.Common.Services;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 
 /// <summary>Represents a class for managing asset paths.</summary>
 internal sealed class Definitions : BaseService

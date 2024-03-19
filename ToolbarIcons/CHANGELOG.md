@@ -1,6 +1,6 @@
 # Toolbar Icons Change Log
 
-## 2.6.0 (Unreleased)
+## 2.6.0 (March 19, 2024)
 
 ### Changed
 

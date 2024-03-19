@@ -5,7 +5,7 @@ using StardewMods.BetterChests.Framework.Models;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Models.Events;
 using StardewMods.Common.Services;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 
 /// <inheritdoc cref="StardewMods.BetterChests.Framework.Interfaces.IFeature" />
 internal abstract class BaseFeature<TFeature> : BaseService<TFeature>, IFeature

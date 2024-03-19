@@ -2,7 +2,7 @@ namespace StardewMods.ToolbarIcons.Framework.Models.Events;
 
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
 
-/// <inheritdoc cref="StardewMods.Common.Services.Integrations.ToolbarIcons.IIconPressedEventArgs" />
+/// <inheritdoc cref="IIconPressedEventArgs" />
 internal sealed class IconPressedEventArgs(string id, SButton button) : EventArgs, IIconPressedEventArgs
 {
     /// <inheritdoc />

@@ -104,7 +104,7 @@ internal sealed class CodeManager : BaseService
 
         data = prioritizedPatches
             .SelectMany(patchModels => patchModels.Value)
-            .Where(patch => patch.ContentModel.SourceArea.Intersects(key.Area))
+            .Where(patch => patch.ContentModel.SourceArea.Intersects(key.SourceRectangle))
             .ToList();
 
         return data.Any();

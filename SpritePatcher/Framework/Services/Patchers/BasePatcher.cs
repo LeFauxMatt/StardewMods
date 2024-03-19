@@ -25,61 +25,106 @@ internal abstract class BasePatcher : BaseService, ISpritePatcher
     private static readonly CodeInstruction ShadowDrawMethod = new(OpCodes.Ldc_I4_4);
     private static readonly CodeInstruction WorldDrawMethod = new(OpCodes.Ldc_I4_5);
 
-    private static readonly CodeInstruction CallDraw1 = CodeInstruction.Call(
-        typeof(BasePatcher),
-        nameof(BasePatcher.DrawCustom1));
-
-    private static readonly CodeInstruction CallDraw2 = CodeInstruction.Call(
-        typeof(BasePatcher),
-        nameof(BasePatcher.DrawCustom2));
-
-    private static readonly CodeInstruction CallDraw3 = CodeInstruction.Call(
-        typeof(BasePatcher),
-        nameof(BasePatcher.DrawCustom3));
-
-    private static readonly MethodInfo SpriteBatchDraw1 = AccessTools.DeclaredMethod(
-        typeof(SpriteBatch),
-        nameof(SpriteBatch.Draw),
-        [
-            typeof(Texture2D),
-            typeof(Vector2),
-            typeof(Rectangle),
-            typeof(Color),
-            typeof(float),
-            typeof(Vector2),
-            typeof(float),
-            typeof(SpriteEffects),
-            typeof(float),
-        ]);
-
-    private static readonly MethodInfo SpriteBatchDraw2 = AccessTools.DeclaredMethod(
-        typeof(SpriteBatch),
-        nameof(SpriteBatch.Draw),
-        [
-            typeof(Texture2D),
-            typeof(Rectangle),
-            typeof(Rectangle),
-            typeof(Color),
-            typeof(float),
-            typeof(Vector2),
-            typeof(SpriteEffects),
-            typeof(float),
-        ]);
-
-    private static readonly MethodInfo SpriteBatchDraw3 = AccessTools.DeclaredMethod(
-        typeof(SpriteBatch),
-        nameof(SpriteBatch.Draw),
-        [
-            typeof(Texture2D),
-            typeof(Vector2),
-            typeof(Rectangle),
-            typeof(Color),
-            typeof(float),
-            typeof(Vector2),
-            typeof(Vector2),
-            typeof(SpriteEffects),
-            typeof(float),
-        ]);
+    private static readonly Dictionary<MethodInfo, CodeInstruction> ReplacementMethods = new()
+    {
+        {
+            AccessTools.DeclaredMethod(
+                typeof(SpriteBatch),
+                nameof(SpriteBatch.Draw),
+                [
+                    typeof(Texture2D),
+                    typeof(Vector2),
+                    typeof(Rectangle),
+                    typeof(Color),
+                    typeof(float),
+                    typeof(Vector2),
+                    typeof(float),
+                    typeof(SpriteEffects),
+                    typeof(float),
+                ]),
+            CodeInstruction.Call(
+                typeof(BasePatcher),
+                nameof(BasePatcher.DrawCustom1),
+                [
+                    typeof(SpriteBatch),
+                    typeof(Texture2D),
+                    typeof(Vector2),
+                    typeof(Rectangle),
+                    typeof(Color),
+                    typeof(float),
+                    typeof(Vector2),
+                    typeof(float),
+                    typeof(SpriteEffects),
+                    typeof(float),
+                    typeof(object),
+                    typeof(DrawMethod),
+                ])
+        },
+        {
+            AccessTools.DeclaredMethod(
+                typeof(SpriteBatch),
+                nameof(SpriteBatch.Draw),
+                [
+                    typeof(Texture2D),
+                    typeof(Rectangle),
+                    typeof(Rectangle),
+                    typeof(Color),
+                    typeof(float),
+                    typeof(Vector2),
+                    typeof(SpriteEffects),
+                    typeof(float),
+                ]),
+            CodeInstruction.Call(
+                typeof(BasePatcher),
+                nameof(BasePatcher.DrawCustom2),
+                [
+                    typeof(SpriteBatch),
+                    typeof(Texture2D),
+                    typeof(Rectangle),
+                    typeof(Rectangle),
+                    typeof(Color),
+                    typeof(float),
+                    typeof(Vector2),
+                    typeof(SpriteEffects),
+                    typeof(float),
+                    typeof(object),
+                    typeof(DrawMethod),
+                ])
+        },
+        {
+            AccessTools.DeclaredMethod(
+                typeof(SpriteBatch),
+                nameof(SpriteBatch.Draw),
+                [
+                    typeof(Texture2D),
+                    typeof(Vector2),
+                    typeof(Rectangle),
+                    typeof(Color),
+                    typeof(float),
+                    typeof(Vector2),
+                    typeof(Vector2),
+                    typeof(SpriteEffects),
+                    typeof(float),
+                ]),
+            CodeInstruction.Call(
+                typeof(BasePatcher),
+                nameof(BasePatcher.DrawCustom3),
+                [
+                    typeof(SpriteBatch),
+                    typeof(Texture2D),
+                    typeof(Vector2),
+                    typeof(Rectangle),
+                    typeof(Color),
+                    typeof(float),
+                    typeof(Vector2),
+                    typeof(Vector2),
+                    typeof(SpriteEffects),
+                    typeof(float),
+                    typeof(object),
+                    typeof(DrawMethod),
+                ])
+        },
+    };
 
     private static BasePatcher instance = null!;
 
@@ -109,14 +154,14 @@ internal abstract class BasePatcher : BaseService, ISpritePatcher
         eventSubscriber.Subscribe<ConfigChangedEventArgs<DefaultConfig>>(this.OnConfigChanged);
     }
 
-    /// <summary>Gets the dependency used for managing patches.</summary>
-    protected IPatchManager Patches { get; }
-
     /// <inheritdoc />
     public string Id => this.ModId + "." + this.Type.ToStringFast();
 
     /// <inheritdoc />
     public abstract AllPatches Type { get; }
+
+    /// <summary>Gets the dependency used for managing patches.</summary>
+    protected IPatchManager Patches { get; }
 
     /// <summary>Transpiles the given set of code instructions by replacing calls to a specific draw method.</summary>
     /// <param name="instructions">The original set of code instructions.</param>
@@ -154,7 +199,7 @@ internal abstract class BasePatcher : BaseService, ISpritePatcher
     protected static IEnumerable<CodeInstruction> DrawWhenHeld(IEnumerable<CodeInstruction> instructions) =>
         BasePatcher.DrawTranspiler(instructions, BasePatcher.HeldDrawMethod);
 
-    protected static void DrawCustom1(
+    private static void DrawCustom1(
         SpriteBatch spriteBatch,
         Texture2D texture,
         Vector2 position,
@@ -183,7 +228,7 @@ internal abstract class BasePatcher : BaseService, ISpritePatcher
             drawMethod);
     }
 
-    protected static void DrawCustom2(
+    private static void DrawCustom2(
         SpriteBatch spriteBatch,
         Texture2D texture,
         Rectangle destinationRectangle,
@@ -210,7 +255,7 @@ internal abstract class BasePatcher : BaseService, ISpritePatcher
             drawMethod);
     }
 
-    protected static void DrawCustom3(
+    private static void DrawCustom3(
         SpriteBatch spriteBatch,
         Texture2D texture,
         Vector2 position,
@@ -245,25 +290,23 @@ internal abstract class BasePatcher : BaseService, ISpritePatcher
     {
         foreach (var instruction in instructions)
         {
-            if (instruction.Calls(BasePatcher.SpriteBatchDraw1))
+            var replaced = false;
+            foreach (var (oldMethod, newMethod) in BasePatcher.ReplacementMethods)
             {
+                if (!instruction.Calls(oldMethod))
+                {
+                    continue;
+                }
+
+                replaced = true;
                 yield return new CodeInstruction(OpCodes.Ldarg_0);
                 yield return drawMethod;
-                yield return BasePatcher.CallDraw1;
+                yield return newMethod;
+
+                break;
             }
-            else if (instruction.Calls(BasePatcher.SpriteBatchDraw2))
-            {
-                yield return new CodeInstruction(OpCodes.Ldarg_0);
-                yield return drawMethod;
-                yield return BasePatcher.CallDraw2;
-            }
-            else if (instruction.Calls(BasePatcher.SpriteBatchDraw3))
-            {
-                yield return new CodeInstruction(OpCodes.Ldarg_0);
-                yield return drawMethod;
-                yield return BasePatcher.CallDraw3;
-            }
-            else
+
+            if (!replaced)
             {
                 yield return instruction;
             }

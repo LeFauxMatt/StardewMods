@@ -6,7 +6,7 @@ using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ContentPatcher;
 using StardewMods.Common.Services.Integrations.ExpandedStorage;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 using StardewMods.ExpandedStorage.Framework.Enums;
 using StardewMods.ExpandedStorage.Framework.Models;
 using StardewValley.GameData.BigCraftables;
@@ -46,7 +46,7 @@ internal sealed class StorageManager : BaseService
 
         // Check if enabled
         if (ItemRegistry.GetData(item.QualifiedItemId)?.RawData is not BigCraftableData bigCraftableData
-            || !bigCraftableData.CustomFields.GetBool(this.ModId + "/Enabled"))
+            || bigCraftableData.CustomFields?.GetBool(this.ModId + "/Enabled") != true)
         {
             storageData = null;
             return false;

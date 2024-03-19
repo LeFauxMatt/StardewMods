@@ -12,7 +12,7 @@ using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.Automate;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
 
@@ -58,14 +58,14 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<IEventManager, EventManager>();
         this.container.RegisterSingleton<IEventPublisher, EventManager>();
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
-        this.container.RegisterSingleton<FuryCoreIntegration>();
+        this.container.RegisterSingleton<FauxCoreIntegration>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<InventoryTabFactory>();
         this.container.RegisterSingleton<ItemGrabMenuManager>();
         this.container.RegisterSingleton<ItemMatcherFactory>();
         this.container.RegisterSingleton<LocalizedTextManager>();
-        this.container.RegisterSingleton<ILog, FuryLogger>();
-        this.container.RegisterSingleton<IThemeHelper, FuryThemer>();
+        this.container.RegisterSingleton<ILog, Logger>();
+        this.container.RegisterSingleton<IThemeHelper, Themer>();
         this.container.RegisterSingleton<ProxyChestFactory>();
         this.container.RegisterSingleton<StatusEffectManager>();
         this.container.RegisterSingleton<ToolbarIconsIntegration>();

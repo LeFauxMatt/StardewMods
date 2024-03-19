@@ -6,7 +6,7 @@ using StardewModdingAPI.Utilities;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 using StardewMods.Common.Services.Integrations.ToolbarIcons;
 using StardewMods.GarbageDay.Framework.Interfaces;
 using StardewMods.GarbageDay.Framework.Models;
@@ -84,7 +84,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
         }
 
         if (!DataLoader.GarbageCans(Game1.content).GarbageCans.TryGetValue(whichCan, out var garbageCanData)
-            || !garbageCanData.CustomFields.GetBool(this.ModId + "/Enabled", this.modConfig.OnByDefault))
+            || garbageCanData.CustomFields?.GetBool(this.ModId + "/Enabled", this.modConfig.OnByDefault) != true)
         {
             return false;
         }

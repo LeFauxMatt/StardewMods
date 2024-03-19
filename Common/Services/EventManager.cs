@@ -2,7 +2,7 @@ namespace StardewMods.Common.Services;
 
 using StardewModdingAPI.Events;
 using StardewMods.Common.Interfaces;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 
 /// <inheritdoc cref="IEventPublisher" />
 internal sealed class EventManager : BaseEventManager

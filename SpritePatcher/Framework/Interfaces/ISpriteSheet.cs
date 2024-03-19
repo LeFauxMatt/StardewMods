@@ -4,8 +4,17 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 /// <summary>Represents a generated texture.</summary>
-public interface ISpriteSheet : IRawTextureData
+public interface ISpriteSheet
 {
+    /// <summary>Gets the raw texture data.</summary>
+    public IRawTextureData Data { get; }
+
+    /// <summary>Gets the target asset name of the base texture.</summary>
+    IAssetName Target { get; }
+
+    /// <summary>Gets the source rectangle of the base texture.</summary>
+    Rectangle SourceRectangle { get; }
+
     /// <summary>Gets the generated texture.</summary>
     Texture2D Texture { get; }
 

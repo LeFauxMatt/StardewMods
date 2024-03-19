@@ -4,7 +4,7 @@ using SimpleInjector;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 using StardewMods.Common.Services.Integrations.GenericModConfigMenu;
 using StardewMods.ToolbarIcons.Framework;
 using StardewMods.ToolbarIcons.Framework.Interfaces;
@@ -58,12 +58,12 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<IEventManager, EventManager>();
         this.container.RegisterSingleton<IEventPublisher, EventManager>();
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
-        this.container.RegisterSingleton<FuryCoreIntegration>();
+        this.container.RegisterSingleton<FauxCoreIntegration>();
         this.container.RegisterSingleton<GenericModConfigMenuIntegration>();
         this.container.RegisterSingleton<IModConfig, ConfigManager>();
         this.container.RegisterSingleton<IntegrationManager>();
-        this.container.RegisterSingleton<ILog, FuryLogger>();
-        this.container.RegisterSingleton<IThemeHelper, FuryThemer>();
+        this.container.RegisterSingleton<ILog, Logger>();
+        this.container.RegisterSingleton<IThemeHelper, Themer>();
         this.container.RegisterSingleton<ToolbarManager>();
 
         this.container.Collection.Register<ICustomIntegration>(

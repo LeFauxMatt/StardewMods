@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using StardewMods.Common.Services.Integrations.ExpandedStorage;
 using StardewValley.Objects;
 
-/// <inheritdoc cref="StardewMods.Common.Services.Integrations.ExpandedStorage.IChestCreatedEventArgs" />
+/// <inheritdoc cref="IChestCreatedEventArgs" />
 internal sealed class ChestCreatedEventArgs(
     Chest chest,
     GameLocation location,

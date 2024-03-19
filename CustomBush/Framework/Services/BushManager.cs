@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using StardewMods.Common.Services;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 using StardewMods.CustomBush.Framework.Models;
 using StardewValley.Extensions;
 using StardewValley.Internal;
@@ -56,6 +56,10 @@ internal sealed class BushManager : BaseService
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(Bush), nameof(Bush.draw), [typeof(SpriteBatch)]),
             new HarmonyMethod(typeof(BushManager), nameof(BushManager.Bush_draw_prefix)));
+
+        harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Bush), nameof(Bush.GetShakeOffItem)),
+            postfix: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Bush_GetShakeOffItem_postfix)));
 
         harmony.Patch(
             AccessTools.DeclaredMethod(typeof(Bush), nameof(Bush.inBloom)),
@@ -158,6 +162,18 @@ internal sealed class BushManager : BaseService
             ((__instance.getBoundingBox().Center.Y + 48) / 10000f) - (__instance.Tile.X / 1000000f));
 
         return false;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
+    private static void Bush_GetShakeOffItem_postfix(Bush __instance, ref string __result)
+    {
+        if (__instance.modData.TryGetValue(BushManager.instance.modDataItem, out var itemId)
+            && !string.IsNullOrWhiteSpace(itemId))
+        {
+            __result = itemId;
+        }
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -330,7 +346,7 @@ internal sealed class BushManager : BaseService
             return;
         }
 
-        var parameters = new object[] { bushModel!.PlantableLocationRules, isGardenPot, defaultAllowed, null! };
+        var parameters = new object[] { bushModel.PlantableLocationRules, isGardenPot, defaultAllowed, null! };
         __result = (bool)BushManager.instance.checkItemPlantRules.Invoke(__instance, parameters)!;
         deniedMessage = (string)parameters[3];
     }

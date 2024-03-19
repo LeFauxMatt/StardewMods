@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Helpful Spouses</Name>
     <Description>Helpful Spouses (and Roommates) will perform one or more customizable chores every morning. By default this all happens in a balanced/lore-friendly way.</Description>
-    <Version>2.0.0-alpha.20240202</Version>
+    <Version>2.0.0</Version>
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.HelpfulSpouses</RootNamespace>
     <UniqueId>furyx639.HelpfulSpouses</UniqueId>
@@ -10,7 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SimpleInjector">
-      <HintPath>$(GameModsPath)\FuryCore\SimpleInjector.dll</HintPath>
+      <HintPath>$(GameModsPath)\FauxCore\SimpleInjector.dll</HintPath>
       <Version>5.4.2</Version>
       <Private>false</Private>
     </PackageReference>
@@ -20,7 +20,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <SMAPIDependency Include="furyx639.FuryCore" required="true"/>
+    <SMAPIDependency Include="furyx639.FauxCore" Version="1.0.0" required="true"/>
     <SMAPIDependency Include="spacechase0.GenericModConfigMenu" Version="1.8.2" required="false"/>
   </ItemGroup>
 </Project>

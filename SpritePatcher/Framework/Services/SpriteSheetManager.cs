@@ -6,7 +6,6 @@ using StardewModdingAPI.Events;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FuryCore;
-using StardewMods.Common.Services.Integrations.Profiler;
 using StardewMods.SpritePatcher.Framework.Enums;
 using StardewMods.SpritePatcher.Framework.Interfaces;
 using StardewMods.SpritePatcher.Framework.Models;
@@ -16,28 +15,23 @@ using StardewValley.Extensions;
 /// <inheritdoc cref="ISpriteSheetManager" />
 internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
 {
-    private readonly Dictionary<string, IRawTextureData> baseTextures = [];
     private readonly Dictionary<int, Color[]> cachedData = [];
-    private readonly Dictionary<TextureCacheKey, IRawTextureData> cachedTextures = [];
+    private readonly Dictionary<SpriteKey, ISpriteSheet> cachedSpriteSheets = [];
     private readonly IGameContentHelper gameContentHelper;
-    private readonly ProfilerIntegration profilerIntegration;
 
     /// <summary>Initializes a new instance of the <see cref="SpriteSheetManager" /> class.</summary>
     /// <param name="eventSubscriber">Dependency used for subscribing to events.</param>
     /// <param name="gameContentHelper">Dependency used for loading game assets.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
-    /// <param name="profilerIntegration">Dependency used for integration with Profiler.</param>
     public SpriteSheetManager(
         IEventSubscriber eventSubscriber,
         IGameContentHelper gameContentHelper,
         ILog log,
-        IManifest manifest,
-        ProfilerIntegration profilerIntegration)
+        IManifest manifest)
         : base(log, manifest)
     {
         this.gameContentHelper = gameContentHelper;
-        this.profilerIntegration = profilerIntegration;
         eventSubscriber.Subscribe<AssetsInvalidatedEventArgs>(this.OnAssetsInvalidated);
         eventSubscriber.Subscribe<DayStartedEventArgs>(this.OnDayStarted);
         eventSubscriber.Subscribe<DayEndingEventArgs>(this.OnDayEnding);
@@ -66,7 +60,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
     /// <inheritdoc />
     public bool TryBuildSpriteSheet(
         ISprite sprite,
-        SpriteKey key,
+        SpriteKey spriteKey,
         Texture2D texture,
         IList<ISpritePatch> patches,
         [NotNullWhen(true)] out ISpriteSheet? spriteSheet)
@@ -77,12 +71,22 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
             return false;
         }
 
-        spriteSheet = new SpriteSheet(key, texture);
+        // Get base sprite sheet
+        if (!this.cachedSpriteSheets.TryGetValue(spriteKey, out spriteSheet))
+        {
+            if (!this.TryGetTexture(texture.Name, out var baseTexture))
+            {
+                return false;
+            }
+
+            spriteSheet = new SpriteSheet(spriteKey, texture, baseTexture);
+        }
+
         foreach (var patch in patches)
         {
             try
             {
-                patch.Run(sprite, key);
+                patch.Run(sprite, spriteSheet);
             }
             catch (InapplicableContextException)
             {
@@ -95,7 +99,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
             }
 
             // Check if the texture is already cached
-            if (this.cachedTextures.TryGetValue(spriteSheet.GetCurrentId(), out var cachedData))
+            if (this.cachedSpriteSheets.TryGetValue(spriteSheet.GetCurrentId(), out var cachedData))
             {
                 spriteSheet.SetData(cachedData);
                 continue;
@@ -105,15 +109,15 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         }
 
         // Return from cache if available
-        var cacheKey = new TextureCacheKey(key, patches.Select(layer => layer.GetCurrentId()).ToList());
-        if (this.cachedTextures.TryGetValue(cacheKey, out spriteSheet))
+        var cacheKey = new SpriteSheetKey(spriteKey, patches.Select(layer => layer.GetCurrentKey()).ToList());
+        if (this.cachedSpriteSheets.TryGetValue(cacheKey, out spriteSheet))
         {
             return true;
         }
 
         // Calculate the expanded texture based on the layers offset, area, and scale
         SpriteSheetManager.InitializeTextureDimensions(
-            key,
+            spriteKey,
             patches,
             out var origin,
             out var scaledWidth,
@@ -143,14 +147,14 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         scaledWidth *= totalFrames;
 
         var textureData = new Color[scaledWidth * scaledHeight];
-        this.CopyBaseTextureData(key, texture.Name, origin, scaledWidth, scaledHeight, scale, frameWidth, textureData);
+        this.CopyBaseTextureData(spriteKey, texture.Name, origin, scaledWidth, scaledHeight, scale, frameWidth, textureData);
 
         // Apply each layer
         foreach (var layer in patches)
         {
             this.ApplyLayer(
                 layer,
-                key,
+                spriteKey,
                 origin,
                 scaledWidth,
                 scaledHeight,
@@ -161,7 +165,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         }
 
         spriteSheet = new SpriteSheet(
-            key,
+            spriteKey,
             texture,
             textureData,
             scaledWidth,
@@ -171,7 +175,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
             totalFrames,
             fastestAnimation);
 
-        this.cachedTextures[cacheKey] = spriteSheet;
+        this.cachedSpriteSheets[cacheKey] = spriteSheet;
         return true;
     }
 
@@ -197,29 +201,29 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         out int scaledHeight)
     {
         // Assign originX based on layer with the largest offset
-        var originX = (int)Math.Max(0, layers.Max(layer => key.Area.X - layer.SourceArea.X - layer.Offset.X));
+        var originX = (int)Math.Max(0, layers.Max(layer => key.SourceRectangle.X - layer.SourceArea.X - layer.Offset.X));
 
         // Assign originY based on layer with the largest offset
-        var originY = (int)Math.Max(0, layers.Max(layer => key.Area.Y - layer.SourceArea.Y - layer.Offset.Y));
+        var originY = (int)Math.Max(0, layers.Max(layer => key.SourceRectangle.Y - layer.SourceArea.Y - layer.Offset.Y));
 
         origin = new Vector2(originX, originY);
 
         scaledWidth = Math.Max(
-            originX + key.Area.Width,
+            originX + key.SourceRectangle.Width,
             layers.Max(
                 layer => (int)(originX
                     + layer.Offset.X
                     + layer.SourceArea.X
-                    - key.Area.X
+                    - key.SourceRectangle.X
                     + (layer.Area.Width * layer.Scale / layer.Frames))));
 
         scaledHeight = Math.Max(
-            originY + key.Area.Height,
+            originY + key.SourceRectangle.Height,
             layers.Max(
                 layer => (int)(originY
                     + layer.Offset.Y
                     + layer.SourceArea.Y
-                    - key.Area.Y
+                    - key.SourceRectangle.Y
                     + (layer.Area.Height * layer.Scale))));
     }
 
@@ -247,9 +251,9 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
 
     private void OnDayEnding(DayEndingEventArgs e)
     {
-        var count = this.cachedTextures.Count;
-        this.cachedTextures.RemoveWhere(kvp => !kvp.Value.WasAccessed);
-        var removed = count - this.cachedTextures.Count;
+        var count = this.cachedSpriteSheets.Count;
+        this.cachedSpriteSheets.RemoveWhere(kvp => !kvp.Value.WasAccessed);
+        var removed = count - this.cachedSpriteSheets.Count;
         if (removed > 0)
         {
             this.Log.Trace("Removed {0} cached textures.", removed);
@@ -258,7 +262,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
 
     private void OnDayStarted(DayStartedEventArgs e)
     {
-        foreach (var sprite in this.cachedTextures.Values)
+        foreach (var sprite in this.cachedSpriteSheets.Values)
         {
             sprite.WasAccessed = false;
         }
@@ -292,10 +296,10 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
                 var sourceX = (x % frameWidth / scale) - origin.X;
                 var sourceY = (y / scale) - origin.Y;
 
-                var sourceIndex = ((int)(sourceY + key.Area.Y) * baseTexture.Width) + (int)(sourceX + key.Area.X);
+                var sourceIndex = ((int)(sourceY + key.SourceRectangle.Y) * baseTexture.Width) + (int)(sourceX + key.SourceRectangle.X);
 
                 // Ensure sourceX and sourceY are within the sourceData
-                if (sourceX < 0 || sourceX >= key.Area.Width || sourceY < 0 || sourceY >= key.Area.Height)
+                if (sourceX < 0 || sourceX >= key.SourceRectangle.Width || sourceY < 0 || sourceY >= key.SourceRectangle.Height)
                 {
                     continue;
                 }
@@ -321,7 +325,7 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
             return;
         }
 
-        var layerId = layer.GetCurrentId();
+        var layerId = layer.GetCurrentKey();
         if (!this.cachedData.TryGetValue(layerId, out var layerData))
         {
             layerData = (Color[])layer.Texture.Data.Clone();
@@ -330,8 +334,8 @@ internal sealed class SpriteSheetManager : BaseService, ISpriteSheetManager
         }
 
         var scaleFactor = 1f / (scale * layer.Scale);
-        var offsetX = (int)(scale * (layer.SourceArea.X - key.Area.X + (int)origin.X + (int)layer.Offset.X));
-        var offsetY = (int)(scale * (layer.SourceArea.Y - key.Area.Y + (int)origin.Y + (int)layer.Offset.Y));
+        var offsetX = (int)(scale * (layer.SourceArea.X - key.SourceRectangle.X + (int)origin.X + (int)layer.Offset.X));
+        var offsetY = (int)(scale * (layer.SourceArea.Y - key.SourceRectangle.Y + (int)origin.Y + (int)layer.Offset.Y));
         var endX = Math.Min(scaledWidth, offsetX + layer.Area.Width);
         var endY = Math.Min(scaledHeight, offsetY + layer.Area.Height);
 

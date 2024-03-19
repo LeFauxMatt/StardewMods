@@ -7,7 +7,7 @@ using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 using StardewValley.Buildings;
 using StardewValley.GameData.BigCraftables;
 using StardewValley.Menus;

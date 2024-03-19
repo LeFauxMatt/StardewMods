@@ -21,13 +21,19 @@ public interface ISpritePatch
     Rectangle SourceArea { get; }
 
     /// <summary>Gets or sets the raw texture data for the patch.</summary>
-    IRawTextureData? Texture { get; set; }
+    IRawTextureData Texture { get; set; }
+
+    /// <summary>Gets or sets the layer of the patch.</summary>
+    PatchLayer Layer { get; set; }
+
+    /// <summary>Gets or sets the path of the texture.</summary>
+    string Path { get; set; }
 
     /// <summary>Gets or sets the area of the texture.</summary>
     Rectangle Area { get; set; }
 
     /// <summary>Gets or sets the tint of the texture.</summary>
-    Color? Tint { get; set; }
+    Color Tint { get; set; }
 
     /// <summary>Gets or sets the alpha of the texture.</summary>
     float Alpha { get; set; }
@@ -45,21 +51,17 @@ public interface ISpritePatch
     Vector2 Offset { get; set; }
 
     /// <summary>Gets or sets the color of the draw method.</summary>
-    Color? Color { get; set; }
+    Color Color { get; set; }
 
     /// <summary>Gets or sets the rotation of the draw method.</summary>
-    float? Rotation { get; set; }
+    float Rotation { get; set; }
 
     /// <summary>Gets or sets the effects of the draw method.</summary>
-    SpriteEffects? Effects { get; set; }
-
-    /// <summary>Retrieves a unique identifier for the current patch.</summary>
-    /// <returns>The current ID as a string.</returns>
-    int GetCurrentId();
+    SpriteEffects Effects { get; set; }
 
     /// <summary>Runs code necessary to update the texture.</summary>
     /// <param name="sprite">The managed object requesting the patch.</param>
-    /// <param name="key">The SpriteKey object to be used for the test.</param>
+    /// <param name="spriteSheet">The spriteSheet that the patch is being applied to..</param>
     /// <returns>True if the texture should be applied.</returns>
-    bool Run(ISprite sprite, SpriteKey key);
+    bool Run(ISprite sprite, ISpriteSheet spriteSheet);
 }

@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Utilities;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.Common.Services;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 
 /// <summary>Represents a factory class that creates and manages inventory tabs.</summary>
 internal sealed class InventoryTabFactory : BaseService

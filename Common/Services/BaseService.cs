@@ -1,6 +1,6 @@
 namespace StardewMods.Common.Services;
 
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 
 /// <summary>This abstract class serves as the base for all service classes.</summary>
 internal abstract class BaseService

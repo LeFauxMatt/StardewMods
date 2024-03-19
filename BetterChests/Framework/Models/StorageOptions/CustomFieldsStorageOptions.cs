@@ -7,7 +7,8 @@ internal sealed class CustomFieldsStorageOptions : DictionaryStorageOptions
 
     /// <summary>Initializes a new instance of the <see cref="CustomFieldsStorageOptions" /> class.</summary>
     /// <param name="customFields">The custom fields.</param>
-    public CustomFieldsStorageOptions(Dictionary<string, string> customFields) => this.customFields = customFields;
+    public CustomFieldsStorageOptions(Dictionary<string, string>? customFields) =>
+        this.customFields = customFields ?? new Dictionary<string, string>();
 
     /// <inheritdoc />
     protected override bool TryGetValue(string key, [NotNullWhen(true)] out string? value) =>

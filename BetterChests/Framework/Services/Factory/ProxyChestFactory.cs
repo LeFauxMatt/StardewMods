@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.Common.Extensions;
 using StardewMods.Common.Services;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 using StardewValley.Objects;
 
 /// <summary>Manages the global inventories and chest/item creation and retrieval operations.</summary>

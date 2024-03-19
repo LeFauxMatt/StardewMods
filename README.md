@@ -43,6 +43,14 @@ Provides easier access to machines and producers in the game.
 
 Framework for adding new types of chests to the game.
 
+## [FauxCore](https://www.nexusmods.com/stardewvalley/mods/11001)
+
+( [source](FauxCore)
+| [docs](FauxCore/README.md)
+| [changelog](FauxCore/CHANGELOG.md) )
+
+Framework that provides shared functionality for all of my mods.
+
 ## [Find Anything](https://www.nexusmods.com/stardewvalley/)
 
 ( [source](FindAnything)

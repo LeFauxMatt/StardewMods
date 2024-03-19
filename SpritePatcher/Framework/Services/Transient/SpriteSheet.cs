@@ -12,6 +12,8 @@ internal sealed class SpriteSheet : ISpriteSheet, IDisposable
 
     private static int lastTicks;
     private static int counter;
+
+    private readonly Dictionary<PatchLayer, ISpriteSheet> children = new();
     private readonly int frames;
     private readonly SpriteKey key;
     private readonly Vector2 offset;
@@ -19,13 +21,19 @@ internal sealed class SpriteSheet : ISpriteSheet, IDisposable
     private readonly double tickMultiplier = (Game1.random.NextDouble() * 0.1f) + 0.95f;
     private readonly int tickOffset = Game1.random.Next(0, 20);
     private readonly int ticksPerFrame;
-    private bool initialized;
 
-    private Texture2D texture;
+    private bool initialized;
+    private Texture2D? texture;
+
+    public SpriteSheet(SpriteKey key, Texture2D texture, IRawTextureData data)
+    {
+        this.key = key;
+        this.texture = texture;
+        this.Data = data;
+    }
 
     /// <summary>Initializes a new instance of the <see cref="SpriteSheet" /> class.</summary>
     /// <param name="key">A key for the original texture method.</param>
-    /// <param name="texture">The base texture to use as a background.</param>
     /// <param name="data">The generated texture data.</param>
     /// <param name="width">The width of the generated texture.</param>
     /// <param name="height">The height of the generated texture.</param>
@@ -35,8 +43,7 @@ internal sealed class SpriteSheet : ISpriteSheet, IDisposable
     /// <param name="ticksPerFrame">The number of game ticks per frame.</param>
     public SpriteSheet(
         SpriteKey key,
-        Texture2D texture,
-        Color[] data,
+        IRawTextureData data,
         int width,
         int height,
         float scale,
@@ -45,7 +52,6 @@ internal sealed class SpriteSheet : ISpriteSheet, IDisposable
         int ticksPerFrame)
     {
         this.key = key;
-        this.texture = texture;
         this.Data = data;
         this.Width = width;
         this.Height = height;
@@ -55,6 +61,12 @@ internal sealed class SpriteSheet : ISpriteSheet, IDisposable
         this.ticksPerFrame = ticksPerFrame;
         this.WasAccessed = true;
     }
+
+    /// <inheritdoc/>
+    public IAssetName Target => this.key.Target;
+
+    /// <inheritdoc/>
+    public Rectangle SourceRectangle => this.key.SourceRectangle;
 
     /// <inheritdoc />
     public Texture2D Texture
@@ -98,7 +110,7 @@ internal sealed class SpriteSheet : ISpriteSheet, IDisposable
                     0,
                     this.Texture.Width / this.frames,
                     this.Texture.Height)
-            : this.key.Area;
+            : this.key.SourceRectangle;
 
     /// <inheritdoc/>
     public Color Color { get; set; }
@@ -113,29 +125,32 @@ internal sealed class SpriteSheet : ISpriteSheet, IDisposable
     public bool WasAccessed { get; set; }
 
     /// <inheritdoc/>
-    public Color[] Data { get; private set; }
+    public IRawTextureData Data { get; }
 
-    /// <inheritdoc/>
-    public int Width { get; private set; }
+    public ISpriteSheet AddLayer(IRawTextureData data, ISpritePatch patch)
+    {
+        var layerKey = new PatchLayer(
+            patch.Path,
+            patch.Area,
+            patch.Offset,
+            patch.Tint,
+            patch.Animate,
+            patch.Frames,
+            patch.Scale,
+            patch.Alpha,
+            patch.Color,
+            patch.Rotation,
+            patch.Effects);
 
-    /// <inheritdoc/>
-    public int Height { get; private set; }
+        if (!this.children.TryGetValue(layerKey, out var layer))
+        {
+            layer = new SpriteSheet(this.key, data);
+            this.children.Add(layerKey, layer);
+        }
+
+        return layer;
+    }
 
     /// <inheritdoc />
-    public void Dispose() => this.texture.Dispose();
-
-    /// <inheritdoc/>
-    public int GetCurrentId()
-    {
-        var hash = default(HashCode);
-        return hash.ToHashCode();
-    }
-
-    /// <inheritdoc/>
-    public void SetData(IRawTextureData data)
-    {
-        this.Data = data.Data;
-        this.Width = data.Width;
-        this.Height = data.Height;
-    }
+    public void Dispose() => this.texture?.Dispose();
 }

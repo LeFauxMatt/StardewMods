@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Crystalline Junimo Chests</Name>
     <Description>Adds enhanced Junimo Chests which can access multiple inventories depending on their color.</Description>
-    <Version>1.0.0-alpha.20240202</Version>
+    <Version>1.0.0</Version>
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.CrystallineJunimoChests</RootNamespace>
     <UniqueId>furyx639.CrystallineJunimoChests</UniqueId>

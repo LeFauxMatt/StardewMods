@@ -3,7 +3,7 @@ namespace StardewMods.ExpandedStorage.Framework;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ExpandedStorage;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 using StardewMods.ExpandedStorage.Framework.Models;
 using StardewMods.ExpandedStorage.Framework.Services;
 

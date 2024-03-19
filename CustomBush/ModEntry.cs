@@ -5,7 +5,7 @@ using SimpleInjector;
 using StardewModdingAPI.Events;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 using StardewMods.CustomBush.Framework.Models;
 using StardewMods.CustomBush.Framework.Services;
 
@@ -48,8 +48,8 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<IEventManager, EventManager>();
         this.container.RegisterSingleton<IEventPublisher, EventManager>();
         this.container.RegisterSingleton<IEventSubscriber, EventManager>();
-        this.container.RegisterSingleton<FuryCoreIntegration>();
-        this.container.RegisterSingleton<ILog, FuryLogger>();
+        this.container.RegisterSingleton<FauxCoreIntegration>();
+        this.container.RegisterSingleton<ILog, Logger>();
 
         // Verify
         this.container.Verify();

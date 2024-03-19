@@ -2,7 +2,7 @@ namespace StardewMods.Common.Models;
 
 using System.Reflection;
 using StardewMods.Common.Enums;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 
 /// <inheritdoc />
 internal sealed class SavedPatch : ISavedPatch

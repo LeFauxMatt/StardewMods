@@ -8,7 +8,7 @@ using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 
 /// <summary>Debris such as mined or farmed items can be collected into a Chest in the farmer's inventory.</summary>
 internal sealed class CollectItems : BaseFeature<CollectItems>

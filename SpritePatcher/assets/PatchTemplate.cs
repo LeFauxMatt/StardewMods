@@ -41,9 +41,9 @@ public class Runner : global::StardewMods.SpritePatcher.Framework.BaseSpritePatc
 {
     public Runner(PatchModelCtorArgs args) : base(args) { }
 
-    public override bool Run(ISprite sprite, SpriteKey key)
+    public override bool Run(ISprite sprite, ISpriteSheet spriteSheet)
     {
-        this.BeforeRun(sprite, key);
+        this.BeforeRun(sprite, spriteSheet);
         try
         {
             this.ActualRun(sprite.Entity);

@@ -3,7 +3,7 @@ namespace StardewMods.Common.Services;
 using System.Reflection;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Models;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 
 /// <summary>Represents a base event manager service.</summary>
 internal class BaseEventManager : BaseService, IEventManager

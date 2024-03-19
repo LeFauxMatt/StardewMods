@@ -147,19 +147,23 @@ internal sealed class ActionHandler : BaseService
         foreach (var spouse in spouses)
         {
             CharacterOptions? characterOptions = null;
-            foreach (var (customFieldKey, customFieldValue) in spouse.GetData().CustomFields)
+            var data = spouse.GetData();
+            if (data.CustomFields is not null)
             {
-                var keyParts = customFieldKey.Split('/');
-                if (keyParts.Length != 2
-                    || !keyParts[0].Equals(this.ModId, StringComparison.OrdinalIgnoreCase)
-                    || !ChoreOptionExtensions.TryParse(keyParts[1], out var choreOption)
-                    || !double.TryParse(customFieldValue, out var value))
+                foreach (var (customFieldKey, customFieldValue) in data.CustomFields)
                 {
-                    continue;
-                }
+                    var keyParts = customFieldKey.Split('/');
+                    if (keyParts.Length != 2
+                        || !keyParts[0].Equals(this.ModId, StringComparison.OrdinalIgnoreCase)
+                        || !ChoreOptionExtensions.TryParse(keyParts[1], out var choreOption)
+                        || !double.TryParse(customFieldValue, out var value))
+                    {
+                        continue;
+                    }
 
-                characterOptions ??= new CharacterOptions();
-                characterOptions[choreOption] = value;
+                    characterOptions ??= new CharacterOptions();
+                    characterOptions[choreOption] = value;
+                }
             }
 
             characterOptions ??= this.modConfig.DefaultOptions;

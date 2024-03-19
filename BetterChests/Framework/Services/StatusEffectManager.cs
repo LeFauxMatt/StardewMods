@@ -2,7 +2,7 @@ namespace StardewMods.BetterChests.Framework.Services;
 
 using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.Common.Services;
-using StardewMods.Common.Services.Integrations.FuryCore;
+using StardewMods.Common.Services.Integrations.FauxCore;
 using StardewValley.Buffs;
 
 /// <summary>Responsible for adding or removing custom buffs.</summary>

@@ -11,9 +11,9 @@ using StardewValley.Extensions;
 /// <inheritdoc />
 internal sealed class Sprite : ISprite
 {
-    private readonly Dictionary<SpriteKey, WeakReference<ISpriteSheet>> cachedSpriteSheets = [];
+    private readonly Dictionary<SpriteKey, WeakReference<ISpriteSheet>> cached = [];
     private readonly CodeManager codeManager;
-    private readonly HashSet<SpriteKey> disabledTextures = [];
+    private readonly HashSet<SpriteKey> disabled = [];
     private readonly IGameContentHelper gameContentHelper;
     private readonly ILog log;
     private readonly object source;
@@ -62,24 +62,22 @@ internal sealed class Sprite : ISprite
         DrawMethod drawMethod)
     {
         var target = this.gameContentHelper.ParseAssetName(texture.Name);
-        if (!this.TryGetTexture(
-            texture,
-            new SpriteKey(target.BaseName, sourceRectangle.GetValueOrDefault(), drawMethod),
-            out var managedTexture))
+        var key = new SpriteKey(target, sourceRectangle.GetValueOrDefault(), color, drawMethod);
+        if (!this.TryGetSpriteSheet(key, texture, out var spriteSheet))
         {
             spriteBatch.Draw(texture, position, sourceRectangle, color, rotation, origin, scale, effects, layerDepth);
             return;
         }
 
         spriteBatch.Draw(
-            managedTexture.Texture,
-            position - (scale * managedTexture.Offset),
-            managedTexture.SourceArea,
+            spriteSheet.Texture,
+            position - (scale * spriteSheet.Offset),
+            spriteSheet.SourceArea,
             color,
-            rotation * managedTexture.Rotation,
-            origin * managedTexture.Scale,
-            scale / managedTexture.Scale,
-            effects | managedTexture.Effects,
+            rotation * spriteSheet.Rotation,
+            origin * spriteSheet.Scale,
+            scale / spriteSheet.Scale,
+            effects | spriteSheet.Effects,
             layerDepth);
     }
 
@@ -97,10 +95,8 @@ internal sealed class Sprite : ISprite
         DrawMethod drawMethod)
     {
         var target = this.gameContentHelper.ParseAssetName(texture.Name);
-        if (!this.TryGetTexture(
-            texture,
-            new SpriteKey(target.BaseName, sourceRectangle.GetValueOrDefault(), drawMethod),
-            out var managedTexture))
+        var key = new SpriteKey(target, sourceRectangle.GetValueOrDefault(), color, drawMethod);
+        if (!this.TryGetSpriteSheet(key, texture, out var spriteSheet))
         {
             spriteBatch.Draw(
                 texture,
@@ -115,25 +111,24 @@ internal sealed class Sprite : ISprite
             return;
         }
 
-        var valueOrDefault = sourceRectangle.GetValueOrDefault();
-        var x = destinationRectangle.X - (int)(managedTexture.Offset.X * Game1.pixelZoom);
-        var y = destinationRectangle.Y - (int)(managedTexture.Offset.Y * Game1.pixelZoom);
+        var x = destinationRectangle.X - (int)(spriteSheet.Offset.X * Game1.pixelZoom);
+        var y = destinationRectangle.Y - (int)(spriteSheet.Offset.Y * Game1.pixelZoom);
         var width = (int)(destinationRectangle.Width
-            + (((managedTexture.SourceArea.Width / managedTexture.Scale) - valueOrDefault.Width)
+            + (((spriteSheet.SourceArea.Width / spriteSheet.Scale) - key.SourceRectangle.Width)
                 * Game1.pixelZoom));
 
         var height = (int)(destinationRectangle.Height
-            + (((managedTexture.SourceArea.Height / managedTexture.Scale) - valueOrDefault.Height)
+            + (((spriteSheet.SourceArea.Height / spriteSheet.Scale) - key.SourceRectangle.Height)
                 * Game1.pixelZoom));
 
         spriteBatch.Draw(
-            managedTexture.Texture,
+            spriteSheet.Texture,
             new Rectangle(x, y, width, height),
-            managedTexture.SourceArea,
+            spriteSheet.SourceArea,
             color,
-            rotation * managedTexture.Rotation,
-            origin * managedTexture.Scale,
-            effects | managedTexture.Effects,
+            rotation * spriteSheet.Rotation,
+            origin * spriteSheet.Scale,
+            effects | spriteSheet.Effects,
             layerDepth);
     }
 
@@ -152,32 +147,30 @@ internal sealed class Sprite : ISprite
         DrawMethod drawMethod)
     {
         var target = this.gameContentHelper.ParseAssetName(texture.Name);
-        if (!this.TryGetTexture(
-            texture,
-            new SpriteKey(target.BaseName, sourceRectangle.GetValueOrDefault(), drawMethod),
-            out var managedTexture))
+        var key = new SpriteKey(target, sourceRectangle.GetValueOrDefault(), color, drawMethod);
+        if (!this.TryGetSpriteSheet(key, texture, out var spriteSheet))
         {
             spriteBatch.Draw(texture, position, sourceRectangle, color, rotation, origin, scale, effects, layerDepth);
             return;
         }
 
         spriteBatch.Draw(
-            managedTexture.Texture,
-            position - (scale * managedTexture.Offset),
-            managedTexture.SourceArea,
+            spriteSheet.Texture,
+            position - (scale * spriteSheet.Offset),
+            spriteSheet.SourceArea,
             color,
-            rotation * managedTexture.Rotation,
-            origin * managedTexture.Scale,
-            scale / managedTexture.Scale,
-            effects | managedTexture.Effects,
+            rotation * spriteSheet.Rotation,
+            origin * spriteSheet.Scale,
+            scale / spriteSheet.Scale,
+            effects | spriteSheet.Effects,
             layerDepth);
     }
 
     /// <inheritdoc />
     public void ClearCache()
     {
-        this.cachedSpriteSheets.Clear();
-        this.disabledTextures.Clear();
+        this.cached.Clear();
+        this.disabled.Clear();
     }
 
     /// <inheritdoc />
@@ -185,10 +178,10 @@ internal sealed class Sprite : ISprite
     {
         foreach (var target in targets)
         {
-            this.cachedSpriteSheets.RemoveWhere(
+            this.cached.RemoveWhere(
                 kvp => kvp.Key.Target.Equals(target, StringComparison.OrdinalIgnoreCase));
 
-            this.disabledTextures.RemoveWhere(key => key.Target.Equals(target, StringComparison.OrdinalIgnoreCase));
+            this.disabled.RemoveWhere(key => key.Target.Equals(target, StringComparison.OrdinalIgnoreCase));
         }
     }
 
@@ -205,21 +198,21 @@ internal sealed class Sprite : ISprite
             _ => throw new NotSupportedException($"Cannot manage {source.GetType().FullName}"),
         };
 
-    private bool TryGetTexture(
-        Texture2D baseTexture,
+    private bool TryGetSpriteSheet(
         SpriteKey key,
+        Texture2D baseTexture,
         [NotNullWhen(true)] out ISpriteSheet? spriteSheet)
     {
         spriteSheet = null;
 
-        // Check if patching is disabled for this object
-        if (this.disabledTextures.Contains(key))
+        // Check if patching is disabled for this key
+        if (this.disabled.Contains(key))
         {
             return false;
         }
 
         // Return texture from cache if it exists
-        if (this.cachedSpriteSheets.TryGetValue(key, out var cachedSpriteSheet)
+        if (this.cached.TryGetValue(key, out var cachedSpriteSheet)
             && cachedSpriteSheet.TryGetTarget(out spriteSheet))
         {
             spriteSheet.WasAccessed = true;
@@ -230,7 +223,7 @@ internal sealed class Sprite : ISprite
         if (!this.codeManager.TryGet(key, out var patches))
         {
             // Prevent future attempts to generate this texture
-            this.disabledTextures.Add(key);
+            this.disabled.Add(key);
             return false;
         }
 
@@ -243,11 +236,11 @@ internal sealed class Sprite : ISprite
             spriteSheet.Color = color;
             spriteSheet.Rotation = rotation;
             spriteSheet.Effects = effects;
-            this.cachedSpriteSheets[key] = new WeakReference<ISpriteSheet>(spriteSheet);
+            this.cached[key] = new WeakReference<ISpriteSheet>(spriteSheet);
             return true;
         }
 
-        this.disabledTextures.Add(key);
+        this.disabled.Add(key);
         return false;
 
         var patchesToApply = new List<ISpritePatch>();
@@ -279,7 +272,7 @@ internal sealed class Sprite : ISprite
             spriteSheet.Color = color;
             spriteSheet.Rotation = rotation;
             spriteSheet.Effects = effects;
-            this.cachedSpriteSheets[key] = new WeakReference<ISpriteSheet>(spriteSheet);
+            this.cached[key] = new WeakReference<ISpriteSheet>(spriteSheet);
             return true;
         }
     }

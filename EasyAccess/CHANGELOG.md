@@ -1,6 +1,6 @@
 # Easy Access Change Log
 
-## 2.1.0 (Unreleased)
+## 2.1.0 (March 19, 2024)
 
 ### Changed
 
