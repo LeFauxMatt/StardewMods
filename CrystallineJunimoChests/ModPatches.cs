@@ -142,8 +142,8 @@ internal sealed class ModPatches
             SpriteEffects.None,
             baseSortOrder + 1E-05f);
 
-        var selection = DiscreteColorPicker.getSelectionFromColor(__instance.playerChoiceColor.Value);
-        if (selection == -1)
+        var selection = DiscreteColorPicker.getSelectionFromColor(__instance.playerChoiceColor.Value) - 1;
+        if (selection < 0)
         {
             return false;
         }
@@ -216,8 +216,8 @@ internal sealed class ModPatches
             SpriteEffects.None,
             baseSortOrder + 1E-05f);
 
-        var selection = DiscreteColorPicker.getSelectionFromColor(__instance.playerChoiceColor.Value);
-        if (selection == -1)
+        var selection = DiscreteColorPicker.getSelectionFromColor(__instance.playerChoiceColor.Value) - 1;
+        if (selection < 0)
         {
             return false;
         }

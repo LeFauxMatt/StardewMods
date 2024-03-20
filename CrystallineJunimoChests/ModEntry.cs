@@ -1,4 +1,4 @@
-﻿namespace StardewMods.CrystallineJunimoChests;
+namespace StardewMods.CrystallineJunimoChests;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -49,22 +49,22 @@ public sealed class ModEntry : Mod
             return;
         }
 
-        var data = this.Helper.ModContent.Load<DataModel>("assets/data.json");
         var selection = ((int)x - area.X) / 36;
-        if (selection < 0 || selection >= data.Colors.Length)
+        if (selection < 0 || selection >= DiscreteColorPicker.totalColors)
         {
             return;
         }
 
         var currentSelection = DiscreteColorPicker.getSelectionFromColor(chest.playerChoiceColor.Value);
-        --selection;
+
+        //--selection;
 
         if (selection == currentSelection)
         {
             return;
         }
 
-        if (selection == -1)
+        if (selection == 0)
         {
             chest.GlobalInventoryId = "JunimoChests";
             return;
@@ -73,7 +73,8 @@ public sealed class ModEntry : Mod
         this.Helper.Input.Suppress(e.Button);
 
         // Player has item
-        var item = ItemRegistry.GetDataOrErrorItem(data.Colors[selection].Item);
+        var data = this.Helper.ModContent.Load<DataModel>("assets/data.json");
+        var item = ItemRegistry.GetDataOrErrorItem(data.Colors[selection - 1].Item);
         if (Game1.player.Items.ContainsId(item.QualifiedItemId, data.Cost))
         {
             var responses = Game1.currentLocation.createYesNoResponses();
