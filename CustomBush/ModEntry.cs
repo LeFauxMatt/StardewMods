@@ -15,14 +15,7 @@ public sealed class ModEntry : Mod
     private Container container = null!;
 
     /// <inheritdoc />
-    public override void Entry(IModHelper helper)
-    {
-        // Init
-        I18n.Init(this.Helper.Translation);
-
-        // Events
-        this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
-    }
+    public override void Entry(IModHelper helper) => this.Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {

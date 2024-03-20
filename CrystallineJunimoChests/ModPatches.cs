@@ -4,6 +4,7 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.CrystallineJunimoChests.Models;
+using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>Harmony Patches for Enhanced Junimo Chests.</summary>
@@ -141,11 +142,7 @@ internal sealed class ModPatches
             SpriteEffects.None,
             baseSortOrder + 1E-05f);
 
-        var data = ModPatches.modContentHelper.Load<DataModel>("assets/data.json");
-        var selection = Array.FindIndex(
-            data.Colors,
-            dataModel => dataModel.Color.Equals(__instance.playerChoiceColor.Value));
-
+        var selection = DiscreteColorPicker.getSelectionFromColor(__instance.playerChoiceColor.Value);
         if (selection == -1)
         {
             return false;
@@ -219,11 +216,7 @@ internal sealed class ModPatches
             SpriteEffects.None,
             baseSortOrder + 1E-05f);
 
-        var data = ModPatches.modContentHelper.Load<DataModel>("assets/data.json");
-        var selection = Array.FindIndex(
-            data.Colors,
-            dataModel => dataModel.Color.Equals(__instance.playerChoiceColor.Value));
-
+        var selection = DiscreteColorPicker.getSelectionFromColor(__instance.playerChoiceColor.Value);
         if (selection == -1)
         {
             return false;

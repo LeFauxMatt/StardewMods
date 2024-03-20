@@ -1,9 +1,0 @@
-{
-  "config.log-level.title": "Log Level",
-  "config.log-level.description": "The amount of debugging information that will be logged to the console.",
-  "config.log-level.options.none": "None",
-  "config.log-level.options.less": "Less",
-  "config.log-level.options.more": "More",
-  "config.section.general.title": "General",
-  "config.section.general.description": "General settings for this mod."
-}

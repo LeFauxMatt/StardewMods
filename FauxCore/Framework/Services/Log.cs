@@ -48,6 +48,18 @@ internal sealed class Log : ILog
 
     private void Raise(string message, LogLevel level, bool once, object?[]? args = null)
     {
+        if (args != null)
+        {
+            message = string.Format(CultureInfo.InvariantCulture, message, args);
+        }
+
+        // Prevent consecutive duplicate messages
+        this.lastMessage = message;
+        if (message == this.lastMessage)
+        {
+            return;
+        }
+
         switch (level)
         {
             case LogLevel.Trace when this.modConfig.Value.LogLevel == SimpleLogLevel.More:
@@ -56,18 +68,6 @@ internal sealed class Log : ILog
             case LogLevel.Warn when this.modConfig.Value.LogLevel >= SimpleLogLevel.Less:
             case LogLevel.Error:
             case LogLevel.Alert:
-                if (args != null)
-                {
-                    message = string.Format(CultureInfo.InvariantCulture, message, args);
-                }
-
-                // Prevent consecutive duplicate messages
-                if (message == this.lastMessage)
-                {
-                    break;
-                }
-
-                this.lastMessage = message;
                 if (once)
                 {
                     this.monitor.LogOnce(message, level);
@@ -77,7 +77,8 @@ internal sealed class Log : ILog
                 this.monitor.Log(message, level);
                 break;
             default:
-                // Suppress log
+                // Suppress log from console
+                this.monitor.Log(message);
                 return;
         }
 

@@ -46,13 +46,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NpcsHaveInventory", "NpcsHa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PickpocketSkill", "PickpocketSkill\PickpocketSkill.csproj", "{172700DA-69CC-47AC-9AEE-168CA60BF344}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FullHouse", "FullHouse\FullHouse.csproj", "{5221BFBE-9F9A-41CD-B6F8-2F52A9A11E5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FullHouse", "FullHouse\FullHouse.csproj", "{5221BFBE-9F9A-41CD-B6F8-2F52A9A11E5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleAutomations", "SimpleAutomations\SimpleAutomations.csproj", "{7C01A76B-3B5C-4861-A1F0-B725D6FE8F04}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleAutomations", "SimpleAutomations\SimpleAutomations.csproj", "{7C01A76B-3B5C-4861-A1F0-B725D6FE8F04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StackQuality", "StackQuality\StackQuality.csproj", "{D3827BF5-FF59-4B57-8BF6-AEE3BDE3A138}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StackQuality", "StackQuality\StackQuality.csproj", "{D3827BF5-FF59-4B57-8BF6-AEE3BDE3A138}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PocketSlimes", "PocketSlimes\PocketSlimes.csproj", "{C7F2932C-0858-48F9-A079-043F8FD5067C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PocketSlimes", "PocketSlimes\PocketSlimes.csproj", "{C7F2932C-0858-48F9-A079-043F8FD5067C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -148,14 +148,18 @@ Global
 		Common\Common.projitems*{172700da-69cc-47ac-9aee-168ca60bf344}*SharedItemsImports = 5
 		Common\Common.projitems*{2b33f6c3-8de0-45a9-a2ca-aee5700a2fcb}*SharedItemsImports = 5
 		Common\Common.projitems*{4632d2c9-a337-461b-9f74-28f779078879}*SharedItemsImports = 5
+		Common\Common.projitems*{5221bfbe-9f9a-41cd-b6f8-2f52a9a11e5c}*SharedItemsImports = 5
 		Common\Common.projitems*{5fa7f9af-45c9-4d5e-b566-daaed72f8887}*SharedItemsImports = 5
 		Common\Common.projitems*{774acd31-6138-4707-a747-8c8e35519fc3}*SharedItemsImports = 5
 		Common\Common.projitems*{7b668d0c-48b2-4181-bbae-9a3af459daf6}*SharedItemsImports = 5
+		Common\Common.projitems*{7c01a76b-3b5c-4861-a1f0-b725d6fe8f04}*SharedItemsImports = 5
 		Common\Common.projitems*{83ce3b0e-6a1f-4477-93ae-affa9ffdf9cc}*SharedItemsImports = 5
 		Common\Common.projitems*{86d15779-c8a5-49c9-8ecd-530298893a52}*SharedItemsImports = 5
 		Common\Common.projitems*{8ceab902-d2ab-4802-82e9-f4a6ab718bf4}*SharedItemsImports = 5
 		Common\Common.projitems*{9de51a63-31ac-4678-9d40-f9351844bea8}*SharedItemsImports = 5
 		Common\Common.projitems*{aa4cef05-e3da-45b8-80ad-e54ba33ce950}*SharedItemsImports = 5
+		Common\Common.projitems*{c7f2932c-0858-48f9-a079-043f8fd5067c}*SharedItemsImports = 5
+		Common\Common.projitems*{d3827bf5-ff59-4b57-8bf6-aee3bde3a138}*SharedItemsImports = 5
 		Common\Common.projitems*{da49490d-32dd-4ef1-8f1e-66a5fa68aeb6}*SharedItemsImports = 5
 		Common\Common.projitems*{defce9f7-0b61-4db9-a3d5-794190e4b4e0}*SharedItemsImports = 5
 		Common\Common.projitems*{eecb6271-93fd-4172-bfdd-33e3f169f8e7}*SharedItemsImports = 13

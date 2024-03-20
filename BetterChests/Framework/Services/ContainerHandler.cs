@@ -4,7 +4,7 @@ using System.Reflection;
 using HarmonyLib;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
-using StardewMods.Common.Extensions;
+using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.Automate;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
@@ -17,12 +17,13 @@ internal sealed class ContainerHandler : BaseService
     private static ContainerHandler instance = null!;
 
     private readonly ContainerFactory containerFactory;
+    private readonly IEventPublisher eventPublisher;
     private readonly IReflectionHelper reflectionHelper;
-    private EventHandler<ItemTransferringEventArgs>? itemTransferring;
 
     /// <summary>Initializes a new instance of the <see cref="ContainerHandler" /> class.</summary>
     /// <param name="automateIntegration">Dependency for integration with Automate.</param>
     /// <param name="containerFactory">Dependency used for accessing containers.</param>
+    /// <param name="eventPublisher">Dependency used for publishing events.</param>
     /// <param name="harmony">Dependency used to patch external code.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
@@ -31,6 +32,7 @@ internal sealed class ContainerHandler : BaseService
     public ContainerHandler(
         AutomateIntegration automateIntegration,
         ContainerFactory containerFactory,
+        IEventPublisher eventPublisher,
         Harmony harmony,
         ILog log,
         IManifest manifest,
@@ -40,6 +42,7 @@ internal sealed class ContainerHandler : BaseService
     {
         ContainerHandler.instance = this;
         this.containerFactory = containerFactory;
+        this.eventPublisher = eventPublisher;
         this.reflectionHelper = reflectionHelper;
 
         harmony.Patch(
@@ -65,13 +68,6 @@ internal sealed class ContainerHandler : BaseService
         }
     }
 
-    /// <summary>Represents an event that is raised before an item is transferred.</summary>
-    public event EventHandler<ItemTransferringEventArgs> ItemTransferring
-    {
-        add => this.itemTransferring += value;
-        remove => this.itemTransferring -= value;
-    }
-
     /// <summary>Transfers items from one container to another.</summary>
     /// <param name="from">The container to transfer items from.</param>
     /// <param name="to">The container to transfer items to.</param>
@@ -95,7 +91,7 @@ internal sealed class ContainerHandler : BaseService
                 }
 
                 var itemTransferringEventArgs = new ItemTransferringEventArgs(to, item, force);
-                this.itemTransferring?.InvokeAll(this, itemTransferringEventArgs);
+                this.eventPublisher.Publish(itemTransferringEventArgs);
                 if (itemTransferringEventArgs.IsPrevented)
                 {
                     return true;
@@ -162,7 +158,7 @@ internal sealed class ContainerHandler : BaseService
         }
 
         var itemTransferringEventArgs = new ItemTransferringEventArgs(to, item, force);
-        this.itemTransferring?.InvokeAll(this, itemTransferringEventArgs);
+        this.eventPublisher.Publish(itemTransferringEventArgs);
         return !itemTransferringEventArgs.IsPrevented;
     }
 }

@@ -177,15 +177,15 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
                 continue;
             }
 
-            var noneEligible = false;
+            var noneEligible = true;
             foreach (var containerTo in containersTo)
             {
                 if (!this.containerHandler.Transfer(containerFrom, containerTo, out var amounts))
                 {
-                    noneEligible = true;
                     break;
                 }
 
+                noneEligible = false;
                 foreach (var (name, amount) in amounts)
                 {
                     if (amount <= 0)

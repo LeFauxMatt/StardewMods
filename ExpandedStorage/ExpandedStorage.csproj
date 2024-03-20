@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>Expanded Storage</Name>
     <Description>Framework for adding new types of chests to the game.</Description>
-    <Version>3.0.0</Version>
+    <Version>3.0.1</Version>
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.ExpandedStorage</RootNamespace>
     <UniqueId>furyx639.ExpandedStorage</UniqueId>

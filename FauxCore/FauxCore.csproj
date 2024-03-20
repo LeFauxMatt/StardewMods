@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Name>FauxCore</Name>
     <Description>Framework that provides shared functionality for all of my mods.</Description>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.FauxCore</RootNamespace>
     <UniqueId>furyx639.FauxCore</UniqueId>
