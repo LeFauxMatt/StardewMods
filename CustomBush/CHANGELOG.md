@@ -1,5 +1,11 @@
 # Custom Bush Change Log
 
+## 1.0.2 (Unreleased)
+
+### Fixed
+
+* Broken bushes should now return the correct item instead of tea sapling.
+
 ## 1.0.1 (March 19, 2024)
 
 ### Changed

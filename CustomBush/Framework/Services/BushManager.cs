@@ -66,6 +66,10 @@ internal sealed class BushManager : BaseService
             postfix: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Bush_inBloom_postfix)));
 
         harmony.Patch(
+            AccessTools.DeclaredMethod(typeof(Bush), nameof(Bush.performToolAction)),
+            transpiler: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Bush_performToolAction_transpiler)));
+
+        harmony.Patch(
             AccessTools.DeclaredMethod(typeof(Bush), nameof(Bush.setUpSourceRect)),
             postfix: new HarmonyMethod(typeof(BushManager), nameof(BushManager.Bush_setUpSourceRect_postfix)));
 
@@ -284,6 +288,27 @@ internal sealed class BushManager : BaseService
         __instance.modData[BushManager.instance.modDataStack] = item.Stack.ToString(CultureInfo.InvariantCulture);
     }
 
+    private static IEnumerable<CodeInstruction> Bush_performToolAction_transpiler(
+        IEnumerable<CodeInstruction> instructions)
+    {
+        var method = AccessTools
+            .GetDeclaredMethods(typeof(ItemRegistry))
+            .First(method => method.Name == nameof(ItemRegistry.Create) && !method.IsGenericMethod);
+
+        foreach (var instruction in instructions)
+        {
+            if (instruction.Calls(method))
+            {
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return CodeInstruction.Call(typeof(BushManager), nameof(BushManager.CreateBushItem));
+            }
+            else
+            {
+                yield return instruction;
+            }
+        }
+    }
+
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Bush_setUpSourceRect_postfix(Bush __instance, NetRectangle ___sourceRect)
@@ -349,6 +374,17 @@ internal sealed class BushManager : BaseService
         var parameters = new object[] { bushModel.PlantableLocationRules, isGardenPot, defaultAllowed, null! };
         __result = (bool)BushManager.instance.checkItemPlantRules.Invoke(__instance, parameters)!;
         deniedMessage = (string)parameters[3];
+    }
+
+    [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
+    private static Item CreateBushItem(string itemId, int amount, int quality, bool allowNull, Bush bush)
+    {
+        if (bush.modData.TryGetValue(BushManager.instance.modDataId, out var bushId))
+        {
+            itemId = bushId;
+        }
+
+        return ItemRegistry.Create(itemId, amount, quality, allowNull);
     }
 
     [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Harmony")]
