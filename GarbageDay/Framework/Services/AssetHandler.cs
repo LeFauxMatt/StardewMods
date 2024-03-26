@@ -100,13 +100,16 @@ internal sealed class AssetHandler : BaseService
                     {
                         var layer = map.GetLayer("Buildings");
                         var tile = layer.PickTile(new Location(x, y) * Game1.tileSize, Game1.viewport.Size);
-                        if (tile is null || !tile.Properties.TryGetValue("Action", out var property))
+                        if (tile is null
+                            || !tile.Properties.TryGetValue("Action", out var property)
+                            || string.IsNullOrWhiteSpace(property))
                         {
                             continue;
                         }
 
                         var parts = ArgUtility.SplitBySpace(property);
-                        if (parts[0] != "Garbage"
+                        if (parts.Length < 2
+                            || !parts[0].Equals("Garbage", StringComparison.OrdinalIgnoreCase)
                             || string.IsNullOrWhiteSpace(parts[1])
                             || !this.garbageCanManager.TryAddFound(parts[1], asset.NameWithoutLocale, x, y))
                         {

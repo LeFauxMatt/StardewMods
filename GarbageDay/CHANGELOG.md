@@ -4,6 +4,7 @@
 
 ### Fixed
 
+* Fixed error that occurs when custom maps are installed.
 * Fixed api integration with Toolbar Icons.
 
 ## 3.1.1 (March 19, 2024)
