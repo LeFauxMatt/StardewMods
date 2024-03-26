@@ -1,14 +1,14 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(SolutionDir)\Common\Common.projitems" Label="Shared"/>
   <PropertyGroup>
-    <Author>LeFauxMatt</Author>
     <Authors>LeFauxMatt</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/LeFauxMatt/StardewMods</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <MinimumApiVersion>4.0.0-alpha.20231101</MinimumApiVersion>
+    <BaseManifest>new</BaseManifest>
+    <MinimumApiVersion_Behavior>Update</MinimumApiVersion_Behavior>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <EnableModZip Condition="'$(Configuration)' == 'Debug'">False</EnableModZip>
     <ModZipPath>$(SolutionDir)\releases</ModZipPath>

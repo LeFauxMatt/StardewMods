@@ -311,7 +311,7 @@ internal sealed class ItemGrabMenuManager : BaseService
     [EventPriority((EventPriority)int.MaxValue)]
     private void OnRenderingActiveMenu(RenderingActiveMenuEventArgs e)
     {
-        if (this.CurrentMenu is null)
+        if (this.CurrentMenu is null || Game1.options.showClearBackgrounds)
         {
             return;
         }
@@ -320,7 +320,7 @@ internal sealed class ItemGrabMenuManager : BaseService
         e.SpriteBatch.Draw(
             Game1.fadeToBlackRect,
             new Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),
-            Color.Black * 0.5f);
+            Color.Black * 0.25f);
     }
 
     [EventPriority((EventPriority)int.MinValue)]

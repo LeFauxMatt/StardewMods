@@ -1,5 +1,23 @@
 ﻿# Better Chests Change Log
 
+## 2.9.2 (Unreleased)
+
+### Changed
+
+* Updated default stash distance to 10 tiles to prevent unintentional stashing.
+
+### Fixed
+
+* Crafting now works for chests outside of the current location.
+* Stashing is now able to find eligible chests.
+* Backpack items are no longer double counted towards crafting materials.
+* Prevent chest being lost when added to a carried chest. 
+* Chest menu background is no longer black.
+* Cursor should be drawn above the color picker.
+* Chest color is no longer lost when clicking in the chest menu.
+* Loading incompatible data will now generate new data (tabs and config).
+* Toolbar icons can now be used for stashing/crafting.
+
 ## 2.9.1 (March 19, 2024)
 
 ### Changed

@@ -1,6 +1,7 @@
 namespace StardewMods.Common.Services;
 
 using System.Reflection;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Models;
 using StardewMods.Common.Services.Integrations.FauxCore;
@@ -8,6 +9,8 @@ using StardewMods.Common.Services.Integrations.FauxCore;
 /// <summary>Represents a base event manager service.</summary>
 internal class BaseEventManager : BaseService, IEventManager
 {
+    private static readonly ReverseComparer<int> ReverseComparer = new();
+
     /// <summary>Initializes a new instance of the <see cref="BaseEventManager" /> class.</summary>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
@@ -30,7 +33,7 @@ internal class BaseEventManager : BaseService, IEventManager
                 return;
             }
 
-            handlersToInvoke = new SortedList<int, List<Delegate>>(priorityHandlers);
+            handlersToInvoke = new SortedList<int, List<Delegate>>(priorityHandlers, BaseEventManager.ReverseComparer);
         }
 
         foreach (var priorityGroup in handlersToInvoke.Values)

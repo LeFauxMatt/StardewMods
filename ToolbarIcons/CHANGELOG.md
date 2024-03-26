@@ -1,5 +1,11 @@
 # Toolbar Icons Change Log
 
+## 2.6.2 (Unreleased)
+
+### Fixed
+
+* Fixed api integration with other mods.
+
 ## 2.6.1 (March 19, 2024)
 
 ### Changed

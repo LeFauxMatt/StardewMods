@@ -3,7 +3,6 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using System.Collections.Immutable;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Models.Events;
@@ -53,7 +52,7 @@ internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
 
     /// <inheritdoc />
     public bool MatchesFilter(Item item) =>
-        this.Config.InventoryTabMethod == Method.Default
+        this.Config.InventoryTabMethod == FilterMethod.Default
         || this.resetCache.Value
         || !this.cachedTabs.Value.Any()
         || this.currentIndex.Value < 0
@@ -87,8 +86,8 @@ internal sealed class InventoryTabs : BaseFeature<InventoryTabs>, IItemFilter
             ? items
             : this.Config.InventoryTabMethod switch
             {
-                Method.Sorted or Method.GrayedOut => items.OrderByDescending(this.MatchesFilter),
-                Method.Hidden => items.Where(this.MatchesFilter),
+                FilterMethod.Sorted or FilterMethod.GrayedOut => items.OrderByDescending(this.MatchesFilter),
+                FilterMethod.Hidden => items.Where(this.MatchesFilter),
                 _ => items,
             };
 

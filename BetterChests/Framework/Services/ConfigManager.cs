@@ -1,6 +1,5 @@
 namespace StardewMods.BetterChests.Framework.Services;
 
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
@@ -56,9 +55,6 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
     public int CarryChestSlowLimit => this.Config.CarryChestSlowLimit;
 
     /// <inheritdoc />
-    public Method CategorizeChestMethod => this.Config.CategorizeChestMethod;
-
-    /// <inheritdoc />
     public Controls Controls => this.Config.Controls;
 
     /// <inheritdoc />
@@ -71,7 +67,7 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
     public int CraftFromWorkbenchDistance => this.Config.CraftFromWorkbenchDistance;
 
     /// <inheritdoc />
-    public Method InventoryTabMethod => this.Config.InventoryTabMethod;
+    public FilterMethod InventoryTabMethod => this.Config.InventoryTabMethod;
 
     /// <inheritdoc />
     public FeatureOption LockItem => this.Config.LockItem;
@@ -80,7 +76,7 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
     public bool LockItemHold => this.Config.LockItemHold;
 
     /// <inheritdoc />
-    public Method SearchItemsMethod => this.Config.SearchItemsMethod;
+    public FilterMethod SearchItemsMethod => this.Config.SearchItemsMethod;
 
     /// <inheritdoc />
     public char SearchTagSymbol => this.Config.SearchTagSymbol;
@@ -90,9 +86,6 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
 
     /// <inheritdoc />
     public HashSet<string> StashToChestDisableLocations => this.Config.StashToChestDisableLocations;
-
-    /// <inheritdoc />
-    public bool StashToChestStacks => this.Config.StashToChestStacks;
 
     /// <summary>Setup the main config options.</summary>
     public void SetupMainConfig()
@@ -186,6 +179,28 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
                 I18n.Config_CategorizeChest_Tooltip,
                 FeatureOptionExtensions.GetNames(),
                 this.localizedTextManager.FormatOption);
+
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.CategorizeChestAutomatically.ToStringFast(),
+                value => options.CategorizeChestAutomatically = FeatureOptionExtensions.TryParse(value, out var option)
+                    ? option
+                    : FeatureOption.Default,
+                I18n.Config_CategorizeChestAutomatically_Name,
+                I18n.Config_CategorizeChestAutomatically_Tooltip,
+                FeatureOptionExtensions.GetNames(),
+                this.localizedTextManager.FormatOption);
+
+            gmcm.AddTextOption(
+                this.manifest,
+                () => options.CategorizeChestMethod.ToStringFast(),
+                value => options.CategorizeChestMethod = FilterMethodExtensions.TryParse(value, out var filterMethod)
+                    ? filterMethod
+                    : FilterMethod.Default,
+                I18n.Config_CategorizeChestMethod_Name,
+                I18n.Config_CategorizeChestMethod_Tooltip,
+                FilterMethodExtensions.GetNames(),
+                this.localizedTextManager.FormatMethod);
         }
 
         // Chest Finder
@@ -578,17 +593,6 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
             1,
             this.localizedTextManager.CarryChestLimit);
 
-        // Categorize Chest Method
-        gmcm.AddTextOption(
-            this.manifest,
-            () => config.CategorizeChestMethod.ToStringFast(),
-            value => config.CategorizeChestMethod =
-                MethodExtensions.TryParse(value, out var method) ? method : Method.Default,
-            I18n.Config_CategorizeChestMethod_Name,
-            I18n.Config_CategorizeChestMethod_Tooltip,
-            MethodExtensions.GetNames(),
-            this.localizedTextManager.FormatMethod);
-
         // TODO: Move Workbench into an object type config for workbench
         // Craft From Workbench
         gmcm.AddNumberOption(
@@ -640,10 +644,10 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
             this.manifest,
             () => config.InventoryTabMethod.ToStringFast(),
             value => config.InventoryTabMethod =
-                MethodExtensions.TryParse(value, out var method) ? method : Method.Default,
+                FilterMethodExtensions.TryParse(value, out var method) ? method : FilterMethod.Default,
             I18n.Config_CategorizeChestMethod_Name,
             I18n.Config_CategorizeChestMethod_Tooltip,
-            MethodExtensions.GetNames(),
+            FilterMethodExtensions.GetNames(),
             this.localizedTextManager.FormatMethod);
 
         // Lock Item
@@ -670,10 +674,10 @@ internal sealed class ConfigManager : ConfigManager<DefaultConfig>, IModConfig
             this.manifest,
             () => config.SearchItemsMethod.ToStringFast(),
             value => config.SearchItemsMethod =
-                MethodExtensions.TryParse(value, out var method) ? method : Method.Default,
+                FilterMethodExtensions.TryParse(value, out var method) ? method : FilterMethod.Default,
             I18n.Config_CategorizeChestMethod_Name,
             I18n.Config_CategorizeChestMethod_Tooltip,
-            MethodExtensions.GetNames(),
+            FilterMethodExtensions.GetNames(),
             this.localizedTextManager.FormatMethod);
 
         // Search Tag Symbol

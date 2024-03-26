@@ -1,6 +1,5 @@
 namespace StardewMods.BetterChests.Framework.Interfaces;
 
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
@@ -16,9 +15,6 @@ internal interface IModConfig
 
     /// <summary>Gets a value indicating how many chests can be carried before applying a slowness effect.</summary>
     public int CarryChestSlowLimit { get; }
-
-    /// <summary>Gets a value indicating how categorized items will be displayed.</summary>
-    public Method CategorizeChestMethod { get; }
 
     /// <summary>Gets the control scheme.</summary>
     public Controls Controls { get; }
@@ -36,7 +32,7 @@ internal interface IModConfig
     public int CraftFromWorkbenchDistance { get; }
 
     /// <summary>Gets a value indicating how tab items will be displayed.</summary>
-    public Method InventoryTabMethod { get; }
+    public FilterMethod InventoryTabMethod { get; }
 
     /// <summary>Gets a value indicating whether the slot lock feature is enabled.</summary>
     public FeatureOption LockItem { get; }
@@ -45,7 +41,7 @@ internal interface IModConfig
     public bool LockItemHold { get; }
 
     /// <summary>Gets a value indicating how searched items will be displayed.</summary>
-    public Method SearchItemsMethod { get; }
+    public FilterMethod SearchItemsMethod { get; }
 
     /// <summary>Gets the symbol used to denote context tags in searches.</summary>
     public char SearchTagSymbol { get; }
@@ -58,7 +54,4 @@ internal interface IModConfig
     /// locations.
     /// </summary>
     public HashSet<string> StashToChestDisableLocations { get; }
-
-    /// <summary>Gets a value indicating whether stashing into the chest will fill existing item stacks.</summary>
-    public bool StashToChestStacks { get; }
 }

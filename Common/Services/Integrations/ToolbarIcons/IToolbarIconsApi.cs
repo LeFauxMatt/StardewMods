@@ -21,12 +21,10 @@ public interface IToolbarIconsApi
     public void RemoveToolbarIcon(string id);
 
     /// <summary>Subscribes to an event handler.</summary>
-    /// <typeparam name="TEventArgs">The type of the event arguments.</typeparam>
     /// <param name="handler">The event handler to subscribe.</param>
-    void Subscribe<TEventArgs>(Action<TEventArgs> handler);
+    void Subscribe(Action<IIconPressedEventArgs> handler);
 
     /// <summary>Unsubscribes an event handler from an event.</summary>
     /// <param name="handler">The event handler to unsubscribe.</param>
-    /// <typeparam name="TEventArgs">The type of the event arguments.</typeparam>
-    void Unsubscribe<TEventArgs>(Action<TEventArgs> handler);
+    void Unsubscribe(Action<IIconPressedEventArgs> handler);
 }

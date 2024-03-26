@@ -78,7 +78,16 @@ internal sealed class AssetHandler : BaseService
 
     private Dictionary<string, InventoryTabData> GetTabData()
     {
-        var tabData = this.dataHelper.ReadJsonFile<Dictionary<string, InventoryTabData>>("assets/tabs.json");
+        Dictionary<string, InventoryTabData>? tabData;
+        try
+        {
+            tabData = this.dataHelper.ReadJsonFile<Dictionary<string, InventoryTabData>>("assets/tabs.json");
+        }
+        catch (Exception)
+        {
+            tabData = null;
+        }
+
         if (tabData is not null && tabData.Any())
         {
             return tabData;

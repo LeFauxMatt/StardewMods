@@ -1,7 +1,6 @@
 namespace StardewMods.BetterChests.Framework.Services;
 
 using System.Globalization;
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FauxCore;
@@ -61,11 +60,11 @@ internal sealed class LocalizedTextManager : BaseService
     /// <param name="value">The method value to format.</param>
     /// <returns>Localized text for the method value.</returns>
     public string FormatMethod(string value) =>
-        (MethodExtensions.TryParse(value, out var method) ? method : Method.Default) switch
+        (FilterMethodExtensions.TryParse(value, out var method) ? method : FilterMethod.Default) switch
         {
-            Method.Sorted => I18n.Method_Sorted_Name(),
-            Method.GrayedOut => I18n.Method_GrayedOut_Name(),
-            Method.Hidden => I18n.Method_Hidden_Name(),
+            FilterMethod.Sorted => I18n.Method_Sorted_Name(),
+            FilterMethod.GrayedOut => I18n.Method_GrayedOut_Name(),
+            FilterMethod.Hidden => I18n.Method_Hidden_Name(),
             _ => I18n.Option_Default_Name(),
         };
 

@@ -2,7 +2,7 @@ namespace StardewMods.BetterChests.Framework.UI;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewMods.Common.Extensions;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Models;
 using StardewValley.Menus;
 

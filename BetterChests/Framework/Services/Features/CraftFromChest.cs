@@ -5,6 +5,7 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Interfaces;
+using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
@@ -87,7 +88,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
             new Rectangle(32, 0, 16, 16),
             I18n.Button_CraftFromChest_Name());
 
-        this.toolbarIconsIntegration.Api.Subscribe<IIconPressedEventArgs>(this.OnIconPressed);
+        this.toolbarIconsIntegration.Api.Subscribe(this.OnIconPressed);
     }
 
     /// <inheritdoc />
@@ -109,7 +110,7 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
         }
 
         this.toolbarIconsIntegration.Api.RemoveToolbarIcon(this.Id);
-        this.toolbarIconsIntegration.Api.Unsubscribe<IIconPressedEventArgs>(this.OnIconPressed);
+        this.toolbarIconsIntegration.Api.Unsubscribe(this.OnIconPressed);
     }
 
     private static IEnumerable<CodeInstruction> GameMenu_constructor_transpiler(
@@ -145,7 +146,8 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
         return containers.Count > 0 ? containers.Select(container => container.Items).ToList() : null;
 
         bool Predicate(IStorageContainer container) =>
-            container.Options.CraftFromChest is not (RangeOption.Disabled or RangeOption.Default)
+            container is not FarmerContainer
+            && container.Options.CraftFromChest is not (RangeOption.Disabled or RangeOption.Default)
             && container.Items.Count > 0
             && !CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains(
                 Game1.player.currentLocation.Name)
@@ -205,7 +207,8 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
             return;
         }
 
-        var mutexes = containers.Select(container => container.Mutex).OfType<NetMutex>().ToArray();
+        //var mutexes = containers.Select(container => container.Mutex).OfType<NetMutex>().ToArray();
+        var mutexes = Array.Empty<NetMutex>();
         var inventories = containers.Select(container => container.Items).ToList();
         _ = new MultipleMutexRequest(
             mutexes,
@@ -236,7 +239,8 @@ internal sealed class CraftFromChest : BaseFeature<CraftFromChest>
             container.TileLocation);
 
     private bool WorkbenchPredicate(IStorageContainer container) =>
-        container.Options.CraftFromChest is not RangeOption.Disabled
+        container is not FarmerContainer
+        && container.Options.CraftFromChest is not RangeOption.Disabled
         && container.Items.Count > 0
         && !CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains(Game1.player.currentLocation.Name)
         && !(CraftFromChest.instance.Config.CraftFromChestDisableLocations.Contains("UndergroundMine")

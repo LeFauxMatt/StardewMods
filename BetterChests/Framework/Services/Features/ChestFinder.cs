@@ -95,7 +95,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
             new Rectangle(48, 0, 16, 16),
             I18n.Button_FindChest_Name());
 
-        this.toolbarIconsIntegration.Api.Subscribe<IIconPressedEventArgs>(this.OnIconPressed);
+        this.toolbarIconsIntegration.Api.Subscribe(this.OnIconPressed);
     }
 
     /// <inheritdoc />
@@ -116,7 +116,7 @@ internal sealed class ChestFinder : BaseFeature<ChestFinder>
         }
 
         this.toolbarIconsIntegration.Api.RemoveToolbarIcon(this.Id);
-        this.toolbarIconsIntegration.Api.Unsubscribe<IIconPressedEventArgs>(this.OnIconPressed);
+        this.toolbarIconsIntegration.Api.Unsubscribe(this.OnIconPressed);
     }
 
     private void OnButtonPressed(ButtonPressedEventArgs e)

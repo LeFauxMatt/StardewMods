@@ -3,7 +3,7 @@ namespace StardewMods.GarbageDay.Framework.Services;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.Common.Extensions;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FauxCore;
@@ -252,7 +252,7 @@ internal sealed class GarbageCanManager : BaseService<GarbageCanManager>
             new Rectangle(0, 0, 16, 16),
             I18n.Button_GarbageFill_Name());
 
-        this.toolbarIconsIntegration.Api.Subscribe<IIconPressedEventArgs>(this.OnIconPressed);
+        this.toolbarIconsIntegration.Api.Subscribe(this.OnIconPressed);
     }
 
     private bool TryCreateGarbageCan(FoundGarbageCan foundGarbageCan, [NotNullWhen(true)] out GarbageCan? garbageCan)

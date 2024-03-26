@@ -2,7 +2,6 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
@@ -87,8 +86,9 @@ internal sealed class SearchItems : BaseFeature<SearchItems>
             ? items
             : this.Config.SearchItemsMethod switch
             {
-                Method.Sorted or Method.GrayedOut => items.OrderByDescending(this.itemMatcher.Value.MatchesFilter),
-                Method.Hidden => items.Where(this.itemMatcher.Value.MatchesFilter),
+                FilterMethod.Sorted or FilterMethod.GrayedOut => items.OrderByDescending(
+                    this.itemMatcher.Value.MatchesFilter),
+                FilterMethod.Hidden => items.Where(this.itemMatcher.Value.MatchesFilter),
                 _ => items,
             };
 

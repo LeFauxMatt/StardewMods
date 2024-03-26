@@ -23,7 +23,18 @@ internal class ConfigManager<TConfig>
     {
         this.eventPublisher = eventPublisher;
         this.modHelper = modHelper;
-        this.Config = this.modHelper.ReadConfig<TConfig>();
+
+        TConfig? config;
+        try
+        {
+            config = this.modHelper.ReadConfig<TConfig>();
+        }
+        catch
+        {
+            config = null;
+        }
+
+        this.Config = config ?? new TConfig();
     }
 
     /// <summary>Gets the backing config.</summary>

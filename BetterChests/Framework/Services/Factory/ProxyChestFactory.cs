@@ -5,7 +5,7 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewMods.BetterChests.Framework.Models;
-using StardewMods.Common.Extensions;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FauxCore;
 using StardewValley.Objects;
@@ -153,6 +153,7 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
 
         if (this.proxyChests.TryGetValue(id, out chest))
         {
+            chest.resetLidFrame();
             return true;
         }
 
@@ -214,7 +215,12 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_canBeDropped_postfix(Item __instance, ref bool __result)
     {
-        if (__result && ProxyChestFactory.instance.IsProxy(__instance))
+        if (!__result)
+        {
+            return;
+        }
+
+        if (ProxyChestFactory.instance.IsProxy(__instance))
         {
             __result = false;
         }
@@ -225,7 +231,12 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_canBeTrashed_postfix(Item __instance, ref bool __result)
     {
-        if (__result && ProxyChestFactory.instance.IsProxy(__instance))
+        if (!__result)
+        {
+            return;
+        }
+
+        if (ProxyChestFactory.instance.IsProxy(__instance))
         {
             __result = false;
         }
@@ -236,10 +247,12 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Item_canStackWith_postfix(Item __instance, ref bool __result, ISalable other)
     {
-        if (__result && (ProxyChestFactory.instance.IsProxy(__instance) || ProxyChestFactory.instance.IsProxy(other)))
+        if (!__result)
         {
-            __result = false;
+            return;
         }
+
+        __result = !ProxyChestFactory.instance.IsProxy(__instance) && !ProxyChestFactory.instance.IsProxy(other);
     }
 
     [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Harmony")]
@@ -292,9 +305,9 @@ internal sealed class ProxyChestFactory : BaseService<ProxyChestFactory>
     [SuppressMessage("StyleCop", "SA1313", Justification = "Harmony")]
     private static void Object_maximumStackSize_postfix(SObject __instance, ref int __result)
     {
-        if (__result > 0 && ProxyChestFactory.instance.IsProxy(__instance))
+        if (__result > 1 && ProxyChestFactory.instance.IsProxy(__instance))
         {
-            __result = -1;
+            __result = 1;
         }
     }
 

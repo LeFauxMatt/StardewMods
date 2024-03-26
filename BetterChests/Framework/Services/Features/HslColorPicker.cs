@@ -386,10 +386,13 @@ internal sealed class HslColorPicker : BaseFeature<HslColorPicker>
             - 56
             + (IClickableMenu.borderWidth / 2);
 
-        chest.playerChoiceColor.Value = container.Chest.playerChoiceColor.Value;
+        var c = container.Chest.playerChoiceColor.Value;
+        chest.playerChoiceColor.Value = c;
         this.CurrentColor = container.Chest.playerChoiceColor.Value == Color.Black
             ? new HslColor(0, 0, 0)
-            : HslColor.FromColor(container.Chest.playerChoiceColor.Value);
+            : HslColor.FromColor(c);
+
+        this.ColorSelection = (c.R << 0) | (c.G << 8) | (c.B << 16);
 
         this.copyButtonArea.Value = new Rectangle(this.xPosition.Value + 30, this.yPosition.Value - 4, 36, 36);
         this.noColorButtonArea.Value = new Rectangle(this.xPosition.Value - 6, this.yPosition.Value - 4, 36, 36);

@@ -16,6 +16,12 @@ internal class DefaultStorageOptions : IStorageOptions
     public FeatureOption CategorizeChest { get; set; } = FeatureOption.Enabled;
 
     /// <inheritdoc />
+    public FeatureOption CategorizeChestAutomatically { get; set; } = FeatureOption.Enabled;
+
+    /// <inheritdoc />
+    public FilterMethod CategorizeChestMethod { get; set; } = FilterMethod.GrayedOut;
+
+    /// <inheritdoc />
     public HashSet<string> CategorizeChestTags { get; set; } = [];
 
     /// <inheritdoc />
@@ -61,7 +67,7 @@ internal class DefaultStorageOptions : IStorageOptions
     public RangeOption StashToChest { get; set; } = RangeOption.Location;
 
     /// <inheritdoc />
-    public int StashToChestDistance { get; set; } = -1;
+    public int StashToChestDistance { get; set; } = 10;
 
     /// <inheritdoc />
     public int StashToChestPriority { get; set; }

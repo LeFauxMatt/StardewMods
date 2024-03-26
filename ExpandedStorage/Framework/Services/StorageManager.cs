@@ -1,7 +1,7 @@
 namespace StardewMods.ExpandedStorage.Framework.Services;
 
 using StardewModdingAPI.Events;
-using StardewMods.Common.Extensions;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.ContentPatcher;

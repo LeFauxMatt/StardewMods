@@ -1,10 +1,10 @@
-namespace StardewMods.BetterChests.Framework.Enums;
+namespace StardewMods.Common.Services.Integrations.BetterChests.Enums;
 
 using NetEscapades.EnumGenerators;
 
 /// <summary>The method used to select items.</summary>
 [EnumExtensions]
-internal enum Method
+public enum FilterMethod
 {
     /// <summary>no transformation will be applied.</summary>
     Default = 0,

@@ -72,7 +72,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
             new Rectangle(16, 0, 16, 16),
             I18n.Button_StashToChest_Name());
 
-        this.toolbarIconsIntegration.Api.Subscribe<IIconPressedEventArgs>(this.OnIconPressed);
+        this.toolbarIconsIntegration.Api.Subscribe(this.OnIconPressed);
     }
 
     /// <inheritdoc />
@@ -89,7 +89,7 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
         }
 
         this.toolbarIconsIntegration.Api.RemoveToolbarIcon(this.Id);
-        this.toolbarIconsIntegration.Api.Unsubscribe<IIconPressedEventArgs>(this.OnIconPressed);
+        this.toolbarIconsIntegration.Api.Unsubscribe(this.OnIconPressed);
     }
 
     private void OnButtonPressed(ButtonPressedEventArgs e)
@@ -177,15 +177,14 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
                 continue;
             }
 
-            var noneEligible = true;
             foreach (var containerTo in containersTo)
             {
                 if (!this.containerHandler.Transfer(containerFrom, containerTo, out var amounts))
                 {
-                    break;
+                    continue;
                 }
 
-                noneEligible = false;
+                stashedAny = true;
                 foreach (var (name, amount) in amounts)
                 {
                     if (amount <= 0)
@@ -193,7 +192,6 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
                         continue;
                     }
 
-                    stashedAny = true;
                     this.Log.Trace(
                         "{0}: {{ Item: {1}, Quantity: {2}, From: {3}, To: {4} }}",
                         this.Id,
@@ -202,11 +200,6 @@ internal sealed class StashToChest : BaseFeature<StashToChest>
                         containerFrom,
                         containerTo);
                 }
-            }
-
-            if (noneEligible)
-            {
-                break;
             }
         }
 

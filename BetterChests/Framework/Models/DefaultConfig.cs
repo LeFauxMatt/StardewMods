@@ -1,6 +1,5 @@
 ﻿namespace StardewMods.BetterChests.Framework.Models;
 
-using StardewMods.BetterChests.Framework.Enums;
 using StardewMods.BetterChests.Framework.Interfaces;
 using StardewMods.BetterChests.Framework.Models.StorageOptions;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
@@ -18,9 +17,6 @@ internal sealed class DefaultConfig : IModConfig
     public int CarryChestSlowLimit { get; set; } = 1;
 
     /// <inheritdoc />
-    public Method CategorizeChestMethod { get; set; } = Method.GrayedOut;
-
-    /// <inheritdoc />
     public Controls Controls { get; set; } = new();
 
     /// <inheritdoc />
@@ -33,7 +29,7 @@ internal sealed class DefaultConfig : IModConfig
     public int CraftFromWorkbenchDistance { get; set; } = -1;
 
     /// <inheritdoc />
-    public Method InventoryTabMethod { get; set; } = Method.Hidden;
+    public FilterMethod InventoryTabMethod { get; set; } = FilterMethod.Hidden;
 
     /// <inheritdoc />
     public FeatureOption LockItem { get; set; }
@@ -42,7 +38,7 @@ internal sealed class DefaultConfig : IModConfig
     public bool LockItemHold { get; set; } = true;
 
     /// <inheritdoc />
-    public Method SearchItemsMethod { get; set; } = Method.GrayedOut;
+    public FilterMethod SearchItemsMethod { get; set; } = FilterMethod.GrayedOut;
 
     /// <inheritdoc />
     public char SearchTagSymbol { get; set; } = '#';
@@ -52,7 +48,4 @@ internal sealed class DefaultConfig : IModConfig
 
     /// <inheritdoc />
     public HashSet<string> StashToChestDisableLocations { get; set; } = [];
-
-    /// <inheritdoc />
-    public bool StashToChestStacks { get; set; } = true;
 }

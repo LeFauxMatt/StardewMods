@@ -2,7 +2,7 @@ namespace StardewMods.BetterChests.Framework.Models.StorageOptions;
 
 using System.Globalization;
 using NetEscapades.EnumGenerators;
-using StardewMods.Common.Extensions;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 
@@ -10,46 +10,12 @@ using StardewMods.Common.Services.Integrations.BetterChests.Interfaces;
 internal abstract class DictionaryStorageOptions : IStorageOptions
 {
     private const string Prefix = "furyx639.BetterChests/";
+    private readonly Dictionary<string, CachedValue<FilterMethod>> cachedFilterMethod = new();
 
     private readonly Dictionary<string, CachedValue<HashSet<string>>> cachedHashSet = new();
     private readonly Dictionary<string, CachedValue<int>> cachedInt = new();
-
     private readonly Dictionary<string, CachedValue<FeatureOption>> cachedOption = new();
     private readonly Dictionary<string, CachedValue<RangeOption>> cachedRangeOption = new();
-
-    /// <inheritdoc />
-    public string ChestLabel
-    {
-        get => this.Get(StringKey.ChestLabel);
-        set => this.Set(StringKey.ChestLabel, value);
-    }
-
-    /// <inheritdoc />
-    public FeatureOption OrganizeItems
-    {
-        get => this.Get(OptionKey.OrganizeItems);
-        set => this.Set(OptionKey.OrganizeItems, value);
-    }
-
-    /// <inheritdoc />
-    public GroupBy OrganizeItemsGroupBy { get; set; }
-
-    /// <inheritdoc />
-    public SortBy OrganizeItemsSortBy { get; set; }
-
-    /// <inheritdoc />
-    public FeatureOption TransferItems
-    {
-        get => this.Get(OptionKey.TransferItems);
-        set => this.Set(OptionKey.TransferItems, value);
-    }
-
-    /// <inheritdoc />
-    public FeatureOption UnloadChest
-    {
-        get => this.Get(OptionKey.UnloadChest);
-        set => this.Set(OptionKey.UnloadChest, value);
-    }
 
     /// <inheritdoc />
     public FeatureOption AutoOrganize
@@ -70,6 +36,20 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     {
         get => this.Get(OptionKey.CategorizeChest);
         set => this.Set(OptionKey.CategorizeChest, value);
+    }
+
+    /// <inheritdoc />
+    public FeatureOption CategorizeChestAutomatically
+    {
+        get => this.Get(OptionKey.CategorizeChestAutomatically);
+        set => this.Set(OptionKey.CategorizeChestAutomatically, value);
+    }
+
+    /// <inheritdoc />
+    public FilterMethod CategorizeChestMethod
+    {
+        get => this.Get(FilterMethodKey.CategorizeChestMethod);
+        set => this.Set(FilterMethodKey.CategorizeChestMethod, value);
     }
 
     /// <inheritdoc />
@@ -247,6 +227,29 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
         return newValue;
     }
 
+    private FilterMethod Get(FilterMethodKey filterMethodKey)
+    {
+        var key = DictionaryStorageOptions.Prefix + filterMethodKey.ToStringFast();
+        if (!this.TryGetValue(key, out var value))
+        {
+            return FilterMethod.Default;
+        }
+
+        // Return from cache
+        if (this.cachedFilterMethod.TryGetValue(key, out var cachedValue) && cachedValue.OriginalValue == value)
+        {
+            return cachedValue.Value;
+        }
+
+        // Save to cache
+        var newValue = FilterMethodExtensions.TryParse(value, out var filterMethod)
+            ? filterMethod
+            : FilterMethod.Default;
+
+        this.cachedFilterMethod[key] = new CachedValue<FilterMethod>(value, newValue);
+        return newValue;
+    }
+
     private HashSet<string> Get(HashSetKey hashSetKey)
     {
         var key = DictionaryStorageOptions.Prefix + hashSetKey.ToStringFast();
@@ -309,6 +312,14 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
         this.SetValue(key, stringValue);
     }
 
+    private void Set(FilterMethodKey filterMethodKey, FilterMethod value)
+    {
+        var key = DictionaryStorageOptions.Prefix + filterMethodKey.ToStringFast();
+        var stringValue = value == FilterMethod.Default ? string.Empty : value.ToStringFast();
+        this.cachedFilterMethod[key] = new CachedValue<FilterMethod>(stringValue, value);
+        this.SetValue(key, stringValue);
+    }
+
     private void Set(HashSetKey hashSetKey, HashSet<string> value)
     {
         var key = DictionaryStorageOptions.Prefix + hashSetKey.ToStringFast();
@@ -356,11 +367,18 @@ internal abstract class DictionaryStorageOptions : IStorageOptions
     }
 
     [EnumExtensions]
+    internal enum FilterMethodKey
+    {
+        CategorizeChestMethod,
+    }
+
+    [EnumExtensions]
     internal enum OptionKey
     {
         AutoOrganize,
         CarryChest,
         CategorizeChest,
+        CategorizeChestAutomatically,
         ChestFinder,
         ChestInfo,
         CollectItems,

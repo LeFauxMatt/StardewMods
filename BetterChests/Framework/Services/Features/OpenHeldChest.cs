@@ -3,12 +3,12 @@ namespace StardewMods.BetterChests.Framework.Services.Features;
 using HarmonyLib;
 using StardewModdingAPI.Events;
 using StardewMods.BetterChests.Framework.Interfaces;
-using StardewMods.BetterChests.Framework.Models.Containers;
 using StardewMods.BetterChests.Framework.Models.Events;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services.Integrations.BetterChests.Enums;
 using StardewMods.Common.Services.Integrations.FauxCore;
+using StardewValley.Menus;
 using StardewValley.Objects;
 
 /// <summary>Allows a chest to be opened while in the farmer's inventory.</summary>
@@ -18,6 +18,7 @@ internal sealed class OpenHeldChest : BaseFeature<OpenHeldChest>
     private readonly Harmony harmony;
     private readonly IInputHelper inputHelper;
     private readonly ItemGrabMenuManager itemGrabMenuManager;
+    private readonly ProxyChestFactory proxyChestFactory;
 
     /// <summary>Initializes a new instance of the <see cref="OpenHeldChest" /> class.</summary>
     /// <param name="modConfig">Dependency used for accessing config data.</param>
@@ -28,6 +29,7 @@ internal sealed class OpenHeldChest : BaseFeature<OpenHeldChest>
     /// <param name="itemGrabMenuManager">Dependency used for managing the item grab menu.</param>
     /// <param name="log">Dependency used for logging debug information to the console.</param>
     /// <param name="manifest">Dependency for accessing mod manifest.</param>
+    /// <param name="proxyChestFactory">Dependency used for creating virtualized chests.</param>
     public OpenHeldChest(
         ContainerFactory containerFactory,
         IEventManager eventManager,
@@ -36,13 +38,15 @@ internal sealed class OpenHeldChest : BaseFeature<OpenHeldChest>
         ItemGrabMenuManager itemGrabMenuManager,
         ILog log,
         IManifest manifest,
-        IModConfig modConfig)
+        IModConfig modConfig,
+        ProxyChestFactory proxyChestFactory)
         : base(eventManager, log, manifest, modConfig)
     {
         this.containerFactory = containerFactory;
         this.harmony = harmony;
         this.inputHelper = inputHelper;
         this.itemGrabMenuManager = itemGrabMenuManager;
+        this.proxyChestFactory = proxyChestFactory;
     }
 
     /// <inheritdoc />
@@ -110,23 +114,18 @@ internal sealed class OpenHeldChest : BaseFeature<OpenHeldChest>
             });
     }
 
-    private void OnItemGrabMenuChanged(ItemGrabMenuChangedEventArgs e)
-    {
-        if (this.itemGrabMenuManager.Top.Container?.Options.OpenHeldChest != FeatureOption.Enabled)
-        {
-            return;
-        }
-
+    private void OnItemGrabMenuChanged(ItemGrabMenuChangedEventArgs e) =>
         this.itemGrabMenuManager.Bottom.AddHighlightMethod(this.MatchesFilter);
-    }
 
     private bool MatchesFilter(Item item)
     {
-        switch (this.itemGrabMenuManager.Top.Container)
+        if (Game1.activeClickableMenu is not ItemGrabMenu itemGrabMenu
+            || !this.proxyChestFactory.TryGetProxy(item, out var chest))
         {
-            case ObjectContainer container: return container.Object != item;
-            case ChestContainer container: return container.Chest != item;
-            default: return true;
+            return true;
         }
+
+        // Prevent chest from being added into itself
+        return itemGrabMenu.sourceItem != chest;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace StardewMods.ToolbarIcons.Framework;
+namespace StardewMods.ToolbarIcons.Framework;
 
 using Microsoft.Xna.Framework;
 using StardewMods.Common.Interfaces;
@@ -38,7 +38,7 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
         this.eventManager = new BaseEventManager(log, modInfo.Manifest);
 
         // Events
-        eventSubscriber.Subscribe<IconPressedEventArgs>(this.OnIconPressed);
+        eventSubscriber.Subscribe<IIconPressedEventArgs>(this.OnIconPressed);
     }
 
     /// <inheritdoc />
@@ -65,12 +65,12 @@ public sealed class ToolbarIconsApi : IToolbarIconsApi
     public void RemoveToolbarIcon(string id) => this.toolbarManager.RemoveToolbarIcon($"{this.prefix}{id}");
 
     /// <inheritdoc />
-    public void Subscribe<TEventArgs>(Action<TEventArgs> handler) => this.eventManager.Subscribe(handler);
+    public void Subscribe(Action<IIconPressedEventArgs> handler) => this.eventManager.Subscribe(handler);
 
     /// <inheritdoc />
-    public void Unsubscribe<TEventArgs>(Action<TEventArgs> handler) => this.eventManager.Unsubscribe(handler);
+    public void Unsubscribe(Action<IIconPressedEventArgs> handler) => this.eventManager.Unsubscribe(handler);
 
-    private void OnIconPressed(IconPressedEventArgs e)
+    private void OnIconPressed(IIconPressedEventArgs e)
     {
         if (!e.Id.StartsWith(this.prefix, StringComparison.OrdinalIgnoreCase))
         {

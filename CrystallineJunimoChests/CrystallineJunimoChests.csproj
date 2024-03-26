@@ -6,7 +6,7 @@
     <EnableHarmony>true</EnableHarmony>
     <RootNamespace>StardewMods.CrystallineJunimoChests</RootNamespace>
     <UniqueId>furyx639.CrystallineJunimoChests</UniqueId>
-    <UpdateKeys>Nexus:</UpdateKeys>
+    <UpdateKeys>Nexus:20658</UpdateKeys>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1"/>

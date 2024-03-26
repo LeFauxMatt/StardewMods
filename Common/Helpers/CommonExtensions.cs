@@ -1,4 +1,4 @@
-namespace StardewMods.Common.Extensions;
+namespace StardewMods.Common.Helpers;
 
 using Microsoft.Xna.Framework;
 using StardewMods.Common.Models;

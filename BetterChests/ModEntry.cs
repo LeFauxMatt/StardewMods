@@ -8,7 +8,6 @@ using StardewMods.BetterChests.Framework.Models;
 using StardewMods.BetterChests.Framework.Services;
 using StardewMods.BetterChests.Framework.Services.Factory;
 using StardewMods.BetterChests.Framework.Services.Features;
-using StardewMods.BetterChests.Framework.UI;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.Automate;
@@ -46,7 +45,8 @@ public sealed class ModEntry : Mod
         this.container.RegisterInstance(this.Helper.ModRegistry);
         this.container.RegisterInstance(this.Helper.Reflection);
         this.container.RegisterInstance(this.Helper.Translation);
-        this.container.RegisterInstance<Func<CategorizeOption>>(this.GetCategorizeOption);
+
+        //this.container.RegisterInstance<Func<CategorizeOption>>(this.GetCategorizeOption);
         this.container.RegisterInstance<Func<Dictionary<string, InventoryTabData>>>(this.GetInventoryTabData);
         this.container.RegisterInstance<Func<IModConfig>>(this.GetConfig);
         this.container.RegisterSingleton<AssetHandler>();
@@ -69,7 +69,8 @@ public sealed class ModEntry : Mod
         this.container.RegisterSingleton<ProxyChestFactory>();
         this.container.RegisterSingleton<StatusEffectManager>();
         this.container.RegisterSingleton<ToolbarIconsIntegration>();
-        this.container.Register<CategorizeOption>();
+
+        //this.container.Register<CategorizeOption>();
 
         this.container.Collection.Register<IFeature>(
             new[]
@@ -108,5 +109,5 @@ public sealed class ModEntry : Mod
         return gameContentHelper.Load<Dictionary<string, InventoryTabData>>(assetHandler.TabDataPath);
     }
 
-    private CategorizeOption GetCategorizeOption() => this.container.GetInstance<CategorizeOption>();
+    //private CategorizeOption GetCategorizeOption() => this.container.GetInstance<CategorizeOption>();
 }

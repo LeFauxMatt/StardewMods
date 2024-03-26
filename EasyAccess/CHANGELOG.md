@@ -1,5 +1,11 @@
 # Easy Access Change Log
 
+### 2.1.2 (Unreleased)
+
+### Fixed
+
+* Fixed api integration with Toolbar Icons.
+
 ## 2.1.1 (March 19, 2024)
 
 ### Changed

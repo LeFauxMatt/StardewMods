@@ -2,7 +2,7 @@ namespace StardewMods.EasyAccess.Framework.Services;
 
 using Microsoft.Xna.Framework;
 using StardewModdingAPI.Events;
-using StardewMods.Common.Extensions;
+using StardewMods.Common.Helpers;
 using StardewMods.Common.Interfaces;
 using StardewMods.Common.Services;
 using StardewMods.Common.Services.Integrations.FauxCore;
@@ -51,7 +51,7 @@ internal sealed class DispenseService : BaseService<DispenseService>
             new Rectangle(16, 0, 16, 16),
             I18n.Button_DispenseInputs_Name());
 
-        toolbarIconsIntegration.Api.Subscribe<IIconPressedEventArgs>(this.OnIconPressed);
+        toolbarIconsIntegration.Api.Subscribe(this.OnIconPressed);
     }
 
     private void DispenseItems()

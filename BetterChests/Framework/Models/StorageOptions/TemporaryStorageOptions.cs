@@ -18,6 +18,8 @@ internal sealed class TemporaryStorageOptions : DefaultStorageOptions
         this.AutoOrganize = storageOptions.AutoOrganize;
         this.CarryChest = storageOptions.CarryChest;
         this.CategorizeChest = storageOptions.CategorizeChest;
+        this.CategorizeChestAutomatically = storageOptions.CategorizeChestAutomatically;
+        this.CategorizeChestMethod = storageOptions.CategorizeChestMethod;
         this.CategorizeChestTags = [..storageOptions.CategorizeChestTags];
         this.ChestFinder = storageOptions.ChestFinder;
         this.ChestInfo = storageOptions.ChestInfo;
@@ -48,6 +50,8 @@ internal sealed class TemporaryStorageOptions : DefaultStorageOptions
         this.AutoOrganize = this.defaultOptions.AutoOrganize;
         this.CarryChest = this.defaultOptions.CarryChest;
         this.CategorizeChest = this.defaultOptions.CategorizeChest;
+        this.CategorizeChestAutomatically = this.defaultOptions.CategorizeChestAutomatically;
+        this.CategorizeChestMethod = this.defaultOptions.CategorizeChestMethod;
         this.CategorizeChestTags = [..this.defaultOptions.CategorizeChestTags];
         this.ChestFinder = this.defaultOptions.ChestFinder;
         this.ChestInfo = this.defaultOptions.ChestInfo;
@@ -72,6 +76,8 @@ internal sealed class TemporaryStorageOptions : DefaultStorageOptions
         this.storageOptions.AutoOrganize = this.AutoOrganize;
         this.storageOptions.CarryChest = this.CarryChest;
         this.storageOptions.CategorizeChest = this.CategorizeChest;
+        this.storageOptions.CategorizeChestAutomatically = this.CategorizeChestAutomatically;
+        this.storageOptions.CategorizeChestMethod = this.CategorizeChestMethod;
         this.storageOptions.CategorizeChestTags = [..this.CategorizeChestTags];
         this.storageOptions.ChestFinder = this.ChestFinder;
         this.storageOptions.ChestInfo = this.ChestInfo;

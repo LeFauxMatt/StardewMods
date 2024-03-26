@@ -92,6 +92,20 @@ internal class ChildStorageOptions : IStorageOptions
     }
 
     /// <inheritdoc />
+    public FeatureOption CategorizeChestAutomatically
+    {
+        get => this.Get(storage => storage.CategorizeChestAutomatically);
+        set => this.child.CategorizeChestAutomatically = value;
+    }
+
+    /// <inheritdoc />
+    public FilterMethod CategorizeChestMethod
+    {
+        get => this.child.CategorizeChestMethod;
+        set => this.child.CategorizeChestMethod = value;
+    }
+
+    /// <inheritdoc />
     public HashSet<string> CategorizeChestTags
     {
         get => this.child.CategorizeChestTags.Union(this.parent.CategorizeChestTags).ToHashSet();

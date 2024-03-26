@@ -14,6 +14,12 @@ public interface IStorageOptions
     /// <summary>Gets or sets a value indicating if can have categories added to it, and which items can be added.</summary>
     public FeatureOption CategorizeChest { get; set; }
 
+    /// <summary>Gets or sets a value indicating whether items added to the chest will be added to the chest's categories.</summary>
+    public FeatureOption CategorizeChestAutomatically { get; set; }
+
+    /// <summary>Gets or sets a value indicating how categorized items will be displayed.</summary>
+    public FilterMethod CategorizeChestMethod { get; set; }
+
     /// <summary>Gets or sets a value indicating what categories of items are allowed in the chest.</summary>
     public HashSet<string> CategorizeChestTags { get; set; }
 
